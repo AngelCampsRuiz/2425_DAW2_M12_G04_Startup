@@ -59,4 +59,5 @@
         </div>
     </div>
 </div>
+@vite(['resources/js/auth/login-validation.js'])
 @endsection
