@@ -87,4 +87,5 @@
         </div>
     </div>
 </div>
+@vite(['resources/js/auth/register-validation.js'])
 @endsection
