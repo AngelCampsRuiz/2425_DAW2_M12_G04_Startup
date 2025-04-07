@@ -13,7 +13,7 @@
                 <div class="flex-1">
                     <h2 class="text-2xl font-bold text-gray-800 mb-6">Iniciar sesión</h2>
                     
-                    <form method="POST" action="{{ route('login') }}">
+                    <form id="loginForm" method="POST" action="{{ route('login') }}">
                         @csrf
                         
                         {{-- EMAIL --}}
