@@ -17,11 +17,45 @@ class User extends Authenticatable
      *
      * @var list<string>
      */
+    protected $table = 'user';
     protected $fillable = [
         'name',
         'email',
         'password',
+        'pais',
+        'fecha_nacimiento',
+        'dni',
+        'telefono',
+        'sitio_web',
+        'activo',
+        'role_id',
     ];
+
+    protected $casts = [
+        'fecha_nacimiento' => 'date',
+        'activo' => 'boolean',
+    ];
+
+    public function role()
+    {
+        return $this->belongsTo(Rol::class);
+    }
+
+    // Relaciones polimórficas
+    public function empresa()
+    {
+        return $this->hasOne(Empresa::class, 'id');
+    }
+
+    public function estudiante()
+    {
+        return $this->hasOne(Estudiante::class, 'id');
+    }
+
+    public function tutor()
+    {
+        return $this->hasOne(Tutor::class, 'id');
+    }
 
     /**
      * The attributes that should be hidden for serialization.
