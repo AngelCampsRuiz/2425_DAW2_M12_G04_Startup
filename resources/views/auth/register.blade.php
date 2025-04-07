@@ -13,7 +13,7 @@
                 <div class="flex-1">
                     <h2 class="text-2xl font-bold text-gray-800 mb-6">Registro</h2>
                     
-                    <form method="POST" action="{{ route('register') }}">
+                    <form id="registerForm" method="POST" action="{{ route('register') }}">
                         @csrf
                         
                         {{-- NOMBRE --}}
