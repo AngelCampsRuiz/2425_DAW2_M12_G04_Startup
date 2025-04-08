@@ -15,7 +15,9 @@ class Empresa extends Model
         'cif',
         'direccion',
         'latitud',
-        'longitud'
+        'longitud',
+        'provincia',
+        'usuario_id'
     ];
 
     public function user()

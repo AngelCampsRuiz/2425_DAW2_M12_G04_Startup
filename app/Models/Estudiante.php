@@ -13,7 +13,9 @@ class Estudiante extends Model
 
     protected $fillable = [
         'curso',
-        'ciclo'
+        'ciclo',
+        'centro_estudios',
+        'usuario_id'
     ];
 
     public function user()

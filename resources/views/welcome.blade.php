@@ -38,19 +38,26 @@
                     
                     <div class="container mx-auto px-4">
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            @foreach($empresasDestacadas as $empresa)
-                                <div class="bg-white p-6 rounded-lg shadow-md text-center">
-                                    @if($empresa->logo)
-                                        <img src="{{ asset('storage/'.$empresa->logo) }}" alt="{{ $empresa->nombre }}" class="h-16 mx-auto mb-4">
-                                    @else
-                                        <div class="h-16 mx-auto mb-4 flex items-center justify-center bg-gray-200 text-gray-500 rounded">
-                                            {{ substr($empresa->nombre, 0, 2) }}
-                                        </div>
-                                    @endif
-                                    <h3 class="font-bold text-lg">{{ $empresa->nombre }}</h3>
-                                    <p class="text-gray-600">{{ $empresa->alumnos_contratados }} alumnos contratados</p>
+                            @if($empresasDestacadas->isNotEmpty())
+                                @foreach($empresasDestacadas as $empresa)
+                                    <div class="bg-white p-6 rounded-lg shadow-md text-center">
+                                        @if($empresa->logo)
+                                            <img src="{{ asset('storage/'.$empresa->logo) }}" alt="{{ $empresa->nombre }}" class="h-16 mx-auto mb-4">
+                                        @else
+                                            <div class="h-16 mx-auto mb-4 flex items-center justify-center bg-gray-200 text-gray-500 rounded">
+                                                {{ substr($empresa->nombre, 0, 2) }}
+                                            </div>
+                                        @endif
+                                        <h3 class="font-bold text-lg">{{ $empresa->nombre }}</h3>
+                                        <p class="text-gray-600">{{ $empresa->alumnos_contratados }} alumnos contratados</p>
+                                    </div>
+                                @endforeach
+                            @else
+                                <div class="col-span-full text-center text-gray-500">
+                                    Aún no hay empresas destacadas.
                                 </div>
-                            @endforeach
+                            @endif
+
                         </div>
                     </div>
                 </section>

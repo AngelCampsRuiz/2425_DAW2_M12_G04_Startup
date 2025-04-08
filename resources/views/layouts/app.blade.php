@@ -6,7 +6,19 @@
     {{-- NOMBRE DE LA EMPRESA --}}
         <title>NextGen</title>
     {{-- AÑADIMOS EL CSS Y EL JS --}}
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#7705B6',
+                        'primary-dark': '#5E0490'
+                    }
+                }
+            }
+        }
+    </script>
 </head>
 <body>
     {{-- HEADER --}}

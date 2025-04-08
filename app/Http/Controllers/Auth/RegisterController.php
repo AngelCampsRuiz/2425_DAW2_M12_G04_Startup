@@ -20,13 +20,26 @@ class RegisterController extends Controller
             return view('auth.register');
         }
 
-    public function register(Request $request)
+    // Vista de registro de estudiante
+    public function showStudentRegistrationForm()
+    {
+        return view('auth.register-student');
+    }
+
+    // Vista de registro de empresa
+    public function showCompanyRegistrationForm()
+    {
+        return view('auth.register-company');
+    }
+
+    // Registro de estudiante
+    public function registerStudent(Request $request)
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:usuarios'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'role' => ['required', 'in:alumno,empresa'],
+            'centro_estudios' => ['required', 'string', 'max:255'],
         ]);
 
         $user = User::create([
@@ -36,30 +49,64 @@ class RegisterController extends Controller
             'active' => 1,
         ]);
 
-        // ASIGNAMOS EL ROL
-            $rol = \App\Models\Rol::where('nombre', $request->role)->first();
-            $user->rol_id = $rol->id;
-            $user->save();
+        // Asignamos el rol de estudiante
+        $rol = \App\Models\Rol::where('nombre', 'alumno')->first();
+        $user->rol_id = $rol->id;
+        $user->save();
 
-        // CREAMOS EL PERFIL
-            if ($request->role == 'alumno') {
-                Estudiante::create([
-                    'usuario_id' => $user->id,
-                    // SE AÑADE DESPUES
-                    'centro_estudios' => null,
-                ]);
-            } else {
-                Empresa::create([
-                    'usuario_id' => $user->id,
-                    // SE AÑADE DESPUES
-                    'direccion' => null,
-                ]);
-            }
+        // Creamos el perfil de estudiante
+        Estudiante::create([
+            'usuario_id' => $user->id,
+            'centro_estudios' => $request->centro_estudios,
+        ]);
 
         event(new Registered($user));
-
         Auth::login($user);
+        return redirect()->route('alumno.dashboard');
+    }
 
-        return redirect($request->role == 'alumno' ? route('alumno.dashboard') : route('empresa.dashboard'));
+    // Registro de empresa
+    public function registerCompany(Request $request)
+    {
+        $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:usuarios'],
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'cif' => ['required', 'string', 'max:15'],
+            'direccion' => ['required', 'string', 'max:255'],
+            'provincia' => ['required', 'string', 'max:100'],
+        ]);
+
+        $user = User::create([
+            'nombre' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'active' => 1,
+        ]);
+
+        // Asignamos el rol de empresa
+        $rol = \App\Models\Rol::where('nombre', 'empresa')->first();
+        $user->rol_id = $rol->id;
+        $user->save();
+
+        // Creamos el perfil de empresa
+        Empresa::create([
+            'usuario_id' => $user->id,
+            'cif' => $request->cif,
+            'direccion' => $request->direccion,
+            'provincia' => $request->provincia,
+            'latitud' => 0, // Se actualizará después con geocodificación
+            'longitud' => 0, // Se actualizará después con geocodificación
+        ]);
+
+        event(new Registered($user));
+        Auth::login($user);
+        return redirect()->route('empresa.dashboard');
+    }
+
+    // Registro general (deprecated)
+    public function register(Request $request)
+    {
+        return redirect()->route('register.alumno');
     }
 }

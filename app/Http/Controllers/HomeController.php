@@ -17,24 +17,26 @@ class HomeController extends Controller
         // OBTENEMOS LOS DATOS DE LA BASE DE DATOS
             $totalAlumnos = Estudiante::count();
             $totalEmpresas = Empresa::count();
-            $totalConvenios = Convenio::where('estado', 'activo')->count();
+            $totalConvenios = Convenio::count();
+            
         
         // OBTENEMOS LAS EMPRESAS DESTACADAS
-            $empresasDestacadas = Empresa::withCount(['convenios as alumnos_contratados' => function($query) {
-                $query->whereHas('seguimiento', function($q) {
-                    $q->where('estado', 'completado');
-                });
-            }])
-            ->orderByDesc('alumnos_contratados')
-            ->limit(6)
-            ->get();
+            // $empresasDestacadas = Empresa::withCount(['convenios as alumnos_contratados' => function($query) {
+            //     $query->whereHas('seguimiento', function($q) {
+            //         $q->where('estado', 'completado');
+            //     });
+            // }])
+            // ->orderByDesc('alumnos_contratados')
+            // ->limit(6)
+            // ->get();
+            $empresasDestacadas = collect();
         
         // CALCULAMOS EL PORCENTAJE DE EXITO
             $alumnosConPracticas = Seguimiento::where('estado', 'completado')->count();
             $porcentajeExito = $totalAlumnos > 0 ? round(($alumnosConPracticas / $totalAlumnos) * 100) : 0;
         
         // OBTENEMOS EL NUMERO DE COLES
-            $totalCentros = Estudiante::distinct('centro_estudios')->count('centro_estudios');
+            $totalCentros = Estudiante::distinct('centro_educativo')->count('centro_estudios');
         
         // PORCENTAJE DE EMPRESAS QUE VUELVEN HACER CONVENIOS
             $empresasRepiten = Empresa::has('convenios', '>', 1)->count();

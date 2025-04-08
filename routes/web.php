@@ -13,5 +13,12 @@ use App\Http\Controllers\Auth\RegisterController;
     Route::post('/login', [LoginController::class, 'login']);
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
+    // Rutas de registro generales
     Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
     Route::post('/register', [RegisterController::class, 'register']);
+
+    // Rutas de registro específicas
+    Route::get('/register/alumno', [RegisterController::class, 'showStudentRegistrationForm'])->name('register.alumno');
+    Route::post('/register/alumno', [RegisterController::class, 'registerStudent']);
+    Route::get('/register/empresa', [RegisterController::class, 'showCompanyRegistrationForm'])->name('register.empresa');
+    Route::post('/register/empresa', [RegisterController::class, 'registerCompany']);
