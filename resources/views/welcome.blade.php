@@ -9,7 +9,7 @@
             <!-- BLOQUE DE ESTUDIANTES -->
                 <div class="container mx-auto flex flex-col md:flex-row items-center my-12 px-4">
                     <div class="md:w-1/2 mb-8 md:mb-0">
-                        <img src="{{ asset('images/estudiantes.jpg') }}" alt="Estudiantes" class="rounded-lg shadow-xl w-full max-w-md mx-auto">
+                        <img src="{{ asset('assets/images/estudiantes.jpg') }}" alt="Estudiantes" class="rounded-lg shadow-xl w-full max-w-md mx-auto">
                     </div>
                     <div class="md:w-1/2 space-y-6 text-left md:pl-12">
                         <div class="text-2xl font-semibold text-[#7705B6]">🎓 {{ $totalAlumnos }} alumnos ya han encontrado prácticas</div>
@@ -22,7 +22,7 @@
             <!-- BLOQUE DE EMPRESAS -->
                 <div class="container mx-auto flex flex-col md:flex-row-reverse items-center my-12 px-4">
                     <div class="md:w-1/2 mb-8 md:mb-0">
-                        <img src="{{ asset('images/empresas.jpg') }}" alt="Empresas" class="rounded-lg shadow-xl w-full max-w-md mx-auto">
+                        <img src="{{ asset('assets/images/empresas.webp') }}" alt="Empresas" class="rounded-lg shadow-xl w-full max-w-md mx-auto">
                     </div>
                     <div class="md:w-1/2 space-y-6 text-left md:pr-12">
                         <div class="text-2xl font-semibold text-[#7705B6]">🏢 {{ $totalEmpresas }} empresas confían en nosotros</div>
