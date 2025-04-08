@@ -5,7 +5,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\StudentDashboardController;
-
+use App\Http\Controllers\AdminController;
 // Ruta principal usando el HomeController
     Route::get('/', [HomeController::class, 'index'])->name('home');
 
@@ -27,4 +27,8 @@ use App\Http\Controllers\StudentDashboardController;
 // RUTAS PROTEGIDAS PARA ESTUDIANTES
 Route::middleware(['auth', 'role:student'])->group(function () {
     Route::get('/student/dashboard', [StudentDashboardController::class, 'index'])->name('student.dashboard');
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/admin/dashboard', action: [AdminController::class, 'index'])->name('admin.dashboard');
 });
