@@ -2,11 +2,13 @@
 
 @section('content')
 <div class="min-h-screen flex items-center justify-center bg-gradient-to-r from-primary/20 to-primary">
-    <div class="bg-white rounded-lg shadow-xl p-8 w-full max-w-md">
+    <div class="bg-white rounded-lg shadow-xl p-8 w-full max-w-2xl">
         <div class="flex items-center mb-8">
             {{-- LOGO DE LA EMPRESA --}}
                 <div class="mr-6">
-                    <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-12">
+                    <a href="{{ url('/') }}">
+                        <img src="{{ asset('assets/images/logo.svg') }}" alt="Logo" class="h-48">
+                    </a>
                 </div>
             
             {{-- FORMULARIO LOGIN --}}

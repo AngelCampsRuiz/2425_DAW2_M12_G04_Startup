@@ -4,7 +4,9 @@
             <div class="flex flex-col md:flex-row justify-between items-center">
                 <div class="mb-4 md:mb-0">
                     <div class="flex items-center">
-                        <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-8">
+                        <a href="{{ url('/') }}">
+                            <img src="{{ asset('assets/images/logo.svg') }}" alt="Logo" class="h-8">
+                        </a>
                         <span class="ml-2 font-bold text-primary">NextGen</span>
                     </div>
                     <p class="mt-2 text-sm text-primary">Conectando talento con oportunidades</p>

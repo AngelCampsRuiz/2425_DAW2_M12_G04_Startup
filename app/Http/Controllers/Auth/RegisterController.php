@@ -38,14 +38,14 @@ class RegisterController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+
             'centro_estudios' => ['required', 'string', 'max:255'],
         ]);
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => Hash::make($request->password)
+            'password' => null
         ]);
 
         // Asignamos el rol de estudiante
@@ -70,7 +70,7 @@ class RegisterController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+
             'cif' => ['required', 'string', 'max:15'],
             'direccion' => ['required', 'string', 'max:255'],
             'provincia' => ['required', 'string', 'max:100'],
@@ -79,7 +79,7 @@ class RegisterController extends Controller
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => Hash::make($request->password)
+            'password' => null
         ]);
 
         // Asignamos el rol de empresa
@@ -107,10 +107,10 @@ class RegisterController extends Controller
     {
         if ($request->role === 'alumno') {
             return redirect()->route('register.alumno')
-                ->withInput($request->only(['name', 'email', 'password', 'password_confirmation']));
+                ->withInput($request->only(['name', 'email']));
         } else {
             return redirect()->route('register.empresa')
-                ->withInput($request->only(['name', 'email', 'password', 'password_confirmation']));
+                ->withInput($request->only(['name', 'email']));
         }
     }
 }
