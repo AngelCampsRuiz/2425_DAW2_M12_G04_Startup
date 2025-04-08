@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('direccion', 255);
             $table->decimal('latitud', 10, 8);
             $table->decimal('longitud', 11, 8);
-            $table->foreign('id')->references('id')->on('user');
+            $table->foreign('id')->references('id')->on('users');
             $table->timestamps();
         });
     }
