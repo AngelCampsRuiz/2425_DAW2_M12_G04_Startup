@@ -29,4 +29,9 @@ class Empresa extends Model
     {
         return $this->hasMany(Convenio::class);
     }
+
+    public function publicaciones()
+    {
+        return $this->hasMany(Publication::class, 'empresa_id');
+    }
 }

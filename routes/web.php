@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\StudentDashboardController;
 
 // Ruta principal usando el HomeController
     Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -22,3 +23,8 @@ use App\Http\Controllers\Auth\RegisterController;
     Route::post('/register/alumno', [RegisterController::class, 'registerStudent']);
     Route::get('/register/empresa', [RegisterController::class, 'showCompanyRegistrationForm'])->name('register.empresa');
     Route::post('/register/empresa', [RegisterController::class, 'registerCompany']);
+
+// RUTAS PROTEGIDAS PARA ESTUDIANTES
+Route::middleware(['auth', 'role:student'])->group(function () {
+    Route::get('/student/dashboard', [StudentDashboardController::class, 'index'])->name('student.dashboard');
+});

@@ -28,7 +28,7 @@ class LoginController extends Controller
             
             // REDIRIGIMOS SEGUN EL ROL DEL USUARIO
                 if ($user->rol->nombre == 'alumno') {
-                    return redirect()->intended(route('alumno.dashboard'));
+                    return redirect()->intended(route('student.dashboard'));
                 } elseif ($user->rol->nombre == 'empresa') {
                     return redirect()->intended(route('empresa.dashboard'));
                 } else {
