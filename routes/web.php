@@ -1,10 +1,12 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// Ruta principal usando el HomeController
+    Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // AUTENTICACIÓN
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
