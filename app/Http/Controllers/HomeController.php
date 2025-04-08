@@ -7,6 +7,7 @@ use App\Models\Estudiante;
 use App\Models\Empresa;
 use App\Models\Convenio;
 use App\Models\Seguimiento;
+use App\Models\Publicacion;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
