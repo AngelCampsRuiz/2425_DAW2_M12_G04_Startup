@@ -1,5 +1,5 @@
 {{-- FOOTER --}}
-    <footer class="bg-primary/20 py-8 mt-12">
+    <footer class="bg-primary/20 py-8">
         <div class="container mx-auto px-4">
             <div class="flex flex-col md:flex-row justify-between items-center">
                 <div class="mb-4 md:mb-0">
