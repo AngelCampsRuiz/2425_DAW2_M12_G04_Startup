@@ -35,6 +35,8 @@ class User extends Authenticatable
     protected $casts = [
         'fecha_nacimiento' => 'date',
         'activo' => 'boolean',
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
     ];
 
     public function role()
@@ -68,16 +70,5 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
-    }
+    // Removed duplicate casts method
 }

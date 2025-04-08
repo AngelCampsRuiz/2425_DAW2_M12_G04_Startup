@@ -105,12 +105,41 @@ class RegisterController extends Controller
     // Registro general
     public function register(Request $request)
     {
+        $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:user'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'role' => ['required', 'string', 'in:alumno,empresa']
+        ]);
+        
+        // Crear el usuario base
+        $user = User::create([
+            'nombre' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password)
+        ]);
+        
+        // Asignar el rol según la selección
+        $rolName = $request->role === 'alumno' ? 'Estudiante' : 'Empresa';
+        $rol = \App\Models\Rol::where('nombre_rol', $rolName)->first();
+        
+        if (!$rol) {
+            // Si no se encuentra el rol, redirigir con error
+            return redirect()->back()->withErrors(['role' => 'El rol seleccionado no es válido']);
+        }
+        
+        $user->role_id = $rol->id;
+        $user->save();
+        
+        // Registrar el evento y autenticar al usuario
+        event(new Registered($user));
+        Auth::login($user);
+        
+        // Redirigir según el rol
         if ($request->role === 'alumno') {
-            return redirect()->route('register.alumno')
-                ->withInput($request->only(['name', 'email']));
+            return redirect()->route('student.dashboard');
         } else {
-            return redirect()->route('register.empresa')
-                ->withInput($request->only(['name', 'email']));
+            return redirect()->route('home');
         }
     }
 }

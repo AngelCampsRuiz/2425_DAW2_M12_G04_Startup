@@ -40,7 +40,23 @@
                                 @enderror
                             </div>
                         
-
+                        {{-- CONTRASEÑA --}}
+                            <div class="mb-4">
+                                <label for="password" class="block text-gray-700 text-sm font-medium mb-2">Contraseña</label>
+                                <input id="password" type="password" name="password" autocomplete="new-password"
+                                    class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary @error('password') border-red-500 @enderror">
+                                
+                                @error('password')
+                                    <span class="text-red-500 text-xs">{{ $message }}</span>
+                                @enderror
+                            </div>
+                        
+                        {{-- CONFIRMAR CONTRASEÑA --}}
+                            <div class="mb-4">
+                                <label for="password-confirm" class="block text-gray-700 text-sm font-medium mb-2">Confirmar contraseña</label>
+                                <input id="password-confirm" type="password" name="password_confirmation" autocomplete="new-password"
+                                    class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary">
+                            </div>
                         
                         {{-- AÑADIR ROL --}}
                             <div class="mb-6">
