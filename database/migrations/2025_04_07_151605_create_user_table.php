@@ -11,6 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Drop the users table if it exists to avoid having two user tables
+        Schema::dropIfExists('users');
+        Schema::dropIfExists('password_reset_tokens');
+        Schema::dropIfExists('sessions');
+        
         Schema::create('user', function (Blueprint $table) {
             $table->id();
             $table->string('nombre', 100);

@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('centro_educativo', 100);
             $table->string('cv_pdf', 255);
             $table->string('numero_seguridad_social', 50);
-            $table->foreign('id')->references('id')->on('users');
+            $table->foreign('id')->references('id')->on('user');
             $table->timestamps();
         });
     }

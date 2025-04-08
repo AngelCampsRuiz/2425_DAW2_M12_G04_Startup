@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('tutores', function (Blueprint $table) {
             $table->unsignedBigInteger('id')->primary();
             $table->string('centro_asignado', 100);
-            $table->foreign('id')->references('id')->on('users');
+            $table->foreign('id')->references('id')->on('user');
             $table->timestamps();
         });
     }
