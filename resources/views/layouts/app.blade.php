@@ -30,5 +30,10 @@
         </main>
     {{-- FOOTER --}}
         @include('partials.footer')
+    <!-- Scripts de validación -->
+    <script src="{{ asset('js/auth/login-validation.js') }}"></script>
+    <script src="{{ asset('js/auth/register-validation.js') }}"></script>
+    <script src="{{ asset('js/auth/register-student-validation.js') }}"></script>
+    <script src="{{ asset('js/auth/register-company-validation.js') }}"></script>
 </body>
 </html>

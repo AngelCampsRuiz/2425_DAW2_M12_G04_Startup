@@ -15,7 +15,7 @@
                 <div class="flex-1">
                     <h2 class="text-2xl font-bold text-gray-800 mb-6">Registro de Empresa</h2>
 
-        <form method="POST" action="{{ route('register.empresa') }}">
+        <form id="registerCompanyForm" method="POST" action="{{ route('register.empresa') }}">
             @csrf
 
                         {{-- NOMBRE --}}
