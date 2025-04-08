@@ -25,7 +25,7 @@ class LoginController extends Controller
             $request->session()->regenerate();
 
             $user = Auth::user();
-            $role = $user->role_id;
+            $role = $user->role->id;
 
             // REDIRIGIMOS SEGUN EL ROL DEL USUARIO
                 if ($role == 3) {

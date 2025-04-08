@@ -25,10 +25,13 @@ use App\Http\Controllers\AdminController;
     Route::post('/register/empresa', [RegisterController::class, 'registerCompany']);
 
 // RUTAS PROTEGIDAS PARA ESTUDIANTES
-Route::middleware(['auth', 'role:student'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     Route::get('/student/dashboard', [StudentDashboardController::class, 'index'])->name('student.dashboard');
 });
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/admin/dashboard', action: [AdminController::class, 'index'])->name('admin.dashboard');
 });
+
+// Test route without custom middleware
+Route::get('/test-dashboard', [StudentDashboardController::class, 'index'])->name('test.dashboard');

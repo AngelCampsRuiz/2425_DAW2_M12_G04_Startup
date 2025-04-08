@@ -39,7 +39,7 @@ class User extends Authenticatable
 
     public function role()
     {
-        return $this->belongsTo(Rol::class);
+        return $this->belongsTo(Rol::class, 'role_id');
     }
 
     // Relaciones polimórficas

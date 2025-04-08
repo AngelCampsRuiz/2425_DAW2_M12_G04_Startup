@@ -11,17 +11,36 @@
             </div>
             
             {{-- BOTONES LOGIN/REGISTER --}}
-                <div class="flex space-x-4">
+                <div class="flex items-center space-x-4">
                     @auth
-                        @if(auth()->user()->rol->nombre == 'alumno')
-                            <a href="{{ route('alumno.dashboard') }}" class="bg-[#7705B6] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#5E0490] transition">
-                                Panel Alumno
+                        <div class="flex items-center space-x-4">
+                            <!-- Nombre del usuario -->                            
+                            <span class="text-[#7705B6] font-medium">{{ auth()->user()->nombre }}</span>
+                            
+                            <!-- Botón de panel según rol -->
+                            @if(auth()->user()->role->nombre_rol == 'Estudiante')
+                                <a href="{{ route('student.dashboard') }}" class="bg-[#7705B6] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#5E0490] transition">
+                                    Panel Alumno
+                                </a>
+                            @elseif(auth()->user()->role->nombre_rol == 'Empresa')
+                                <a href="{{ route('home') }}" class="bg-[#7705B6] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#5E0490] transition">
+                                    Panel Empresa
+                                </a>
+                            @endif
+                            
+                            <!-- Botón de prueba -->
+                            <a href="{{ route('test.dashboard') }}" class="bg-green-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-600 transition">
+                                Test Dashboard
                             </a>
-                        @elseif(auth()->user()->rol->nombre == 'empresa')
-                            <a href="{{ route('empresa.dashboard') }}" class="bg-[#7705B6] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#5E0490] transition">
-                                Panel Empresa
-                            </a>
-                        @endif
+                            
+                            <!-- Botón de logout -->                            
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit" class="bg-white text-[#7705B6] px-4 py-2 rounded-lg font-medium border border-[#7705B6] hover:bg-gray-50 transition">
+                                    Cerrar sesión
+                                </button>
+                            </form>
+                        </div>
                     @else
                         {{-- INICIAR SESIÓN --}}
                             <a href="{{ route('login') }}" class="bg-[#7705B6] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#5E0490] transition">
