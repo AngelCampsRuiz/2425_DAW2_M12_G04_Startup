@@ -21,7 +21,7 @@
                         {{-- NOMBRE --}}
                             <div class="mb-4">
                                 <label for="name" class="block text-gray-700 text-sm font-medium mb-2">Nombre completo</label>
-                                <input id="name" type="text" name="name" value="{{ old('name') }}" required autocomplete="name" autofocus
+                                <input id="name" type="text" name="name" value="{{ old('name') }}" autocomplete="name" autofocus
                                     class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary @error('name') border-red-500 @enderror">
                                 
                                 @error('name')
@@ -32,7 +32,7 @@
                         {{-- CORREO --}}
                             <div class="mb-4">
                                 <label for="email" class="block text-gray-700 text-sm font-medium mb-2">Correo electrónico</label>
-                                <input id="email" type="email" name="email" value="{{ old('email') }}" required autocomplete="email"
+                                <input id="email" type="email" name="email" value="{{ old('email') }}" autocomplete="email"
                                     class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary @error('email') border-red-500 @enderror">
                                 
                                 @error('email')

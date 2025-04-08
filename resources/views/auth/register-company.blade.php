@@ -21,35 +21,35 @@
                         {{-- NOMBRE --}}
                             <div class="mb-4">
                                 <label for="name" class="block text-gray-700 text-sm font-medium mb-2">Nombre de la Empresa</label>
-                                <input id="name" type="text" name="name" value="{{ old('name') }}" required autocomplete="name" autofocus
+                                <input id="name" type="text" name="name" value="{{ old('name') }}" autocomplete="name" autofocus
                                     class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary @error('name') border-red-500 @enderror">
             </div>
 
                         {{-- CORREO --}}
                             <div class="mb-4">
                                 <label for="email" class="block text-gray-700 text-sm font-medium mb-2">Correo electrónico</label>
-                                <input id="email" type="email" name="email" value="{{ old('email') }}" required autocomplete="email"
+                                <input id="email" type="email" name="email" value="{{ old('email') }}" autocomplete="email"
                                     class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary @error('email') border-red-500 @enderror">
             </div>
 
                         {{-- CIF --}}
                             <div class="mb-4">
                                 <label for="cif" class="block text-gray-700 text-sm font-medium mb-2">CIF</label>
-                                <input id="cif" type="text" name="cif" value="{{ old('cif') }}" required
+                                <input id="cif" type="text" name="cif" value="{{ old('cif') }}"
                                     class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary @error('cif') border-red-500 @enderror">
             </div>
 
                         {{-- DIRECCIÓN --}}
                             <div class="mb-4">
                                 <label for="direccion" class="block text-gray-700 text-sm font-medium mb-2">Dirección</label>
-                                <input id="direccion" type="text" name="direccion" value="{{ old('direccion') }}" required
+                                <input id="direccion" type="text" name="direccion" value="{{ old('direccion') }}"
                                     class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary @error('direccion') border-red-500 @enderror">
             </div>
 
                         {{-- PROVINCIA --}}
                             <div class="mb-4">
                                 <label for="provincia" class="block text-gray-700 text-sm font-medium mb-2">Provincia</label>
-                                <select id="provincia" name="provincia" required
+                                <select id="provincia" name="provincia"
                                     class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary @error('provincia') border-red-500 @enderror">
                     <option value="">Selecciona una provincia</option>
                     @php
