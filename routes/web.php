@@ -36,6 +36,7 @@ Route::middleware(['auth'])->group(function () {
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/admin/dashboard', action: [AdminController::class, 'index'])->name('admin.dashboard');
+    Route::get('/empresa/dashboard', action: [AdminController::class, 'index'])->name('empresa.dashboard');
 });
 
 // Test route without custom middleware
