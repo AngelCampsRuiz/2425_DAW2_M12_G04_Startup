@@ -14,23 +14,47 @@
             {{-- FORMULARIO --}}
                 <div class="flex-1">
                     <h2 class="text-2xl font-bold text-gray-800 mb-6">Registro de Empresa</h2>
+                    <p class="text-gray-600 mb-4">Paso 3 de 3: Completa la información de tu empresa y establece tu contraseña</p>
 
         <form id="registerCompanyForm" method="POST" action="{{ route('register.empresa') }}">
             @csrf
 
-                        {{-- NOMBRE --}}
+                        {{-- NOMBRE (readonly, from session) --}}
                             <div class="mb-4">
                                 <label for="name" class="block text-gray-700 text-sm font-medium mb-2">Nombre de la Empresa</label>
-                                <input id="name" type="text" name="name" value="{{ old('name') }}" autocomplete="name" autofocus
-                                    class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary @error('name') border-red-500 @enderror">
-            </div>
+                                <input id="name" type="text" name="name" value="{{ session('registration_data.name') ?? old('name') }}" readonly
+                                    class="w-full px-4 py-2 border rounded-lg bg-gray-100 focus:ring-primary focus:border-primary @error('name') border-red-500 @enderror">
+                                @error('name')
+                                    <span class="text-red-500 text-xs">{{ $message }}</span>
+                                @enderror
+                            </div>
 
-                        {{-- CORREO --}}
+                        {{-- CORREO (readonly, from session) --}}
                             <div class="mb-4">
                                 <label for="email" class="block text-gray-700 text-sm font-medium mb-2">Correo electrónico</label>
-                                <input id="email" type="email" name="email" value="{{ old('email') }}" autocomplete="email"
-                                    class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary @error('email') border-red-500 @enderror">
-            </div>
+                                <input id="email" type="email" name="email" value="{{ session('registration_data.email') ?? old('email') }}" readonly
+                                    class="w-full px-4 py-2 border rounded-lg bg-gray-100 focus:ring-primary focus:border-primary @error('email') border-red-500 @enderror">
+                                @error('email')
+                                    <span class="text-red-500 text-xs">{{ $message }}</span>
+                                @enderror
+                            </div>
+                            
+                        {{-- CONTRASEÑA --}}
+                            <div class="mb-4">
+                                <label for="password" class="block text-gray-700 text-sm font-medium mb-2">Contraseña</label>
+                                <input id="password" type="password" name="password" autocomplete="new-password"
+                                    class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary @error('password') border-red-500 @enderror">
+                                @error('password')
+                                    <span class="text-red-500 text-xs">{{ $message }}</span>
+                                @enderror
+                            </div>
+                        
+                        {{-- CONFIRMAR CONTRASEÑA --}}
+                            <div class="mb-4">
+                                <label for="password-confirm" class="block text-gray-700 text-sm font-medium mb-2">Confirmar contraseña</label>
+                                <input id="password-confirm" type="password" name="password_confirmation" autocomplete="new-password"
+                                    class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary">
+                            </div>
 
                         {{-- CIF --}}
                             <div class="mb-4">
@@ -71,12 +95,12 @@
                     @endforeach
                 </select>
             </div>
-
-
-
-            <button type="submit" class="w-full bg-primary text-white py-2 px-4 rounded-lg hover:bg-primary-dark transition font-medium">
-                Registrarme
-            </button>
+            
+            <div class="mt-6">
+                <button type="submit" class="w-full bg-primary text-white py-2 px-4 rounded-lg hover:bg-primary-dark transition font-medium">
+                    Registrarme
+                </button>
+            </div>
             
             <!-- ENLACE LOGIN -->
             <div class="mt-4 text-center">
