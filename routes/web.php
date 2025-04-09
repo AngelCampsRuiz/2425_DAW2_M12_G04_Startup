@@ -18,7 +18,12 @@ use App\Http\Controllers\AdminController;
     Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register');
     Route::post('/register', [RegisterController::class, 'register']);
 
-    // Rutas de registro específicas
+    // Rutas de registro por pasos
+    // Paso 2: Información personal
+    Route::get('/register/personal', [RegisterController::class, 'showPersonalInfoForm'])->name('register.personal');
+    Route::post('/register/personal', [RegisterController::class, 'registerPersonalInfo'])->name('register.personal.post');
+    
+    // Paso 3: Información específica según rol
     Route::get('/register/alumno', [RegisterController::class, 'showStudentRegistrationForm'])->name('register.alumno');
     Route::post('/register/alumno', [RegisterController::class, 'registerStudent']);
     Route::get('/register/empresa', [RegisterController::class, 'showCompanyRegistrationForm'])->name('register.empresa');

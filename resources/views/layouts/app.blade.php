@@ -33,7 +33,9 @@
     <!-- Scripts de validación -->
     <script src="{{ asset('js/auth/login-validation.js') }}"></script>
     <script src="{{ asset('js/auth/register-validation.js') }}"></script>
-    <script src="{{ asset('js/auth/register-student-validation.js') }}"></script>
-    <script src="{{ asset('js/auth/register-company-validation.js') }}"></script>
+    <script src="{{ asset('js/auth/register-personal-validation.js') }}"></script>
+    <script src="{{ asset('js/auth/register-step2-validation.js') }}"></script>
+    <script src="{{ asset('js/location-selector.js') }}"></script>
+    <script src="{{ asset('js/date-restriction.js') }}"></script>
 </body>
 </html>
