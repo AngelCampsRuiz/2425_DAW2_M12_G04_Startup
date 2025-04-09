@@ -5,6 +5,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\StudentDashboardController;
+use App\Http\Controllers\CompanyDashboardController;
 use App\Http\Controllers\AdminController;
 // Ruta principal usando el HomeController
     Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -33,6 +34,11 @@ use App\Http\Controllers\AdminController;
 Route::middleware(['auth'])->group(function () {
     Route::get('/student/dashboard', [StudentDashboardController::class, 'index'])->name('student.dashboard');
     Route::get('/profile', [HomeController::class, 'profile'])->name('profile');
+});
+
+// RUTAS PROTEGIDAS PARA EMPRESAS
+Route::middleware(['auth'])->group(function () {
+    Route::get('/empresa/dashboard', [CompanyDashboardController::class, 'index'])->name('empresa.dashboard');
 });
 
 Route::middleware(['auth'])->group(function () {
