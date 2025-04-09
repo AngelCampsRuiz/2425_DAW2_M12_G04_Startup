@@ -23,11 +23,9 @@ class User extends Authenticatable
         'email',
         'password',
         'role_id',
-        'pais',
         'fecha_nacimiento',
         'ciudad',
         'dni',
-        'sitio_web',
         'activo',
         'telefono'
     ];
@@ -58,6 +56,23 @@ class User extends Authenticatable
     public function tutor()
     {
         return $this->hasOne(Tutor::class, 'id');
+    }
+    
+    /**
+     * Verifica que el usuario tenga todos los campos requeridos completos
+     *
+     * @return bool
+     */
+    public function hasRequiredFields(): bool
+    {
+        return !is_null($this->nombre) && 
+               !is_null($this->email) && 
+               !is_null($this->password) && 
+               !is_null($this->fecha_nacimiento) && 
+               !is_null($this->ciudad) && 
+               !is_null($this->dni) && 
+               !is_null($this->telefono) && 
+               !is_null($this->role_id);
     }
 
     /**
