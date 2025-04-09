@@ -5,6 +5,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\StudentDashboardController;
+use App\Http\Controllers\CompanyDashboardController;
 use App\Http\Controllers\AdminController;
 // Ruta principal usando el HomeController
     Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -34,9 +35,19 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/student/dashboard', [StudentDashboardController::class, 'index'])->name('student.dashboard');
 });
 
+// RUTAS PROTEGIDAS PARA EMPRESAS
 Route::middleware(['auth'])->group(function () {
-    Route::get('/admin/dashboard', action: [AdminController::class, 'index'])->name('admin.dashboard');
-    Route::get('/empresa/dashboard', action: [AdminController::class, 'index'])->name('empresa.dashboard');
+    Route::get('/empresa/dashboard', [CompanyDashboardController::class, 'index'])->name('empresa.dashboard');
+    Route::get('/empresa/ofertas/crear', [CompanyDashboardController::class, 'createOffer'])->name('empresa.offers.create');
+    Route::post('/empresa/ofertas', [CompanyDashboardController::class, 'storeOffer'])->name('empresa.offers.store');
+    Route::get('/empresa/ofertas/{publication}/solicitudes', [CompanyDashboardController::class, 'viewApplications'])->name('empresa.applications.view');
+    Route::post('/empresa/ofertas/{publication}/toggle', [CompanyDashboardController::class, 'togglePublicationStatus'])->name('empresa.offers.toggle');
+    Route::put('/empresa/ofertas/{publication}/solicitudes/{application}', [CompanyDashboardController::class, 'updateApplicationStatus'])->name('empresa.applications.update');
+    Route::get('/empresa/get-subcategorias/{categoria}', [CompanyDashboardController::class, 'getSubcategorias'])->name('empresa.subcategorias');
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
 });
 
 // Test route without custom middleware

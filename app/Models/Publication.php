@@ -37,4 +37,9 @@ class Publication extends Model
     {
         return $this->belongsTo(Subcategory::class, 'subcategoria_id');
     }
+
+    public function applications()
+    {
+        return $this->hasMany(Application::class, 'publicacion_id');
+    }
 }
