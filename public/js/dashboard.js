@@ -7,7 +7,37 @@ document.addEventListener('DOMContentLoaded', function() {
     const orderSelect = document.getElementById('orderSelect');
     const clearButton = document.getElementById('clearButton');
     const horarioCheckboxes = document.querySelectorAll('input[name="horario[]"]');
+    const horasTotalesMin = document.getElementById('horasTotalesMin');
+    const horasTotalesMax = document.getElementById('horasTotalesMax');
+    const horasTotalesMinValue = document.getElementById('horasTotalesMinValue');
+    const horasTotalesMaxValue = document.getElementById('horasTotalesMaxValue');
+    const horasTotalesRange = document.getElementById('horasTotalesRange');
     const route = searchForm.getAttribute('data-route');
+
+    const updateRange = () => {
+        const minVal = parseInt(horasTotalesMin.value);
+        const maxVal = parseInt(horasTotalesMax.value);
+        horasTotalesMinValue.textContent = minVal;
+        horasTotalesMaxValue.textContent = maxVal;
+        horasTotalesRange.style.left = `${(minVal / horasTotalesMin.max) * 100}%`;
+        horasTotalesRange.style.width = `${((maxVal - minVal) / horasTotalesMin.max) * 100}%`;
+    };
+
+    horasTotalesMin.addEventListener('input', function() {
+        if (parseInt(horasTotalesMin.value) > parseInt(horasTotalesMax.value)) {
+            horasTotalesMax.value = horasTotalesMin.value;
+        }
+        updateRange();
+        fetchPublications();
+    });
+
+    horasTotalesMax.addEventListener('input', function() {
+        if (parseInt(horasTotalesMax.value) < parseInt(horasTotalesMin.value)) {
+            horasTotalesMin.value = horasTotalesMax.value;
+        }
+        updateRange();
+        fetchPublications();
+    });
 
     const fetchPublications = () => {
         const searchTerm = searchInput.value;
@@ -16,12 +46,16 @@ document.addEventListener('DOMContentLoaded', function() {
         const selectedHorarios = Array.from(horarioCheckboxes)
             .filter(checkbox => checkbox.checked)
             .map(checkbox => checkbox.value);
+        const horasTotalesMinValue = horasTotalesMin.value;
+        const horasTotalesMaxValue = horasTotalesMax.value;
 
         const params = new URLSearchParams();
         if (searchTerm) params.append('search', searchTerm);
         if (orderByValue) params.append('order_by', orderByValue);
         if (orderDirectionValue) params.append('order_direction', orderDirectionValue);
         selectedHorarios.forEach(horario => params.append('horario[]', horario));
+        params.append('horas_totales_min', horasTotalesMinValue);
+        params.append('horas_totales_max', horasTotalesMaxValue);
 
         fetch(`${route}?${params.toString()}`, {
             headers: {
@@ -55,10 +89,16 @@ document.addEventListener('DOMContentLoaded', function() {
         orderDirection.value = 'desc';
         orderSelect.value = `${route}?order_by=fecha_publicacion&order_direction=desc`;
         horarioCheckboxes.forEach(checkbox => checkbox.checked = false);
+        horasTotalesMin.value = horasTotalesMin.min;
+        horasTotalesMax.value = horasTotalesMax.max;
+        updateRange();
         fetchPublications();
     });
 
     horarioCheckboxes.forEach(checkbox => {
         checkbox.addEventListener('change', fetchPublications);
     });
+
+    // Inicializar el rango
+    updateRange();
 }); 

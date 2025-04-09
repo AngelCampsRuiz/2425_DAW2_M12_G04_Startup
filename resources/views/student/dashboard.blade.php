@@ -1,6 +1,11 @@
 @extends('layouts.app')
 
 @section('content')
+    <head>
+        <!-- Incluye noUiSlider desde un CDN -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.0/nouislider.min.css" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.0/nouislider.min.js"></script>
+    </head>
     <div class="min-h-screen bg-gray-100">
         {{-- CONTENIDO PRINCIPAL --}}
         <div class="container mx-auto px-4 py-8">
@@ -19,6 +24,20 @@
                                             <span class="ml-2 text-sm text-gray-700">{{ ucfirst($horario) }}</span>
                                         </label>
                                     @endforeach
+                                </div>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-medium text-gray-600 mb-2">Horas Totales</h3>
+                                <div class="relative">
+                                    <div class="flex justify-between text-sm text-gray-600 mb-2">
+                                        <span id="horasTotalesMinValue">{{ $horasTotalesMin }}</span>
+                                        <span id="horasTotalesMaxValue">{{ $horasTotalesMax }}</span>
+                                    </div>
+                                    <div class="relative w-full h-2 bg-gray-200 rounded-full">
+                                        <input type="range" id="horasTotalesMin" name="horas_totales_min" min="{{ $horasTotalesMin }}" max="{{ $horasTotalesMax }}" value="{{ $horasTotalesMin }}" class="absolute w-full h-2 bg-transparent appearance-none pointer-events-none">
+                                        <input type="range" id="horasTotalesMax" name="horas_totales_max" min="{{ $horasTotalesMin }}" max="{{ $horasTotalesMax }}" value="{{ $horasTotalesMax }}" class="absolute w-full h-2 bg-transparent appearance-none pointer-events-none">
+                                        <div class="absolute h-2 bg-[#5e0490] rounded-full" id="horasTotalesRange"></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -121,6 +140,84 @@
             </div>
         </div>
     </div>
+
+    <style>
+        /* Contenedor del slider */
+        .relative.w-full.h-2.bg-gray-200.rounded-full {
+            position: relative;
+            height: 8px; /* Aumentamos la altura de la línea */
+            background-color: #e2e8f0; /* Color de fondo de la línea */
+            border-radius: 4px; /* Bordes redondeados */
+        }
+
+        /* Línea de rango seleccionado */
+        #horasTotalesRange {
+            position: absolute;
+            top: 0;
+            height: 8px; /* Misma altura que la línea base */
+            background-color: #5e0490; /* Color de la línea seleccionada */
+            border-radius: 4px; /* Bordes redondeados */
+            z-index: 1;
+        }
+
+        /* Controles deslizantes (thumbs) */
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 8px; /* Misma altura que la línea base */
+            background: transparent;
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px; /* Tamaño del control deslizante */
+            height: 20px;
+            background: #5e0490; /* Color del control deslizante */
+            border: 2px solid #fff; /* Borde blanco para resaltar */
+            border-radius: 50%; /* Forma circular */
+            cursor: pointer;
+            pointer-events: all;
+            position: relative;
+            z-index: 2;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Sombra para dar profundidad */
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:active {
+            transform: scale(1.2); /* Aumenta el tamaño al hacer clic */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Sombra más pronunciada */
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px; /* Tamaño del control deslizante */
+            height: 20px;
+            background: #5e0490; /* Color del control deslizante */
+            border: 2px solid #fff; /* Borde blanco para resaltar */
+            border-radius: 50%; /* Forma circular */
+            cursor: pointer;
+            pointer-events: all;
+            position: relative;
+            z-index: 2;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Sombra para dar profundidad */
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        input[type="range"]::-moz-range-thumb:active {
+            transform: scale(1.2); /* Aumenta el tamaño al hacer clic */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Sombra más pronunciada */
+        }
+
+        /* Texto de los valores mínimo y máximo */
+        .flex.justify-between.text-sm.text-gray-600 {
+            margin-top: 8px; /* Espacio entre el slider y los valores */
+        }
+    </style>
 
     <script src="{{ asset('js/dashboard.js') }}"></script>
 @endsection

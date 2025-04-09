@@ -22,6 +22,11 @@ class StudentDashboardController extends Controller
             $query->whereIn('horario', $request->get('horario'));
         }
 
+        // Aplicar filtro de horas totales
+        if ($request->has('horas_totales_min') && $request->has('horas_totales_max')) {
+            $query->whereBetween('horas_totales', [$request->get('horas_totales_min'), $request->get('horas_totales_max')]);
+        }
+
         // Aplicar ordenamiento
         $orderBy = $request->get('order_by', 'fecha_publicacion');
         $orderDirection = $request->get('order_direction', 'desc');
@@ -33,9 +38,15 @@ class StudentDashboardController extends Controller
         // Obtener horarios únicos
         $horarios = Publication::select('horario')->distinct()->pluck('horario');
 
+        // Obtener valores mínimos y máximos de horas totales
+        $horasTotalesMin = Publication::min('horas_totales');
+        $horasTotalesMax = Publication::max('horas_totales');
+
         return view('student.dashboard', [
             'publications' => $publications,
-            'horarios' => $horarios
+            'horarios' => $horarios,
+            'horasTotalesMin' => $horasTotalesMin,
+            'horasTotalesMax' => $horasTotalesMax
         ]);
     }
 }
