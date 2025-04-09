@@ -17,18 +17,17 @@ class PublicacionController extends Controller
     public function index()
     {
         $publicaciones = Publication::with(['empresa', 'categoria', 'subcategoria'])->get();
-        return view('admin.publicaciones.index', compact('publicaciones'));
-    }
-
-    /**
-     * Muestra el formulario para crear una publicación
-     */
-    public function create()
-    {
         $categorias = Category::all();
         $subcategorias = Subcategory::all();
         $empresas = Empresa::all();
-        return view('admin.publicaciones.create', compact('categorias', 'subcategorias', 'empresas'));
+        
+        if (request()->ajax()) {
+            return response()->json([
+                'tabla' => view('admin.publicaciones.tabla', compact('publicaciones'))->render()
+            ]);
+        }
+        
+        return view('admin.publicaciones.index', compact('publicaciones', 'categorias', 'subcategorias', 'empresas'));
     }
 
     /**
@@ -48,25 +47,35 @@ class PublicacionController extends Controller
             'subcategoria_id' => 'required|exists:subcategorias,id',
         ]);
 
+        // Ajuste para el checkbox
+        $validated['activa'] = $request->has('activa') ? 1 : 0;
+        
         Publication::create($validated);
 
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Publicación creada correctamente'
+            ]);
+        }
+        
         return redirect()->route('admin.publicaciones.index')
             ->with('success', 'Publicación creada correctamente');
     }
 
     /**
-     * Muestra los detalles de una publicación
+     * Obtiene los datos de una publicación para editar
      */
-    public function show(Publication $publicacion)
+    public function edit($id)
     {
-        return view('admin.publicaciones.show', compact('publicacion'));
-    }
-
-    /**
-     * Muestra el formulario para editar una publicación
-     */
-    public function edit(Publication $publicacion)
-    {
+        $publicacion = Publication::findOrFail($id);
+        
+        if (request()->ajax()) {
+            return response()->json([
+                'publicacion' => $publicacion
+            ]);
+        }
+        
         $categorias = Category::all();
         $subcategorias = Subcategory::all();
         $empresas = Empresa::all();
@@ -76,8 +85,10 @@ class PublicacionController extends Controller
     /**
      * Actualiza una publicación
      */
-    public function update(Request $request, Publication $publicacion)
+    public function update(Request $request, $id)
     {
+        $publicacion = Publication::findOrFail($id);
+        
         $validated = $request->validate([
             'titulo' => 'required|max:100',
             'descripcion' => 'required',
@@ -90,8 +101,18 @@ class PublicacionController extends Controller
             'subcategoria_id' => 'required|exists:subcategorias,id',
         ]);
 
+        // Ajuste para el checkbox
+        $validated['activa'] = $request->has('activa') ? 1 : 0;
+        
         $publicacion->update($validated);
 
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Publicación actualizada correctamente'
+            ]);
+        }
+        
         return redirect()->route('admin.publicaciones.index')
             ->with('success', 'Publicación actualizada correctamente');
     }
@@ -99,10 +120,18 @@ class PublicacionController extends Controller
     /**
      * Elimina una publicación
      */
-    public function destroy(Publication $publicacion)
+    public function destroy($id)
     {
+        $publicacion = Publication::findOrFail($id);
         $publicacion->delete();
 
+        if (request()->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Publicación eliminada correctamente'
+            ]);
+        }
+        
         return redirect()->route('admin.publicaciones.index')
             ->with('success', 'Publicación eliminada correctamente');
     }

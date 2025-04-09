@@ -4,6 +4,17 @@
     <div class="bg-white rounded-lg shadow p-6">
         <h2 class="text-xl font-semibold mb-6">Editar Publicación</h2>
         
+        @if($errors->any())
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6" role="alert">
+                <strong class="font-bold">¡Hay errores en el formulario!</strong>
+                <ul class="mt-2 list-disc list-inside">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+        
         <form action="{{ route('admin.publicaciones.update', $publicacion) }}" method="POST">
             @csrf
             @method('PUT')
