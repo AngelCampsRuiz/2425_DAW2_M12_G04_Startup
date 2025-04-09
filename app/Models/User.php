@@ -70,5 +70,10 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+    public function favorites()
+    {
+        return $this->belongsToMany(Publication::class, 'favorite_publication');
+    }
+
     // Removed duplicate casts method
 }

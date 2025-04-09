@@ -7,12 +7,30 @@ document.addEventListener('DOMContentLoaded', function() {
     const orderSelect = document.getElementById('orderSelect');
     const clearButton = document.getElementById('clearButton');
     const horarioCheckboxes = document.querySelectorAll('input[name="horario[]"]');
+    const categoriaCheckboxes = document.querySelectorAll('.categoria-checkbox');
+    const subcategoriaCheckboxes = document.querySelectorAll('input[name="subcategoria[]"]');
+    const fechaInicio = document.getElementById('fechaInicio');
+    const fechaFin = document.getElementById('fechaFin');
     const horasTotalesMin = document.getElementById('horasTotalesMin');
     const horasTotalesMax = document.getElementById('horasTotalesMax');
     const horasTotalesMinValue = document.getElementById('horasTotalesMinValue');
     const horasTotalesMaxValue = document.getElementById('horasTotalesMaxValue');
     const horasTotalesRange = document.getElementById('horasTotalesRange');
     const route = searchForm.getAttribute('data-route');
+    const favoriteButtons = document.querySelectorAll('.favorite-button');
+
+    // Mostrar/ocultar subcategorías al seleccionar una categoría
+    categoriaCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const subcategoriasDiv = document.getElementById(`subcategorias-${this.value}`);
+            if (this.checked) {
+                subcategoriasDiv.classList.remove('hidden');
+            } else {
+                subcategoriasDiv.classList.add('hidden');
+            }
+            fetchPublications();
+        });
+    });
 
     const updateRange = () => {
         const minVal = parseInt(horasTotalesMin.value);
@@ -46,14 +64,29 @@ document.addEventListener('DOMContentLoaded', function() {
         const selectedHorarios = Array.from(horarioCheckboxes)
             .filter(checkbox => checkbox.checked)
             .map(checkbox => checkbox.value);
+        const selectedCategorias = Array.from(categoriaCheckboxes)
+            .filter(checkbox => checkbox.checked)
+            .map(checkbox => checkbox.value);
+        const selectedSubcategorias = Array.from(document.querySelectorAll('input[name="subcategoria[]"]'))
+            .filter(checkbox => checkbox.checked)
+            .map(checkbox => checkbox.value);
+        const fechaInicioValue = fechaInicio.value;
+        const fechaFinValue = fechaFin.value;
         const horasTotalesMinValue = horasTotalesMin.value;
         const horasTotalesMaxValue = horasTotalesMax.value;
+
+        // Mostrar las categorías seleccionadas en el console.log
+        console.log("Categorías seleccionadas:", selectedCategorias);
 
         const params = new URLSearchParams();
         if (searchTerm) params.append('search', searchTerm);
         if (orderByValue) params.append('order_by', orderByValue);
         if (orderDirectionValue) params.append('order_direction', orderDirectionValue);
         selectedHorarios.forEach(horario => params.append('horario[]', horario));
+        selectedCategorias.forEach(categoria => params.append('categoria[]', categoria));
+        selectedSubcategorias.forEach(subcategoria => params.append('subcategoria[]', subcategoria));
+        if (fechaInicioValue) params.append('fecha_inicio', fechaInicioValue);
+        if (fechaFinValue) params.append('fecha_fin', fechaFinValue);
         params.append('horas_totales_min', horasTotalesMinValue);
         params.append('horas_totales_max', horasTotalesMaxValue);
 
@@ -89,6 +122,17 @@ document.addEventListener('DOMContentLoaded', function() {
         orderDirection.value = 'desc';
         orderSelect.value = `${route}?order_by=fecha_publicacion&order_direction=desc`;
         horarioCheckboxes.forEach(checkbox => checkbox.checked = false);
+        categoriaCheckboxes.forEach(checkbox => {
+            checkbox.checked = false;
+            const categoriaId = checkbox.value;
+            const subcategoriasDiv = document.getElementById(`subcategorias-${categoriaId}`);
+            subcategoriasDiv.classList.add('hidden');
+            subcategoriasDiv.querySelectorAll('input[type="checkbox"]').forEach(subCheckbox => {
+                subCheckbox.checked = false;
+            });
+        });
+        fechaInicio.value = '';
+        fechaFin.value = '';
         horasTotalesMin.value = horasTotalesMin.min;
         horasTotalesMax.value = horasTotalesMax.max;
         updateRange();
@@ -99,6 +143,34 @@ document.addEventListener('DOMContentLoaded', function() {
         checkbox.addEventListener('change', fetchPublications);
     });
 
+    subcategoriaCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', fetchPublications);
+    });
+
+    fechaInicio.addEventListener('change', fetchPublications);
+    fechaFin.addEventListener('change', fetchPublications);
+
     // Inicializar el rango
     updateRange();
+
+    favoriteButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const publicationId = this.dataset.publicationId;
+            fetch(`/toggle-favorite/${publicationId}`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'added') {
+                    this.classList.add('text-yellow-500');
+                } else {
+                    this.classList.remove('text-yellow-500');
+                }
+            });
+        });
+    });
 }); 

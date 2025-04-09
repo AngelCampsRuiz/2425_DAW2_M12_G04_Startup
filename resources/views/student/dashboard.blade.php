@@ -15,6 +15,39 @@
                     <div class="bg-white rounded-lg shadow p-6">
                         <h2 class="text-lg font-semibold text-gray-800 mb-4">Filtros</h2>
                         <div class="space-y-4">
+                            <!-- Filtro de Categoría y Subcategoría -->
+                            <div>
+                                <h3 class="text-sm font-medium text-gray-600 mb-2">Categoría</h3>
+                                <div class="space-y-2">
+                                    @foreach($categorias as $categoria)
+                                        <div>
+                                            <label class="flex items-center">
+                                                <input type="checkbox" name="categoria[]" value="{{ $categoria->id }}" class="categoria-checkbox form-checkbox h-4 w-4 text-[#5e0490] rounded focus:ring-[#5e0490] border-gray-300">
+                                                <span class="ml-2 text-sm text-gray-700">{{ $categoria->nombre_categoria }}</span>
+                                            </label>
+                                            <div id="subcategorias-{{ $categoria->id }}" class="pl-6 mt-2 hidden">
+                                                @foreach($categoria->subcategorias as $subcategoria)
+                                                    <label class="flex items-center">
+                                                        <input type="checkbox" name="subcategoria[]" value="{{ $subcategoria->id }}" class="form-checkbox h-4 w-4 text-[#5e0490] rounded focus:ring-[#5e0490] border-gray-300">
+                                                        <span class="ml-2 text-sm text-gray-700">{{ $subcategoria->nombre_subcategoria }}</span>
+                                                    </label>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+
+                            <!-- Filtro de Fecha de Publicación -->
+                            <div>
+                                <h3 class="text-sm font-medium text-gray-600 mb-2">Fecha de Publicación</h3>
+                                <div class="flex space-x-4">
+                                    <input type="date" name="fecha_inicio" id="fechaInicio" class="w-1/2 border-gray-300 rounded-lg shadow-sm focus:ring-[#5e0490] focus:border-[#5e0490]">
+                                    <input type="date" name="fecha_fin" id="fechaFin" class="w-1/2 border-gray-300 rounded-lg shadow-sm focus:ring-[#5e0490] focus:border-[#5e0490]">
+                                </div>
+                            </div>
+
+                            <!-- Filtro de Horario -->
                             <div>
                                 <h3 class="text-sm font-medium text-gray-600 mb-2">Horario</h3>
                                 <div class="space-y-2">
@@ -26,6 +59,8 @@
                                     @endforeach
                                 </div>
                             </div>
+
+                            <!-- Filtro de Horas Totales -->
                             <div>
                                 <h3 class="text-sm font-medium text-gray-600 mb-2">Horas Totales</h3>
                                 <div class="relative">
@@ -52,7 +87,7 @@
                             <form id="searchForm" class="flex gap-4 items-center" data-route="{{ route('student.dashboard') }}">
                                 <div class="relative flex-1">
                                     <input type="text" name="search" id="searchInput" value="{{ request('search') }}" 
-                                        placeholder="Buscar publicaciones..."
+                                    placeholder="Buscar publicaciones..."
                                         class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-primary focus:border-primary focus:outline-none transition duration-200">
                                     <svg class="absolute left-3 top-2.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
@@ -70,23 +105,23 @@
                         <div class="w-full md:w-48">
                             <div class="relative">
                                 <select id="orderSelect" class="w-full pl-3 pr-10 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-primary focus:border-primary focus:outline-none appearance-none transition duration-200">
-                                    <option value="{{ route('student.dashboard', ['order_by' => 'fecha_publicacion', 'order_direction' => 'desc']) }}"
-                                        {{ request('order_by') == 'fecha_publicacion' && request('order_direction') == 'desc' ? 'selected' : '' }}>
-                                        Más recientes
-                                    </option>
-                                    <option value="{{ route('student.dashboard', ['order_by' => 'fecha_publicacion', 'order_direction' => 'asc']) }}"
-                                        {{ request('order_by') == 'fecha_publicacion' && request('order_direction') == 'asc' ? 'selected' : '' }}>
-                                        Más antiguos
-                                    </option>
-                                    <option value="{{ route('student.dashboard', ['order_by' => 'horas_totales', 'order_direction' => 'desc']) }}"
-                                        {{ request('order_by') == 'horas_totales' && request('order_direction') == 'desc' ? 'selected' : '' }}>
-                                        Mayor duración
-                                    </option>
-                                    <option value="{{ route('student.dashboard', ['order_by' => 'horas_totales', 'order_direction' => 'asc']) }}"
-                                        {{ request('order_by') == 'horas_totales' && request('order_direction') == 'asc' ? 'selected' : '' }}>
-                                        Menor duración
-                                    </option>
-                                </select>
+                                <option value="{{ route('student.dashboard', ['order_by' => 'fecha_publicacion', 'order_direction' => 'desc']) }}"
+                                    {{ request('order_by') == 'fecha_publicacion' && request('order_direction') == 'desc' ? 'selected' : '' }}>
+                                    Más recientes
+                                </option>
+                                <option value="{{ route('student.dashboard', ['order_by' => 'fecha_publicacion', 'order_direction' => 'asc']) }}"
+                                    {{ request('order_by') == 'fecha_publicacion' && request('order_direction') == 'asc' ? 'selected' : '' }}>
+                                    Más antiguos
+                                </option>
+                                <option value="{{ route('student.dashboard', ['order_by' => 'horas_totales', 'order_direction' => 'desc']) }}"
+                                    {{ request('order_by') == 'horas_totales' && request('order_direction') == 'desc' ? 'selected' : '' }}>
+                                    Mayor duración
+                                </option>
+                                <option value="{{ route('student.dashboard', ['order_by' => 'horas_totales', 'order_direction' => 'asc']) }}"
+                                    {{ request('order_by') == 'horas_totales' && request('order_direction') == 'asc' ? 'selected' : '' }}>
+                                    Menor duración
+                                </option>
+                            </select>
                                 <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
                                     <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
@@ -126,6 +161,9 @@
                                             {{ $publication->horas_totales }} horas totales
                                         </div>
                                         <p class="text-sm text-gray-600 line-clamp-2">{{ $publication->descripcion }}</p>
+                                        <button class="favorite-button" data-publication-id="{{ $publication->id }}">
+                                            <i class="far fa-star"></i>
+                                        </button>
                                     </div>
                                 </div>
                             </div>
