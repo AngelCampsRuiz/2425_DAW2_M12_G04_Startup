@@ -192,6 +192,14 @@
                 document.getElementById('form-eliminar').setAttribute('action', '{{ route('admin.publicaciones.index') }}/' + id);
                 document.getElementById('modal-eliminar').classList.remove('hidden');
             }
+            
+            // Manejo de enlaces de paginación
+            const paginationLink = e.target.closest('.pagination-link');
+            if (paginationLink) {
+                e.preventDefault();
+                const url = paginationLink.getAttribute('href');
+                cargarPagina(url);
+            }
         });
         
         // Cerrar modales
@@ -340,8 +348,8 @@
             errorsDiv.classList.remove('hidden');
         }
         
-        function actualizarTabla() {
-            fetch('{{ route('admin.publicaciones.index') }}', {
+        function actualizarTabla(url = '{{ route('admin.publicaciones.index') }}') {
+            fetch(url, {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest'
                 }
@@ -353,6 +361,10 @@
             .catch(error => {
                 console.error('Error:', error);
             });
+        }
+        
+        function cargarPagina(url) {
+            actualizarTabla(url);
         }
     });
 </script>

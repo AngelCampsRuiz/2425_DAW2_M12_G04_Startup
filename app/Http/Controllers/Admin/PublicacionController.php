@@ -16,7 +16,9 @@ class PublicacionController extends Controller
      */
     public function index()
     {
-        $publicaciones = Publication::with(['empresa', 'categoria', 'subcategoria'])->get();
+        $publicaciones = Publication::with(['empresa', 'categoria', 'subcategoria'])
+                        ->orderBy('id', 'asc')
+                        ->paginate(10);
         $categorias = Category::all();
         $subcategorias = Subcategory::all();
         $empresas = Empresa::all();

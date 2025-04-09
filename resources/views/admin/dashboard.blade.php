@@ -4,21 +4,70 @@
 {{-- CONTENIDO --}}
 @section('content')
     <div class="container mx-auto px-4 py-6">
-        <div class="mb-6 bg-white rounded-lg shadow p-4">
+        <!-- Menú hamburguesa para móviles y título del CRUD actual -->
+        <div class="flex justify-between items-center mb-6 bg-white rounded-lg shadow p-4">
+            <div class="flex items-center">
+                <button id="menu-toggle" class="md:hidden mr-4 focus:outline-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+                <h1 class="text-xl font-bold text-purple-800 md:hidden">
+                    @if(request()->routeIs('admin.publicaciones.*'))
+                        OFERTAS
+                    @elseif(request()->routeIs('admin.categorias.*'))
+                        CATEGORÍAS
+                    @elseif(request()->routeIs('admin.empresas.*'))
+                        EMPRESAS
+                    @elseif(request()->routeIs('admin.alumnos.*'))
+                        ALUMNOS
+                    @elseif(request()->routeIs('admin.profesores.*'))
+                        PROFESORES
+                    @else
+                        PANEL DE ADMINISTRACIÓN
+                    @endif
+                </h1>
+            </div>
+            <!-- Título centrado para escritorio -->
+            <div class="hidden md:block text-center flex-1">
+                <h1 class="text-2xl font-bold text-purple-800">
+                    @if(request()->routeIs('admin.publicaciones.*'))
+                        OFERTAS
+                    @elseif(request()->routeIs('admin.categorias.*'))
+                        CATEGORÍAS
+                    @elseif(request()->routeIs('admin.empresas.*'))
+                        EMPRESAS
+                    @elseif(request()->routeIs('admin.alumnos.*'))
+                        ALUMNOS
+                    @elseif(request()->routeIs('admin.profesores.*'))
+                        PROFESORES
+                    @else
+                        PANEL DE ADMINISTRACIÓN
+                    @endif
+                </h1>
+            </div>
+            <!-- Espacio vacío para mantener centrado el título en escritorio -->
+            <div class="hidden md:block">
+                <div class="w-6"></div>
+            </div>
+        </div>
+
+        <!-- Menú de navegación, oculto en móviles inicialmente -->
+        <div id="menu-nav" class="mb-6 bg-white rounded-lg shadow p-4 hidden md:block">
             <div class="flex flex-wrap">
-                <a href="{{ route('admin.publicaciones.index') }}" class="flex-1 {{ request()->routeIs('admin.publicaciones.*') ? 'bg-purple-200 text-purple-800' : 'bg-gray-100 text-gray-800' }} font-semibold py-3 px-4 rounded-md text-center mx-1">
+                <a href="{{ route('admin.publicaciones.index') }}" class="flex-1 {{ request()->routeIs('admin.publicaciones.*') ? 'bg-purple-200 text-purple-800' : 'bg-gray-100 text-gray-800' }} font-semibold py-3 px-4 rounded-md text-center mx-1 mb-2 md:mb-0">
                     OFERTAS
                 </a>
-                <a href="#" class="flex-1 bg-gray-100 text-gray-800 font-semibold py-3 px-4 rounded-md text-center mx-1">
+                <a href="#" class="flex-1 bg-gray-100 text-gray-800 font-semibold py-3 px-4 rounded-md text-center mx-1 mb-2 md:mb-0">
                     CATEGORÍAS
                 </a>
-                <a href="#" class="flex-1 bg-gray-100 text-gray-800 font-semibold py-3 px-4 rounded-md text-center mx-1">
+                <a href="#" class="flex-1 bg-gray-100 text-gray-800 font-semibold py-3 px-4 rounded-md text-center mx-1 mb-2 md:mb-0">
                     EMPRESAS
                 </a>
-                <a href="#" class="flex-1 bg-gray-100 text-gray-800 font-semibold py-3 px-4 rounded-md text-center mx-1">
+                <a href="#" class="flex-1 bg-gray-100 text-gray-800 font-semibold py-3 px-4 rounded-md text-center mx-1 mb-2 md:mb-0">
                     ALUMNOS
                 </a>
-                <a href="#" class="flex-1 bg-gray-100 text-gray-800 font-semibold py-3 px-4 rounded-md text-center mx-1">
+                <a href="#" class="flex-1 bg-gray-100 text-gray-800 font-semibold py-3 px-4 rounded-md text-center mx-1 mb-2 md:mb-0">
                     PROFESORES
                 </a>
             </div>
@@ -127,4 +176,35 @@
 
         @yield('admin_content')
     </div>
+
+    <!-- JavaScript para el menú hamburguesa -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuToggle = document.getElementById('menu-toggle');
+            const menuNav = document.getElementById('menu-nav');
+            
+            menuToggle.addEventListener('click', function() {
+                menuNav.classList.toggle('hidden');
+            });
+            
+            // Ocultar menú en pantallas pequeñas cuando se hace clic en un enlace
+            const menuLinks = menuNav.querySelectorAll('a');
+            menuLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth < 768) { // 768px es el breakpoint md de Tailwind
+                        menuNav.classList.add('hidden');
+                    }
+                });
+            });
+            
+            // Ajustar visibilidad del menú en cambio de tamaño de ventana
+            window.addEventListener('resize', function() {
+                if (window.innerWidth >= 768) {
+                    menuNav.classList.remove('hidden');
+                } else {
+                    menuNav.classList.add('hidden');
+                }
+            });
+        });
+    </script>
 @endsection
