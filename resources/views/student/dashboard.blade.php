@@ -24,14 +24,15 @@
                                 <input type="text" name="search" id="searchInput" value="{{ request('search') }}" 
                                     placeholder="Buscar publicaciones..."
                                     class="flex-1 border-gray-300 rounded-lg shadow-sm focus:ring-primary focus:border-primary">
+                                <input type="hidden" name="order_by" id="orderBy" value="{{ request('order_by', 'fecha_publicacion') }}">
+                                <input type="hidden" name="order_direction" id="orderDirection" value="{{ request('order_direction', 'desc') }}">
                                 <button type="submit" class="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary-dark transition">
                                     Buscar
                                 </button>
                             </form>
                         </div>
                         <div class="w-full md:w-48">
-                            <select onchange="window.location.href=this.value" 
-                                class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-primary focus:border-primary">
+                            <select id="orderSelect" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-primary focus:border-primary">
                                 <option value="{{ route('student.dashboard', ['order_by' => 'fecha_publicacion', 'order_direction' => 'desc']) }}"
                                     {{ request('order_by') == 'fecha_publicacion' && request('order_direction') == 'desc' ? 'selected' : '' }}>
                                     Más recientes
