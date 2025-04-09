@@ -10,48 +10,7 @@
                     <div class="bg-white rounded-lg shadow p-6">
                         <h2 class="text-lg font-semibold text-gray-800 mb-4">Filtros</h2>
                         <form action="{{ route('student.dashboard') }}" method="GET">
-                            {{-- CATEGORÍAS --}}
-                            <div class="mb-4">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Categoría</label>
-                                <select name="categoria_id" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary">
-                                    <option value="">Todas</option>
-                                    @foreach($categories as $category)
-                                        <option value="{{ $category->id }}" {{ request('categoria_id') == $category->id ? 'selected' : '' }}>
-                                            {{ $category->nombre }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
 
-                            {{-- HORARIO --}}
-                            <div class="mb-4">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Horario</label>
-                                @foreach($filters['horarios'] as $horario)
-                                    <div class="flex items-center mb-2">
-                                        <input type="radio" name="horario" value="{{ $horario }}"
-                                            {{ request('horario') == $horario ? 'checked' : '' }}
-                                            class="h-4 w-4 text-primary focus:ring-primary border-gray-300">
-                                        <label class="ml-2 text-sm text-gray-700">{{ ucfirst($horario) }}</label>
-                                    </div>
-                                @endforeach
-                            </div>
-
-                            {{-- HORAS TOTALES --}}
-                            <div class="mb-4">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Horas mínimas</label>
-                                <select name="horas_totales" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary">
-                                    <option value="">Todas</option>
-                                    @foreach($filters['horas_totales'] as $hours)
-                                        <option value="{{ $hours }}" {{ request('horas_totales') == $hours ? 'selected' : '' }}>
-                                            {{ $hours }}+ horas
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <button type="submit" class="w-full bg-primary text-white py-2 px-4 rounded-lg hover:bg-primary-dark transition">
-                                Aplicar filtros
-                            </button>
                         </form>
                     </div>
                 </div>
@@ -61,8 +20,8 @@
                     {{-- BARRA DE BÚSQUEDA Y ORDENAMIENTO --}}
                     <div class="flex flex-col md:flex-row gap-4 mb-6">
                         <div class="flex-1">
-                            <form action="{{ route('student.dashboard') }}" method="GET" class="flex gap-4">
-                                <input type="text" name="search" value="{{ request('search') }}" 
+                            <form id="searchForm" class="flex gap-4" data-route="{{ route('student.dashboard') }}">
+                                <input type="text" name="search" id="searchInput" value="{{ request('search') }}" 
                                     placeholder="Buscar publicaciones..."
                                     class="flex-1 border-gray-300 rounded-lg shadow-sm focus:ring-primary focus:border-primary">
                                 <button type="submit" class="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary-dark transition">
@@ -137,4 +96,6 @@
             </div>
         </div>
     </div>
+
+    <script src="{{ asset('js/dashboard.js') }}"></script>
 @endsection
