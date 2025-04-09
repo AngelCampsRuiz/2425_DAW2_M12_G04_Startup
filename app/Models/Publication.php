@@ -37,4 +37,9 @@ class Publication extends Model
     {
         return $this->belongsTo(Subcategory::class, 'subcategoria_id');
     }
+
+    public function favoritedBy()
+    {
+        return $this->belongsToMany(User::class, 'favorite_publication');
+    }
 }
