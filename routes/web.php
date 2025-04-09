@@ -27,6 +27,7 @@ use App\Http\Controllers\AdminController;
 // RUTAS PROTEGIDAS PARA ESTUDIANTES
 Route::middleware(['auth'])->group(function () {
     Route::get('/student/dashboard', [StudentDashboardController::class, 'index'])->name('student.dashboard');
+    Route::get('/profile', [HomeController::class, 'profile'])->name('profile');
 });
 
 Route::middleware(['auth'])->group(function () {

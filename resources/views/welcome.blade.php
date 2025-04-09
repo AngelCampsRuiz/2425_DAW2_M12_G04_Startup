@@ -5,7 +5,7 @@
     @section('content')
         <section class="py-16 text-center">
             <h1 class="text-4xl font-bold text-[#7705B6] mb-6">Tu puente entre el aula y el mundo laboral</h1>
-            
+
             <!-- BLOQUE DE ESTUDIANTES -->
                 <div class="container mx-auto flex flex-col md:flex-row items-center my-12 px-4">
                     <div class="md:w-1/2 mb-8 md:mb-0">
@@ -18,7 +18,7 @@
                         <div class="text-lg">📈 {{ $porcentajeExito }}% encuentran prácticas en su área</div>
                     </div>
                 </div>
-            
+
             <!-- BLOQUE DE EMPRESAS -->
                 <div class="container mx-auto flex flex-col md:flex-row-reverse items-center my-12 px-4">
                     <div class="md:w-1/2 mb-8 md:mb-0">
@@ -31,11 +31,11 @@
                         <div class="text-lg">🌍 Presencia en {{ $totalProvincias }} provincias</div>
                     </div>
                 </div>
-            
+
             <!-- EMPRESAS QUE CONFIAN -->
                 <section class="my-16">
                     <h2 class="text-3xl font-bold text-[#7705B6] mb-8">Empresas que confían en nosotros</h2>
-                    
+
                     <div class="container mx-auto px-4">
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                             @if($empresasDestacadas->isNotEmpty())
@@ -61,7 +61,7 @@
                         </div>
                     </div>
                 </section>
-            
+
             <!-- CTA FINAL -->
                 <section class="my-16 text-center">
                     <h2 class="text-3xl font-bold text-[#7705B6] mb-8">Échale un vistazo</h2>
