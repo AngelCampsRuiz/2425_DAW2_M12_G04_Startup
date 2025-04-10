@@ -16,9 +16,9 @@ return new class extends Migration
             $table->tinyInteger('puntuacion');
             $table->text('comentario');
             $table->timestamp('fecha_valoracion');
-            $table->enum('tipo', ['alumno', 'empresa']);
-            $table->foreignId('alumno_id')->constrained('estudiantes');
-            $table->foreignId('empresa_id')->constrained('empresas');
+            $table->enum('tipo', ['alumno_a_empresa', 'empresa_a_alumno']);
+            $table->foreignId('emisor_id')->constrained('user');
+            $table->foreignId('receptor_id')->constrained('user');
             $table->foreignId('convenio_id')->constrained('convenios');
             $table->timestamps();
         });
