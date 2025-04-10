@@ -44,6 +44,14 @@ class StudentDashboardController extends Controller
             $query->whereBetween('horas_totales', [$request->get('horas_totales_min'), $request->get('horas_totales_max')]);
         }
 
+        // Aplicar filtro de favoritos
+        if ($request->has('favoritos') && $request->get('favoritos') == 'on') {
+            $user = Auth::user();
+            $query->whereHas('favorites', function($q) use ($user) {
+                $q->where('user_id', $user->id);
+            });
+        }
+
         // Aplicar ordenamiento
         $orderBy = $request->get('order_by', 'fecha_publicacion');
         $orderDirection = $request->get('order_direction', 'desc');
