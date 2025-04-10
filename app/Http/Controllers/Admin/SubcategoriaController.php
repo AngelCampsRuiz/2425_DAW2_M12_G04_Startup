@@ -15,6 +15,7 @@ class SubcategoriaController extends Controller
     public function index()
     {
         $subcategorias = Subcategoria::with('categoria')->paginate(10);
+        $categorias = Categoria::all();
         
         if (request()->ajax()) {
             return response()->json([
@@ -22,7 +23,7 @@ class SubcategoriaController extends Controller
             ]);
         }
         
-        return view('admin.subcategorias.index', compact('subcategorias'));
+        return view('admin.subcategorias.index', compact('subcategorias', 'categorias'));
     }
 
     /**
@@ -39,17 +40,18 @@ class SubcategoriaController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'nombre_subcategoria' => 'required|string|max:255',
             'categoria_id' => 'required|exists:categorias,id'
         ]);
 
-        $subcategoria = Subcategoria::create($request->all());
+        $subcategoria = Subcategoria::create($validated);
 
         if ($request->ajax()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Subcategoría creada exitosamente'
+                'message' => 'Subcategoría creada exitosamente',
+                'subcategoria' => $subcategoria
             ]);
         }
 
@@ -70,15 +72,14 @@ class SubcategoriaController extends Controller
      */
     public function edit(Subcategoria $subcategoria)
     {
-        $categorias = Categoria::all();
-        
         if (request()->ajax()) {
             return response()->json([
-                'subcategoria' => $subcategoria,
-                'categorias' => $categorias
+                'success' => true,
+                'subcategoria' => $subcategoria
             ]);
         }
 
+        $categorias = Categoria::all();
         return view('admin.subcategorias.form', compact('subcategoria', 'categorias'));
     }
 
@@ -87,17 +88,18 @@ class SubcategoriaController extends Controller
      */
     public function update(Request $request, Subcategoria $subcategoria)
     {
-        $request->validate([
+        $validated = $request->validate([
             'nombre_subcategoria' => 'required|string|max:255',
             'categoria_id' => 'required|exists:categorias,id'
         ]);
 
-        $subcategoria->update($request->all());
+        $subcategoria->update($validated);
 
         if ($request->ajax()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Subcategoría actualizada exitosamente'
+                'message' => 'Subcategoría actualizada exitosamente',
+                'subcategoria' => $subcategoria
             ]);
         }
 
@@ -110,27 +112,39 @@ class SubcategoriaController extends Controller
      */
     public function destroy(Subcategoria $subcategoria)
     {
-        if ($subcategoria->publicaciones()->exists()) {
+        try {
+            if ($subcategoria->publicaciones()->exists()) {
+                if (request()->ajax()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'No se puede eliminar la subcategoría porque tiene publicaciones asociadas'
+                    ], 422);
+                }
+                return redirect()->route('admin.subcategorias.index')
+                    ->with('error', 'No se puede eliminar la subcategoría porque tiene publicaciones asociadas');
+            }
+
+            $subcategoria->delete();
+
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Subcategoría eliminada exitosamente'
+                ]);
+            }
+
+            return redirect()->route('admin.subcategorias.index')
+                ->with('success', 'Subcategoría eliminada exitosamente');
+        } catch (\Exception $e) {
             if (request()->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'No se puede eliminar la subcategoría porque tiene publicaciones asociadas'
-                ], 422);
+                    'message' => 'Error al eliminar la subcategoría: ' . $e->getMessage()
+                ], 500);
             }
+            
             return redirect()->route('admin.subcategorias.index')
-                ->with('error', 'No se puede eliminar la subcategoría porque tiene publicaciones asociadas');
+                ->with('error', 'Error al eliminar la subcategoría');
         }
-
-        $subcategoria->delete();
-
-        if (request()->ajax()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Subcategoría eliminada exitosamente'
-            ]);
-        }
-
-        return redirect()->route('admin.subcategorias.index')
-            ->with('success', 'Subcategoría eliminada exitosamente');
     }
 }
