@@ -35,7 +35,7 @@ use App\Http\Controllers\Admin\PublicacionController;
 // RUTAS PROTEGIDAS PARA ESTUDIANTES
 Route::middleware(['auth'])->group(function () {
     Route::get('/student/dashboard', [StudentDashboardController::class, 'index'])->name('student.dashboard');
-    Route::post('/toggle-favorite/{publicationId}', [StudentDashboardController::class, 'toggleFavorite'])->name('toggle.favorite');
+    Route::post('/toggle-favorite/{publicationId}', [StudentDashboardController::class, 'toggleFavorite'])->name('toggle-favorite');
 });
 
 // RUTAS PROTEGIDAS PARA EMPRESAS

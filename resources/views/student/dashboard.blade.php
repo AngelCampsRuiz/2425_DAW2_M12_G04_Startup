@@ -2,9 +2,12 @@
 
 @section('content')
     <head>
+        <!-- Incluye FontAwesome desde un CDN -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
         <!-- Incluye noUiSlider desde un CDN -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.0/nouislider.min.css" />
         <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.0/nouislider.min.js"></script>
+        <meta name="csrf-token" content="{{ csrf_token() }}">
     </head>
     <div class="min-h-screen bg-gray-100">
         {{-- CONTENIDO PRINCIPAL --}}
@@ -134,7 +137,7 @@
                     {{-- GRID DE PUBLICACIONES --}}
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         @foreach($publications as $publication)
-                            <div class="bg-white rounded-lg shadow overflow-hidden">
+                            <div class="bg-white rounded-lg shadow overflow-hidden relative">
                                 <div class="flex">
                                     {{-- IMAGEN DE LA EMPRESA --}}
                                     <div class="w-1/3">
@@ -161,11 +164,12 @@
                                             {{ $publication->horas_totales }} horas totales
                                         </div>
                                         <p class="text-sm text-gray-600 line-clamp-2">{{ $publication->descripcion }}</p>
-                                        <button class="favorite-button" data-publication-id="{{ $publication->id }}">
-                                            <i class="far fa-star"></i>
-                                        </button>
                                     </div>
                                 </div>
+                                {{-- Botón de Favorito --}}
+                                <button class="favorite-button absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition duration-200" data-publication-id="{{ $publication->id }}">
+                                    <i class="far fa-star {{ $publication->isFavoritedBy(auth()->user()) ? 'fas text-yellow-500' : '' }}"></i>
+                                </button>
                             </div>
                         @endforeach
                     </div>

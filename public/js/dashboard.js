@@ -156,20 +156,33 @@ document.addEventListener('DOMContentLoaded', function() {
     favoriteButtons.forEach(button => {
         button.addEventListener('click', function() {
             const publicationId = this.dataset.publicationId;
+            const icon = this.querySelector('i');
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
             fetch(`/toggle-favorite/${publicationId}`, {
                 method: 'POST',
                 headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'X-CSRF-TOKEN': csrfToken,
                     'Content-Type': 'application/json'
                 }
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
             .then(data => {
                 if (data.status === 'added') {
-                    this.classList.add('text-yellow-500');
+                    icon.classList.remove('far');
+                    icon.classList.add('fas', 'text-yellow-500');
                 } else {
-                    this.classList.remove('text-yellow-500');
+                    icon.classList.remove('fas', 'text-yellow-500');
+                    icon.classList.add('far');
                 }
+            })
+            .catch(error => {
+                console.error('Error:', error);
             });
         });
     });

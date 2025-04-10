@@ -87,7 +87,7 @@ class User extends Authenticatable
 
     public function favorites()
     {
-        return $this->belongsToMany(Publication::class, 'favorite_publication');
+        return $this->belongsToMany(Publication::class, 'favorite_publication', 'user_id', 'publicacion_id');
     }
 
     // Removed duplicate casts method
