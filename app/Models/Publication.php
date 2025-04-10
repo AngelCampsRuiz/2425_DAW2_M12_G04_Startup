@@ -16,25 +16,45 @@ class Publication extends Model
         'descripcion',
         'horario',
         'horas_totales',
-        'fecha_publicacion',
-        'activa',
-        'empresa_id',
         'categoria_id',
-        'subcategoria_id'
+        'subcategoria_id',
+        'empresa_id',
+        'activa',
+        'fecha_publicacion'
     ];
 
     public function empresa()
     {
-        return $this->belongsTo(Empresa::class, 'empresa_id');
+        return $this->belongsTo(User::class, 'empresa_id');
     }
 
     public function categoria()
     {
-        return $this->belongsTo(Category::class, 'categoria_id');
+        return $this->belongsTo(Categoria::class, 'categoria_id');
     }
 
     public function subcategoria()
     {
-        return $this->belongsTo(Subcategory::class, 'subcategoria_id');
+        return $this->belongsTo(Subcategoria::class, 'subcategoria_id');
+    }
+
+    public function applications()
+    {
+        return $this->hasMany(Application::class, 'publicacion_id');
+    }
+
+    public function solicitudes()
+    {
+        return $this->hasMany(Solicitud::class, 'publicacion_id');
+    }
+
+    public function favorites()
+    {
+        return $this->belongsToMany(User::class, 'favorite_publication', 'publicacion_id', 'user_id');
+    }
+
+    public function isFavoritedBy($user)
+    {
+        return $this->favorites()->where('user_id', $user->id)->exists();
     }
 }

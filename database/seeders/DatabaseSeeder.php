@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
             ExperienciaSeeder::class,
             ValoracionSeeder::class,
             FavoritoSeeder::class,
+            SolicitudSeeder::class,
         ]);
     }
 }

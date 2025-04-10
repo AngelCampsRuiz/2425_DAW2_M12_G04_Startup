@@ -20,6 +20,9 @@
             }
         }
     </script>
+    {{-- Swiper.js para sliders --}}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
 </head>
 <body>
     {{-- HEADER --}}
@@ -34,10 +37,14 @@
     <!-- Scripts de validación -->
     <script src="{{ asset('js/auth/login-validation.js') }}"></script>
     <script src="{{ asset('js/auth/register-validation.js') }}"></script>
+    <script src="{{ asset('js/auth/register-personal-validation.js') }}"></script>
+    <script src="{{ asset('js/auth/register-step2-validation.js') }}"></script>
+    <script src="{{ asset('js/location-selector.js') }}"></script>
+    <script src="{{ asset('js/date-restriction.js') }}"></script>
+    
+    <!-- Scripts específicos de cada página -->
+    @stack('scripts')
     <script src="{{ asset('js/auth/register-student-validation.js') }}"></script>
     <script src="{{ asset('js/auth/register-company-validation.js') }}"></script>
-    
-    <!-- Scripts adicionales para AJAX y otros componentes -->
-    @stack('scripts')
 </body>
 </html>

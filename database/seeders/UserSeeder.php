@@ -22,13 +22,13 @@ class UserSeeder extends Seeder
             'email' => 'admin@example.com',
             'password' => Hash::make('password'),
             'role_id' => 1,
-            'pais' => 'España',
             'fecha_nacimiento' => now()->subYears(30),
             'ciudad' => 'Barcelona',
             'dni' => '12345678A',
-            'sitio_web' => 'https://admin.example.com',
             'activo' => true,
-            'telefono' => '123456789'
+            'telefono' => '123456789',
+            'descripcion' => 'Administrador del sistema',
+            'imagen' => 'admin/profile.jpg'
         ]);
 
         // Crear usuarios empresa (role_id = 2)
@@ -38,31 +38,34 @@ class UserSeeder extends Seeder
                 'email' => "empresa_{$j}@example.com",
                 'password' => Hash::make('password'),
                 'role_id' => 2,
-                'pais' => fake()->country,
                 'fecha_nacimiento' => fake()->dateTimeBetween('-60 years', '-25 years'),
                 'ciudad' => fake()->city,
                 'dni' => fake()->numerify('########') . fake()->randomLetter(),
-                'sitio_web' => fake()->url,
                 'activo' => true,
-                'telefono' => fake()->phoneNumber
+                'telefono' => fake()->phoneNumber,
+                'descripcion' => fake()->paragraph(3),
+                'imagen' => 'empresas/empresa_' . $j . '.jpg'
             ]);
         }
 
         // Crear usuarios estudiante y tutor (role_id = 3 y 4)
         for ($i = 3; $i <= 4; $i++) {
             for ($j = 1; $j <= 5; $j++) {
+                $roleText = $i == 3 ? 'estudiantes' : 'tutores';
                 User::create([
                     'nombre' => fake()->name,
                     'email' => "usuario{$i}_{$j}@example.com",
                     'password' => Hash::make('password'),
                     'role_id' => $i,
-                    'pais' => fake()->country,
                     'fecha_nacimiento' => fake()->dateTimeBetween('-60 years', '-18 years'),
                     'ciudad' => fake()->city,
                     'dni' => fake()->numerify('########') . fake()->randomLetter(),
-                    'sitio_web' => fake()->url,
                     'activo' => true,
-                    'telefono' => fake()->phoneNumber
+                    'telefono' => fake()->phoneNumber,
+                    'descripcion' => $i == 3 ? 
+                        fake()->paragraph(2) . '\n\nHabilidades: ' . implode(', ', fake()->words(5)) : 
+                        'Tutor con experiencia en ' . fake()->jobTitle() . '. ' . fake()->sentence(10),
+                    'imagen' => $roleText . '/perfil_' . $j . '.jpg'
                 ]);
             }
         }

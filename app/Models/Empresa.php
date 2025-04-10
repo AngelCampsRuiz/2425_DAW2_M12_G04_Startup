@@ -12,17 +12,20 @@ class Empresa extends Model
     protected $table = 'empresas';
 
     protected $fillable = [
+        'id',
         'cif',
         'direccion',
         'latitud',
         'longitud',
-        'provincia',
-        'usuario_id'
+        'provincia'
     ];
+    
+    // Indicar que la clave primaria no es autoincremental
+    public $incrementing = false;
 
     public function user()
     {
-        return $this->belongsTo(User::class, 'id');
+        return $this->belongsTo(User::class, 'id', 'id');
     }
 
     public function convenios()

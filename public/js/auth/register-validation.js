@@ -11,8 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // VALIDAMOS LOS CAMPOS DEL FORMULARIO
                 const name = document.getElementById('name');
                 const email = document.getElementById('email');
-                const password = document.getElementById('password');
-                const passwordConfirm = document.getElementById('password-confirm');
+                // Password fields are not in the first step anymore
                 const role = document.querySelector('input[name="role"]:checked');
                 let isValid = true;
             
@@ -34,26 +33,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     isValid = false;
                 }
             
-            // VALIDAMOS LA CONTRASEÑA
-                if (!password.value.trim()) {
-                    showError(password, 'La contraseña es requerida');
-                    isValid = false;
-                } else if (password.value.trim().length < 8) {
-                    showError(password, 'La contraseña debe tener al menos 8 caracteres');
-                    isValid = false;
-                } else if (!hasNumber(password.value.trim())) {
-                    showError(password, 'La contraseña debe contener al menos un número');
-                    isValid = false;
-                }
-            
-            // VALIDAMOS LA CONFIRMACIÓN DE CONTRASEÑA
-                if (!passwordConfirm.value.trim()) {
-                    showError(passwordConfirm, 'Por favor confirme su contraseña');
-                    isValid = false;
-                } else if (password.value !== passwordConfirm.value) {
-                    showError(passwordConfirm, 'Las contraseñas no coinciden');
-                    isValid = false;
-                }
+            // Password validation removed for first step
             
             // VALIDAMOS EL ROL DEL USUARIO
                 if (!role) {

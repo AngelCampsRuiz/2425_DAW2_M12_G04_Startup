@@ -213,4 +213,205 @@
             });
         });
     </script>
+    
+    <!-- CSRF token para AJAX -->
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    
+    <!-- Scripts adicionales para la sección admin -->
+    <script>
+        // Asegurarse de que los listeners de eventos se apliquen a elementos cargados dinámicamente
+        document.addEventListener('DOMContentLoaded', function() {
+            // Delegación de eventos para todos los botones y formularios
+            document.addEventListener('click', function(e) {
+                // Botón de crear
+                if (e.target.closest('.btn-crear')) {
+                    resetForm();
+                    document.getElementById('modal-titulo').textContent = 'Crear Nueva Publicación';
+                    document.getElementById('form-publicacion').setAttribute('action', '{{ route('admin.publicaciones.store') }}');
+                    document.getElementById('form_method').value = 'POST';
+                    document.getElementById('modal-publicacion').classList.remove('hidden');
+                }
+                
+                // Botón de editar
+                if (e.target.closest('.btn-editar')) {
+                    const id = e.target.closest('.btn-editar').getAttribute('data-id');
+                    cargarPublicacion(id);
+                }
+                
+                // Botón de eliminar
+                if (e.target.closest('.btn-eliminar')) {
+                    const id = e.target.closest('.btn-eliminar').getAttribute('data-id');
+                    document.getElementById('eliminar_id').value = id;
+                    document.getElementById('form-eliminar').setAttribute('action', '{{ route('admin.publicaciones.index') }}/' + id);
+                    document.getElementById('modal-eliminar').classList.remove('hidden');
+                }
+                
+                // Botones de cerrar y cancelar
+                if (e.target.closest('#modal-close') || e.target.closest('#btn-cancelar')) {
+                    document.getElementById('modal-publicacion').classList.add('hidden');
+                }
+                
+                if (e.target.closest('#modal-eliminar-close') || e.target.closest('#btn-cancelar-eliminar')) {
+                    document.getElementById('modal-eliminar').classList.add('hidden');
+                }
+                
+                // Enlaces de paginación
+                const paginationLink = e.target.closest('.pagination-link');
+                if (paginationLink) {
+                    e.preventDefault();
+                    const url = paginationLink.getAttribute('href');
+                    actualizarTabla(url);
+                }
+            });
+            
+            // Manejo de envío de formularios
+            document.addEventListener('submit', function(e) {
+                // Formulario de crear/editar
+                if (e.target.id === 'form-publicacion') {
+                    e.preventDefault();
+                    const formData = new FormData(e.target);
+                    const url = e.target.getAttribute('action');
+                    const method = document.getElementById('form_method').value;
+                    
+                    fetch(url, {
+                        method: method === 'PUT' ? 'POST' : 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            document.getElementById('modal-publicacion').classList.add('hidden');
+                            mostrarMensajeExito(data.message);
+                            actualizarTabla();
+                        } else if (data.errors) {
+                            mostrarErrores(data.errors);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+                }
+                
+                // Formulario de eliminar
+                if (e.target.id === 'form-eliminar') {
+                    e.preventDefault();
+                    const url = e.target.getAttribute('action');
+                    
+                    fetch(url, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            document.getElementById('modal-eliminar').classList.add('hidden');
+                            mostrarMensajeExito(data.message);
+                            actualizarTabla();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+                }
+            });
+            
+            // Definir funciones auxiliares que podrían ser llamadas por los eventos
+            window.resetForm = function() {
+                if (document.getElementById('form-publicacion')) {
+                    document.getElementById('form-publicacion').reset();
+                    document.getElementById('publicacion_id').value = '';
+                    document.getElementById('fecha_publicacion').value = new Date().toISOString().split('T')[0];
+                    document.getElementById('form-errors').classList.add('hidden');
+                    document.getElementById('error-list').innerHTML = '';
+                }
+            };
+            
+            window.cargarPublicacion = function(id) {
+                fetch('{{ route('admin.publicaciones.index') }}/' + id + '/edit', {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    resetForm();
+                    
+                    const publicacion = data.publicacion;
+                    
+                    document.getElementById('publicacion_id').value = publicacion.id;
+                    document.getElementById('titulo').value = publicacion.titulo;
+                    document.getElementById('descripcion').value = publicacion.descripcion;
+                    document.getElementById('horario').value = publicacion.horario;
+                    document.getElementById('horas_totales').value = publicacion.horas_totales;
+                    document.getElementById('fecha_publicacion').value = publicacion.fecha_publicacion.split(' ')[0];
+                    document.getElementById('activa').checked = publicacion.activa == 1;
+                    document.getElementById('empresa_id').value = publicacion.empresa_id;
+                    document.getElementById('categoria_id').value = publicacion.categoria_id;
+                    document.getElementById('subcategoria_id').value = publicacion.subcategoria_id;
+                    
+                    document.getElementById('modal-titulo').textContent = 'Editar Publicación';
+                    document.getElementById('form-publicacion').setAttribute('action', '{{ route('admin.publicaciones.index') }}/' + id);
+                    document.getElementById('form_method').value = 'PUT';
+                    
+                    document.getElementById('modal-publicacion').classList.remove('hidden');
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            };
+            
+            window.mostrarMensajeExito = function(mensaje) {
+                const messageElement = document.getElementById('success-message');
+                const messageText = document.getElementById('success-message-text');
+                
+                messageText.textContent = mensaje;
+                messageElement.style.display = 'block';
+                
+                setTimeout(function() {
+                    messageElement.style.display = 'none';
+                }, 5000);
+            };
+            
+            window.mostrarErrores = function(errores) {
+                const errorsDiv = document.getElementById('form-errors');
+                const errorsList = document.getElementById('error-list');
+                
+                errorsList.innerHTML = '';
+                
+                for (const key in errores) {
+                    errores[key].forEach(error => {
+                        const li = document.createElement('li');
+                        li.textContent = error;
+                        errorsList.appendChild(li);
+                    });
+                }
+                
+                errorsDiv.classList.remove('hidden');
+            };
+            
+            window.actualizarTabla = function(url = '{{ route('admin.publicaciones.index') }}') {
+                fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('tabla-container').innerHTML = data.tabla;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            };
+        });
+    </script>
     @endsection

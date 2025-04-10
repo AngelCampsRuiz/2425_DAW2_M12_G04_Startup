@@ -163,45 +163,6 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Usamos delegación de eventos para manejar los clicks en el contenedor
-        const tablaContainer = document.getElementById('tabla-container');
-        
-        // Listener delegado para el botón de crear
-        tablaContainer.addEventListener('click', function(e) {
-            const btnCrear = e.target.closest('.btn-crear');
-            if (btnCrear) {
-                resetForm();
-                document.getElementById('modal-titulo').textContent = 'Crear Nueva Publicación';
-                document.getElementById('form-publicacion').setAttribute('action', '{{ route('admin.publicaciones.store') }}');
-                document.getElementById('form_method').value = 'POST';
-                document.getElementById('modal-publicacion').classList.remove('hidden');
-            }
-            
-            // Listener delegado para el botón de editar
-            const btnEditar = e.target.closest('.btn-editar');
-            if (btnEditar) {
-                const id = btnEditar.getAttribute('data-id');
-                cargarPublicacion(id);
-            }
-            
-            // Listener delegado para el botón de eliminar
-            const btnEliminar = e.target.closest('.btn-eliminar');
-            if (btnEliminar) {
-                const id = btnEliminar.getAttribute('data-id');
-                document.getElementById('eliminar_id').value = id;
-                document.getElementById('form-eliminar').setAttribute('action', '{{ route('admin.publicaciones.index') }}/' + id);
-                document.getElementById('modal-eliminar').classList.remove('hidden');
-            }
-            
-            // Manejo de enlaces de paginación
-            const paginationLink = e.target.closest('.pagination-link');
-            if (paginationLink) {
-                e.preventDefault();
-                const url = paginationLink.getAttribute('href');
-                cargarPagina(url);
-            }
-        });
-        
         // Cerrar modales
         document.getElementById('modal-close').addEventListener('click', function() {
             document.getElementById('modal-publicacion').classList.add('hidden');
@@ -276,50 +237,8 @@
             });
         });
         
-        // Funciones auxiliares
-        function resetForm() {
-            document.getElementById('form-publicacion').reset();
-            document.getElementById('publicacion_id').value = '';
-            document.getElementById('fecha_publicacion').value = new Date().toISOString().split('T')[0];
-            document.getElementById('form-errors').classList.add('hidden');
-            document.getElementById('error-list').innerHTML = '';
-        }
-        
-        function cargarPublicacion(id) {
-            fetch('{{ route('admin.publicaciones.index') }}/' + id + '/edit', {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                resetForm();
-                
-                const publicacion = data.publicacion;
-                
-                document.getElementById('publicacion_id').value = publicacion.id;
-                document.getElementById('titulo').value = publicacion.titulo;
-                document.getElementById('descripcion').value = publicacion.descripcion;
-                document.getElementById('horario').value = publicacion.horario;
-                document.getElementById('horas_totales').value = publicacion.horas_totales;
-                document.getElementById('fecha_publicacion').value = publicacion.fecha_publicacion.split(' ')[0];
-                document.getElementById('activa').checked = publicacion.activa == 1;
-                document.getElementById('empresa_id').value = publicacion.empresa_id;
-                document.getElementById('categoria_id').value = publicacion.categoria_id;
-                document.getElementById('subcategoria_id').value = publicacion.subcategoria_id;
-                
-                document.getElementById('modal-titulo').textContent = 'Editar Publicación';
-                document.getElementById('form-publicacion').setAttribute('action', '{{ route('admin.publicaciones.index') }}/' + id);
-                document.getElementById('form_method').value = 'PUT';
-                
-                document.getElementById('modal-publicacion').classList.remove('hidden');
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-        }
-        
-        function mostrarMensajeExito(mensaje) {
+        // Funciones auxiliares para mostrar mensajes y errores
+        window.mostrarMensajeExito = function(mensaje) {
             const messageElement = document.getElementById('success-message');
             const messageText = document.getElementById('success-message-text');
             
@@ -329,9 +248,9 @@
             setTimeout(function() {
                 messageElement.style.display = 'none';
             }, 5000);
-        }
+        };
         
-        function mostrarErrores(errores) {
+        window.mostrarErrores = function(errores) {
             const errorsDiv = document.getElementById('form-errors');
             const errorsList = document.getElementById('error-list');
             
@@ -346,9 +265,10 @@
             }
             
             errorsDiv.classList.remove('hidden');
-        }
+        };
         
-        function actualizarTabla(url = '{{ route('admin.publicaciones.index') }}') {
+        // Funciones de actualización de tabla
+        window.actualizarTabla = function(url = '{{ route('admin.publicaciones.index') }}') {
             fetch(url, {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest'
@@ -361,11 +281,7 @@
             .catch(error => {
                 console.error('Error:', error);
             });
-        }
-        
-        function cargarPagina(url) {
-            actualizarTabla(url);
-        }
+        };
     });
 </script>
 @endpush 
