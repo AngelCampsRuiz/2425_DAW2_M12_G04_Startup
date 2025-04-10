@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     {{-- NOMBRE DE LA EMPRESA --}}
         <title>NextGen</title>
     {{-- AÑADIMOS EL CSS Y EL JS --}}
@@ -19,6 +20,9 @@
             }
         }
     </script>
+    {{-- Swiper.js para sliders --}}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
 </head>
 <body>
     {{-- HEADER --}}
@@ -37,5 +41,10 @@
     <script src="{{ asset('js/auth/register-step2-validation.js') }}"></script>
     <script src="{{ asset('js/location-selector.js') }}"></script>
     <script src="{{ asset('js/date-restriction.js') }}"></script>
+    
+    <!-- Scripts específicos de cada página -->
+    @stack('scripts')
+    <script src="{{ asset('js/auth/register-student-validation.js') }}"></script>
+    <script src="{{ asset('js/auth/register-company-validation.js') }}"></script>
 </body>
 </html>

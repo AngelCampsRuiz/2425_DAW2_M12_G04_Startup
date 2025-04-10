@@ -1,0 +1,14 @@
+.favorite-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+}
+
+.favorite-button .fa-star {
+    color: #ccc;
+}
+
+.favorite-button .fa-star.text-yellow-500 {
+    color: #fbbf24;
+} 

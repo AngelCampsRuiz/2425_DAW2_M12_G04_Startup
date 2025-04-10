@@ -50,14 +50,14 @@ class User extends Authenticatable
 
     public function estudiante()
     {
-        return $this->hasOne(Estudiante::class, 'id');
+        return $this->hasOne(Estudiante::class, 'id', 'id');
     }
 
     public function tutor()
     {
-        return $this->hasOne(Tutor::class, 'id');
+        return $this->hasOne(Tutor::class, 'id', 'id');
     }
-    
+
     /**
      * Verifica que el usuario tenga todos los campos requeridos completos
      *
@@ -65,13 +65,13 @@ class User extends Authenticatable
      */
     public function hasRequiredFields(): bool
     {
-        return !is_null($this->nombre) && 
-               !is_null($this->email) && 
-               !is_null($this->password) && 
-               !is_null($this->fecha_nacimiento) && 
-               !is_null($this->ciudad) && 
-               !is_null($this->dni) && 
-               !is_null($this->telefono) && 
+        return !is_null($this->nombre) &&
+               !is_null($this->email) &&
+               !is_null($this->password) &&
+               !is_null($this->fecha_nacimiento) &&
+               !is_null($this->ciudad) &&
+               !is_null($this->dni) &&
+               !is_null($this->telefono) &&
                !is_null($this->role_id);
     }
 
@@ -84,6 +84,11 @@ class User extends Authenticatable
         'password',
         'remember_token',
     ];
+
+    public function favorites()
+    {
+        return $this->belongsToMany(Publication::class, 'favorite_publication', 'user_id', 'publicacion_id');
+    }
 
     // Removed duplicate casts method
 }
