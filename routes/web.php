@@ -8,9 +8,15 @@ use App\Http\Controllers\StudentDashboardController;
 use App\Http\Controllers\CompanyDashboardController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Admin\PublicacionController;
+use App\Http\Controllers\DemoController;
 
 // Ruta principal usando el HomeController
     Route::get('/', [HomeController::class, 'index'])->name('home');
+    
+// Rutas de demostración
+    Route::get('/demo/student', [DemoController::class, 'demoStudent'])->name('demo.student');
+    Route::get('/demo/company', [DemoController::class, 'demoCompany'])->name('demo.company');
+    Route::get('/demo/redirect', [DemoController::class, 'redirectToRegister'])->name('demo.redirect');
 
 // AUTENTICACIÓN
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');

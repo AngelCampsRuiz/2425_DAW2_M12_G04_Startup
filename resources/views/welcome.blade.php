@@ -43,9 +43,9 @@
                     <div class="container mx-auto max-w-5xl px-4">
                         @if($empresasDestacadas->isNotEmpty())
                             <!-- Slider principal -->
-                            <div class="relative overflow-hidden">
-                                <div class="swiper-container empresas-slider mb-6 overflow-hidden">
-                                    <div class="swiper-wrapper !overflow-visible">
+                            <div class="relative">
+                                <div class="swiper-container empresas-slider mb-6 w-full">
+                                    <div class="swiper-wrapper">
                                         @foreach($empresasDestacadas as $empresa)
                                             <div class="swiper-slide">
                                                 <div class="bg-white p-6 rounded-lg shadow-md text-center transform transition-all hover:shadow-xl hover:-translate-y-1 h-full flex flex-col justify-between">
@@ -83,17 +83,20 @@
                 @push('scripts')
                 <script>
                     document.addEventListener('DOMContentLoaded', function() {
-                        new Swiper('.empresas-slider', {
+                        const swiper = new Swiper('.empresas-slider', {
                             slidesPerView: 1,
-                            spaceBetween: 20,
+                            spaceBetween: 30,
+                            centeredSlides: false,
                             loop: true,
+                            grabCursor: true,
+                            preventClicks: true,
+                            preventClicksPropagation: true,
                             // Autoplay desactivado como solicitó el usuario
                             autoplay: false,
-                            // Evitar scroll lateral
-                            allowTouchMove: true,
-                            touchMoveStopPropagation: true,
-                            simulateTouch: true,
-                            touchStartPreventDefault: true,
+                            // Configuración para evitar scroll lateral
+                            cssMode: true,
+                            mousewheel: false,
+                            keyboard: false,
                             pagination: {
                                 el: '.swiper-pagination',
                                 clickable: true,
@@ -106,9 +109,11 @@
                             breakpoints: {
                                 640: {
                                     slidesPerView: 2,
+                                    spaceBetween: 20,
                                 },
                                 1024: {
                                     slidesPerView: 3,
+                                    spaceBetween: 30,
                                 }
                             }
                         });
@@ -125,10 +130,10 @@
                     </h2>
                     <p class="text-xl text-gray-700 max-w-3xl mx-auto mb-10">Únete a nuestra plataforma y descubre todas las oportunidades que tenemos para ti</p>
                     <div class="container mx-auto max-w-5xl flex flex-col md:flex-row justify-center space-y-4 md:space-y-0 md:space-x-8">
-                        <a href="{{ route('register.alumno') }}" class="bg-[#7705B6] text-white px-10 py-4 rounded-lg font-bold text-lg hover:bg-[#5E0490] transition mx-auto md:mx-0 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                        <a href="{{ route('demo.student') }}" class="bg-[#7705B6] text-white px-10 py-4 rounded-lg font-bold text-lg hover:bg-[#5E0490] transition mx-auto md:mx-0 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
                             SOY ALUMNO
                         </a>
-                        <a href="{{ route('register.empresa') }}" class="bg-[#7705B6] text-white px-10 py-4 rounded-lg font-bold text-lg hover:bg-[#5E0490] transition mx-auto md:mx-0 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                        <a href="{{ route('demo.company') }}" class="bg-[#7705B6] text-white px-10 py-4 rounded-lg font-bold text-lg hover:bg-[#5E0490] transition mx-auto md:mx-0 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
                             SOY EMPRESA
                         </a>
                     </div>
