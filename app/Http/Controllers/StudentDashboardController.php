@@ -76,7 +76,7 @@ class StudentDashboardController extends Controller
         $user = Auth::user();
         $publication = Publication::findOrFail($publicationId);
 
-        if ($user->favorites()->where('publication_id', $publicationId)->exists()) {
+        if ($user->favorites()->where('publicacion_id', $publicationId)->exists()) {
             $user->favorites()->detach($publicationId);
             return response()->json(['status' => 'removed']);
         } else {
