@@ -2,10 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Publication;
+use App\Models\Application;
+use App\Models\Categoria;
+use App\Models\Subcategoria;
+use App\Models\Publicacion;
+use App\Models\Solicitud;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\User;
-use App\Models\Empresa;
+use Illuminate\Support\Facades\Log;
 
 class CompanyDashboardController extends Controller
 {
@@ -16,48 +21,16 @@ class CompanyDashboardController extends Controller
      */
     public function index()
     {
-        $user = Auth::user();
-        
-        // Verificar que el usuario tenga el rol de empresa (role_id = 2)
-        if (!$user || $user->role_id != 2) {
-            return redirect('/')->with('error', 'No tienes permiso para acceder a esta página');
-        }
-        
-        $empresa = Empresa::where('id', $user->id)->first();
-        
-        return view('dashboard.empresa', [
-            'user' => $user,
-            'empresa' => $empresa
-        ]);
-    }
-}
-<?php
-
-namespace App\Http\Controllers;
-
-use App\Models\Publication;
-use App\Models\Application;
-use App\Models\Categoria;
-use App\Models\Subcategoria;
-use App\Models\Solicitud;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
-
-class CompanyDashboardController extends Controller
-{
-    public function index()
-    {
         $company = Auth::user();
-        $activePublications = Publication::where('empresa_id', $company->id)
+        $activePublications = Publicacion::where('empresa_id', $company->id)
             ->where('activa', true)
-            ->withCount('applications')
+            ->withCount('solicitudes')
             ->orderBy('created_at', 'desc')
             ->get();
 
-        $inactivePublications = Publication::where('empresa_id', $company->id)
+        $inactivePublications = Publicacion::where('empresa_id', $company->id)
             ->where('activa', false)
-            ->withCount('applications')
+            ->withCount('solicitudes')
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -66,23 +39,14 @@ class CompanyDashboardController extends Controller
 
     public function createOffer()
     {
-        $categorias = Categoria::select('id', 'nombre_categoria')
-                             ->orderBy('nombre_categoria')
-                             ->get()
-                             ->unique('id');
-
+        $categorias = Categoria::all();
         return view('empresa.create-offer', compact('categorias'));
     }
 
     public function getSubcategorias($categoriaId)
     {
-        $subcategorias = Subcategoria::select('id', 'nombre_subcategoria')
-                                    ->where('categoria_id', $categoriaId)
-                                    ->orderBy('nombre_subcategoria')
-                                    ->get()
-                                    ->unique('id');
-        
-        return response()->json($subcategorias->values()->all());
+        $subcategorias = Subcategoria::where('categoria_id', $categoriaId)->get();
+        return response()->json($subcategorias);
     }
 
     public function storeOffer(Request $request)
@@ -96,7 +60,7 @@ class CompanyDashboardController extends Controller
             'subcategoria_id' => 'required|exists:subcategorias,id'
         ]);
 
-        $publication = new Publication($request->all());
+        $publication = new Publicacion($request->all());
         $publication->empresa_id = Auth::id();
         $publication->activa = true;
         $publication->fecha_publicacion = now();
@@ -108,7 +72,7 @@ class CompanyDashboardController extends Controller
 
     public function viewApplications($publicationId)
     {
-        $publication = Publication::where('empresa_id', Auth::id())
+        $publication = Publicacion::where('empresa_id', Auth::id())
             ->findOrFail($publicationId);
         
         $solicitudes = Solicitud::where('publicacion_id', $publicationId)
@@ -142,7 +106,7 @@ class CompanyDashboardController extends Controller
                 'activa' => false
             ]);
 
-            // Rechazar automáticamente todas las otras solicitudes de esta publicación
+            // Rechazar automáticamente todas las otras solicitudes
             Solicitud::where('publicacion_id', $solicitud->publicacion_id)
                 ->where('id', '!=', $solicitud->id)
                 ->update([
@@ -154,3 +118,4 @@ class CompanyDashboardController extends Controller
         return back()->with('success', 'Estado de la solicitud actualizado correctamente');
     }
 }
+

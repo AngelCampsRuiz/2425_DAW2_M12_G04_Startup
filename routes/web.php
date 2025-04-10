@@ -6,7 +6,6 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\StudentDashboardController;
 use App\Http\Controllers\CompanyDashboardController;
-use App\Http\Controllers\CompanyDashboardController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Admin\PublicacionController;
 use App\Http\Controllers\DemoController;
