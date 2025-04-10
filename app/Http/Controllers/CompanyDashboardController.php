@@ -76,10 +76,9 @@ class CompanyDashboardController extends Controller
     public function viewApplications($publicationId)
     {
         $publication = Publication::where('empresa_id', Auth::id())
-            ->with(['solicitudes.estudiante.user'])
             ->findOrFail($publicationId);
         
-        $solicitudes = $publication->solicitudes()
+        $solicitudes = Solicitud::where('publicacion_id', $publicationId)
             ->with('estudiante.user')
             ->orderBy('created_at', 'desc')
             ->get();

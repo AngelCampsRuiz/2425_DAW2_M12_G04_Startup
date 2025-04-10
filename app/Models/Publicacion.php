@@ -26,4 +26,9 @@ class Publicacion extends Model
     {
         return $this->hasMany(Favorito::class);
     }
+
+    public function solicitudes()
+    {
+        return $this->hasMany(Solicitud::class, 'publicacion_id');
+    }
 }

@@ -26,6 +26,6 @@ class Solicitud extends Model
 
     public function publicacion()
     {
-        return $this->belongsTo(Publicacion::class);
+        return $this->belongsTo(Publicacion::class, 'publicacion_id');
     }
 }
