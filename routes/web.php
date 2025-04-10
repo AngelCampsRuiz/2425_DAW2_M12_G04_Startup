@@ -23,7 +23,7 @@ use App\Http\Controllers\AdminController;
     // Paso 2: Información personal
     Route::get('/register/personal', [RegisterController::class, 'showPersonalInfoForm'])->name('register.personal');
     Route::post('/register/personal', [RegisterController::class, 'registerPersonalInfo'])->name('register.personal.post');
-    
+
     // Paso 3: Información específica según rol
     Route::get('/register/alumno', [RegisterController::class, 'showStudentRegistrationForm'])->name('register.alumno');
     Route::post('/register/alumno', [RegisterController::class, 'registerStudent']);

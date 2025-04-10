@@ -7,6 +7,7 @@
 }
 
 .profile-card {
+    position: relative;
     display: flex;
     border: 1px solid #ccc;
     border-radius: 8px;
@@ -26,6 +27,7 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
+    block-size: auto;
 }
 
 .profile-info h2 {
@@ -46,4 +48,31 @@
 
 .cv-link:hover {
     text-decoration: underline;
+}
+
+.profile-actions {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    display: flex;
+    gap: 10px;
+}
+
+.icon {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    fill: #007bff;
+}
+
+.icon:hover {
+    fill: #0056b3;
+}
+
+.fa-edit {
+    color: #007bff;
+}
+
+.fa-trash {
+    color: red;
 }
