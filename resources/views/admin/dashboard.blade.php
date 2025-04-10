@@ -2,7 +2,7 @@
 @extends('layouts.app')
 
 {{-- CONTENIDO --}}
-@section('content')
+    @section('content')
     <div class="container mx-auto px-4 py-6">
         <!-- Menú hamburguesa para móviles y título del CRUD actual -->
         <div class="flex justify-between items-center mb-6 bg-white rounded-lg shadow p-4">
@@ -52,23 +52,26 @@
             </div>
         </div>
 
-        <!-- Menú de navegación, oculto en móviles inicialmente -->
-        <div id="menu-nav" class="mb-6 bg-white rounded-lg shadow p-4 hidden md:block">
-            <div class="flex flex-wrap">
-                <a href="{{ route('admin.publicaciones.index') }}" class="flex-1 {{ request()->routeIs('admin.publicaciones.*') ? 'bg-purple-200 text-purple-800' : 'bg-gray-100 text-gray-800' }} font-semibold py-3 px-4 rounded-md text-center mx-1 mb-2 md:mb-0">
-                    OFERTAS
+        <!-- Menú de navegación -->
+        <div class="bg-white shadow-md rounded-lg p-4 mb-6">
+            <div class="flex flex-wrap justify-center space-x-4">
+                <a href="{{ route('admin.publicaciones.index') }}" class="px-4 py-2 rounded-md {{ request()->routeIs('admin.publicaciones.*') ? 'bg-purple-600 text-white' : 'text-gray-600 hover:bg-gray-100' }}">
+                    <i class="fas fa-newspaper mr-2"></i>Ofertas
                 </a>
-                <a href="#" class="flex-1 bg-gray-100 text-gray-800 font-semibold py-3 px-4 rounded-md text-center mx-1 mb-2 md:mb-0">
-                    CATEGORÍAS
+                <a href="{{ route('admin.categorias.index') }}" class="px-4 py-2 rounded-md {{ request()->routeIs('admin.categorias.*') ? 'bg-purple-600 text-white' : 'text-gray-600 hover:bg-gray-100' }}">
+                    <i class="fas fa-tags mr-2"></i>Categorías
                 </a>
-                <a href="#" class="flex-1 bg-gray-100 text-gray-800 font-semibold py-3 px-4 rounded-md text-center mx-1 mb-2 md:mb-0">
-                    EMPRESAS
+                <a href="{{ route('admin.subcategorias.index') }}" class="px-4 py-2 rounded-md {{ request()->routeIs('admin.subcategorias.*') ? 'bg-purple-600 text-white' : 'text-gray-600 hover:bg-gray-100' }}">
+                    <i class="fas fa-tag mr-2"></i>Subcategorías
                 </a>
-                <a href="#" class="flex-1 bg-gray-100 text-gray-800 font-semibold py-3 px-4 rounded-md text-center mx-1 mb-2 md:mb-0">
-                    ALUMNOS
+                <a href="#" class="px-4 py-2 rounded-md {{ request()->routeIs('admin.empresas.*') ? 'bg-purple-600 text-white' : 'text-gray-600 hover:bg-gray-100' }}">
+                    <i class="fas fa-building mr-2"></i>Empresas
                 </a>
-                <a href="#" class="flex-1 bg-gray-100 text-gray-800 font-semibold py-3 px-4 rounded-md text-center mx-1 mb-2 md:mb-0">
-                    PROFESORES
+                <a href="#" class="px-4 py-2 rounded-md {{ request()->routeIs('admin.alumnos.*') ? 'bg-purple-600 text-white' : 'text-gray-600 hover:bg-gray-100' }}">
+                    <i class="fas fa-user-graduate mr-2"></i>Alumnos
+                </a>
+                <a href="#" class="px-4 py-2 rounded-md {{ request()->routeIs('admin.profesores.*') ? 'bg-purple-600 text-white' : 'text-gray-600 hover:bg-gray-100' }}">
+                    <i class="fas fa-chalkboard-teacher mr-2"></i>Profesores
                 </a>
             </div>
         </div>
@@ -174,7 +177,10 @@
             </div>
         @endif
 
-        @yield('admin_content')
+        <!-- Contenido principal -->
+        <div class="bg-white shadow-md rounded-lg p-6">
+            @yield('admin_content')
+        </div>
     </div>
 
     <!-- JavaScript para el menú hamburguesa -->
@@ -207,4 +213,4 @@
             });
         });
     </script>
-@endsection
+    @endsection

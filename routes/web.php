@@ -7,6 +7,8 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\StudentDashboardController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Admin\PublicacionController;
+use App\Http\Controllers\Admin\CategoriaController;
+use App\Http\Controllers\Admin\SubcategoriaController;
 
 // Ruta principal usando el HomeController
     Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -32,11 +34,17 @@ Route::middleware(['auth'])->group(function () {
 });
 
 // RUTAS PROTEGIDAS PARA ADMINISTRADORES
-Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', \App\Http\Middleware\AdminMiddleware::class])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
     
     // Rutas para gestionar las publicaciones
     Route::resource('publicaciones', PublicacionController::class);
+    
+    // Rutas de categorías
+    Route::resource('categorias', CategoriaController::class);
+    
+    // Rutas de subcategorías
+    Route::resource('subcategorias', SubcategoriaController::class);
 });
 
 // Test route without custom middleware
