@@ -7,6 +7,8 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\StudentDashboardController;
 use App\Http\Controllers\CompanyDashboardController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\Admin\PublicacionController;
+
 // Ruta principal usando el HomeController
     Route::get('/', [HomeController::class, 'index'])->name('home');
 
@@ -41,8 +43,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/empresa/dashboard', [CompanyDashboardController::class, 'index'])->name('empresa.dashboard');
 });
 
-Route::middleware(['auth'])->group(function () {
-    Route::get('/admin/dashboard', action: [AdminController::class, 'index'])->name('admin.dashboard');
+// RUTAS PROTEGIDAS PARA ADMINISTRADORES
+Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
+    
+    // Rutas para gestionar las publicaciones
+    Route::resource('publicaciones', PublicacionController::class);
 });
 
 // Test route without custom middleware
