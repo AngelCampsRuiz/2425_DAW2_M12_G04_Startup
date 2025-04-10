@@ -36,27 +36,44 @@ document.addEventListener('DOMContentLoaded', function() {
     const updateRange = () => {
         const minVal = parseInt(horasTotalesMin.value);
         const maxVal = parseInt(horasTotalesMax.value);
+        const minMax = parseInt(horasTotalesMin.max);
+        const minMin = parseInt(horasTotalesMin.min);
+        const range = minMax - minMin;
+        
         horasTotalesMinValue.textContent = minVal;
         horasTotalesMaxValue.textContent = maxVal;
-        horasTotalesRange.style.left = `${(minVal / horasTotalesMin.max) * 100}%`;
-        horasTotalesRange.style.width = `${((maxVal - minVal) / horasTotalesMin.max) * 100}%`;
+        
+        // Calcular porcentajes correctamente basados en el rango total
+        const leftPercent = ((minVal - minMin) / range) * 100;
+        const widthPercent = ((maxVal - minVal) / range) * 100;
+        
+        horasTotalesRange.style.left = `${leftPercent}%`;
+        horasTotalesRange.style.width = `${widthPercent}%`;
     };
 
+    // Mejorar manejo de eventos para el control deslizante mínimo
     horasTotalesMin.addEventListener('input', function() {
+        // Limitar el valor mínimo para que no supere el máximo
         if (parseInt(horasTotalesMin.value) > parseInt(horasTotalesMax.value)) {
-            horasTotalesMax.value = horasTotalesMin.value;
-        }
-        updateRange();
-        fetchPublications();
-    });
-
-    horasTotalesMax.addEventListener('input', function() {
-        if (parseInt(horasTotalesMax.value) < parseInt(horasTotalesMin.value)) {
             horasTotalesMin.value = horasTotalesMax.value;
         }
         updateRange();
-        fetchPublications();
     });
+    
+    // Actualizar y buscar solo cuando se suelta el control deslizante
+    horasTotalesMin.addEventListener('change', fetchPublications);
+
+    // Mejorar manejo de eventos para el control deslizante máximo
+    horasTotalesMax.addEventListener('input', function() {
+        // Limitar el valor máximo para que no sea menor que el mínimo
+        if (parseInt(horasTotalesMax.value) < parseInt(horasTotalesMin.value)) {
+            horasTotalesMax.value = horasTotalesMin.value;
+        }
+        updateRange();
+    });
+    
+    // Actualizar y buscar solo cuando se suelta el control deslizante
+    horasTotalesMax.addEventListener('change', fetchPublications);
 
     const fetchPublications = () => {
         const searchTerm = searchInput.value;

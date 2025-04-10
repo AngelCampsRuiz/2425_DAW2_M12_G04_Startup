@@ -3,10 +3,7 @@
 
 {{-- CONTENIDO --}}
     @section('content')
-        <section class="py-16 text-center">
-            <h1 class="text-4xl font-bold text-[#7705B6] mb-6">Tu puente entre el aula y el mundo laboral</h1>
-
-        <section class="py-16 text-center bg-gradient-to-b from-purple-50 to-white">
+        <section class="py-12 text-center bg-gradient-to-b from-purple-50 to-white">
             <h1 class="text-4xl font-bold text-[#7705B6] mb-4 leading-tight max-w-5xl mx-auto">Tu puente entre el <span class="text-[#9B30D9]">aula</span> y el <span class="text-[#9B30D9]">mundo laboral</span></h1>
             <p class="text-lg text-gray-600 max-w-4xl mx-auto mb-12">Conectamos estudiantes con las mejores empresas para crear oportunidades que transforman carreras</p>
 
@@ -38,9 +35,6 @@
 
             <!-- EMPRESAS QUE CONFIAN -->
                 <section class="my-16">
-                    <h2 class="text-3xl font-bold text-[#7705B6] mb-8">Empresas que confían en nosotros</h2>
-
-                <section class="my-20 py-16 bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl">
                     <h2 class="text-3xl font-bold text-[#7705B6] mb-10 relative inline-block">
                         Empresas que confían en nosotros
                         <span class="absolute bottom-0 left-0 w-full h-1 bg-[#9B30D9] rounded-full"></span>
@@ -129,7 +123,7 @@
 
             <!-- CTA FINAL - Solo visible para usuarios no autenticados -->
                 @guest
-                <section class="my-20 text-center py-16 bg-gradient-to-r from-purple-100 to-purple-200 rounded-xl">
+                <section class="my-10 text-center py-12 bg-gradient-to-r from-purple-100 to-purple-200 rounded-xl">
                     <h2 class="text-3xl font-bold text-[#7705B6] mb-8 relative inline-block">
                         Échale un vistazo
                         <span class="absolute bottom-0 left-0 w-full h-1 bg-[#9B30D9] rounded-full"></span>
@@ -146,4 +140,5 @@
                 </section>
                 @endguest
         </section>
+        <div class="pb-4"></div> <!-- Pequeño espacio antes del footer -->
     @endsection

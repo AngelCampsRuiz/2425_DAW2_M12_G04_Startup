@@ -10,6 +10,22 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
     </head>
     <div class="min-h-screen bg-gray-100">
+        {{-- BREADCRUMBS --}}
+        <div class="bg-white shadow-sm">
+            <div class="container mx-auto px-4 py-3">
+                <div class="flex items-center text-sm">
+                    <a href="{{ route('home') }}" class="text-gray-500 hover:text-[#5e0490]">
+                        <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                        </svg>
+                        Inicio
+                    </a>
+                    <span class="mx-2 text-gray-400">/</span>
+                    <span class="text-[#5e0490] font-medium">Ofertas laborales</span>
+                </div>
+            </div>
+        </div>
+        
         {{-- CONTENIDO PRINCIPAL --}}
         <div class="container mx-auto px-4 py-8">
             <div class="flex flex-col md:flex-row gap-6">
@@ -66,16 +82,16 @@
                             <!-- Filtro de Horas Totales -->
                             <div>
                                 <h3 class="text-sm font-medium text-gray-600 mb-2">Horas Totales</h3>
-                                <div class="relative">
+                                <div class="mb-6">
                                     <div class="flex justify-between text-sm text-gray-600 mb-2">
                                         <span id="horasTotalesMinValue">{{ $horasTotalesMin }}</span>
                                         <span id="horasTotalesMaxValue">{{ $horasTotalesMax }}</span>
                                     </div>
-                                    <div class="relative w-full h-2 bg-gray-200 rounded-full">
-                                        <input type="range" id="horasTotalesMin" name="horas_totales_min" min="{{ $horasTotalesMin }}" max="{{ $horasTotalesMax }}" value="{{ $horasTotalesMin }}" class="absolute w-full h-2 bg-transparent appearance-none pointer-events-none">
-                                        <input type="range" id="horasTotalesMax" name="horas_totales_max" min="{{ $horasTotalesMin }}" max="{{ $horasTotalesMax }}" value="{{ $horasTotalesMax }}" class="absolute w-full h-2 bg-transparent appearance-none pointer-events-none">
-                                        <div class="absolute h-2 bg-[#5e0490] rounded-full" id="horasTotalesRange"></div>
-                                    </div>
+                                    <!-- Contenedor para noUiSlider -->
+                                    <div id="horasTotalesSlider" class="mt-4"></div>
+                                    <!-- Campos ocultos para enviar los valores en el formulario -->
+                                    <input type="hidden" id="horasTotalesMin" name="horas_totales_min" value="{{ $horasTotalesMin }}">
+                                    <input type="hidden" id="horasTotalesMax" name="horas_totales_max" value="{{ $horasTotalesMax }}">
                                 </div>
                             </div>
 
@@ -149,10 +165,10 @@
                             <div class="bg-white rounded-lg shadow overflow-hidden relative">
                                 <div class="flex">
                                     {{-- IMAGEN DE LA EMPRESA --}}
-                                    <div class="w-1/3">
+                                    <div class="w-1/3 relative" style="aspect-ratio: 1/1;">
                                         <img src="{{ $publication->empresa->logo_url ?? asset('assets/images/company-default.png') }}" 
                                             alt="{{ $publication->empresa->nombre }}"
-                                            class="w-full h-full object-cover">
+                                            class="absolute inset-0 w-full h-full object-cover">
                                     </div>
                                     {{-- INFORMACIÓN DE LA PUBLICACIÓN --}}
                                     <div class="w-2/3 p-4">
@@ -186,8 +202,10 @@
                     </div>
 
                     {{-- PAGINACIÓN --}}
-                    <div class="mt-6">
-                        {{ $publications->links() }}
+                    <div class="mt-8 flex justify-center">
+                        <div class="pagination-container">
+                            {{ $publications->onEachSide(1)->links() }}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -195,82 +213,321 @@
     </div>
 
     <style>
-        /* Contenedor del slider */
-        .relative.w-full.h-2.bg-gray-200.rounded-full {
-            position: relative;
-            height: 8px; /* Aumentamos la altura de la línea */
-            background-color: #e2e8f0; /* Color de fondo de la línea */
-            border-radius: 4px; /* Bordes redondeados */
+        /* Estilos para noUiSlider */
+        .noUi-connect {
+            background: #5e0490 !important;
         }
-
-        /* Línea de rango seleccionado */
-        #horasTotalesRange {
-            position: absolute;
-            top: 0;
-            height: 8px; /* Misma altura que la línea base */
-            background-color: #5e0490; /* Color de la línea seleccionada */
-            border-radius: 4px; /* Bordes redondeados */
-            z-index: 1;
+        
+        .noUi-handle {
+            border-radius: 50% !important;
+            background-color: #5e0490 !important;
+            border: 2px solid #fff !important;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+            width: 20px !important;
+            height: 20px !important;
+            right: -10px !important;
+            top: -7px !important;
+            cursor: pointer !important;
+            transition: transform 0.2s ease, box-shadow 0.2s ease !important;
         }
-
-        /* Controles deslizantes (thumbs) */
-        input[type="range"] {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 100%;
-            height: 8px; /* Misma altura que la línea base */
-            background: transparent;
-            position: absolute;
-            top: 0;
-            left: 0;
-            pointer-events: none;
+        
+        .noUi-handle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3) !important;
         }
-
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 20px; /* Tamaño del control deslizante */
-            height: 20px;
-            background: #5e0490; /* Color del control deslizante */
-            border: 2px solid #fff; /* Borde blanco para resaltar */
-            border-radius: 50%; /* Forma circular */
-            cursor: pointer;
-            pointer-events: all;
-            position: relative;
-            z-index: 2;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Sombra para dar profundidad */
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        
+        .noUi-handle:active {
+            transform: scale(1.2);
         }
-
-        input[type="range"]::-webkit-slider-thumb:active {
-            transform: scale(1.2); /* Aumenta el tamaño al hacer clic */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Sombra más pronunciada */
+        
+        .noUi-handle:before, .noUi-handle:after {
+            display: none !important;
         }
-
-        input[type="range"]::-moz-range-thumb {
-            width: 20px; /* Tamaño del control deslizante */
-            height: 20px;
-            background: #5e0490; /* Color del control deslizante */
-            border: 2px solid #fff; /* Borde blanco para resaltar */
-            border-radius: 50%; /* Forma circular */
-            cursor: pointer;
-            pointer-events: all;
-            position: relative;
-            z-index: 2;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Sombra para dar profundidad */
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        
+        .noUi-target {
+            border-radius: 4px !important;
+            border: none !important;
+            background-color: #e2e8f0 !important;
+            box-shadow: none !important;
+            height: 8px !important;
         }
-
-        input[type="range"]::-moz-range-thumb:active {
-            transform: scale(1.2); /* Aumenta el tamaño al hacer clic */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Sombra más pronunciada */
+        
+        .noUi-horizontal {
+            height: 8px !important;
+        }
+        
+        .noUi-tooltip {
+            display: none !important;
         }
 
         /* Texto de los valores mínimo y máximo */
         .flex.justify-between.text-sm.text-gray-600 {
             margin-top: 8px; /* Espacio entre el slider y los valores */
         }
+        
+        /* Estilos para la paginación */
+        .pagination-container nav {
+            display: flex;
+            justify-content: center;
+        }
+        
+        .pagination-container .flex.justify-between.flex-1 {
+            display: none; /* Ocultar el texto de paginación */
+        }
+        
+        .pagination-container .relative.inline-flex.items-center {
+            padding: 0.5rem 1rem;
+            margin: 0 0.25rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            font-size: 0.875rem;
+            color: #4b5563;
+            background-color: #ffffff;
+            border: 1px solid #d1d5db;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            transition: all 0.2s;
+        }
+        
+        .pagination-container .relative.inline-flex.items-center:hover {
+            background-color: #f3f4f6;
+            color: #111827;
+        }
+        
+        .pagination-container .relative.z-0.inline-flex.shadow-sm {
+            border-radius: 0.375rem;
+            overflow: hidden;
+        }
+        
+        .pagination-container span[aria-current="page"] .relative.inline-flex.items-center {
+            background-color: #5e0490;
+            color: white;
+            border-color: #5e0490;
+        }
     </style>
 
-    <script src="{{ asset('js/dashboard.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inicializar el slider de rango para horas totales
+            const horasTotalesSlider = document.getElementById('horasTotalesSlider');
+            const horasTotalesMin = document.getElementById('horasTotalesMin');
+            const horasTotalesMax = document.getElementById('horasTotalesMax');
+            const horasTotalesMinValue = document.getElementById('horasTotalesMinValue');
+            const horasTotalesMaxValue = document.getElementById('horasTotalesMaxValue');
+            
+            if (horasTotalesSlider) {
+                const minValue = parseInt(horasTotalesMin.value);
+                const maxValue = parseInt(horasTotalesMax.value);
+                
+                noUiSlider.create(horasTotalesSlider, {
+                    start: [minValue, maxValue],
+                    connect: true,
+                    step: 1,
+                    range: {
+                        'min': minValue,
+                        'max': maxValue
+                    }
+                });
+                
+                // Actualizar los valores mostrados y los campos ocultos
+                horasTotalesSlider.noUiSlider.on('update', function(values, handle) {
+                    const value = Math.round(values[handle]);
+                    if (handle === 0) {
+                        horasTotalesMinValue.textContent = value;
+                        horasTotalesMin.value = value;
+                    } else {
+                        horasTotalesMaxValue.textContent = value;
+                        horasTotalesMax.value = value;
+                    }
+                });
+                
+                // Ejecutar la búsqueda cuando el usuario suelta el control deslizante
+                horasTotalesSlider.noUiSlider.on('change', function() {
+                    fetchPublications();
+                });
+            }
+            
+            // Resto del código de dashboard.js
+            let debounceTimer;
+            const searchForm = document.getElementById('searchForm');
+            const searchInput = document.getElementById('searchInput');
+            const orderBy = document.getElementById('orderBy');
+            const orderDirection = document.getElementById('orderDirection');
+            const orderSelect = document.getElementById('orderSelect');
+            const clearButton = document.getElementById('clearButton');
+            const horarioCheckboxes = document.querySelectorAll('input[name="horario[]"]');
+            const categoriaCheckboxes = document.querySelectorAll('.categoria-checkbox');
+            const subcategoriaCheckboxes = document.querySelectorAll('input[name="subcategoria[]"]');
+            const fechaInicio = document.getElementById('fechaInicio');
+            const fechaFin = document.getElementById('fechaFin');
+            const route = searchForm ? searchForm.getAttribute('data-route') : '';
+            const favoriteButtons = document.querySelectorAll('.favorite-button');
+            const favoritosCheckbox = document.getElementById('favoritosCheckbox');
+
+            // Mostrar/ocultar subcategorías al seleccionar una categoría
+            categoriaCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const subcategoriasDiv = document.getElementById(`subcategorias-${this.value}`);
+                    if (this.checked) {
+                        subcategoriasDiv.classList.remove('hidden');
+                    } else {
+                        subcategoriasDiv.classList.add('hidden');
+                    }
+                    fetchPublications();
+                });
+            });
+
+            const fetchPublications = () => {
+                if (!searchForm) return;
+                
+                const searchTerm = searchInput.value;
+                const orderByValue = orderBy.value;
+                const orderDirectionValue = orderDirection.value;
+                const selectedHorarios = Array.from(horarioCheckboxes)
+                    .filter(checkbox => checkbox.checked)
+                    .map(checkbox => checkbox.value);
+                const selectedCategorias = Array.from(categoriaCheckboxes)
+                    .filter(checkbox => checkbox.checked)
+                    .map(checkbox => checkbox.value);
+                const selectedSubcategorias = Array.from(document.querySelectorAll('input[name="subcategoria[]"]'))
+                    .filter(checkbox => checkbox.checked)
+                    .map(checkbox => checkbox.value);
+                const fechaInicioValue = fechaInicio.value;
+                const fechaFinValue = fechaFin.value;
+                const horasTotalesMinValue = horasTotalesMin.value;
+                const horasTotalesMaxValue = horasTotalesMax.value;
+                const favoritosValue = favoritosCheckbox && favoritosCheckbox.checked ? 'on' : 'off';
+
+                const params = new URLSearchParams();
+                if (searchTerm) params.append('search', searchTerm);
+                if (orderByValue) params.append('order_by', orderByValue);
+                if (orderDirectionValue) params.append('order_direction', orderDirectionValue);
+                selectedHorarios.forEach(horario => params.append('horario[]', horario));
+                selectedCategorias.forEach(categoria => params.append('categoria[]', categoria));
+                selectedSubcategorias.forEach(subcategoria => params.append('subcategoria[]', subcategoria));
+                if (fechaInicioValue) params.append('fecha_inicio', fechaInicioValue);
+                if (fechaFinValue) params.append('fecha_fin', fechaFinValue);
+                params.append('horas_totales_min', horasTotalesMinValue);
+                params.append('horas_totales_max', horasTotalesMaxValue);
+                params.append('favoritos', favoritosValue);
+
+                fetch(`${route}?${params.toString()}`, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const newContent = doc.querySelector('.grid');
+                    if (newContent) {
+                        document.querySelector('.grid').innerHTML = newContent.innerHTML;
+                    }
+                    
+                    // Reinicializar los botones de favoritos después de actualizar el contenido
+                    initFavoriteButtons();
+                });
+            };
+
+            searchInput && searchInput.addEventListener('input', function() {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(fetchPublications, 300);
+            });
+
+            orderSelect && orderSelect.addEventListener('change', function(event) {
+                const url = new URL(event.target.value);
+                orderBy.value = url.searchParams.get('order_by');
+                orderDirection.value = url.searchParams.get('order_direction');
+                fetchPublications();
+            });
+
+            clearButton && clearButton.addEventListener('click', function() {
+                searchInput.value = '';
+                orderBy.value = 'fecha_publicacion';
+                orderDirection.value = 'desc';
+                orderSelect.value = `${route}?order_by=fecha_publicacion&order_direction=desc`;
+                horarioCheckboxes.forEach(checkbox => checkbox.checked = false);
+                categoriaCheckboxes.forEach(checkbox => {
+                    checkbox.checked = false;
+                    const categoriaId = checkbox.value;
+                    const subcategoriasDiv = document.getElementById(`subcategorias-${categoriaId}`);
+                    if (subcategoriasDiv) {
+                        subcategoriasDiv.classList.add('hidden');
+                        subcategoriasDiv.querySelectorAll('input[type="checkbox"]').forEach(subCheckbox => {
+                            subCheckbox.checked = false;
+                        });
+                    }
+                });
+                fechaInicio.value = '';
+                fechaFin.value = '';
+                
+                // Resetear el slider de rango
+                if (horasTotalesSlider && horasTotalesSlider.noUiSlider) {
+                    const minValue = parseInt(horasTotalesSlider.noUiSlider.options.range.min);
+                    const maxValue = parseInt(horasTotalesSlider.noUiSlider.options.range.max);
+                    horasTotalesSlider.noUiSlider.set([minValue, maxValue]);
+                }
+                
+                fetchPublications();
+            });
+
+            horarioCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', fetchPublications);
+            });
+
+            subcategoriaCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', fetchPublications);
+            });
+
+            fechaInicio && fechaInicio.addEventListener('change', fetchPublications);
+            fechaFin && fechaFin.addEventListener('change', fetchPublications);
+
+            favoritosCheckbox && favoritosCheckbox.addEventListener('change', fetchPublications);
+
+            // Función para inicializar los botones de favoritos
+            function initFavoriteButtons() {
+                const favoriteButtons = document.querySelectorAll('.favorite-button');
+                favoriteButtons.forEach(button => {
+                    // Eliminar eventos anteriores para evitar duplicados
+                    const newButton = button.cloneNode(true);
+                    button.parentNode.replaceChild(newButton, button);
+                    
+                    newButton.addEventListener('click', function() {
+                        const publicationId = this.dataset.publicationId;
+                        const icon = this.querySelector('i');
+                        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+                        fetch(`/toggle-favorite/${publicationId}`, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': csrfToken,
+                                'Content-Type': 'application/json'
+                            }
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data.status === 'added') {
+                                icon.classList.remove('far');
+                                icon.classList.add('fas', 'text-yellow-500');
+                            } else {
+                                icon.classList.remove('fas', 'text-yellow-500');
+                                icon.classList.add('far');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                        });
+                    });
+                });
+            }
+
+            // Inicializar los botones de favoritos al cargar la página
+            initFavoriteButtons();
+        });
+    </script>
 @endsection
