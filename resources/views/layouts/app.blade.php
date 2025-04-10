@@ -19,6 +19,9 @@
             }
         }
     </script>
+    {{-- Swiper.js para sliders --}}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
 </head>
 <body>
     {{-- HEADER --}}
@@ -37,5 +40,8 @@
     <script src="{{ asset('js/auth/register-step2-validation.js') }}"></script>
     <script src="{{ asset('js/location-selector.js') }}"></script>
     <script src="{{ asset('js/date-restriction.js') }}"></script>
+    
+    <!-- Scripts específicos de cada página -->
+    @stack('scripts')
 </body>
 </html>

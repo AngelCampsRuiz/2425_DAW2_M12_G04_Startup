@@ -41,30 +41,80 @@
                     </h2>
                     
                     <div class="container mx-auto max-w-5xl px-4">
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            @if($empresasDestacadas->isNotEmpty())
-                                @foreach($empresasDestacadas as $empresa)
-                                    <div class="bg-white p-6 rounded-lg shadow-md text-center transform transition-all hover:shadow-xl hover:-translate-y-1">
-                                        @if($empresa->logo)
-                                            <img src="{{ asset('storage/'.$empresa->logo) }}" alt="{{ $empresa->nombre }}" class="h-16 mx-auto mb-4">
-                                        @else
-                                            <div class="h-16 mx-auto mb-4 flex items-center justify-center bg-gray-200 text-gray-500 rounded">
-                                                {{ substr($empresa->nombre, 0, 2) }}
+                        @if($empresasDestacadas->isNotEmpty())
+                            <!-- Slider principal -->
+                            <div class="relative overflow-hidden">
+                                <div class="swiper-container empresas-slider mb-6 overflow-hidden">
+                                    <div class="swiper-wrapper !overflow-visible">
+                                        @foreach($empresasDestacadas as $empresa)
+                                            <div class="swiper-slide">
+                                                <div class="bg-white p-6 rounded-lg shadow-md text-center transform transition-all hover:shadow-xl hover:-translate-y-1 h-full flex flex-col justify-between">
+                                                    @if($empresa->logo)
+                                                        <img src="{{ asset('storage/'.$empresa->logo) }}" alt="{{ $empresa->nombre }}" class="h-16 mx-auto mb-4">
+                                                    @else
+                                                        <div class="h-16 mx-auto mb-4 flex items-center justify-center bg-gray-200 text-gray-500 rounded">
+                                                            {{ substr($empresa->nombre, 0, 2) }}
+                                                        </div>
+                                                    @endif
+                                                    <div>
+                                                        <h3 class="font-bold text-lg">{{ $empresa->nombre }}</h3>
+                                                        <p class="text-gray-600">{{ $empresa->alumnos_contratados }} alumnos contratados</p>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        @endif
-                                        <h3 class="font-bold text-lg">{{ $empresa->nombre }}</h3>
-                                        <p class="text-gray-600">{{ $empresa->alumnos_contratados }} alumnos contratados</p>
+                                        @endforeach
                                     </div>
-                                @endforeach
-                            @else
-                                <div class="col-span-full text-center text-gray-500">
-                                    Aún no hay empresas destacadas.
+                                    <!-- Paginación dentro del slider -->
+                                    <div class="swiper-pagination mt-4"></div>
                                 </div>
-                            @endif
-
-                        </div>
+                                <!-- Controles de navegación fuera del slider pero dentro del contenedor relativo -->
+                                <div class="swiper-button-next text-[#7705B6] absolute top-1/2 -mt-6 right-0 z-10"></div>
+                                <div class="swiper-button-prev text-[#7705B6] absolute top-1/2 -mt-6 left-0 z-10"></div>
+                            </div>
+                        @else
+                            <div class="text-center text-gray-500">
+                                Aún no hay empresas destacadas.
+                            </div>
+                        @endif
                     </div>
                 </section>
+
+                <!-- Scripts para el slider -->
+                @push('scripts')
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        new Swiper('.empresas-slider', {
+                            slidesPerView: 1,
+                            spaceBetween: 20,
+                            loop: true,
+                            // Autoplay desactivado como solicitó el usuario
+                            autoplay: false,
+                            // Evitar scroll lateral
+                            allowTouchMove: true,
+                            touchMoveStopPropagation: true,
+                            simulateTouch: true,
+                            touchStartPreventDefault: true,
+                            pagination: {
+                                el: '.swiper-pagination',
+                                clickable: true,
+                                dynamicBullets: true,
+                            },
+                            navigation: {
+                                nextEl: '.swiper-button-next',
+                                prevEl: '.swiper-button-prev',
+                            },
+                            breakpoints: {
+                                640: {
+                                    slidesPerView: 2,
+                                },
+                                1024: {
+                                    slidesPerView: 3,
+                                }
+                            }
+                        });
+                    });
+                </script>
+                @endpush
             
             <!-- CTA FINAL - Solo visible para usuarios no autenticados -->
                 @guest
