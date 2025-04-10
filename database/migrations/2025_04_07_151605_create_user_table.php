@@ -26,6 +26,8 @@ return new class extends Migration
             $table->string('dni', 20)->nullable()->unique();
             $table->boolean('activo')->default(true);
             $table->string('telefono', 20)->nullable()->unique();
+            $table->text('descripcion')->nullable();
+            $table->string('imagen', 255)->nullable();
             $table->foreignId('role_id')->constrained('roles');
             $table->timestamps();
         });
