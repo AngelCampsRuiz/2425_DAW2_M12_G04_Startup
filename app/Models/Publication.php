@@ -37,4 +37,14 @@ class Publication extends Model
     {
         return $this->belongsTo(Subcategory::class, 'subcategoria_id');
     }
+
+    public function favorites()
+    {
+        return $this->belongsToMany(User::class, 'favorite_publication', 'publicacion_id', 'user_id');
+    }
+
+    public function isFavoritedBy($user)
+    {
+        return $this->favorites()->where('user_id', $user->id)->exists();
+    }
 }

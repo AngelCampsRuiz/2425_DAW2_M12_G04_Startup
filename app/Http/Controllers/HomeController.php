@@ -21,15 +21,14 @@ class HomeController extends Controller
 
 
         // OBTENEMOS LAS EMPRESAS DESTACADAS
-            // $empresasDestacadas = Empresa::withCount(['convenios as alumnos_contratados' => function($query) {
-            //     $query->whereHas('seguimiento', function($q) {
-            //         $q->where('estado', 'completado');
-            //     });
-            // }])
-            // ->orderByDesc('alumnos_contratados')
-            // ->limit(6)
-            // ->get();
-            $empresasDestacadas = collect();
+            $empresasDestacadas = Empresa::withCount(['convenios as alumnos_contratados' => function($query) {
+                $query->whereHas('seguimiento', function($q) {
+                    $q->where('estado', 'completado');
+                });
+            }])
+            ->orderByDesc('alumnos_contratados')
+            ->limit(6)
+            ->get();
 
         // CALCULAMOS EL PORCENTAJE DE EXITO
             $alumnosConPracticas = Seguimiento::where('estado', 'completado')->count();

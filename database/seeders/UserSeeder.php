@@ -26,7 +26,9 @@ class UserSeeder extends Seeder
             'ciudad' => 'Barcelona',
             'dni' => '12345678A',
             'activo' => true,
-            'telefono' => '123456789'
+            'telefono' => '123456789',
+            'descripcion' => 'Administrador del sistema',
+            'imagen' => 'admin/profile.jpg'
         ]);
 
         // Crear usuarios empresa (role_id = 2)
@@ -40,13 +42,16 @@ class UserSeeder extends Seeder
                 'ciudad' => fake()->city,
                 'dni' => fake()->numerify('########') . fake()->randomLetter(),
                 'activo' => true,
-                'telefono' => fake()->phoneNumber
+                'telefono' => fake()->phoneNumber,
+                'descripcion' => fake()->paragraph(3),
+                'imagen' => 'empresas/empresa_' . $j . '.jpg'
             ]);
         }
 
         // Crear usuarios estudiante y tutor (role_id = 3 y 4)
         for ($i = 3; $i <= 4; $i++) {
             for ($j = 1; $j <= 5; $j++) {
+                $roleText = $i == 3 ? 'estudiantes' : 'tutores';
                 User::create([
                     'nombre' => fake()->name,
                     'email' => "usuario{$i}_{$j}@example.com",
@@ -56,7 +61,11 @@ class UserSeeder extends Seeder
                     'ciudad' => fake()->city,
                     'dni' => fake()->numerify('########') . fake()->randomLetter(),
                     'activo' => true,
-                    'telefono' => fake()->phoneNumber
+                    'telefono' => fake()->phoneNumber,
+                    'descripcion' => $i == 3 ? 
+                        fake()->paragraph(2) . '\n\nHabilidades: ' . implode(', ', fake()->words(5)) : 
+                        'Tutor con experiencia en ' . fake()->jobTitle() . '. ' . fake()->sentence(10),
+                    'imagen' => $roleText . '/perfil_' . $j . '.jpg'
                 ]);
             }
         }
