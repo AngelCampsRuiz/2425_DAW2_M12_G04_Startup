@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const horasTotalesRange = document.getElementById('horasTotalesRange');
     const route = searchForm.getAttribute('data-route');
     const favoriteButtons = document.querySelectorAll('.favorite-button');
+    const favoritosCheckbox = document.getElementById('favoritosCheckbox');
 
     // Mostrar/ocultar subcategorías al seleccionar una categoría
     categoriaCheckboxes.forEach(checkbox => {
@@ -74,9 +75,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const fechaFinValue = fechaFin.value;
         const horasTotalesMinValue = horasTotalesMin.value;
         const horasTotalesMaxValue = horasTotalesMax.value;
-
-        // Mostrar las categorías seleccionadas en el console.log
-        console.log("Categorías seleccionadas:", selectedCategorias);
+        const favoritosValue = favoritosCheckbox.checked ? 'on' : 'off';
 
         const params = new URLSearchParams();
         if (searchTerm) params.append('search', searchTerm);
@@ -89,6 +88,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (fechaFinValue) params.append('fecha_fin', fechaFinValue);
         params.append('horas_totales_min', horasTotalesMinValue);
         params.append('horas_totales_max', horasTotalesMaxValue);
+        params.append('favoritos', favoritosValue);
 
         fetch(`${route}?${params.toString()}`, {
             headers: {
@@ -149,6 +149,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     fechaInicio.addEventListener('change', fetchPublications);
     fechaFin.addEventListener('change', fetchPublications);
+
+    favoritosCheckbox.addEventListener('change', fetchPublications);
 
     // Inicializar el rango
     updateRange();

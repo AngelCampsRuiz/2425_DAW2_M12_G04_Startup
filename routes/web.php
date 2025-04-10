@@ -8,6 +8,7 @@ use App\Http\Controllers\StudentDashboardController;
 use App\Http\Controllers\CompanyDashboardController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Admin\PublicacionController;
+use App\Http\Controllers\PublicationController;
 
 // Ruta principal usando el HomeController
     Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -54,3 +55,5 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
 
 // Test route without custom middleware
 Route::get('/test-dashboard', [StudentDashboardController::class, 'index'])->name('test.dashboard');
+
+Route::get('/publication/{id}', [PublicationController::class, 'show'])->name('publication.show');
