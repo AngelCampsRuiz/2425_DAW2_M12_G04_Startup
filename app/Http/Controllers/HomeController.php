@@ -60,8 +60,9 @@ class HomeController extends Controller
             ));
     }
 
-    public function profile()
+    public function profile($id = null)
     {
-        return view('profile');
+        $user = $id ? User::findOrFail($id)->load('tutor', 'estudiante', 'empresa') : auth()->user()->load('tutor', 'estudiante', 'empresa');
+        return view('profile', compact('user'));
     }
 }
