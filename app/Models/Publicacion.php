@@ -14,8 +14,19 @@ class Publicacion extends Model
     protected $fillable = [
         'titulo',
         'descripcion',
+        'horario',
+        'horas_totales',
+        'fecha_publicacion',
+        'activa',
+        'empresa_id',
+        'categoria_id',
         'subcategoria_id'
     ];
+
+    public function empresa()
+    {
+        return $this->belongsTo(Empresa::class);
+    }
 
     public function subcategoria()
     {

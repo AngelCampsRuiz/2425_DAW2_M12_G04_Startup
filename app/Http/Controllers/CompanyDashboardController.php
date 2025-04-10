@@ -102,6 +102,22 @@ class CompanyDashboardController extends Controller
             'respuesta_empresa' => $request->respuesta_empresa
         ]);
 
+        // Si la solicitud fue aceptada
+        if ($request->estado === 'aceptada') {
+            // Marcar la publicación como inactiva
+            $solicitud->publicacion->update([
+                'activa' => false
+            ]);
+
+            // Rechazar automáticamente todas las otras solicitudes de esta publicación
+            Solicitud::where('publicacion_id', $solicitud->publicacion_id)
+                ->where('id', '!=', $solicitud->id)
+                ->update([
+                    'estado' => 'rechazada',
+                    'respuesta_empresa' => 'Solicitud rechazada automáticamente porque otro candidato fue aceptado.'
+                ]);
+        }
+
         return back()->with('success', 'Estado de la solicitud actualizado correctamente');
     }
 }
