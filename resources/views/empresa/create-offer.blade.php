@@ -124,68 +124,7 @@
         </div>
     </div>
 </div>
+@endsection
 
-@push('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const categoriaSelect = document.getElementById('categoria_id');
-    const subcategoriaSelect = document.getElementById('subcategoria_id');
 
-    // Función para cargar subcategorías
-    function loadSubcategorias(categoriaId) {
-        console.log('Cargando subcategorías para categoría:', categoriaId);
-        subcategoriaSelect.innerHTML = '<option value="">Cargando subcategorías...</option>';
-        
-        if (categoriaId) {
-            fetch(`/empresa/get-subcategorias/${categoriaId}`)
-                .then(response => {
-                    console.log('Respuesta recibida:', response.status);
-                    if (!response.ok) {
-                        throw new Error(`Error HTTP: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    console.log('Datos recibidos:', data);
-                    subcategoriaSelect.innerHTML = '<option value="">Selecciona una subcategoría</option>';
-                    
-                    if (Array.isArray(data) && data.length > 0) {
-                        data.forEach(subcategoria => {
-                            console.log('Procesando subcategoría:', subcategoria);
-                            const option = document.createElement('option');
-                            option.value = subcategoria.id;
-                            option.textContent = subcategoria.nombre_subcategoria;
-                            if (subcategoria.id == "{{ old('subcategoria_id') }}") {
-                                option.selected = true;
-                            }
-                            subcategoriaSelect.appendChild(option);
-                        });
-                    } else {
-                        console.log('No se encontraron subcategorías');
-                        subcategoriaSelect.innerHTML = '<option value="">No hay subcategorías disponibles</option>';
-                    }
-                })
-                .catch(error => {
-                    console.error('Error al cargar subcategorías:', error);
-                    subcategoriaSelect.innerHTML = '<option value="">Error al cargar subcategorías</option>';
-                });
-        } else {
-            subcategoriaSelect.innerHTML = '<option value="">Primero selecciona una categoría</option>';
-        }
-    }
-
-    // Cargar subcategorías si hay una categoría seleccionada
-    if (categoriaSelect.value) {
-        console.log('Categoría inicial seleccionada:', categoriaSelect.value);
-        loadSubcategorias(categoriaSelect.value);
-    }
-
-    // Evento para cuando cambia la categoría
-    categoriaSelect.addEventListener('change', function() {
-        console.log('Categoría cambiada a:', this.value);
-        loadSubcategorias(this.value);
-    });
-});
-</script>
-@endpush
-@endsection 
+<script src="{{ asset('js/create-offer.js') }}"></script>

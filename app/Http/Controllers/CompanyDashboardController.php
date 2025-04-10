@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Publication;
 use App\Models\Application;
+use App\Models\Categoria;
+use App\Models\Subcategoria;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -30,8 +32,23 @@ class CompanyDashboardController extends Controller
 
     public function createOffer()
     {
-        $categorias = \App\Models\Categoria::all();
+        $categorias = Categoria::select('id', 'nombre_categoria')
+                             ->orderBy('nombre_categoria')
+                             ->get()
+                             ->unique('id');
+
         return view('empresa.create-offer', compact('categorias'));
+    }
+
+    public function getSubcategorias($categoriaId)
+    {
+        $subcategorias = Subcategoria::select('id', 'nombre_subcategoria')
+                                    ->where('categoria_id', $categoriaId)
+                                    ->orderBy('nombre_subcategoria')
+                                    ->get()
+                                    ->unique('id');
+        
+        return response()->json($subcategorias->values()->all());
     }
 
     public function storeOffer(Request $request)
@@ -48,6 +65,7 @@ class CompanyDashboardController extends Controller
         $publication = new Publication($request->all());
         $publication->empresa_id = Auth::id();
         $publication->activa = true;
+        $publication->fecha_publicacion = now();
         $publication->save();
 
         return redirect()->route('empresa.dashboard')
@@ -66,50 +84,4 @@ class CompanyDashboardController extends Controller
 
         return view('empresa.applications', compact('publication', 'applications'));
     }
-
-    public function togglePublicationStatus($id)
-    {
-        $publication = Publication::where('empresa_id', Auth::id())
-            ->findOrFail($id);
-        
-        $publication->activa = !$publication->activa;
-        $publication->save();
-
-        return back()->with('success', 
-            $publication->activa ? 'Oferta activada exitosamente' : 'Oferta desactivada exitosamente');
-    }
-
-    public function updateApplicationStatus($publicationId, $applicationId, Request $request)
-    {
-        $publication = Publication::where('empresa_id', Auth::id())
-            ->findOrFail($publicationId);
-        
-        $application = $publication->applications()
-            ->findOrFail($applicationId);
-
-        if ($request->action === 'accept') {
-            $application->estado = 'aceptada';
-            $message = 'Solicitud aceptada exitosamente';
-        } else {
-            $application->estado = 'rechazada';
-            $message = 'Solicitud rechazada exitosamente';
-        }
-
-        $application->save();
-
-        return back()->with('success', $message);
-    }
-
-    public function getSubcategorias($categoriaId)
-    {
-        \Log::info('Buscando subcategorías para categoría: ' . $categoriaId);
-        
-        $subcategorias = \App\Models\Subcategoria::where('categoria_id', $categoriaId)
-            ->select('id', 'nombre_subcategoria')
-            ->get();
-            
-        \Log::info('Subcategorías encontradas: ' . $subcategorias->count());
-        
-        return response()->json($subcategorias);
-    }
-} 
+}
