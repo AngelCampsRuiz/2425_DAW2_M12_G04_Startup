@@ -42,4 +42,9 @@ class Publication extends Model
     {
         return $this->hasMany(Application::class, 'publicacion_id');
     }
+
+    public function solicitudes()
+    {
+        return $this->hasMany(Solicitud::class);
+    }
 }

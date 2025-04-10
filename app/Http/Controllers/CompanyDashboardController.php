@@ -6,6 +6,7 @@ use App\Models\Publication;
 use App\Models\Application;
 use App\Models\Categoria;
 use App\Models\Subcategoria;
+use App\Models\Solicitud;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -75,13 +76,33 @@ class CompanyDashboardController extends Controller
     public function viewApplications($publicationId)
     {
         $publication = Publication::where('empresa_id', Auth::id())
+            ->with(['solicitudes.estudiante.user'])
             ->findOrFail($publicationId);
         
-        $applications = $publication->applications()
-            ->with('student')
+        $solicitudes = $publication->solicitudes()
+            ->with('estudiante.user')
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return view('empresa.applications', compact('publication', 'applications'));
+        return view('empresa.applications', compact('publication', 'solicitudes'));
+    }
+
+    public function updateApplicationStatus(Request $request, $publicationId, $solicitudId)
+    {
+        $solicitud = Solicitud::whereHas('publicacion', function ($query) {
+            $query->where('empresa_id', Auth::id());
+        })->findOrFail($solicitudId);
+
+        $request->validate([
+            'estado' => 'required|in:aceptada,rechazada',
+            'respuesta_empresa' => 'nullable|string|max:500'
+        ]);
+
+        $solicitud->update([
+            'estado' => $request->estado,
+            'respuesta_empresa' => $request->respuesta_empresa
+        ]);
+
+        return back()->with('success', 'Estado de la solicitud actualizado correctamente');
     }
 }

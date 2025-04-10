@@ -35,4 +35,9 @@ class Estudiante extends Model
     {
         return $this->hasMany(Experiencia::class);
     }
+
+    public function solicitudes()
+    {
+        return $this->hasMany(Solicitud::class);
+    }
 }
