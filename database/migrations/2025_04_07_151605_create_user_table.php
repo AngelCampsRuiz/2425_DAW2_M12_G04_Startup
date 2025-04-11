@@ -15,7 +15,7 @@ return new class extends Migration
         Schema::dropIfExists('users');
         Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');
-        
+
         Schema::create('user', function (Blueprint $table) {
             $table->id();
             $table->string('nombre', 100);
@@ -25,9 +25,11 @@ return new class extends Migration
             $table->string('ciudad', 100)->nullable();
             $table->string('dni', 20)->nullable()->unique();
             $table->boolean('activo')->default(true);
+            $table->string('sitio_web')->nullable();
             $table->string('telefono', 20)->nullable()->unique();
             $table->text('descripcion')->nullable();
             $table->string('imagen', 255)->nullable();
+            $table->boolean('visibilidad')->default(false);
             $table->foreignId('role_id')->constrained('roles');
             $table->timestamps();
         });

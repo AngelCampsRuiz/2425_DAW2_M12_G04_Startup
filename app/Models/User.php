@@ -58,6 +58,11 @@ class User extends Authenticatable
         return $this->hasOne(Tutor::class, 'id', 'id');
     }
 
+    public function categoria()
+    {
+        return $this->hasOneThrough(Categoria::class, Tutor::class, 'id', 'id', 'id', 'categoria_id');
+    }
+
     /**
      * Verifica que el usuario tenga todos los campos requeridos completos
      *

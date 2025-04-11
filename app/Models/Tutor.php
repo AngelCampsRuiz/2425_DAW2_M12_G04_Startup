@@ -23,8 +23,9 @@ class Tutor extends Model
         return $this->belongsToMany(Estudiante::class, 'alumno_tutores');
     }
 
-    public function categorias()
+
+    public function categoria()
     {
-        return $this->belongsToMany(Categoria::class);
+        return $this->belongsTo(Categoria::class, 'categoria_id');
     }
 }

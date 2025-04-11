@@ -42,6 +42,7 @@ class UserSeeder extends Seeder
                 'ciudad' => fake()->city,
                 'dni' => fake()->numerify('########') . fake()->randomLetter(),
                 'activo' => true,
+                'sitio_web' => fake()->url,
                 'telefono' => fake()->phoneNumber,
                 'descripcion' => fake()->paragraph(3),
                 'imagen' => 'empresas/empresa_' . $j . '.jpg'
@@ -61,9 +62,10 @@ class UserSeeder extends Seeder
                     'ciudad' => fake()->city,
                     'dni' => fake()->numerify('########') . fake()->randomLetter(),
                     'activo' => true,
+                    'sitio_web' => fake()->url,
                     'telefono' => fake()->phoneNumber,
-                    'descripcion' => $i == 3 ? 
-                        fake()->paragraph(2) . '\n\nHabilidades: ' . implode(', ', fake()->words(5)) : 
+                    'descripcion' => $i == 3 ?
+                        fake()->paragraph(2) . '\n\nHabilidades: ' . implode(', ', fake()->words(5)) :
                         'Tutor con experiencia en ' . fake()->jobTitle() . '. ' . fake()->sentence(10),
                     'imagen' => $roleText . '/perfil_' . $j . '.jpg'
                 ]);

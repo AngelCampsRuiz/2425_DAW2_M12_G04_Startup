@@ -14,13 +14,12 @@
                     <p>{{ $user->email }}</p>
                     <p>{{ $user->descripcion }}</p>
                     @if($user->role_id == 3)
-                        <p>Grado superior en Desarrollo de Aplicaciones Web</p>
+                        <p>Cursando: {{ $user->estudiante->titulo->name_titulo ?? 'No asignada' }}</p>
                         <a href="{{ asset('cv/' . $user->estudiante->cv_pdf) }}" class="cv-link" target="_blank">{{ $user->estudiante->cv_pdf }}</a>
                     @elseif($user->role_id == 2)
-                        <p>Grado superior en Desarrollo de Aplicaciones Web</p>
                         <a href="{{ $user->sitio_web }}" class="cv-link" target="_blank">{{ $user->sitio_web }}</a>
                     @elseif($user->role_id == 4)
-                        {{-- <p>Especialidad: {{ $user->nombre_categoria }}</p> --}}
+                        <p>Especialidad: {{ $user->tutor->categoria->nombre_categoria ?? 'No asignada' }}</p>
                         <p>Trabajo en: <a href="{{ asset($user->sitio_web) }}" class="cv-link" target="_blank">{{ $user->tutor->centro_asignado }}</a></p>
                     @endif
                 </div>

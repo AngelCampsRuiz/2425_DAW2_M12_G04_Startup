@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Estudiante extends Model
 {
     use HasFactory;
-    
+
     protected $table = 'estudiantes';
 
     protected $fillable = [
@@ -17,7 +17,7 @@ class Estudiante extends Model
         'cv_pdf',
         'numero_seguridad_social'
     ];
-    
+
     // Indicar que la clave primaria no es autoincremental
     public $incrementing = false;
 
@@ -39,5 +39,10 @@ class Estudiante extends Model
     public function solicitudes()
     {
         return $this->hasMany(Solicitud::class);
+    }
+
+    public function titulo()
+    {
+        return $this->belongsTo(Titulo::class, 'titulo_id');
     }
 }
