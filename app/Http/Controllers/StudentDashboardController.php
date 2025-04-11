@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Publication;
-use App\Models\Category;
+use App\Models\Categoria;
 use App\Models\Subcategoria;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -64,7 +64,7 @@ class StudentDashboardController extends Controller
         $horarios = Publication::select('horario')->distinct()->pluck('horario');
 
         // Obtener categorías con sus subcategorías
-        $categorias = Category::with('subcategorias')->get();
+        $categorias = Categoria::with('subcategorias')->get();
 
         // Obtener valores mínimos y máximos de horas totales
         $horasTotalesMin = Publication::min('horas_totales');
