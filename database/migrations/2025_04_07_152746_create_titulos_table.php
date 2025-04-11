@@ -11,11 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tutores', function (Blueprint $table) {
-            $table->unsignedBigInteger('id')->primary();
-            $table->string('centro_asignado', 100);
-            $table->foreign('id')->references('id')->on('user');
-            $table->foreignId('categoria_id')->constrained('categorias');
+        Schema::create('titulos', function (Blueprint $table) {
+            $table->id();
+            $table->string('name_titulo');
             $table->timestamps();
         });
     }
@@ -25,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tutores');
+        Schema::dropIfExists('titulos');
     }
 };

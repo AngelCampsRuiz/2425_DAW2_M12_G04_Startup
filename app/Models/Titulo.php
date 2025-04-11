@@ -5,11 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Tutor extends Model
+class Titulo extends Model
 {
     use HasFactory;
 
-    protected $table = 'tutores';
+    protected $table = 'titulos';
 
     protected $fillable = ['centro_asignado', 'categoria_id'];
 
@@ -25,6 +25,6 @@ class Tutor extends Model
 
     public function categorias()
     {
-        return $this->belongsToMany(Categoria::class);
+        return $this->belongsToMany(Categoria::class, 'categoria_tutor');
     }
 }

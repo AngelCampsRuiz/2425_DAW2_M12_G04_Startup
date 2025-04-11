@@ -17,4 +17,9 @@ class Categoria extends Model
     {
         return $this->hasMany(Subcategoria::class);
     }
+
+    public function tutores()
+    {
+        return $this->belongsToMany(Tutor::class, 'categoria_tutor');
+    }
 }
