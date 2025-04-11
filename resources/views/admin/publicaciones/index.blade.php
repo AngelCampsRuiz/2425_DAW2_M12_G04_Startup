@@ -162,7 +162,20 @@
 
 @push('scripts')
 <script>
+    // Variable de control para evitar duplicación
+    let isSubmitting = false;
+    let initialized = false;
+    
     document.addEventListener('DOMContentLoaded', function() {
+        // Inicialización de botones solo una vez
+        if (!initialized) {
+            setupEventListeners();
+            initialized = true;
+        }
+    });
+    
+    // Configura todos los listeners una sola vez
+    function setupEventListeners() {
         // Cerrar modales
         document.getElementById('modal-close').addEventListener('click', function() {
             document.getElementById('modal-publicacion').classList.add('hidden');
@@ -180,13 +193,49 @@
             document.getElementById('modal-eliminar').classList.add('hidden');
         });
         
-        // Envío del formulario de crear/editar
+        // Delegación de eventos para los botones dinámicos
+        document.addEventListener('click', function(e) {
+            // Botón Crear
+            if (e.target.closest('.btn-crear')) {
+                mostrarFormularioCrear();
+            }
+            
+            // Botones Editar
+            if (e.target.closest('.btn-editar')) {
+                const btn = e.target.closest('.btn-editar');
+                const id = btn.getAttribute('data-id');
+                mostrarFormularioEditar(id);
+            }
+            
+            // Botones Eliminar
+            if (e.target.closest('.btn-eliminar')) {
+                const btn = e.target.closest('.btn-eliminar');
+                const id = btn.getAttribute('data-id');
+                mostrarModalEliminar(id);
+            }
+            
+            // Enlaces de paginación
+            if (e.target.closest('.pagination-link')) {
+                e.preventDefault();
+                const link = e.target.closest('.pagination-link');
+                actualizarTabla(link.getAttribute('href'));
+            }
+        });
+        
+        // Envío del formulario de crear/editar - Una sola vez
         document.getElementById('form-publicacion').addEventListener('submit', function(e) {
             e.preventDefault();
+            
+            // Evitar envíos duplicados
+            if (isSubmitting) return;
+            isSubmitting = true;
             
             const formData = new FormData(this);
             const url = this.getAttribute('action');
             const method = document.getElementById('form_method').value;
+            
+            // Deshabilitar botones durante la petición
+            document.getElementById('btn-guardar').disabled = true;
             
             fetch(url, {
                 method: method === 'PUT' ? 'POST' : 'POST',
@@ -207,12 +256,20 @@
             })
             .catch(error => {
                 console.error('Error:', error);
+            })
+            .finally(() => {
+                isSubmitting = false;
+                document.getElementById('btn-guardar').disabled = false;
             });
         });
         
-        // Envío del formulario de eliminar
+        // Envío del formulario de eliminar - Una sola vez
         document.getElementById('form-eliminar').addEventListener('submit', function(e) {
             e.preventDefault();
+            
+            // Evitar envíos duplicados
+            if (isSubmitting) return;
+            isSubmitting = true;
             
             const url = this.getAttribute('action');
             
@@ -234,54 +291,197 @@
             })
             .catch(error => {
                 console.error('Error:', error);
+            })
+            .finally(() => {
+                isSubmitting = false;
             });
         });
+    }
+    
+    // Funciones principales
+    function mostrarFormularioCrear() {
+        // Resetear el formulario
+        document.getElementById('form-publicacion').reset();
+        document.getElementById('form-errors').classList.add('hidden');
+        document.getElementById('publicacion_id').value = '';
+        document.getElementById('form_method').value = 'POST';
         
-        // Funciones auxiliares para mostrar mensajes y errores
-        window.mostrarMensajeExito = function(mensaje) {
-            const messageElement = document.getElementById('success-message');
-            const messageText = document.getElementById('success-message-text');
-            
-            messageText.textContent = mensaje;
-            messageElement.style.display = 'block';
-            
-            setTimeout(function() {
-                messageElement.style.display = 'none';
-            }, 5000);
-        };
+        // Configurar la acción del formulario
+        document.getElementById('form-publicacion').setAttribute('action', '{{ route("admin.publicaciones.store") }}');
         
-        window.mostrarErrores = function(errores) {
-            const errorsDiv = document.getElementById('form-errors');
-            const errorsList = document.getElementById('error-list');
-            
-            errorsList.innerHTML = '';
-            
-            for (const key in errores) {
-                errores[key].forEach(error => {
-                    const li = document.createElement('li');
-                    li.textContent = error;
-                    errorsList.appendChild(li);
-                });
+        // Cambiar el título del modal
+        document.getElementById('modal-titulo').textContent = 'Crear Nueva Publicación';
+        
+        // Mostrar el modal
+        document.getElementById('modal-publicacion').classList.remove('hidden');
+    }
+    
+    function mostrarFormularioEditar(id) {
+        // Configurar el formulario
+        document.getElementById('form-errors').classList.add('hidden');
+        document.getElementById('publicacion_id').value = id;
+        document.getElementById('form_method').value = 'PUT';
+        document.getElementById('form-publicacion').setAttribute('action', `/admin/publicaciones/${id}`);
+        
+        // Cambiar el título del modal
+        document.getElementById('modal-titulo').textContent = 'Editar Publicación';
+        
+        // Cargar los datos de la publicación
+        fetch(`/admin/publicaciones/${id}/edit`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
             }
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Llenar el formulario con los datos
+            document.getElementById('titulo').value = data.publicacion.titulo;
+            document.getElementById('descripcion').value = data.publicacion.descripcion;
+            document.getElementById('empresa_id').value = data.publicacion.empresa_id;
+            document.getElementById('categoria_id').value = data.publicacion.categoria_id;
+            document.getElementById('subcategoria_id').value = data.publicacion.subcategoria_id;
+            document.getElementById('horario').value = data.publicacion.horario;
+            document.getElementById('horas_totales').value = data.publicacion.horas_totales;
+            document.getElementById('fecha_publicacion').value = data.publicacion.fecha_publicacion;
+            document.getElementById('activa').checked = data.publicacion.activa === 1;
             
-            errorsDiv.classList.remove('hidden');
-        };
+            // Mostrar el modal
+            document.getElementById('modal-publicacion').classList.remove('hidden');
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+    
+    function mostrarModalEliminar(id) {
+        // Configurar el formulario
+        document.getElementById('eliminar_id').value = id;
+        document.getElementById('form-eliminar').setAttribute('action', `/admin/publicaciones/${id}`);
         
-        // Funciones de actualización de tabla
-        window.actualizarTabla = function(url = '{{ route('admin.publicaciones.index') }}') {
-            fetch(url, {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('tabla-container').innerHTML = data.tabla;
-            })
-            .catch(error => {
-                console.error('Error:', error);
+        // Mostrar el modal
+        document.getElementById('modal-eliminar').classList.remove('hidden');
+    }
+    
+    // Funciones auxiliares para mostrar mensajes y errores
+    window.mostrarMensajeExito = function(mensaje) {
+        const messageElement = document.getElementById('success-message');
+        const messageText = document.getElementById('success-message-text');
+        
+        messageText.textContent = mensaje;
+        messageElement.style.display = 'block';
+        
+        setTimeout(function() {
+            messageElement.style.display = 'none';
+        }, 5000);
+    };
+    
+    window.mostrarErrores = function(errores) {
+        const errorsDiv = document.getElementById('form-errors');
+        const errorsList = document.getElementById('error-list');
+        
+        errorsList.innerHTML = '';
+        
+        for (const key in errores) {
+            errores[key].forEach(error => {
+                const li = document.createElement('li');
+                li.textContent = error;
+                errorsList.appendChild(li);
             });
-        };
-    });
+        }
+        
+        errorsDiv.classList.remove('hidden');
+    };
+    
+    // Funciones de actualización de tabla
+    window.actualizarTabla = function(url = '{{ route('admin.publicaciones.index') }}') {
+        fetch(url, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('tabla-container').innerHTML = data.tabla;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    };
 </script>
+
+<style>
+/* =========== ESTILOS PARA ASEGURAR VISIBILIDAD DE BOTONES =========== */
+/* Asegurar que los botones de acción siempre estén visibles */
+.btn-editar, .btn-eliminar {
+    display: inline-block !important;
+    line-height: 1 !important;
+    height: 24px !important;
+    width: 24px !important;
+    min-height: 24px !important;
+    min-width: 24px !important;
+    border-radius: 4px !important;
+    padding: 0 !important;
+    text-align: center !important;
+}
+
+.btn-editar {
+    background-color: #3b82f6 !important;
+    margin-right: 8px !important;
+}
+
+.btn-eliminar {
+    background-color: #ef4444 !important;
+}
+
+/* Forzar estilo en los iconos SVG */
+.btn-editar svg, .btn-eliminar svg {
+    display: block !important;
+    height: 18px !important;
+    width: 18px !important;
+    min-height: 18px !important;
+    min-width: 18px !important;
+    margin: 3px auto !important;
+    color: white !important;
+    stroke: white !important;
+}
+
+/* Estilo para el contenedor de botones */
+td .flex.justify-center.space-x-2 {
+    display: flex !important;
+    gap: 8px !important; 
+    min-width: 70px !important;
+}
+
+/* Estilos específicos para las celdas de la tabla */
+td.whitespace-nowrap:last-child {
+    width: 100px !important;
+    min-width: 100px !important;
+    max-width: 100px !important;
+    text-align: center !important;
+    padding: 8px !important;
+}
+
+/* Forzar ancho mínimo de celda para todas las columnas */
+td.whitespace-nowrap {
+    min-width: 80px !important;
+}
+
+/* Estilos para las tarjetas en móvil */
+.md\\:hidden .btn-editar,
+.md\\:hidden .btn-eliminar {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    min-height: 36px !important;
+}
+
+.md\\:hidden .btn-editar svg,
+.md\\:hidden .btn-eliminar svg {
+    height: 24px !important;
+    width: 24px !important;
+    min-height: 24px !important;
+    min-width: 24px !important;
+    margin: 6px auto !important;
+}
+</style>
 @endpush 
