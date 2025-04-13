@@ -13,6 +13,7 @@ use App\Http\Controllers\PublicationController;
 use App\Http\Controllers\Admin\CategoriaController;
 use App\Http\Controllers\Admin\SubcategoriaController;
 use App\Http\Controllers\SolicitudController;
+use App\Http\Controllers\ChatController;
 
 // Ruta principal usando el HomeController
     Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -87,3 +88,12 @@ Route::get('/test-dashboard', [StudentDashboardController::class, 'index'])->nam
 Route::get('/publication/{id}', [PublicationController::class, 'show'])->name('publication.show');
 
 Route::post('/solicitudes/{publication}', [SolicitudController::class, 'store'])->name('solicitudes.store');
+
+// Rutas para el chat
+Route::middleware(['auth'])->group(function () {
+    Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
+    Route::get('/chat/{chat}', [ChatController::class, 'showChat'])->name('chat.show');
+    Route::post('/chat/{chat}/message', [ChatController::class, 'sendMessage'])->name('chat.message');
+    Route::get('/chat/{chat}/messages', [ChatController::class, 'getMessages'])->name('chat.messages');
+    Route::post('/chat/create/{solicitud}', [ChatController::class, 'createChat'])->name('chat.create');
+});

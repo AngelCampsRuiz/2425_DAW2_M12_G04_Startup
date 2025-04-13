@@ -13,9 +13,8 @@ return new class extends Migration
     {
         Schema::create('chats', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('alumno_id')->constrained('estudiantes');
-            $table->foreignId('tutor_id')->constrained('tutores');
             $table->foreignId('empresa_id')->constrained('empresas');
+            $table->foreignId('solicitud_id')->constrained('solicitudes');
             $table->timestamps();
         });
     }

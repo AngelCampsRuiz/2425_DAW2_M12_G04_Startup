@@ -120,7 +120,7 @@ class CompanyDashboardController extends Controller
             ->findOrFail($publicationId);
         
         $solicitudes = Solicitud::where('publicacion_id', $publicationId)
-            ->with('estudiante.user')
+            ->with(['estudiante.user', 'estudiante.titulo', 'chat'])
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -157,6 +157,16 @@ class CompanyDashboardController extends Controller
                     'estado' => 'rechazada',
                     'respuesta_empresa' => 'Solicitud rechazada automáticamente porque otro candidato fue aceptado.'
                 ]);
+                
+            // Crear un chat entre la empresa y el estudiante
+            $chat = \App\Models\Chat::create([
+                'empresa_id' => Auth::id(),
+                'solicitud_id' => $solicitud->id
+            ]);
+            
+            // Redirigir al chat
+            return redirect()->route('chat.show', $chat->id)
+                ->with('success', 'Solicitud aceptada y chat creado correctamente');
         }
 
         return back()->with('success', 'Estado de la solicitud actualizado correctamente');

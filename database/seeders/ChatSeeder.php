@@ -8,7 +8,7 @@ use App\Models\Chat;
 use App\Models\User;
 use App\Models\Empresa;
 use App\Models\Estudiante;
-use App\Models\Tutor;
+use App\Models\Solicitud;
 
 class ChatSeeder extends Seeder
 {
@@ -17,31 +17,17 @@ class ChatSeeder extends Seeder
      */
     public function run(): void
     {
-        $estudiantes = Estudiante::all();
-        $tutores = Tutor::all();
+        $solicitudes = Solicitud::all();
         $empresas = Empresa::all();
 
         // Crear algunos chats de ejemplo
-        foreach ($estudiantes as $estudiante) {
-            // Cada estudiante tendrá al menos un chat
+        foreach ($solicitudes as $solicitud) {
             Chat::create([
-                'alumno_id' => $estudiante->id,
-                'tutor_id' => $tutores->random()->id,
-                'empresa_id' => $empresas->random()->id,
+                'empresa_id' => $solicitud->empresa_id,
+                'solicitud_id' => $solicitud->id,
                 'created_at' => fake()->dateTimeBetween('-6 months', 'now'),
                 'updated_at' => now()
             ]);
-
-            // 50% de probabilidad de tener un chat adicional
-            if (rand(0, 1)) {
-                Chat::create([
-                    'alumno_id' => $estudiante->id,
-                    'tutor_id' => $tutores->random()->id,
-                    'empresa_id' => $empresas->random()->id,
-                    'created_at' => fake()->dateTimeBetween('-6 months', 'now'),
-                    'updated_at' => now()
-                ]);
-            }
         }
     }
 }

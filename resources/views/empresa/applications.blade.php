@@ -186,6 +186,25 @@
                                                     </button>
                                                 </div>
                                             </form>
+                                        @elseif($solicitud->estado === 'aceptada')
+                                            <div class="mt-6">
+                                                @if($solicitud->chat)
+                                                    <a href="{{ route('chat.show', $solicitud->chat->id) }}" 
+                                                       class="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors duration-200">
+                                                        <i class="fas fa-comments mr-2"></i>
+                                                        Ir al chat
+                                                    </a>
+                                                @else
+                                                    <form action="{{ route('chat.create', $solicitud->id) }}" method="POST" class="inline">
+                                                        @csrf
+                                                        <button type="submit" 
+                                                                class="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors duration-200">
+                                                            <i class="fas fa-plus-circle mr-2"></i>
+                                                            Crear chat
+                                                        </button>
+                                                    </form>
+                                                @endif
+                                            </div>
                                         @endif
                                     </div>
                                 </div>
