@@ -44,14 +44,6 @@ class StudentDashboardController extends Controller
             $query->whereBetween('horas_totales', [$request->get('horas_totales_min'), $request->get('horas_totales_max')]);
         }
 
-        // Aplicar filtro de favoritos
-        if ($request->has('favoritos') && $request->get('favoritos') == 'on') {
-            $user = Auth::user();
-            $query->whereHas('favorites', function($q) use ($user) {
-                $q->where('user_id', $user->id);
-            });
-        }
-
         // Aplicar ordenamiento
         $orderBy = $request->get('order_by', 'fecha_publicacion');
         $orderDirection = $request->get('order_direction', 'desc');
@@ -77,19 +69,5 @@ class StudentDashboardController extends Controller
             'horasTotalesMin' => $horasTotalesMin,
             'horasTotalesMax' => $horasTotalesMax
         ]);
-    }
-
-    public function toggleFavorite(Request $request, $publicationId)
-    {
-        $user = Auth::user();
-        $publication = Publication::findOrFail($publicationId);
-
-        if ($user->favorites()->where('publicacion_id', $publicationId)->exists()) {
-            $user->favorites()->detach($publicationId);
-            return response()->json(['status' => 'removed']);
-        } else {
-            $user->favorites()->attach($publicationId);
-            return response()->json(['status' => 'added']);
-        }
     }
 }

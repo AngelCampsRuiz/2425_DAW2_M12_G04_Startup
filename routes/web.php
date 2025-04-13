@@ -43,7 +43,6 @@ use App\Http\Controllers\Admin\SubcategoriaController;
 
     Route::middleware(['auth'])->group(function () {
         Route::get('/student/dashboard', [StudentDashboardController::class, 'index'])->name('student.dashboard');
-        Route::post('/toggle-favorite/{publicationId}', [StudentDashboardController::class, 'toggleFavorite'])->name('toggle-favorite');
         Route::get('/profile', [HomeController::class, 'profile'])->name('profile');
         Route::get('/profile/{id}', [HomeController::class, 'profile'])->name('profile.view');
     });
