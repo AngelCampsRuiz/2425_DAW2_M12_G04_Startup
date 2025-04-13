@@ -35,9 +35,9 @@ class RegisterController extends Controller
     {
         $registrationData = $request->session()->get('registration_data');
         
-        if (!$registrationData || !isset($registrationData['step']) || $registrationData['step'] < 2) {
-            return redirect()->route('register.personal')
-                ->withErrors(['error' => 'Por favor complete el segundo paso del registro']);
+        if (!$registrationData) {
+            return redirect()->route('register')
+                ->withErrors(['error' => 'Por favor complete el primer paso del registro']);
         }
         
         // Verificar que el rol sea empresa
@@ -115,9 +115,9 @@ class RegisterController extends Controller
         // Recuperar datos de los pasos anteriores
         $registrationData = $request->session()->get('registration_data');
         
-        if (!$registrationData || $registrationData['step'] < 2) {
+        if (!$registrationData) {
             return redirect()->route('register')
-                ->withErrors(['error' => 'Por favor complete los pasos anteriores del registro']);
+                ->withErrors(['error' => 'Por favor complete el primer paso del registro']);
         }
         
         $request->validate([
@@ -127,54 +127,20 @@ class RegisterController extends Controller
             'provincia' => ['required', 'string', 'max:100'],
         ]);
         
-        // Obtener el usuario y verificar que tenga todos los campos requeridos
-        $user = User::find($registrationData['user_id']);
-        if (!$user) {
-            return redirect()->route('register')
-                ->withErrors(['error' => 'Usuario no encontrado']);
-        }
-        
-        // Verificar que los campos obligatorios estén presentes
-        if (!$user->fecha_nacimiento || !$user->ciudad || !$user->dni || !$user->telefono) {
-            return redirect()->route('register.personal')
-                ->withErrors(['error' => 'Por favor complete todos los campos personales requeridos']);
-        }
-        
-        // Verificación adicional usando el método del modelo
-        if (!$user->hasRequiredFields()) {
-            // Si faltan campos, determinar qué paso debe completar
-            if (!$user->fecha_nacimiento || !$user->ciudad || !$user->dni || !$user->telefono) {
-                return redirect()->route('register.personal')
-                    ->withErrors(['error' => 'Información personal incompleta']);
-            } else {
-                return redirect()->route('register')
-                    ->withErrors(['error' => 'Registro incompleto, por favor comience de nuevo']);
-            }
-        }
-
-        // Obtener el usuario creado en el primer paso
-        $user = User::find($registrationData['user_id']);
-        if (!$user) {
-            return redirect()->route('register')
-                ->withErrors(['error' => 'Usuario no encontrado']);
-        }
-        
-        // Actualizar la contraseña
-        $user->password = Hash::make($request->password);
-
-        // Asignar el rol de empresa (ID 2)
-        $rol = \App\Models\Rol::find(2);
-        if (!$rol) {
-            // Si no se encuentra por ID, intentar por nombre
-            $rol = \App\Models\Rol::where('nombre_rol', 'Empresa')->first();
-            
-            if (!$rol) {
-                return redirect()->back()->withErrors(['error' => 'Rol de empresa no encontrado']);
-            }
-        }
-        
-        $user->role_id = $rol->id;
-        $user->save();
+        // Crear usuario
+        $user = User::create([
+            'nombre' => $registrationData['name'],
+            'email' => $registrationData['email'],
+            'password' => Hash::make($request->password),
+            'role_id' => Rol::where('nombre_rol', 'Empresa')->first()->id,
+            'fecha_nacimiento' => now()->subYears(rand(25, 65)),
+            'ciudad' => 'Madrid',
+            'dni' => 'DNI' . rand(10000000, 99999999),
+            'activo' => true,
+            'telefono' => '6' . rand(100000000, 999999999),
+            'descripcion' => 'Empresa',
+            'imagen' => null
+        ]);
 
         // Crear el perfil de empresa
         Empresa::create([
@@ -213,7 +179,8 @@ class RegisterController extends Controller
         session(['registration_data' => [
             'name' => $request->name,
             'email' => $request->email,
-            'role' => $request->role
+            'role' => $request->role,
+            'step' => 1
         ]]);
 
         // Redirigir según el rol
