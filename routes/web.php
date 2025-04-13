@@ -12,6 +12,7 @@ use App\Http\Controllers\DemoController;
 use App\Http\Controllers\PublicationController;
 use App\Http\Controllers\Admin\CategoriaController;
 use App\Http\Controllers\Admin\SubcategoriaController;
+use App\Http\Controllers\SolicitudController;
 
 // Ruta principal usando el HomeController
     Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -55,7 +56,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/empresa/ofertas/{publication}/solicitudes', [CompanyDashboardController::class, 'viewApplications'])->name('empresa.applications.view');
     Route::post('/empresa/ofertas/{publication}/toggle', [CompanyDashboardController::class, 'togglePublicationStatus'])->name('empresa.offers.toggle');
     Route::put('/empresa/ofertas/{publication}/solicitudes/{application}', [CompanyDashboardController::class, 'updateApplicationStatus'])->name('empresa.applications.update');
-    Route::get('/empresa/get-subcategorias/{categoria}', [CompanyDashboardController::class, 'getSubcategorias'])->name('empresa.subcategorias');
+    Route::get('/empresa/get-subcategorias/{categoria}', [CompanyDashboardController::class, 'getSubcategorias'])
+        ->name('empresa.subcategorias')
+        ->middleware('auth');
 });
 
 // RUTAS PROTEGIDAS PARA EMPRESAS
@@ -82,3 +85,5 @@ Route::middleware(['auth', \App\Http\Middleware\AdminMiddleware::class])->prefix
 Route::get('/test-dashboard', [StudentDashboardController::class, 'index'])->name('test.dashboard');
 
 Route::get('/publication/{id}', [PublicationController::class, 'show'])->name('publication.show');
+
+Route::post('/solicitudes/{publication}', [SolicitudController::class, 'store'])->name('solicitudes.store');

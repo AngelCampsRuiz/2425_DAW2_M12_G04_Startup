@@ -80,11 +80,7 @@
                         </div>
                         @endif
                         
-                        <!-- Botón de favorito -->
-                        <button class="favorite-button mt-6 inline-flex items-center px-4 py-2 bg-gray-50 border border-gray-200 rounded-full shadow-sm hover:bg-gray-100 transition duration-200" data-publication-id="{{ $publication->id }}">
-                            <i class="{{ $publication->isFavoritedBy(auth()->user()) ? 'fas text-yellow-500' : 'far text-gray-400' }} fa-star mr-2 transition-all duration-300"></i>
-                            <span>{{ $publication->isFavoritedBy(auth()->user()) ? 'Quitar de favoritos' : 'Añadir a favoritos' }}</span>
-                        </button>
+                        
                     </div>
                     
                     {{-- INFORMACIÓN DE LA PUBLICACIÓN --}}
@@ -114,6 +110,19 @@
                                     <div>
                                         <p class="text-xs text-gray-500">Duración</p>
                                         <p class="font-semibold text-gray-800">{{ $publication->horas_totales }} horas</p>
+                                    </div>
+                                </div>
+
+                                <!-- Añadimos el contador de solicitudes -->
+                                <div class="flex items-center p-4 bg-purple-50 rounded-lg">
+                                    <span class="flex items-center justify-center w-10 h-10 mr-3 bg-[#5e0490] rounded-full">
+                                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                                        </svg>
+                                    </span>
+                                    <div>
+                                        <p class="text-xs text-gray-500">Solicitudes recibidas</p>
+                                        <p class="font-semibold text-gray-800">{{ $publication->solicitudes_count }} {{ Str::plural('candidato', $publication->solicitudes_count) }}</p>
                                     </div>
                                 </div>
                                 
@@ -156,19 +165,74 @@
                         
                         <!-- Botón de solicitud o contacto -->
                         <div class="mt-8 flex justify-end">
-                            <a href="#" class="inline-flex items-center px-6 py-3 bg-[#5e0490] text-white font-medium rounded-lg shadow hover:bg-[#4a0370] transition-colors duration-300">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"/>
-                                </svg>
-                                Solicitar esta oferta
-                            </a>
+                            @if(Auth::check())
+                                @if($solicitudExistente)
+                                    <button disabled class="inline-flex items-center px-6 py-3 bg-gray-400 text-white font-medium rounded-lg shadow cursor-not-allowed">
+                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                        </svg>
+                                        Solicitud enviada ({{ ucfirst($solicitudExistente->estado) }})
+                                    </button>
+                                @else
+                                    <button onclick="openSolicitudModal()" class="inline-flex items-center px-6 py-3 bg-[#5e0490] text-white font-medium rounded-lg shadow hover:bg-[#4a0370] transition-colors duration-300">
+                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"/>
+                                        </svg>
+                                        Solicitar esta oferta
+                                    </button>
+                                @endif
+                            @else
+                                <a href="{{ route('login') }}" class="inline-flex items-center px-6 py-3 bg-[#5e0490] text-white font-medium rounded-lg shadow hover:bg-[#4a0370] transition-colors duration-300">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+                                    </svg>
+                                    Inicia sesión para solicitar
+                                </a>
+                            @endif
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    
+
+    <!-- Modal de Solicitud -->
+    <div id="solicitudModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full" style="z-index: 100;">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Solicitar Oferta</h3>
+                <form id="solicitudForm" action="{{ route('solicitudes.store', $publication->id) }}" method="POST" class="mt-4">
+                    @csrf
+                    <div class="mt-2">Carta de motivación (opcional)</label>
+                        <textarea
+                            id="mensaje"
+                            name="mensaje"
+                            rows="4"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#5e0490] focus:ring-[#5e0490]"
+                            placeholder="Escribe un mensaje para la empresa..."></textarea>
+                    </div>
+                    <div class="mt-4 flex justify-end space-x-3">
+                        <button
+                            type="button"
+                            onclick="closeSolicitudModal()"
+                            class="inline-flex justify-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#5e0490]">
+                            Cancelar
+                        </button>
+                        <button
+                            type="submit"
+                            class="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-[#5e0490] border border-transparent rounded-md hover:bg-[#4a0370] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#5e0490]">
+                            Enviar solicitud
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sweet Alert CSS y JS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-material-ui@5/material-ui.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <style>
         /* Animación para el botón de favoritos */
         .favorite-button i.fas {
@@ -222,6 +286,97 @@
                     .catch(error => console.error('Error:', error));
                 });
             }
+        });
+
+        // Funciones para el modal de solicitud
+        function openSolicitudModal() {
+            document.getElementById('solicitudModal').classList.remove('hidden');
+        }
+
+        function closeSolicitudModal() {
+            document.getElementById('solicitudModal').classList.add('hidden');
+        }
+
+        // Cerrar modal al hacer clic fuera
+        document.getElementById('solicitudModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeSolicitudModal();
+            }
+        });
+
+        // Manejar envío del formulario con AJAX
+        document.getElementById('solicitudForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            fetch(this.action, {
+                method: 'POST',
+                body: new FormData(this),
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    closeSolicitudModal();
+                    
+                    // Actualizar el botón de solicitud
+                    const solicitudButton = document.querySelector('[onclick="openSolicitudModal()"]').parentElement;
+                    solicitudButton.innerHTML = `
+                        <button disabled class="inline-flex items-center px-6 py-3 bg-gray-400 text-white font-medium rounded-lg shadow cursor-not-allowed">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Solicitud enviada (Pendiente)
+                        </button>
+                    `;
+                    
+                    // Actualizar el contador de solicitudes
+                    const contadorSolicitudes = document.querySelector('[data-solicitudes-count]');
+                    const numeroActual = parseInt(contadorSolicitudes.textContent);
+                    const nuevoNumero = numeroActual + 1;
+                    contadorSolicitudes.textContent = `${nuevoNumero} ${nuevoNumero === 1 ? 'candidato' : 'candidatos'}`;
+                    
+                    // Mostrar mensaje de éxito
+                    Swal.fire({
+                        title: '¡Solicitud enviada!',
+                        text: 'Tu solicitud ha sido enviada correctamente',
+                        icon: 'success',
+                        confirmButtonText: 'Aceptar',
+                        confirmButtonColor: '#5e0490',
+                        background: '#fff',
+                        customClass: {
+                            confirmButton: 'px-4 py-2 bg-[#5e0490] text-white rounded-lg hover:bg-[#4a0370] transition-colors duration-300'
+                        }
+                    });
+                } else if (data.status === 'error') {
+                    Swal.fire({
+                        title: '¡Error!',
+                        text: data.message || 'Ha ocurrido un error al enviar la solicitud',
+                        icon: 'error',
+                        confirmButtonText: 'Entendido',
+                        confirmButtonColor: '#5e0490',
+                        background: '#fff',
+                        customClass: {
+                            confirmButton: 'px-4 py-2 bg-[#5e0490] text-white rounded-lg hover:bg-[#4a0370] transition-colors duration-300'
+                        }
+                    });
+                }
+            })
+            // .catch(error => {
+            //     console.error('Error:', error);
+            //     Swal.fire({
+            //         title: '¡Error!',
+            //         text: 'Ha ocurrido un error al procesar tu solicitud',
+            //         icon: 'error',
+            //         confirmButtonText: 'Entendido',
+            //         confirmButtonColor: '#5e0490',
+            //         background: '#fff',
+            //         customClass: {
+            //             confirmButton: 'px-4 py-2 bg-[#5e0490] text-white rounded-lg hover:bg-[#4a0370] transition-colors duration-300'
+            //         }
+            //     });
+            // });
         });
     </script>
 @endsection
