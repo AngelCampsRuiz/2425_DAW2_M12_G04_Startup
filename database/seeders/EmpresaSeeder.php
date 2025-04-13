@@ -20,9 +20,9 @@ class EmpresaSeeder extends Seeder
             Empresa::create([
                 'id' => $user->id,
                 'cif' => 'B' . str_pad(rand(1, 99999999), 8, '0', STR_PAD_LEFT),
-                'direccion' => fake()->address,
-                'latitud' => fake()->latitude,
-                'longitud' => fake()->longitude,
+                'direccion' => fake()->streetAddress,
+                'latitud' => fake()->latitude(36, 43), // Latitud de España
+                'longitud' => fake()->longitude(-9, 4), // Longitud de España
             ]);
         }
     }

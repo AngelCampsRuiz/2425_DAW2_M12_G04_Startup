@@ -24,10 +24,13 @@ class FavoritoSeeder extends Seeder
             $empresasAleatorias = $empresas->random($numFavoritos);
 
             foreach ($empresasAleatorias as $empresa) {
+                // Generar una fecha realista para el favorito
+                $fecha = fake()->dateTimeBetween('-6 months', 'now');
+                
                 Favorito::create([
                     'alumno_id' => $estudiante->id,
                     'empresa_id' => $empresa->id,
-                    'created_at' => fake()->dateTimeBetween('-6 months', 'now'),
+                    'created_at' => $fecha,
                     'updated_at' => now()
                 ]);
             }

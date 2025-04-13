@@ -15,8 +15,20 @@ class ExperienciaSeeder extends Seeder
     public function run(): void
     {
         $estudiantes = Estudiante::all();
-        $puestos = ['Desarrollador Junior', 'Analista', 'Programador Web', 'Desarrollador Full Stack'];
-        $especializaciones = ['PHP', 'JavaScript', 'Python', 'Java', '.NET'];
+        $puestos = [
+            'Desarrollador Junior', 'Analista', 'Programador Web', 'Desarrollador Full Stack',
+            'Desarrollador Frontend', 'Desarrollador Backend', 'Técnico de Soporte', 'Administrador de Sistemas',
+            'Diseñador Web', 'Community Manager', 'Técnico en Marketing Digital', 'Asistente Administrativo',
+            'Técnico en Logística', 'Técnico en Atención al Cliente', 'Técnico en Turismo'
+        ];
+        $especializaciones = [
+            'PHP', 'JavaScript', 'Python', 'Java', '.NET', 'React', 'Angular', 'Vue.js', 'Node.js',
+            'Laravel', 'Django', 'Spring', 'MySQL', 'PostgreSQL', 'MongoDB', 'Docker', 'Kubernetes',
+            'AWS', 'Azure', 'Linux', 'Windows Server', 'SEO', 'SEM', 'Redes Sociales', 'Diseño UI/UX',
+            'HTML/CSS', 'Bootstrap', 'Tailwind CSS', 'Git', 'DevOps', 'Ciberseguridad', 'Big Data',
+            'Machine Learning', 'Inteligencia Artificial', 'Blockchain', 'IoT', 'Mobile Development',
+            'Flutter', 'React Native', 'Swift', 'Kotlin', 'WordPress', 'Shopify', 'Magento', 'Prestashop'
+        ];
 
         foreach ($estudiantes as $estudiante) {
             // Cada estudiante puede tener 0-3 experiencias
@@ -25,13 +37,26 @@ class ExperienciaSeeder extends Seeder
             for ($i = 0; $i < $numExperiencias; $i++) {
                 $fechaInicio = fake()->dateTimeBetween('-2 years', '-6 months');
                 $fechaFin = fake()->dateTimeBetween($fechaInicio, 'now');
+                
+                // Seleccionar un puesto y especialización aleatorios
+                $puesto = $puestos[array_rand($puestos)];
+                $especializacion = $especializaciones[array_rand($especializaciones)];
+                
+                // Generar un nombre de empresa realista
+                $empresa = fake()->randomElement([
+                    'TechSolutions', 'DigitalWorks', 'WebCrafters', 'CodeMasters', 'DevPro', 'ByteLogic',
+                    'DataFlow', 'CloudSystems', 'NetSolutions', 'AppBuilders', 'SoftTech', 'WebMasters',
+                    'DigitalLogic', 'CodeCrafters', 'DevLogic', 'ByteWorks', 'DataLogic', 'CloudLogic',
+                    'NetLogic', 'AppLogic', 'SoftLogic', 'WebLogic', 'DigitalFlow', 'CodeFlow', 'DevFlow',
+                    'ByteFlow', 'DataSystems', 'CloudWorks', 'NetWorks', 'AppWorks', 'SoftWorks', 'WebWorks'
+                ]);
 
                 Experiencia::create([
-                    'empresa_nombre' => fake()->company,
-                    'puesto' => $puestos[array_rand($puestos)],
+                    'empresa_nombre' => $empresa,
+                    'puesto' => $puesto,
                     'fecha_inicio' => $fechaInicio,
                     'fecha_fin' => $fechaFin,
-                    'especializacion' => $especializaciones[array_rand($especializaciones)],
+                    'especializacion' => $especializacion,
                     'alumno_id' => $estudiante->id,
                     'created_at' => now(),
                     'updated_at' => now()
