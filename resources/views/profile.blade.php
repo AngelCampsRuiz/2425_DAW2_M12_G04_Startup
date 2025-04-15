@@ -106,11 +106,11 @@
                                     <div class="space-y-4">
                                         <div class="relative">
                                             <div class="w-full bg-white rounded-full h-3 shadow-inner">
-                                                <div class="bg-gradient-to-r from-[#5e0490] to-purple-600 h-3 rounded-full transition-all duration-500" 
+                                                <div id="progressBar" class="bg-gradient-to-r from-[#5e0490] to-purple-600 h-3 rounded-full transition-all duration-500" 
                                                      style="width: {{ $porcentaje }}%"></div>
                                             </div>
                                             <div class="absolute right-0 top-0 transform translate-y-3">
-                                                <span class="text-sm font-bold text-[#5e0490]">{{ $porcentaje }}%</span>
+                                                <span id="progressText" class="text-sm font-bold text-[#5e0490]">{{ $porcentaje }}%</span>
                                             </div>
                                         </div>
 
@@ -136,8 +136,8 @@
                                 </div>
                                 
                                 <div class="flex flex-col items-center justify-center p-4 bg-white rounded-lg shadow-sm">
-                                    <div class="text-3xl font-bold text-[#5e0490] mb-1">{{ $porcentaje }}%</div>
-                                    <div class="text-sm text-gray-500 text-center">
+                                    <div id="progressPercentage" class="text-3xl font-bold text-[#5e0490] mb-1">{{ $porcentaje }}%</div>
+                                    <div id="progressMessage" class="text-sm text-gray-500 text-center">
                                         @if($porcentaje < 50)
                                             ¡Sigue completando tu perfil!
                                         @elseif($porcentaje < 80)
@@ -656,13 +656,15 @@
                 .then(data => {
                     if (data.success) {
                         // Actualizar la barra de progreso
-                        const progressBar = document.querySelector('.bg-gradient-to-r');
-                        const progressText = document.querySelector('.text-sm.font-bold');
-                        const progressMessage = document.querySelector('.text-sm.text-gray-500');
+                        const progressBar = document.getElementById('progressBar');
+                        const progressText = document.getElementById('progressText');
+                        const progressPercentage = document.getElementById('progressPercentage');
+                        const progressMessage = document.getElementById('progressMessage');
                         
-                        if (progressBar && progressText && progressMessage) {
+                        if (progressBar && progressText && progressPercentage && progressMessage) {
                             progressBar.style.width = data.porcentaje + '%';
                             progressText.textContent = data.porcentaje + '%';
+                            progressPercentage.textContent = data.porcentaje + '%';
                             
                             // Actualizar mensaje según el porcentaje
                             if (data.porcentaje < 50) {
@@ -698,7 +700,7 @@
                         Object.entries(camposVisibles).forEach(([campo, visible]) => {
                             const elemento = document.querySelector(`[data-campo="${campo}"]`);
                             if (elemento) {
-                                elemento.style.display = visible ? 'block' : 'none';
+                                elemento.style.display = visible ? 'flex' : 'none';
                             }
                         });
 
