@@ -10,13 +10,19 @@
                     <a href="{{ route('chat.index') }}" class="text-gray-600 hover:text-gray-900">
                         <i class="fas fa-arrow-left text-xl"></i>
                     </a>
-                    <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
-                        <span class="text-xl font-bold text-purple-700">
-                            {{ strtoupper(substr($otherUser->name, 0, 2)) }}
-                        </span>
+                    <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center overflow-hidden">
+                        @if($otherUser->imagen)
+                            <img src="{{ asset('public/profile_images/' . $otherUser->imagen) }}" 
+                                 alt="Foto de perfil" 
+                                 class="w-full h-full object-cover">
+                        @else
+                            <span class="text-xl font-bold text-purple-700">
+                                {{ strtoupper(substr($otherUser->nombre, 0, 2)) }}
+                            </span>
+                        @endif
                     </div>
                     <div>
-                        <h1 class="text-2xl font-bold text-gray-800">{{ $otherUser->name }}</h1>
+                        <h1 class="text-2xl font-bold text-gray-800">{{ $otherUser->nombre }}</h1>
                         <p class="text-gray-600">{{ $solicitud->publicacion->titulo }}</p>
                     </div>
                 </div>
@@ -77,10 +83,48 @@ document.addEventListener('DOMContentLoaded', function() {
     const messageForm = document.getElementById('message-form');
     const messageInput = document.getElementById('message-input');
     const chatId = '{{ $chat->id }}';
-    const currentMessageCount = '{{ $mensajes->count() }}';
+    let lastMessageId = {{ $mensajes->last() ? $mensajes->last()->id : 0 }};
     
     // Hacer scroll al último mensaje
     chatMessages.scrollTop = chatMessages.scrollHeight;
+    
+    // Función para crear el HTML de un mensaje
+    function createMessageHtml(mensaje) {
+        const isMine = mensaje.user_id === {{ auth()->id() }};
+        return `
+            <div class="flex ${isMine ? 'justify-end' : 'justify-start'}">
+                <div class="max-w-xs md:max-w-md lg:max-w-lg ${isMine ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'} rounded-lg px-4 py-2">
+                    <p class="text-sm">${mensaje.contenido}</p>
+                    <p class="text-xs mt-1 ${isMine ? 'text-purple-600' : 'text-gray-500'}">
+                        ${new Date(mensaje.fecha_envio).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                    </p>
+                </div>
+            </div>
+        `;
+    }
+    
+    // Función para actualizar los mensajes
+    function updateMessages() {
+        fetch('{{ route('chat.messages', ['chat' => $chat->id]) }}')
+            .then(response => response.json())
+            .then(data => {
+                if (!data.error && data.mensajes.length > 0) {
+                    const newMessages = data.mensajes.filter(mensaje => mensaje.id > lastMessageId);
+                    
+                    if (newMessages.length > 0) {
+                        newMessages.forEach(mensaje => {
+                            chatMessages.insertAdjacentHTML('beforeend', createMessageHtml(mensaje));
+                        });
+                        
+                        lastMessageId = newMessages[newMessages.length - 1].id;
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error al actualizar mensajes:', error);
+            });
+    }
     
     // Enviar mensaje
     messageForm.addEventListener('submit', function(e) {
@@ -105,18 +149,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 messageInput.value = '';
                 
                 // Añadir mensaje a la vista
-                const messageHtml = `
-                    <div class="flex justify-end">
-                        <div class="max-w-xs md:max-w-md lg:max-w-lg bg-purple-100 text-purple-800 rounded-lg px-4 py-2">
-                            <p class="text-sm">${data.mensaje.contenido}</p>
-                            <p class="text-xs mt-1 text-purple-600">
-                                ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                            </p>
-                        </div>
-                    </div>
-                `;
-                
-                chatMessages.insertAdjacentHTML('beforeend', messageHtml);
+                chatMessages.insertAdjacentHTML('beforeend', createMessageHtml(data.mensaje));
+                lastMessageId = data.mensaje.id;
                 chatMessages.scrollTop = chatMessages.scrollHeight;
             }
         })
@@ -125,19 +159,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Actualizar mensajes cada 10 segundos
-    setInterval(function() {
-        fetch('{{ route('chat.messages', ['chat' => $chat->id]) }}')
-            .then(response => response.json())
-            .then(data => {
-                if (!data.error && data.mensajes.length > parseInt(currentMessageCount)) {
-                    window.location.reload();
-                }
-            })
-            .catch(error => {
-                console.error('Error al actualizar mensajes:', error);
-            });
-    }, 10000);
+    // Actualizar mensajes cada 3 segundos
+    setInterval(updateMessages, 3000);
 });
 </script>
 @endsection 

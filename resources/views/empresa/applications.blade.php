@@ -88,7 +88,7 @@
                                                 <a href="{{ route('profile.view', $solicitud->estudiante->user->id) }}" 
                                                    class="group flex items-center space-x-3 hover:text-purple-600 transition-colors duration-200">
                                                     <h3 class="text-lg font-semibold text-gray-900 group-hover:text-purple-600">
-                                                        {{ $solicitud->estudiante->user->name }}
+                                                        {{ $solicitud->estudiante->user->nombre }}
                                                     </h3>
                                                     <i class="fas fa-external-link-alt text-sm opacity-0 group-hover:opacity-100 transition-opacity"></i>
                                                 </a>

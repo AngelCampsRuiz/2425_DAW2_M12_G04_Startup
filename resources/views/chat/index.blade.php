@@ -32,15 +32,27 @@
                                 <div class="flex items-start space-x-6">
                                     <!-- Avatar -->
                                     <div class="flex-shrink-0">
-                                        <div class="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center">
+                                        <div class="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center overflow-hidden">
                                             @if(auth()->user()->empresa)
-                                                <span class="text-xl font-bold text-purple-700">
-                                                    {{ strtoupper(substr($chat->solicitud->estudiante->user->name, 0, 2)) }}
-                                                </span>
+                                                @if($chat->solicitud->estudiante->user->imagen)
+                                                    <img src="{{ asset('public/profile_images/' . $chat->solicitud->estudiante->user->imagen) }}" 
+                                                         alt="Foto de perfil" 
+                                                         class="w-full h-full object-cover">
+                                                @else
+                                                    <span class="text-xl font-bold text-purple-700">
+                                                        {{ strtoupper(substr($chat->solicitud->estudiante->user->nombre, 0, 2)) }}
+                                                    </span>
+                                                @endif
                                             @else
-                                                <span class="text-xl font-bold text-purple-700">
-                                                    {{ strtoupper(substr($chat->solicitud->publicacion->empresa->user->name, 0, 2)) }}
-                                                </span>
+                                                @if($chat->solicitud->publicacion->empresa->user->imagen)
+                                                    <img src="{{ asset('public/profile_images/' . $chat->solicitud->publicacion->empresa->user->imagen) }}" 
+                                                         alt="Foto de perfil" 
+                                                         class="w-full h-full object-cover">
+                                                @else
+                                                    <span class="text-xl font-bold text-purple-700">
+                                                        {{ strtoupper(substr($chat->solicitud->publicacion->empresa->user->nombre, 0, 2)) }}
+                                                    </span>
+                                                @endif
                                             @endif
                                         </div>
                                     </div>
@@ -50,9 +62,9 @@
                                         <div class="flex items-center justify-between">
                                             <h3 class="text-lg font-semibold text-gray-900">
                                                 @if(auth()->user()->empresa)
-                                                    {{ $chat->solicitud->estudiante->user->name }}
+                                                    {{ $chat->solicitud->estudiante->user->nombre }}
                                                 @else
-                                                    {{ $chat->solicitud->publicacion->empresa->user->name }}
+                                                    {{ $chat->solicitud->publicacion->empresa->user->nombre }}
                                                 @endif
                                             </h3>
                                             <span class="text-sm text-gray-500">
