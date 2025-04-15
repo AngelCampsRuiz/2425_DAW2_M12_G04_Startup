@@ -248,38 +248,90 @@
                             {{-- Información Académica --}}
                             <div class="bg-white rounded-xl shadow-lg p-6 transform transition-all duration-300 hover:shadow-xl">
                                 <div class="flex items-center mb-6">
-                                    <div class="p-3 bg-purple-100 rounded-lg">
+                                    <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mr-4">
                                         <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
                                         </svg>
                                     </div>
-                                    <h3 class="text-xl font-semibold text-gray-900 ml-4">Información Académica</h3>
+                                    <h2 class="text-2xl font-bold text-gray-900">Información Académica</h2>
                                 </div>
                                 <div class="space-y-4">
-                                    <div class="flex items-start">
-                                        <div class="flex-shrink-0">
-                                            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                    @if($user->estudiante)
+                                        <div class="flex items-center">
+                                            <svg class="w-5 h-5 text-purple-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                             </svg>
+                                            <span class="text-gray-700">Ciclo: {{ $user->estudiante->ciclo }}</span>
                                         </div>
-                                        <div class="ml-4">
-                                            <p class="text-sm text-gray-500">Título</p>
-                                            <p class="font-medium text-gray-900">{{ $user->estudiante->titulo->name_titulo ?? 'No asignado' }}</p>
-                                        </div>
-                                    </div>
-                                    <div class="flex items-start">
-                                        <div class="flex-shrink-0">
-                                            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                                            </svg>
-                                        </div>
-                                        <div class="ml-4">
-                                            <p class="text-sm text-gray-500">Centro</p>
-                                            <p class="font-medium text-gray-900">{{ $user->estudiante->centro_educativo ?? 'No asignado' }}</p>
-                                        </div>
-                                    </div>
+                                        @if($user->estudiante->cv_pdf)
+                                            <div class="flex items-center">
+                                                <svg class="w-5 h-5 text-purple-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                </svg>
+                                                <a href="{{ asset('public/cv_pdfs/' . $user->estudiante->cv_pdf) }}" 
+                                                   class="text-purple-600 hover:text-purple-800" 
+                                                   target="_blank">
+                                                    Ver CV
+                                                </a>
+                                            </div>
+                                        @endif
+                                    @endif
                                 </div>
                             </div>
+
+                            @if($empresa && isset($experiencias) && $experiencias->count() > 0)
+                                {{-- Experiencias de Estudiantes --}}
+                                <div class="bg-white rounded-xl shadow-lg p-6 transform transition-all duration-300 hover:shadow-xl">
+                                    <div class="flex items-center mb-6">
+                                        <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mr-4">
+                                            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                            </svg>
+                                        </div>
+                                        <h2 class="text-2xl font-bold text-gray-900">Experiencias de Estudiantes</h2>
+                                    </div>
+                                    <div class="overflow-x-auto">
+                                        <table class="min-w-full divide-y divide-gray-200">
+                                            <thead class="bg-gray-50">
+                                                <tr>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estudiante</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Puesto</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Inicio</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Fin</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descripción</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="bg-white divide-y divide-gray-200">
+                                                @foreach($experiencias as $experiencia)
+                                                    <tr class="hover:bg-gray-50">
+                                                        <td class="px-6 py-4 whitespace-nowrap">
+                                                            <div class="flex items-center">
+                                                                <div class="text-sm font-medium text-gray-900">
+                                                                    {{ $experiencia->alumno->user->name }}
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td class="px-6 py-4 whitespace-nowrap">
+                                                            <div class="text-sm text-gray-900">{{ $experiencia->puesto }}</div>
+                                                        </td>
+                                                        <td class="px-6 py-4 whitespace-nowrap">
+                                                            <div class="text-sm text-gray-900">{{ $experiencia->fecha_inicio->format('d/m/Y') }}</div>
+                                                        </td>
+                                                        <td class="px-6 py-4 whitespace-nowrap">
+                                                            <div class="text-sm text-gray-900">
+                                                                {{ $experiencia->fecha_fin ? $experiencia->fecha_fin->format('d/m/Y') : 'Actual' }}
+                                                            </div>
+                                                        </td>
+                                                        <td class="px-6 py-4">
+                                                            <div class="text-sm text-gray-900">{{ $experiencia->descripcion }}</div>
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            @endif
 
                             {{-- Información Personal --}}
                             <div class="bg-white rounded-xl shadow-lg p-6 transform transition-all duration-300 hover:shadow-xl">
@@ -419,6 +471,171 @@
                             @endif
                         </div>
                     </div>
+                    </div>
+                @else
+                    {{-- Sección de Empresa --}}
+                    <div class="bg-white rounded-2xl shadow-xl overflow-hidden transform transition-all duration-300 hover:shadow-2xl">
+                        {{-- Header del Perfil con gradiente --}}
+                        <div class="relative h-64 bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600">
+                            <div class="absolute -bottom-20 left-8">
+                                <div class="w-40 h-40 rounded-full bg-white border-4 border-white shadow-xl flex items-center justify-center overflow-hidden transform transition-transform duration-300 hover:scale-105">
+                                    @if($user->empresa->logo_url)
+                                        <img src="{{ $user->empresa->logo_url }}" 
+                                             alt="Logo empresa" 
+                                             class="w-full h-full object-cover">
+                                    @else
+                                        <span class="text-6xl font-bold text-purple-600">
+                                            {{ strtoupper(substr($user->nombre, 0, 2)) }}
+                                        </span>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Contenido Principal --}}
+                        <div class="pt-24 px-8 pb-8">
+                            {{-- Información Principal --}}
+                            <div class="flex justify-between items-start mb-8">
+                                <div>
+                                    <h1 class="text-4xl font-bold text-gray-900 mb-2">{{ $user->nombre }}</h1>
+                                    <div class="flex items-center space-x-4">
+                                        <p class="text-purple-600 flex items-center">
+                                            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                                <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
+                                                <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
+                                            </svg>
+                                            {{ $user->email }}
+                                        </p>
+                                    </div>
+                                </div>
+                                @if(auth()->id() == $user->id)
+                                    <div class="flex space-x-4">
+                                        <button onclick="openEditModal()" 
+                                                class="edit-button px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors duration-200 flex items-center space-x-2 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                            </svg>
+                                            <span>Editar Perfil</span>
+                                        </button>
+
+                                        <a href="{{ route('chat.index') }}" 
+                                           class="chat-button px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors duration-200 flex items-center space-x-2 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                                            </svg>
+                                            <span>Ir al Chat</span>
+                                        </a>
+                                    </div>
+                                @endif
+                            </div>
+
+                            {{-- Descripción --}}
+                            @if($user->descripcion)
+                                <div class="bg-purple-50 rounded-xl p-6 mb-8">
+                                    <p class="text-gray-700 leading-relaxed">{{ $user->descripcion }}</p>
+                                </div>
+                            @endif
+
+                            {{-- Grid de Información --}}
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                {{-- Información de la Empresa --}}
+                                <div class="bg-white rounded-xl shadow-lg p-6 transform transition-all duration-300 hover:shadow-xl">
+                                    <div class="flex items-center mb-6">
+                                        <div class="p-3 bg-purple-100 rounded-lg">
+                                            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                            </svg>
+                                        </div>
+                                        <h3 class="text-xl font-semibold text-gray-900 ml-4">Información de la Empresa</h3>
+                                    </div>
+                                    <div class="space-y-4">
+                                        <div class="flex items-start">
+                                            <div class="flex-shrink-0">
+                                                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                </svg>
+                                            </div>
+                                            <div class="ml-4">
+                                                <p class="text-sm text-gray-500">CIF</p>
+                                                <p class="font-medium text-gray-900">{{ $user->empresa->cif ?? 'No especificado' }}</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-start">
+                                            <div class="flex-shrink-0">
+                                                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                                </svg>
+                                            </div>
+                                            <div class="ml-4">
+                                                <p class="text-sm text-gray-500">Sector</p>
+                                                <p class="font-medium text-gray-900">{{ $user->empresa->sector ?? 'No especificado' }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {{-- Información de Contacto --}}
+                                <div class="bg-white rounded-xl shadow-lg p-6 transform transition-all duration-300 hover:shadow-xl">
+                                    <div class="flex items-center mb-6">
+                                        <div class="p-3 bg-purple-100 rounded-lg">
+                                            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                                            </svg>
+                                        </div>
+                                        <h3 class="text-xl font-semibold text-gray-900 ml-4">Información de Contacto</h3>
+                                    </div>
+                                    <div class="space-y-4">
+                                        <div class="flex items-start" data-campo="telefono" style="display: {{ $user->show_telefono ? 'flex' : 'none' }}">
+                                            <div class="flex-shrink-0">
+                                                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                                                </svg>
+                                            </div>
+                                            <div class="ml-4">
+                                                <p class="text-sm text-gray-500">Teléfono</p>
+                                                <p class="font-medium text-gray-900" data-valor="telefono">{{ $user->telefono ?? 'No especificado' }}</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="flex items-start" data-campo="ciudad" style="display: {{ $user->show_ciudad ? 'flex' : 'none' }}">
+                                            <div class="flex-shrink-0">
+                                                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                                </svg>
+                                            </div>
+                                            <div class="ml-4">
+                                                <p class="text-sm text-gray-500">Ciudad</p>
+                                                <p class="font-medium text-gray-900" data-valor="ciudad">{{ $user->ciudad ?? 'No especificada' }}</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="flex items-start" data-campo="direccion" style="display: {{ $user->show_direccion ? 'flex' : 'none' }}">
+                                            <div class="flex-shrink-0">
+                                                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                                </svg>
+                                            </div>
+                                            <div class="ml-4">
+                                                <p class="text-sm text-gray-500">Dirección</p>
+                                                <p class="font-medium text-gray-900" data-valor="direccion">{{ $user->direccion ?? 'No especificada' }}</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="flex items-start" data-campo="web" style="display: {{ $user->show_web ? 'flex' : 'none' }}">
+                                            <div class="flex-shrink-0">
+                                                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
+                                                </svg>
+                                            </div>
+                                            <div class="ml-4">
+                                                <p class="text-sm text-gray-500">Sitio Web</p>
+                                                <p class="font-medium text-gray-900" data-valor="web">{{ $user->web ?? 'No especificado' }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 @endif
             </div>

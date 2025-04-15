@@ -37,4 +37,16 @@ class Empresa extends Model
     {
         return $this->hasMany(Publication::class, 'empresa_id');
     }
+
+    public function experiencias()
+    {
+        return $this->hasManyThrough(
+            Experiencia::class,
+            Estudiante::class,
+            'id', // Clave foránea en estudiantes
+            'alumno_id', // Clave foránea en experiencias
+            'id', // Clave local en empresas
+            'id' // Clave local en estudiantes
+        )->where('empresa_nombre', 'like', '%' . $this->user->nombre . '%');
+    }
 }

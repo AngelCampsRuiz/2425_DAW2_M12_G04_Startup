@@ -34,7 +34,7 @@
                     <nav>
                         <ul class="space-y-2">
                             <li><a href="{{ route('empresa.dashboard') }}" class="block p-2 {{ Route::currentRouteName() == 'empresa.dashboard' ? 'bg-purple-100 text-purple-700' : 'text-gray-600 hover:bg-gray-100' }} rounded font-medium">Dashboard</a></li>
-                            <li><a href="#" class="block p-2 text-gray-600 hover:bg-gray-100 rounded">Perfil de empresa</a></li>
+                            <li><a href="{{ route('profile') }}" class="block p-2 {{ Route::currentRouteName() == 'profile' ? 'bg-purple-100 text-purple-700' : 'text-gray-600 hover:bg-gray-100' }} rounded">Perfil de empresa</a></li>
                             <li><a href="{{ route('empresa.offers.create') }}" class="block p-2 {{ Route::currentRouteName() == 'empresa.offers.create' ? 'bg-purple-100 text-purple-700' : 'text-gray-600 hover:bg-gray-100' }} rounded">Publicar oferta</a></li>
                             <li><a href="#" class="block p-2 text-gray-600 hover:bg-gray-100 rounded">Candidatos</a></li>
                             <li><a href="#" class="block p-2 text-gray-600 hover:bg-gray-100 rounded">Mensajes</a></li>
