@@ -282,8 +282,7 @@
                                     <h3 class="text-xl font-semibold text-gray-900 ml-4">Información Personal</h3>
                                 </div>
                                 <div class="space-y-4">
-                                    @if($user->show_ciudad)
-                                    <div class="flex items-start">
+                                    <div class="flex items-start" data-campo="ciudad" style="display: {{ $user->show_ciudad ? 'flex' : 'none' }}">
                                         <div class="flex-shrink-0">
                                             <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
@@ -292,12 +291,11 @@
                                         </div>
                                         <div class="ml-4">
                                             <p class="text-sm text-gray-500">Ciudad</p>
-                                            <p class="font-medium text-gray-900">{{ $user->ciudad ?? 'No especificada' }}</p>
+                                            <p class="font-medium text-gray-900" data-valor="ciudad">{{ $user->ciudad ?? 'No especificada' }}</p>
                                         </div>
                                     </div>
-                                    @endif
-                                    @if($user->show_telefono)
-                                    <div class="flex items-start">
+
+                                    <div class="flex items-start" data-campo="telefono" style="display: {{ $user->show_telefono ? 'flex' : 'none' }}">
                                         <div class="flex-shrink-0">
                                             <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
@@ -305,12 +303,11 @@
                                         </div>
                                         <div class="ml-4">
                                             <p class="text-sm text-gray-500">Teléfono</p>
-                                            <p class="font-medium text-gray-900">{{ $user->telefono ?? 'No especificado' }}</p>
+                                            <p class="font-medium text-gray-900" data-valor="telefono">{{ $user->telefono ?? 'No especificado' }}</p>
                                         </div>
                                     </div>
-                                    @endif
-                                    @if($user->show_dni)
-                                    <div class="flex items-start">
+
+                                    <div class="flex items-start" data-campo="dni" style="display: {{ $user->show_dni ? 'flex' : 'none' }}">
                                         <div class="flex-shrink-0">
                                             <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/>
@@ -318,10 +315,33 @@
                                         </div>
                                         <div class="ml-4">
                                             <p class="text-sm text-gray-500">DNI</p>
-                                            <p class="font-medium text-gray-900">{{ $user->dni ?? 'No especificado' }}</p>
+                                            <p class="font-medium text-gray-900" data-valor="dni">{{ $user->dni ?? 'No especificado' }}</p>
                                         </div>
                                     </div>
-                                    @endif
+
+                                    <div class="flex items-start" data-campo="direccion" style="display: {{ $user->show_direccion ? 'flex' : 'none' }}">
+                                        <div class="flex-shrink-0">
+                                            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                            </svg>
+                                        </div>
+                                        <div class="ml-4">
+                                            <p class="text-sm text-gray-500">Dirección</p>
+                                            <p class="font-medium text-gray-900" data-valor="direccion">{{ $user->direccion ?? 'No especificada' }}</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-start" data-campo="web" style="display: {{ $user->show_web ? 'flex' : 'none' }}">
+                                        <div class="flex-shrink-0">
+                                            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
+                                            </svg>
+                                        </div>
+                                        <div class="ml-4">
+                                            <p class="text-sm text-gray-500">Sitio Web</p>
+                                            <p class="font-medium text-gray-900" data-valor="web">{{ $user->web ?? 'No especificado' }}</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -412,7 +432,7 @@
 
                     {{-- Contenido del Modal --}}
                     <div class="p-6">
-                        <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+                        <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data" id="profileForm" class="space-y-6">
                             @csrf
                             @method('PUT')
                             
@@ -606,6 +626,145 @@
                 if (editButton) {
                     editButton.onclick = openEditModal;
                 }
+            });
+
+            document.getElementById('profileForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                const submitButton = this.querySelector('button[type="submit"]');
+                const originalButtonText = submitButton.innerHTML;
+                
+                // Mostrar indicador de carga
+                submitButton.disabled = true;
+                submitButton.innerHTML = `
+                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Guardando...
+                `;
+                
+                fetch(this.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Actualizar la barra de progreso
+                        const progressBar = document.querySelector('.bg-gradient-to-r');
+                        const progressText = document.querySelector('.text-sm.font-bold');
+                        const progressMessage = document.querySelector('.text-sm.text-gray-500');
+                        
+                        if (progressBar && progressText && progressMessage) {
+                            progressBar.style.width = data.porcentaje + '%';
+                            progressText.textContent = data.porcentaje + '%';
+                            
+                            // Actualizar mensaje según el porcentaje
+                            if (data.porcentaje < 50) {
+                                progressMessage.textContent = '¡Sigue completando tu perfil!';
+                            } else if (data.porcentaje < 80) {
+                                progressMessage.textContent = '¡Vas por buen camino!';
+                            } else {
+                                progressMessage.textContent = '¡Casi lo tienes!';
+                            }
+                        }
+
+                        // Actualizar la información del perfil
+                        const user = data.user;
+                        
+                        // Actualizar nombre
+                        const nombreElement = document.querySelector('h1.text-4xl');
+                        if (nombreElement) nombreElement.textContent = user.nombre;
+
+                        // Actualizar descripción
+                        const descripcionElement = document.querySelector('.text-gray-700.leading-relaxed');
+                        if (descripcionElement) descripcionElement.textContent = user.descripcion || '';
+
+                        // Actualizar campos de visibilidad
+                        const camposVisibles = {
+                            'telefono': user.show_telefono,
+                            'dni': user.show_dni,
+                            'ciudad': user.show_ciudad,
+                            'direccion': user.show_direccion,
+                            'web': user.show_web
+                        };
+
+                        // Actualizar la visibilidad de cada campo
+                        Object.entries(camposVisibles).forEach(([campo, visible]) => {
+                            const elemento = document.querySelector(`[data-campo="${campo}"]`);
+                            if (elemento) {
+                                elemento.style.display = visible ? 'block' : 'none';
+                            }
+                        });
+
+                        // Actualizar valores de los campos
+                        const camposValores = {
+                            'telefono': user.telefono,
+                            'dni': user.dni,
+                            'ciudad': user.ciudad,
+                            'direccion': user.direccion,
+                            'web': user.web
+                        };
+
+                        Object.entries(camposValores).forEach(([campo, valor]) => {
+                            const elemento = document.querySelector(`[data-valor="${campo}"]`);
+                            if (elemento) {
+                                elemento.textContent = valor || 'No especificado';
+                            }
+                        });
+
+                        // Actualizar imagen de perfil si se cambió
+                        if (user.imagen) {
+                            const imagenPerfil = document.querySelector('.w-40.h-40.rounded-full');
+                            if (imagenPerfil) {
+                                imagenPerfil.src = `/public/profile_images/${user.imagen}`;
+                            }
+                        }
+
+                        // Actualizar CV si se cambió
+                        if (user.estudiante && user.estudiante.cv_pdf) {
+                            const cvLink = document.querySelector('a[href*="cv/"]');
+                            if (cvLink) {
+                                cvLink.href = `/cv/${user.estudiante.cv_pdf}`;
+                            }
+                        }
+                        
+                        // Mostrar mensaje de éxito
+                        const successMessage = document.createElement('div');
+                        successMessage.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+                        successMessage.textContent = data.message;
+                        document.body.appendChild(successMessage);
+                        
+                        // Cerrar el modal después de 2 segundos
+                        setTimeout(() => {
+                            closeEditModal();
+                            successMessage.remove();
+                        }, 2000);
+                    } else {
+                        throw new Error(data.message);
+                    }
+                })
+                .catch(error => {
+                    // Mostrar mensaje de error
+                    const errorMessage = document.createElement('div');
+                    errorMessage.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+                    errorMessage.textContent = error.message;
+                    document.body.appendChild(errorMessage);
+                    
+                    setTimeout(() => {
+                        errorMessage.remove();
+                    }, 3000);
+                })
+                .finally(() => {
+                    // Restaurar el botón
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = originalButtonText;
+                });
             });
         </script>
     @endsection

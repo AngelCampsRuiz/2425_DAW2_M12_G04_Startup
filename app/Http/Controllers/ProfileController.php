@@ -28,90 +28,104 @@ class ProfileController extends Controller
             'show_web' => 'nullable|boolean',
         ]);
 
-        // Actualizar campos básicos
-        $user->nombre = $request->nombre;
-        $user->descripcion = $request->descripcion;
-        $user->telefono = $request->telefono;
-        $user->ciudad = $request->ciudad;
-        $user->dni = $request->dni;
+        try {
+            // Actualizar campos básicos
+            $user->nombre = $request->nombre;
+            $user->descripcion = $request->descripcion;
+            $user->telefono = $request->telefono;
+            $user->ciudad = $request->ciudad;
+            $user->dni = $request->dni;
 
-        // Actualizar campos de visibilidad
-        $user->show_telefono = $request->has('show_telefono');
-        $user->show_dni = $request->has('show_dni');
-        $user->show_ciudad = $request->has('show_ciudad');
-        $user->show_direccion = $request->has('show_direccion');
-        $user->show_web = $request->has('show_web');
+            // Actualizar campos de visibilidad
+            $user->show_telefono = $request->has('show_telefono');
+            $user->show_dni = $request->has('show_dni');
+            $user->show_ciudad = $request->has('show_ciudad');
+            $user->show_direccion = $request->has('show_direccion');
+            $user->show_web = $request->has('show_web');
 
-        // Manejar la imagen de perfil
-        if ($request->hasFile('imagen')) {
-            // Eliminar la imagen anterior si existe
-            if ($user->imagen && file_exists(public_path('public/profile_images/' . $user->imagen))) {
-                unlink(public_path('public/profile_images/' . $user->imagen));
-            }
-            
-            // Obtener el archivo
-            $file = $request->file('imagen');
-            
-            // Generar un nombre único para el archivo
-            $filename = time() . '_' . $file->getClientOriginalName();
-            
-            // Crear el directorio si no existe
-            if (!file_exists(public_path('public/profile_images'))) {
-                mkdir(public_path('public/profile_images'), 0755, true);
-            }
-            
-            // Guardar el archivo en la carpeta public/profile_images
-            $file->move(public_path('public/profile_images'), $filename);
-            
-            // Guardar solo el nombre del archivo en la base de datos
-            $user->imagen = $filename;
-        }
-
-        // Manejar el CV para estudiantes
-        if ($user->role_id == 3 && $request->hasFile('cv_pdf')) {
-            // Crear el directorio si no existe
-            if (!file_exists(public_path('cv'))) {
-                mkdir(public_path('cv'), 0755, true);
-            }
-
-            // Eliminar el CV anterior si existe
-            if ($user->estudiante->cv_pdf && file_exists(public_path('cv/' . $user->estudiante->cv_pdf))) {
-                unlink(public_path('cv/' . $user->estudiante->cv_pdf));
-            }
-            
-            // Obtener el archivo
-            $file = $request->file('cv_pdf');
-            
-            // Generar un nombre único para el archivo
-            $filename = time() . '_' . $file->getClientOriginalName();
-            
-            // Guardar el archivo
-            $file->move(public_path('cv'), $filename);
-            
-            // Actualizar el CV en la base de datos
-            $user->estudiante->cv_pdf = $filename;
-            $user->estudiante->save();
-        }
-
-        // Manejar información específica de empresa
-        if ($user->role_id == 2) {
-            $user->empresa->direccion = $request->direccion;
-            $user->empresa->sitio_web = $request->sitio_web;
-
-            if ($request->hasFile('logo')) {
-                if ($user->empresa->logo_url) {
-                    Storage::delete('public/' . $user->empresa->logo_url);
+            // Manejar la imagen de perfil
+            if ($request->hasFile('imagen')) {
+                if ($user->imagen && file_exists(public_path('public/profile_images/' . $user->imagen))) {
+                    unlink(public_path('public/profile_images/' . $user->imagen));
                 }
-                $path = $request->file('logo')->store('company_logos', 'public');
-                $user->empresa->logo_url = $path;
+                
+                $file = $request->file('imagen');
+                $filename = time() . '_' . $file->getClientOriginalName();
+                
+                if (!file_exists(public_path('public/profile_images'))) {
+                    mkdir(public_path('public/profile_images'), 0755, true);
+                }
+                
+                $file->move(public_path('public/profile_images'), $filename);
+                $user->imagen = $filename;
             }
 
-            $user->empresa->save();
+            // Manejar el CV para estudiantes
+            if ($user->role_id == 3 && $request->hasFile('cv_pdf')) {
+                if (!file_exists(public_path('cv'))) {
+                    mkdir(public_path('cv'), 0755, true);
+                }
+
+                if ($user->estudiante->cv_pdf && file_exists(public_path('cv/' . $user->estudiante->cv_pdf))) {
+                    unlink(public_path('cv/' . $user->estudiante->cv_pdf));
+                }
+                
+                $file = $request->file('cv_pdf');
+                $filename = time() . '_' . $file->getClientOriginalName();
+                $file->move(public_path('cv'), $filename);
+                
+                $user->estudiante->cv_pdf = $filename;
+                $user->estudiante->save();
+            }
+
+            // Guardar los cambios del usuario
+            $user->save();
+
+            // Calcular el nuevo porcentaje de completado
+            $total_campos = 0;
+            $campos_completados = 0;
+            
+            // Campos obligatorios
+            $campos_obligatorios = ['nombre', 'email'];
+            $total_campos += count($campos_obligatorios);
+            foreach($campos_obligatorios as $campo) {
+                if(!empty($user->$campo)) $campos_completados++;
+            }
+            
+            // Campos opcionales
+            $campos_opcionales = ['descripcion', 'telefono', 'ciudad', 'dni', 'imagen'];
+            $total_campos += count($campos_opcionales);
+            foreach($campos_opcionales as $campo) {
+                if(!empty($user->$campo)) $campos_completados++;
+            }
+            
+            // Si es estudiante, añadir CV
+            if($user->role_id == 3) {
+                $total_campos++;
+                if(!empty($user->estudiante->cv_pdf)) $campos_completados++;
+            }
+            
+            $porcentaje = round(($campos_completados / $total_campos) * 100);
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Perfil actualizado correctamente',
+                    'porcentaje' => $porcentaje,
+                    'user' => $user->fresh()
+                ]);
+            }
+
+            return redirect()->back()->with('success', 'Perfil actualizado correctamente');
+        } catch (\Exception $e) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error al actualizar el perfil: ' . $e->getMessage()
+                ], 500);
+            }
+
+            return redirect()->back()->with('error', 'Error al actualizar el perfil: ' . $e->getMessage());
         }
-
-        // Guardar los cambios del usuario
-        $user->save();
-
-        return redirect()->back()->with('success', 'Perfil actualizado correctamente');
     }
 } 
