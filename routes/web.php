@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\CategoriaController;
 use App\Http\Controllers\Admin\SubcategoriaController;
 use App\Http\Controllers\SolicitudController;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\ProfileController;
 
 // Ruta principal usando el HomeController
     Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -96,4 +97,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/chat/{chat}/message', [ChatController::class, 'sendMessage'])->name('chat.message');
     Route::get('/chat/{chat}/messages', [ChatController::class, 'getMessages'])->name('chat.messages');
     Route::post('/chat/create/{solicitud}', [ChatController::class, 'createChat'])->name('chat.create');
+});
+
+// Rutas de perfil
+Route::middleware(['auth'])->group(function () {
+    Route::get('/profile/{user}', [ProfileController::class, 'show'])->name('profile.view');
+    Route::put('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
 });
