@@ -2,21 +2,39 @@
 
 @section('content')
 <div class="min-h-screen bg-gray-50">
+    {{-- MIGAS DE PAN --}}
+    <div class="bg-white shadow-sm">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex items-center text-sm">
+                <a href="{{ route('home') }}" class="text-gray-500 hover:text-[#5e0490]">
+                    <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                    </svg>
+                    Inicio
+                </a>
+                <span class="mx-2 text-gray-400">/</span>
+                <a href="{{ route('chat.index') }}" class="text-gray-500 hover:text-[#5e0490]">Chats</a>
+                <span class="mx-2 text-gray-400">/</span>
+                <span class="text-[#5e0490] font-medium">{{ $otherUser->nombre }}</span>
+            </div>
+        </div>
+    </div>
+
     <div class="container mx-auto px-4 py-8">
         <!-- Encabezado del chat -->
-        <div class="mb-8 bg-white rounded-lg shadow-sm p-6">
+        <div class="mb-8 bg-white rounded-lg shadow-sm p-6 transform transition-all duration-300 hover:shadow-md">
             <div class="flex justify-between items-center">
                 <div class="flex items-center space-x-4">
-                    <a href="{{ route('chat.index') }}" class="text-gray-600 hover:text-gray-900">
+                    <a href="{{ route('chat.index') }}" class="text-gray-600 hover:text-[#5e0490] transition-colors duration-200">
                         <i class="fas fa-arrow-left text-xl"></i>
                     </a>
-                    <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center overflow-hidden">
+                    <div class="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center overflow-hidden ring-4 ring-white shadow-lg transform transition-transform duration-300 hover:scale-105">
                         @if($otherUser->imagen)
                             <img src="{{ asset('public/profile_images/' . $otherUser->imagen) }}" 
                                  alt="Foto de perfil" 
                                  class="w-full h-full object-cover">
                         @else
-                            <span class="text-xl font-bold text-purple-700">
+                            <span class="text-2xl font-bold text-[#5e0490]">
                                 {{ strtoupper(substr($otherUser->nombre, 0, 2)) }}
                             </span>
                         @endif
@@ -27,7 +45,7 @@
                     </div>
                 </div>
                 <div class="flex items-center space-x-2">
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 animate-pulse">
                         <span class="w-2 h-2 mr-2 rounded-full bg-green-400"></span>
                         Activo
                     </span>
@@ -36,19 +54,22 @@
         </div>
 
         <!-- Contenedor del chat -->
-        <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div class="bg-white rounded-lg shadow-sm overflow-hidden transform transition-all duration-300 hover:shadow-md">
             <!-- Área de mensajes -->
-            <div id="chat-messages" class="h-96 overflow-y-auto p-6 space-y-4">
+            <div id="chat-messages" class="h-[500px] overflow-y-auto p-6 space-y-4 bg-gray-50">
                 @if($mensajes->isEmpty())
                     <div class="text-center py-8">
+                        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-purple-100 mb-4">
+                            <i class="fas fa-comments text-2xl text-[#5e0490]"></i>
+                        </div>
                         <p class="text-gray-500">No hay mensajes aún. ¡Comienza la conversación!</p>
                     </div>
                 @else
                     @foreach($mensajes as $mensaje)
                         <div class="flex {{ $mensaje->user_id === auth()->id() ? 'justify-end' : 'justify-start' }}">
-                            <div class="max-w-xs md:max-w-md lg:max-w-lg {{ $mensaje->user_id === auth()->id() ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800' }} rounded-lg px-4 py-2">
+                            <div class="max-w-xs md:max-w-md lg:max-w-lg {{ $mensaje->user_id === auth()->id() ? 'bg-[#5e0490] text-white' : 'bg-gray-100 text-gray-800' }} rounded-2xl px-4 py-2 shadow-sm transform transition-transform duration-200 hover:scale-105">
                                 <p class="text-sm">{{ $mensaje->contenido }}</p>
-                                <p class="text-xs mt-1 {{ $mensaje->user_id === auth()->id() ? 'text-purple-600' : 'text-gray-500' }}">
+                                <p class="text-xs mt-1 {{ $mensaje->user_id === auth()->id() ? 'text-purple-200' : 'text-gray-500' }}">
                                     {{ \Carbon\Carbon::parse($mensaje->fecha_envio)->format('H:i') }}
                                 </p>
                             </div>
@@ -58,12 +79,15 @@
             </div>
 
             <!-- Formulario para enviar mensajes -->
-            <div class="border-t border-gray-200 p-4">
+            <div class="border-t border-gray-200 p-4 bg-white">
                 <form id="message-form" class="flex space-x-4">
                     <div class="flex-1">
-                        <input type="text" id="message-input" class="w-full rounded-lg border-gray-300 focus:border-purple-500 focus:ring-purple-500" placeholder="Escribe un mensaje...">
+                        <input type="text" id="message-input" 
+                               class="w-full rounded-lg border-gray-300 focus:border-[#5e0490] focus:ring-[#5e0490] transition-colors duration-200" 
+                               placeholder="Escribe un mensaje...">
                     </div>
-                    <button type="submit" class="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors duration-200">
+                    <button type="submit" 
+                            class="inline-flex items-center px-4 py-2 bg-[#5e0490] text-white rounded-lg hover:bg-[#4a0370] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#5e0490] transition-colors duration-200 transform hover:scale-105">
                         <i class="fas fa-paper-plane mr-2"></i>
                         Enviar
                     </button>
@@ -93,9 +117,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const isMine = mensaje.user_id === {{ auth()->id() }};
         return `
             <div class="flex ${isMine ? 'justify-end' : 'justify-start'}">
-                <div class="max-w-xs md:max-w-md lg:max-w-lg ${isMine ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800'} rounded-lg px-4 py-2">
+                <div class="max-w-xs md:max-w-md lg:max-w-lg ${isMine ? 'bg-[#5e0490] text-white' : 'bg-gray-100 text-gray-800'} rounded-2xl px-4 py-2 shadow-sm transform transition-transform duration-200 hover:scale-105">
                     <p class="text-sm">${mensaje.contenido}</p>
-                    <p class="text-xs mt-1 ${isMine ? 'text-purple-600' : 'text-gray-500'}">
+                    <p class="text-xs mt-1 ${isMine ? 'text-purple-200' : 'text-gray-500'}">
                         ${new Date(mensaje.fecha_envio).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                     </p>
                 </div>
