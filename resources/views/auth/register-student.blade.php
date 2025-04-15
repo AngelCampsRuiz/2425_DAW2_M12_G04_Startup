@@ -38,6 +38,39 @@
                                     <span class="text-red-500 text-xs">{{ $message }}</span>
                                 @enderror
                             </div>
+
+                        {{-- DNI --}}
+                            <div class="mb-4">
+                                <label for="dni" class="block text-gray-700 text-sm font-medium mb-2">DNI</label>
+                                <input id="dni" type="text" name="dni" value="{{ old('dni') }}" required
+                                    class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary @error('dni') border-red-500 @enderror"
+                                    placeholder="Ej: 12345678A">
+                                @error('dni')
+                                    <span class="text-red-500 text-xs">{{ $message }}</span>
+                                @enderror
+                            </div>
+
+                        {{-- TELÉFONO --}}
+                            <div class="mb-4">
+                                <label for="telefono" class="block text-gray-700 text-sm font-medium mb-2">Teléfono</label>
+                                <input id="telefono" type="tel" name="telefono" value="{{ old('telefono') }}" required
+                                    class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary @error('telefono') border-red-500 @enderror"
+                                    placeholder="Ej: 612345678">
+                                @error('telefono')
+                                    <span class="text-red-500 text-xs">{{ $message }}</span>
+                                @enderror
+                            </div>
+
+                        {{-- CIUDAD --}}
+                            <div class="mb-4">
+                                <label for="ciudad" class="block text-gray-700 text-sm font-medium mb-2">Ciudad</label>
+                                <input id="ciudad" type="text" name="ciudad" value="{{ old('ciudad') }}" required
+                                    class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary @error('ciudad') border-red-500 @enderror"
+                                    placeholder="Ej: Madrid">
+                                @error('ciudad')
+                                    <span class="text-red-500 text-xs">{{ $message }}</span>
+                                @enderror
+                            </div>
                             
                         {{-- CONTRASEÑA --}}
                             <div class="mb-4">

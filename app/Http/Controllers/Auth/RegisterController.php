@@ -56,6 +56,9 @@ class RegisterController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:user',
             'password' => 'required|string|min:8|confirmed',
+            'dni' => 'required|string|max:20|unique:user',
+            'telefono' => 'required|string|max:20|unique:user',
+            'ciudad' => 'required|string|max:100',
             'centro_estudios' => 'required|string|max:255',
             'titulo_id' => 'required|exists:titulos,id',
             'cv_pdf' => 'required|file|mimes:pdf|max:5120', // 5MB máximo
@@ -63,7 +66,9 @@ class RegisterController extends Controller
         ], [
             'numero_seguridad_social.regex' => 'El número de seguridad social debe tener el formato SS seguido de 8 dígitos',
             'cv_pdf.mimes' => 'El archivo debe ser un PDF',
-            'cv_pdf.max' => 'El archivo no puede ser mayor a 5MB'
+            'cv_pdf.max' => 'El archivo no puede ser mayor a 5MB',
+            'dni.unique' => 'Este DNI ya está registrado',
+            'telefono.unique' => 'Este teléfono ya está registrado'
         ]);
 
         if ($validator->fails()) {
@@ -79,18 +84,27 @@ class RegisterController extends Controller
             'password' => Hash::make($request->password),
             'role_id' => Rol::where('nombre_rol', 'Estudiante')->first()->id,
             'fecha_nacimiento' => now()->subYears(rand(18, 25)),
-            'ciudad' => 'Madrid',
-            'dni' => 'DNI' . rand(10000000, 99999999),
+            'ciudad' => $request->ciudad,
+            'dni' => $request->dni,
             'activo' => true,
-            'telefono' => '6' . rand(100000000, 999999999),
+            'telefono' => $request->telefono,
             'descripcion' => 'Estudiante',
             'imagen' => null
         ]);
 
         // Procesar y guardar el archivo PDF
-        $cvFile = $request->file('cv_pdf');
-        $cvFileName = 'cv_' . $user->id . '_' . time() . '.pdf';
-        $cvPath = $cvFile->storeAs('public/cv', $cvFileName);
+        if ($request->hasFile('cv_pdf')) {
+            $cvFile = $request->file('cv_pdf');
+            $cvFileName = 'cv_' . $user->id . '_' . time() . '.pdf';
+            
+            // Crear directorio si no existe
+            if (!file_exists(public_path('cv'))) {
+                mkdir(public_path('cv'), 0777, true);
+            }
+            
+            // Mover el archivo a public/cv
+            $cvFile->move(public_path('cv'), $cvFileName);
+        }
 
         // Crear estudiante
         Estudiante::create([
