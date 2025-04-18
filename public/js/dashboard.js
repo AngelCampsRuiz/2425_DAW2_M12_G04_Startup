@@ -17,7 +17,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const horasTotalesMaxValue = document.getElementById('horasTotalesMaxValue');
     const horasTotalesRange = document.getElementById('horasTotalesRange');
     const route = searchForm.getAttribute('data-route');
-    const favoriteButtons = document.querySelectorAll('.favorite-button');
     const favoritosCheckbox = document.getElementById('favoritosCheckbox');
 
     // Mostrar/ocultar subcategorías al seleccionar una categoría
@@ -171,38 +170,4 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Inicializar el rango
     updateRange();
-
-    favoriteButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const publicationId = this.dataset.publicationId;
-            const icon = this.querySelector('i');
-            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-
-            fetch(`/toggle-favorite/${publicationId}`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': csrfToken,
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.status === 'added') {
-                    icon.classList.remove('far');
-                    icon.classList.add('fas', 'text-yellow-500');
-                } else {
-                    icon.classList.remove('fas', 'text-yellow-500');
-                    icon.classList.add('far');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-        });
-    });
 }); 

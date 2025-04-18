@@ -15,7 +15,8 @@ class Estudiante extends Model
         'id',
         'centro_educativo',
         'cv_pdf',
-        'numero_seguridad_social'
+        'numero_seguridad_social',
+        'titulo_id'
     ];
 
     // Indicar que la clave primaria no es autoincremental

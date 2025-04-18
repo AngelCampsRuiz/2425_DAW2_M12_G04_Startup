@@ -94,15 +94,6 @@
                                     <input type="hidden" id="horasTotalesMax" name="horas_totales_max" value="{{ $horasTotalesMax }}">
                                 </div>
                             </div>
-
-                            <!-- Filtro de Favoritos -->
-                            <div>
-                                <h3 class="text-sm font-medium text-gray-600 mb-2">Favoritos</h3>
-                                <label class="flex items-center">
-                                    <input type="checkbox" name="favoritos" id="favoritosCheckbox" class="form-checkbox h-4 w-4 text-[#5e0490] rounded focus:ring-[#5e0490] border-gray-300">
-                                    <span class="ml-2 text-sm text-gray-700">Mostrar solo favoritos</span>
-                                </label>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -172,10 +163,14 @@
                                     </div>
                                     {{-- INFORMACIÓN DE LA PUBLICACIÓN --}}
                                     <div class="w-2/3 p-4">
-                                        <a href="{{ route('publication.show', $publication->id) }}">
-                                            <h3 class="text-lg font-semibold text-gray-800 mb-2">{{ $publication->titulo }}</h3>
-                                        </a>
-                                        <p class="text-primary font-medium mb-2">{{ $publication->empresa->nombre }}</p>
+                                        <div class="flex justify-between items-start">
+                                            <div>
+                                                <a href="{{ route('publication.show', $publication->id) }}" class="hover:text-[#5e0490] transition-colors">
+                                                    <h3 class="text-lg font-semibold text-gray-900">{{ $publication->titulo }}</h3>
+                                                </a>
+                                                <p class="text-sm text-gray-500">{{ $publication->empresa->nombre }}</p>
+                                            </div>
+                                        </div>
                                         <div class="flex items-center text-sm text-gray-600 mb-2">
                                             <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
@@ -193,10 +188,6 @@
                                         <p class="text-sm text-gray-600 line-clamp-2">{{ $publication->descripcion }}</p>
                                     </div>
                                 </div>
-                                {{-- Botón de Favorito --}}
-                                <button class="favorite-button absolute top-2 right-2 p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition duration-200" data-publication-id="{{ $publication->id }}">
-                                    <i class="far fa-star {{ $publication->isFavoritedBy(auth()->user()) ? 'fas text-yellow-500' : '' }}"></i>
-                                </button>
                             </div>
                         @endforeach
                     </div>

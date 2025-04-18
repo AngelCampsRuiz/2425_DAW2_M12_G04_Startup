@@ -6,37 +6,28 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Estudiante;
 use App\Models\Empresa;
+use App\Models\Titulo;
+use App\Models\Rol;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules;
 
 class RegisterController extends Controller
 {
     // MOSTRAMOS LA VISTA DEL REGISTER
-        public function showRegistrationForm()
-        {
-            return view('auth.register');
-        }
+    public function showRegistrationForm()
+    {
+        return view('auth.register');
+    }
 
     // Vista de registro de estudiante
-    public function showStudentRegistrationForm(Request $request)
+    public function showStudentRegistrationForm()
     {
-        $registrationData = $request->session()->get('registration_data');
-        
-        if (!$registrationData || !isset($registrationData['step']) || $registrationData['step'] < 2) {
-            return redirect()->route('register.personal')
-                ->withErrors(['error' => 'Por favor complete el segundo paso del registro']);
-        }
-        
-        // Verificar que el rol sea estudiante
-        if ($registrationData['role'] !== 'alumno') {
-            return redirect()->route('register')
-                ->withErrors(['error' => 'Esta página es solo para estudiantes']);
-        }
-        
-        return view('auth.register-student');
+        $titulos = Titulo::all();
+        return view('auth.register-student', compact('titulos'));
     }
 
     // Vista de registro de empresa
@@ -44,9 +35,9 @@ class RegisterController extends Controller
     {
         $registrationData = $request->session()->get('registration_data');
         
-        if (!$registrationData || !isset($registrationData['step']) || $registrationData['step'] < 2) {
-            return redirect()->route('register.personal')
-                ->withErrors(['error' => 'Por favor complete el segundo paso del registro']);
+        if (!$registrationData) {
+            return redirect()->route('register')
+                ->withErrors(['error' => 'Por favor complete el primer paso del registro']);
         }
         
         // Verificar que el rol sea empresa
@@ -61,82 +52,72 @@ class RegisterController extends Controller
     // Registro de estudiante (tercer paso)
     public function registerStudent(Request $request)
     {
-        // Recuperar datos de los pasos anteriores
-        $registrationData = $request->session()->get('registration_data');
-        
-        if (!$registrationData || $registrationData['step'] < 2) {
-            return redirect()->route('register')
-                ->withErrors(['error' => 'Por favor complete los pasos anteriores del registro']);
-        }
-        
-        $request->validate([
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'centro_estudios' => ['required', 'string', 'max:255'],
-            // Los siguientes campos son opcionales porque se envían como ocultos
-            'cv_pdf' => ['nullable', 'string'],
-            'numero_seguridad_social' => ['nullable', 'string'],
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:user',
+            'password' => 'required|string|min:8|confirmed',
+            'dni' => 'required|string|max:20|unique:user',
+            'telefono' => 'required|string|max:20|unique:user',
+            'ciudad' => 'required|string|max:100',
+            'centro_estudios' => 'required|string|max:255',
+            'titulo_id' => 'required|exists:titulos,id',
+            'cv_pdf' => 'required|file|mimes:pdf|max:5120', // 5MB máximo
+            'numero_seguridad_social' => 'required|string|max:50|regex:/^SS[0-9]{8}$/'
+        ], [
+            'numero_seguridad_social.regex' => 'El número de seguridad social debe tener el formato SS seguido de 8 dígitos',
+            'cv_pdf.mimes' => 'El archivo debe ser un PDF',
+            'cv_pdf.max' => 'El archivo no puede ser mayor a 5MB',
+            'dni.unique' => 'Este DNI ya está registrado',
+            'telefono.unique' => 'Este teléfono ya está registrado'
         ]);
-        
-        // Obtener el usuario y verificar que tenga todos los campos requeridos
-        $user = User::find($registrationData['user_id']);
-        if (!$user) {
-            return redirect()->route('register')
-                ->withErrors(['error' => 'Usuario no encontrado']);
-        }
-        
-        // Verificar que los campos obligatorios estén presentes
-        if (!$user->fecha_nacimiento || !$user->ciudad || !$user->dni || !$user->telefono) {
-            return redirect()->route('register.personal')
-                ->withErrors(['error' => 'Por favor complete todos los campos personales requeridos']);
-        }
-        
-        // Verificación adicional usando el método del modelo
-        if (!$user->hasRequiredFields()) {
-            // Si faltan campos, determinar qué paso debe completar
-            if (!$user->fecha_nacimiento || !$user->ciudad || !$user->dni || !$user->telefono) {
-                return redirect()->route('register.personal')
-                    ->withErrors(['error' => 'Información personal incompleta']);
-            } else {
-                return redirect()->route('register')
-                    ->withErrors(['error' => 'Registro incompleto, por favor comience de nuevo']);
-            }
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
         }
 
-        // Obtener el usuario creado en el primer paso
-        $user = User::find($registrationData['user_id']);
-        if (!$user) {
-            return redirect()->route('register')
-                ->withErrors(['error' => 'Usuario no encontrado']);
-        }
-        
-        // Actualizar la contraseña
-        $user->password = Hash::make($request->password);
+        // Crear usuario
+        $user = User::create([
+            'nombre' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'role_id' => Rol::where('nombre_rol', 'Estudiante')->first()->id,
+            'fecha_nacimiento' => now()->subYears(rand(18, 25)),
+            'ciudad' => $request->ciudad,
+            'dni' => $request->dni,
+            'activo' => true,
+            'telefono' => $request->telefono,
+            'descripcion' => 'Estudiante',
+            'imagen' => null
+        ]);
 
-        // Asignar el rol de estudiante (ID 3)
-        $rol = \App\Models\Rol::find(3);
-        if (!$rol) {
-            // Si no se encuentra por ID, intentar por nombre
-            $rol = \App\Models\Rol::where('nombre_rol', 'Estudiante')->first();
+        // Procesar y guardar el archivo PDF
+        if ($request->hasFile('cv_pdf')) {
+            $cvFile = $request->file('cv_pdf');
+            $cvFileName = 'cv_' . $user->id . '_' . time() . '.pdf';
             
-            if (!$rol) {
-                return redirect()->back()->withErrors(['error' => 'Rol de estudiante no encontrado']);
+            // Crear directorio si no existe
+            if (!file_exists(public_path('cv'))) {
+                mkdir(public_path('cv'), 0777, true);
             }
+            
+            // Mover el archivo a public/cv
+            $cvFile->move(public_path('cv'), $cvFileName);
         }
-        
-        $user->role_id = $rol->id;
-        $user->save();
 
-        // Crear el perfil de estudiante
+        // Crear estudiante
         Estudiante::create([
             'id' => $user->id,
             'centro_educativo' => $request->centro_estudios,
-            'cv_pdf' => $request->cv_pdf ?: '', // Usar el valor del formulario o cadena vacía
-            'numero_seguridad_social' => $request->numero_seguridad_social ?: '' // Usar el valor del formulario o cadena vacía
+            'cv_pdf' => $cvFileName,
+            'numero_seguridad_social' => $request->numero_seguridad_social,
+            'titulo_id' => $request->titulo_id
         ]);
 
-        // Limpiar los datos de sesión
+        // Limpiar datos de registro de la sesión
         $request->session()->forget('registration_data');
-        
+
         event(new Registered($user));
         Auth::login($user);
         return redirect()->route('student.dashboard');
@@ -148,9 +129,9 @@ class RegisterController extends Controller
         // Recuperar datos de los pasos anteriores
         $registrationData = $request->session()->get('registration_data');
         
-        if (!$registrationData || $registrationData['step'] < 2) {
+        if (!$registrationData) {
             return redirect()->route('register')
-                ->withErrors(['error' => 'Por favor complete los pasos anteriores del registro']);
+                ->withErrors(['error' => 'Por favor complete el primer paso del registro']);
         }
         
         $request->validate([
@@ -160,54 +141,20 @@ class RegisterController extends Controller
             'provincia' => ['required', 'string', 'max:100'],
         ]);
         
-        // Obtener el usuario y verificar que tenga todos los campos requeridos
-        $user = User::find($registrationData['user_id']);
-        if (!$user) {
-            return redirect()->route('register')
-                ->withErrors(['error' => 'Usuario no encontrado']);
-        }
-        
-        // Verificar que los campos obligatorios estén presentes
-        if (!$user->fecha_nacimiento || !$user->ciudad || !$user->dni || !$user->telefono) {
-            return redirect()->route('register.personal')
-                ->withErrors(['error' => 'Por favor complete todos los campos personales requeridos']);
-        }
-        
-        // Verificación adicional usando el método del modelo
-        if (!$user->hasRequiredFields()) {
-            // Si faltan campos, determinar qué paso debe completar
-            if (!$user->fecha_nacimiento || !$user->ciudad || !$user->dni || !$user->telefono) {
-                return redirect()->route('register.personal')
-                    ->withErrors(['error' => 'Información personal incompleta']);
-            } else {
-                return redirect()->route('register')
-                    ->withErrors(['error' => 'Registro incompleto, por favor comience de nuevo']);
-            }
-        }
-
-        // Obtener el usuario creado en el primer paso
-        $user = User::find($registrationData['user_id']);
-        if (!$user) {
-            return redirect()->route('register')
-                ->withErrors(['error' => 'Usuario no encontrado']);
-        }
-        
-        // Actualizar la contraseña
-        $user->password = Hash::make($request->password);
-
-        // Asignar el rol de empresa (ID 2)
-        $rol = \App\Models\Rol::find(2);
-        if (!$rol) {
-            // Si no se encuentra por ID, intentar por nombre
-            $rol = \App\Models\Rol::where('nombre_rol', 'Empresa')->first();
-            
-            if (!$rol) {
-                return redirect()->back()->withErrors(['error' => 'Rol de empresa no encontrado']);
-            }
-        }
-        
-        $user->role_id = $rol->id;
-        $user->save();
+        // Crear usuario
+        $user = User::create([
+            'nombre' => $registrationData['name'],
+            'email' => $registrationData['email'],
+            'password' => Hash::make($request->password),
+            'role_id' => Rol::where('nombre_rol', 'Empresa')->first()->id,
+            'fecha_nacimiento' => now()->subYears(rand(25, 65)),
+            'ciudad' => 'Madrid',
+            'dni' => 'DNI' . rand(10000000, 99999999),
+            'activo' => true,
+            'telefono' => '6' . rand(100000000, 999999999),
+            'descripcion' => 'Empresa',
+            'imagen' => null
+        ]);
 
         // Crear el perfil de empresa
         Empresa::create([
@@ -230,46 +177,32 @@ class RegisterController extends Controller
     // Registro general - Primer paso (nombre, email, rol)
     public function register(Request $request)
     {
-        $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:user'],
-            'role' => ['required', 'string', 'in:alumno,empresa']
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:user',
+            'role' => 'required|in:alumno,empresa'
         ]);
-        
-        // Crear usuario temporal con datos básicos
-        // Asignamos una contraseña temporal y un rol temporal que se actualizarán en los siguientes pasos
-        $temporaryPassword = Hash::make(uniqid('temp_', true));
-        
-        // Obtener un rol temporal (se actualizará en el paso final)
-        // Usamos el rol con ID 1 (Administrador) como temporal
-        $defaultRole = \App\Models\Rol::find(1);
-        if (!$defaultRole) {
-            // Si no se encuentra, intentar cualquier rol
-            $defaultRole = \App\Models\Rol::first();
-            
-            if (!$defaultRole) {
-                return redirect()->back()->withErrors(['error' => 'Error en la configuración del sistema. No hay roles definidos.']);
-            }
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
         }
-        
-        $user = User::create([
-            'nombre' => $request->name,
-            'email' => $request->email,
-            'password' => $temporaryPassword,
-            'role_id' => $defaultRole->id
-        ]);
-        
-        // Almacenar datos en sesión para los siguientes pasos
-        $request->session()->put('registration_data', [
-            'user_id' => $user->id,
+
+        // Guardar datos en la sesión
+        session(['registration_data' => [
             'name' => $request->name,
             'email' => $request->email,
             'role' => $request->role,
             'step' => 1
-        ]);
-        
-        // Redirigir al segundo paso (datos personales)
-        return redirect()->route('register.personal');
+        ]]);
+
+        // Redirigir según el rol
+        if ($request->role === 'alumno') {
+            return redirect()->route('register.alumno');
+        } else {
+            return redirect()->route('register.empresa');
+        }
     }
     
     // Mostrar formulario para el segundo paso (datos personales)

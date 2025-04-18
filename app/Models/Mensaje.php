@@ -14,7 +14,8 @@ class Mensaje extends Model
     protected $fillable = [
         'contenido',
         'chat_id',
-        'user_id'
+        'user_id',
+        'fecha_envio'
     ];
 
     public function chat()

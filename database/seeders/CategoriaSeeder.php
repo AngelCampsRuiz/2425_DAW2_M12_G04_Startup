@@ -18,7 +18,17 @@ class CategoriaSeeder extends Seeder
             'Desarrollo Móvil',
             'Bases de Datos',
             'DevOps',
-            'Inteligencia Artificial'
+            'Inteligencia Artificial',
+            'Marketing Digital',
+            'Administración de Sistemas',
+            'Ciberseguridad',
+            'Diseño Gráfico',
+            'Gestión Administrativa',
+            'Comercio',
+            'Turismo',
+            'Sanidad',
+            'Servicios Sociales',
+            'Logística'
         ];
 
         foreach ($categorias as $categoria) {

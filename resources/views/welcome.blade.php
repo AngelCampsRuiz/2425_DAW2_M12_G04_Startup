@@ -50,15 +50,15 @@
                                     <!-- Contenedor del slider -->
                                     <div class="swiper-container empresas-slider w-full overflow-hidden">
                                         <div class="swiper-wrapper">
-                                            @foreach($empresasDestacadas as $empresa)
+                                            @foreach($empresasDestacadas->sortByDesc('alumnos_contratados') as $empresa)
                                                 <div class="swiper-slide">
                                                     <div class="bg-white p-6 rounded-lg shadow-md text-center transform transition-all hover:shadow-xl hover:-translate-y-1 h-full flex flex-col justify-between">
                                                         <div class="relative">
-                                                            @if($empresa->logo)
-                                                                <img src="{{ asset('storage/'.$empresa->logo) }}" alt="{{ $empresa->nombre }}" class="h-16 mx-auto mb-4">
+                                                            @if($empresa->user->imagen)
+                                                                <img src="{{ asset('storage/'.$empresa->user->logo) }}" alt="{{ $empresa->user->nombre }}" class="h-16 mx-auto mb-4">
                                                             @else
                                                                 <div class="h-16 mx-auto mb-4 flex items-center justify-center bg-gray-200 text-gray-500 rounded">
-                                                                    {{ substr($empresa->nombre, 0, 2) }}
+                                                                    {{ substr($empresa->user->nombre, 0, 2) }}
                                                                 </div>
                                                             @endif
                                                             <!-- Badge para destacar el ranking -->
@@ -67,7 +67,7 @@
                                                             </div>
                                                         </div>
                                                         <div>
-                                                            <h3 class="font-bold text-lg">{{ $empresa->nombre }}</h3>
+                                                            <h3 class="font-bold text-lg">{{ $empresa->user->nombre }}</h3>
                                                             <p class="text-gray-600 font-medium">
                                                                 <span class="text-[#7705B6] font-bold">{{ $empresa->alumnos_contratados }}</span> 
                                                                 {{ $empresa->alumnos_contratados == 1 ? 'alumno contratado' : 'alumnos contratados' }}

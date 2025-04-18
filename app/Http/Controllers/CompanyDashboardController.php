@@ -34,7 +34,9 @@ class CompanyDashboardController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return view('empresa.dashboard', compact('activePublications', 'inactivePublications'));
+        $categorias = Categoria::all();
+
+        return view('empresa.dashboard', compact('activePublications', 'inactivePublications', 'categorias'));
     }
 
     public function createOffer()
@@ -43,31 +45,73 @@ class CompanyDashboardController extends Controller
         return view('empresa.create-offer', compact('categorias'));
     }
 
-    public function getSubcategorias($categoriaId)
+    public function getSubcategorias($categoria)
     {
-        $subcategorias = Subcategoria::where('categoria_id', $categoriaId)->get();
-        return response()->json($subcategorias);
+        try {
+            // Validar que la categoría existe
+            $subcategorias = Subcategoria::where('categoria_id', $categoria)->get();
+            
+            if ($subcategorias->isEmpty()) {
+                return response()->json([
+                    'error' => true,
+                    'message' => 'No se encontraron subcategorías para esta categoría'
+                ], 404);
+            }
+
+            return response()->json([
+                'error' => false,
+                'data' => $subcategorias
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error en getSubcategorias: ' . $e->getMessage());
+            return response()->json([
+                'error' => true,
+                'message' => 'Error al cargar las subcategorías'
+            ], 500);
+        }
     }
 
     public function storeOffer(Request $request)
     {
-        $request->validate([
-            'titulo' => 'required|string|max:255',
-            'descripcion' => 'required|string',
-            'horario' => 'required|in:mañana,tarde',
-            'horas_totales' => 'required|integer|min:100|max:400',
-            'categoria_id' => 'required|exists:categorias,id',
-            'subcategoria_id' => 'required|exists:subcategorias,id'
-        ]);
+        try {
+            $request->validate([
+                'titulo' => 'required|string|max:255',
+                'descripcion' => 'required|string',
+                'horario' => 'required|in:mañana,tarde',
+                'horas_totales' => 'required|integer|min:100|max:1000',
+                'categoria_id' => 'required|exists:categorias,id',
+                'subcategoria_id' => 'required|exists:subcategorias,id'
+            ]);
 
-        $publication = new Publicacion($request->all());
-        $publication->empresa_id = Auth::id();
-        $publication->activa = true;
-        $publication->fecha_publicacion = now();
-        $publication->save();
+            $publication = new Publicacion($request->all());
+            $publication->empresa_id = Auth::id();
+            $publication->activa = true;
+            $publication->fecha_publicacion = now();
+            $publication->save();
 
-        return redirect()->route('empresa.dashboard')
-            ->with('success', 'Oferta creada exitosamente');
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Oferta creada exitosamente'
+                ]);
+            }
+
+            return redirect()->route('empresa.dashboard')
+                ->with('success', 'Oferta creada exitosamente');
+
+        } catch (\Exception $e) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'error' => true,
+                    'message' => 'Error al crear la oferta: ' . $e->getMessage()
+                ], 422);
+            }
+
+            return redirect()->back()
+                ->withErrors(['error' => 'Error al crear la oferta'])
+                ->withInput();
+        }
     }
 
     public function viewApplications($publicationId)
@@ -76,7 +120,7 @@ class CompanyDashboardController extends Controller
             ->findOrFail($publicationId);
         
         $solicitudes = Solicitud::where('publicacion_id', $publicationId)
-            ->with('estudiante.user')
+            ->with(['estudiante.user', 'estudiante.titulo', 'chat'])
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -113,9 +157,53 @@ class CompanyDashboardController extends Controller
                     'estado' => 'rechazada',
                     'respuesta_empresa' => 'Solicitud rechazada automáticamente porque otro candidato fue aceptado.'
                 ]);
+                
+            // Crear un chat entre la empresa y el estudiante
+            $chat = \App\Models\Chat::create([
+                'empresa_id' => Auth::id(),
+                'solicitud_id' => $solicitud->id
+            ]);
+            
+            // Redirigir al chat
+            return redirect()->route('chat.show', $chat->id)
+                ->with('success', 'Solicitud aceptada y chat creado correctamente');
         }
 
         return back()->with('success', 'Estado de la solicitud actualizado correctamente');
+    }
+
+    public function togglePublicationStatus($publicationId)
+    {
+        try {
+            $publication = Publicacion::where('empresa_id', Auth::id())
+                ->findOrFail($publicationId);
+            
+            $publication->activa = !$publication->activa;
+            $publication->save();
+
+            $status = $publication->activa ? 'activada' : 'desactivada';
+
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => "Oferta {$status} exitosamente"
+                ]);
+            }
+
+            return redirect()->back()
+                ->with('success', "Oferta {$status} exitosamente");
+
+        } catch (\Exception $e) {
+            if (request()->ajax()) {
+                return response()->json([
+                    'error' => true,
+                    'message' => 'Error al cambiar el estado de la oferta'
+                ], 500);
+            }
+
+            return redirect()->back()
+                ->withErrors(['error' => 'Error al cambiar el estado de la oferta']);
+        }
     }
 }
 
