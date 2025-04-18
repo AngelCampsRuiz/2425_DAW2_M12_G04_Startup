@@ -29,12 +29,12 @@ class HomeController extends Controller
             ->orderByDesc('alumnos_contratados')
             ->limit(6)
             ->get();
-            
+
             // Si no hay empresas con alumnos contratados, obtenemos al menos algunas empresas para mostrar
             if ($empresasDestacadas->isEmpty() || $empresasDestacadas->sum('alumnos_contratados') == 0) {
                 // Intentamos obtener algunas empresas aunque no tengan convenios completados
                 $empresasDestacadas = Empresa::limit(6)->get();
-                
+
                 // Asignamos valores ficticios para mostrar en la vista
                 $empresasDestacadas->each(function($empresa) {
                     $empresa->alumnos_contratados = rand(1, 10); // Valor aleatorio para demo
@@ -75,5 +75,14 @@ class HomeController extends Controller
     {
         $user = $id ? User::with('tutor.categoria', 'estudiante.titulo', 'empresa')->findOrFail($id) : auth()->user()->load('tutor.categoria', 'estudiante.titulo', 'empresa');
         return view('profile', compact('user'));
+    }
+
+    public function updateVisibility(Request $request)
+    {
+        $user = User::findOrFail($request->user_id);
+        $user->visibilidad = !$user->visibilidad; // Toggle visibility
+        $user->save();
+
+        return response()->json(['success' => true, 'visibilidad' => $user->visibilidad]);
     }
 }

@@ -15,7 +15,7 @@ use App\Http\Controllers\Admin\SubcategoriaController;
 
 // Ruta principal usando el HomeController
     Route::get('/', [HomeController::class, 'index'])->name('home');
-    
+
 // Rutas de demostración
     Route::get('/demo/student', [DemoController::class, 'demoStudent'])->name('demo.student');
     Route::get('/demo/company', [DemoController::class, 'demoCompany'])->name('demo.company');
@@ -64,6 +64,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/empresa/dashboard', [CompanyDashboardController::class, 'index'])->name('empresa.dashboard');
 });
 
+Route::middleware(['auth'])->group(function () {
+    Route::post('/update-visibility', [HomeController::class, 'updateVisibility']);
+});
+
 // RUTAS PROTEGIDAS PARA ADMINISTRADORES
 Route::middleware(['auth', \App\Http\Middleware\AdminMiddleware::class])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
@@ -71,10 +75,10 @@ Route::middleware(['auth', \App\Http\Middleware\AdminMiddleware::class])->prefix
     // Rutas para gestionar las publicaciones
     Route::resource('publicaciones', PublicacionController::class);
     Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
-    
+
     // Rutas de categorías
     Route::resource('categorias', CategoriaController::class);
-    
+
     // Rutas de subcategorías
     Route::resource('subcategorias', SubcategoriaController::class);
 });
