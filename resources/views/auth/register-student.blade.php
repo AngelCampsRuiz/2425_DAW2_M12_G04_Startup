@@ -16,7 +16,7 @@
                     <h2 class="text-2xl font-bold text-gray-800 mb-6">Registro de Estudiante</h2>
                     <p class="text-gray-600 mb-4">Paso 3 de 3: Completa tu información académica y establece tu contraseña</p>
 
-        <form id="registerStudentForm" method="POST" action="{{ route('register.alumno') }}">
+        <form id="registerStudentForm" method="POST" action="{{ route('register.alumno') }}" enctype="multipart/form-data">
             @csrf
 
                         {{-- NOMBRE (readonly, from session) --}}
@@ -35,6 +35,39 @@
                                 <input id="email" type="email" name="email" value="{{ session('registration_data.email') ?? old('email') }}" readonly
                                     class="w-full px-4 py-2 border rounded-lg bg-gray-100 focus:ring-primary focus:border-primary @error('email') border-red-500 @enderror">
                                 @error('email')
+                                    <span class="text-red-500 text-xs">{{ $message }}</span>
+                                @enderror
+                            </div>
+
+                        {{-- DNI --}}
+                            <div class="mb-4">
+                                <label for="dni" class="block text-gray-700 text-sm font-medium mb-2">DNI</label>
+                                <input id="dni" type="text" name="dni" value="{{ old('dni') }}" required
+                                    class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary @error('dni') border-red-500 @enderror"
+                                    placeholder="Ej: 12345678A">
+                                @error('dni')
+                                    <span class="text-red-500 text-xs">{{ $message }}</span>
+                                @enderror
+                            </div>
+
+                        {{-- TELÉFONO --}}
+                            <div class="mb-4">
+                                <label for="telefono" class="block text-gray-700 text-sm font-medium mb-2">Teléfono</label>
+                                <input id="telefono" type="tel" name="telefono" value="{{ old('telefono') }}" required
+                                    class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary @error('telefono') border-red-500 @enderror"
+                                    placeholder="Ej: 612345678">
+                                @error('telefono')
+                                    <span class="text-red-500 text-xs">{{ $message }}</span>
+                                @enderror
+                            </div>
+
+                        {{-- CIUDAD --}}
+                            <div class="mb-4">
+                                <label for="ciudad" class="block text-gray-700 text-sm font-medium mb-2">Ciudad</label>
+                                <input id="ciudad" type="text" name="ciudad" value="{{ old('ciudad') }}" required
+                                    class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary @error('ciudad') border-red-500 @enderror"
+                                    placeholder="Ej: Madrid">
+                                @error('ciudad')
                                     <span class="text-red-500 text-xs">{{ $message }}</span>
                                 @enderror
                             </div>
@@ -65,12 +98,45 @@
                                     <span class="text-red-500 text-xs">{{ $message }}</span>
                                 @enderror
                             </div>
+
+                        {{-- TÍTULO --}}
+                            <div class="mb-4">
+                                <label for="titulo_id" class="block text-gray-700 text-sm font-medium mb-2">Título</label>
+                                <select id="titulo_id" name="titulo_id" required
+                                    class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary @error('titulo_id') border-red-500 @enderror">
+                                    <option value="">Selecciona un título</option>
+                                    @foreach($titulos as $titulo)
+                                        <option value="{{ $titulo->id }}" {{ old('titulo_id') == $titulo->id ? 'selected' : '' }}>
+                                            {{ $titulo->name_titulo }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('titulo_id')
+                                    <span class="text-red-500 text-xs">{{ $message }}</span>
+                                @enderror
+                            </div>
                             
-                        {{-- CV PDF (oculto) --}}
-                            <input type="hidden" name="cv_pdf" value="">
+                        {{-- CV PDF --}}
+                            <div class="mb-4">
+                                <label for="cv_pdf" class="block text-gray-700 text-sm font-medium mb-2">CV (PDF)</label>
+                                <input id="cv_pdf" type="file" name="cv_pdf" accept=".pdf" required
+                                    class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary @error('cv_pdf') border-red-500 @enderror">
+                                <p class="text-xs text-gray-500 mt-1">Solo se aceptan archivos PDF. Tamaño máximo: 5MB</p>
+                                @error('cv_pdf')
+                                    <span class="text-red-500 text-xs">{{ $message }}</span>
+                                @enderror
+                            </div>
                             
-                        {{-- NÚMERO DE SEGURIDAD SOCIAL (oculto) --}}
-                            <input type="hidden" name="numero_seguridad_social" value="">
+                        {{-- NÚMERO DE SEGURIDAD SOCIAL --}}
+                            <div class="mb-4">
+                                <label for="numero_seguridad_social" class="block text-gray-700 text-sm font-medium mb-2">Número de Seguridad Social</label>
+                                <input id="numero_seguridad_social" type="text" name="numero_seguridad_social" value="{{ old('numero_seguridad_social') }}" required
+                                    class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary @error('numero_seguridad_social') border-red-500 @enderror"
+                                    placeholder="Formato: SS12345678">
+                                @error('numero_seguridad_social')
+                                    <span class="text-red-500 text-xs">{{ $message }}</span>
+                                @enderror
+                            </div>
 
             <div class="mt-6">
                 <button type="submit" class="w-full bg-primary text-white py-2 px-4 rounded-lg hover:bg-primary-dark transition font-medium">

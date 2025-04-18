@@ -28,4 +28,9 @@ class Solicitud extends Model
     {
         return $this->belongsTo(Publicacion::class, 'publicacion_id');
     }
+
+    public function chat()
+    {
+        return $this->hasOne(Chat::class);
+    }
 }

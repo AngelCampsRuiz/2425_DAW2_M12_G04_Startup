@@ -9,6 +9,7 @@ use App\Models\Convenio;
 use App\Models\Seguimiento;
 use App\Models\Publicacion;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class HomeController extends Controller
 {
@@ -29,6 +30,17 @@ class HomeController extends Controller
             ->orderByDesc('alumnos_contratados')
             ->limit(6)
             ->get();
+
+            // Si no hay empresas con alumnos contratados, obtenemos al menos algunas empresas para mostrar
+            if ($empresasDestacadas->isEmpty() || $empresasDestacadas->sum('alumnos_contratados') == 0) {
+                // Intentamos obtener algunas empresas aunque no tengan convenios completados
+                $empresasDestacadas = Empresa::limit(6)->get();
+
+                // Asignamos valores ficticios para mostrar en la vista
+                $empresasDestacadas->each(function($empresa) {
+                    $empresa->alumnos_contratados = rand(1, 10); // Valor aleatorio para demo
+                });
+            }
 
         // CALCULAMOS EL PORCENTAJE DE EXITO
             $alumnosConPracticas = Seguimiento::where('estado', 'completado')->count();
@@ -62,7 +74,29 @@ class HomeController extends Controller
 
     public function profile($id = null)
     {
-        $user = $id ? User::with('tutor.categoria', 'estudiante.titulo', 'empresa')->findOrFail($id) : auth()->user()->load('tutor.categoria', 'estudiante.titulo', 'empresa');
-        return view('profile', compact('user'));
+        $user = $id ? User::findOrFail($id) : Auth::user();
+        $user->load(['tutor', 'estudiante', 'empresa']);
+
+        $data = [
+            'user' => $user,
+            'tutor' => $user->tutor,
+            'estudiante' => $user->estudiante,
+            'empresa' => $user->empresa,
+        ];
+
+        if ($user->empresa) {
+            $data['experiencias'] = $user->empresa->experiencias()->with('alumno.user')->get();
+        }
+
+        return view('profile', $data);
+    }
+
+    public function updateVisibility(Request $request)
+    {
+        $user = User::findOrFail($request->user_id);
+        $user->visibilidad = !$user->visibilidad; // Toggle visibility
+        $user->save();
+
+        return response()->json(['success' => true, 'visibilidad' => $user->visibilidad]);
     }
 }

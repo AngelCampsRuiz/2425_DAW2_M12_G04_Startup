@@ -1,13 +1,14 @@
 body {
+    min-height: 100vh;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
     background-color: #f0f0f0;
 }
 
 .profile-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-    background-color: #f0f0f0;
+    flex: 1;
+    padding: 2rem;
 }
 
 .profile-card {
@@ -81,4 +82,46 @@ body {
 
 .fa-trash {
     color: red;
+}
+
+.dropdown-button {
+    margin-top: 10px;
+    background-color: #d0aafe;
+    color: white;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s ease;
+}
+
+.dropdown-button:hover {
+    background-color: #7705b6;
+}
+
+.dropdown-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+    background-color: #f9f9f9;
+    padding: 0 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    opacity: 0;
+}
+
+.dropdown-content p {
+    margin: 10px 0;
+}
+
+.dropdown-content.show {
+    opacity: 1;
+}
+
+.hidden {
+    display: none;
 }

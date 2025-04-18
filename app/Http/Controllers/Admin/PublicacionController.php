@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Publication;
-use App\Models\Category;
-use App\Models\Subcategory;
+use App\Models\Categoria;
+use App\Models\Subcategoria;
 use App\Models\Empresa;
 use Illuminate\Http\Request;
 
@@ -19,8 +19,8 @@ class PublicacionController extends Controller
         $publicaciones = Publication::with(['empresa', 'categoria', 'subcategoria'])
                         ->orderBy('id', 'asc')
                         ->paginate(10);
-        $categorias = Category::all();
-        $subcategorias = Subcategory::all();
+        $categorias = Categoria::all();
+        $subcategorias = Subcategoria::all();
         $empresas = Empresa::all();
         
         if (request()->ajax()) {
@@ -78,8 +78,8 @@ class PublicacionController extends Controller
             ]);
         }
         
-        $categorias = Category::all();
-        $subcategorias = Subcategory::all();
+        $categorias = Categoria::all();
+        $subcategorias = Subcategoria::all();
         $empresas = Empresa::all();
         return view('admin.publicaciones.edit', compact('publicacion', 'categorias', 'subcategorias', 'empresas'));
     }

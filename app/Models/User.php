@@ -27,7 +27,14 @@ class User extends Authenticatable
         'ciudad',
         'dni',
         'activo',
-        'telefono'
+        'telefono',
+        'show_telefono',
+        'show_dni',
+        'show_ciudad',
+        'show_direccion',
+        'show_web',
+        'descripcion',
+        'imagen'
     ];
 
     protected $casts = [
@@ -51,6 +58,11 @@ class User extends Authenticatable
     public function estudiante()
     {
         return $this->hasOne(Estudiante::class, 'id', 'id');
+    }
+
+    public function experiencias()
+    {
+        return $this->hasManyThrough(Experiencia::class, Estudiante::class, 'id', 'alumno_id', 'id', 'id');
     }
 
     public function tutor()

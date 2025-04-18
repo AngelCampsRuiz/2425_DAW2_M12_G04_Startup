@@ -35,41 +35,57 @@
 
             <!-- EMPRESAS QUE CONFIAN -->
                 <section class="my-16">
-                    <h2 class="text-3xl font-bold text-[#7705B6] mb-10 relative inline-block">
-                        Empresas que confían en nosotros
+                    <h2 class="text-3xl font-bold text-[#7705B6] mb-4 relative inline-block">
+                        Empresas con más alumnos contratados
                         <span class="absolute bottom-0 left-0 w-full h-1 bg-[#9B30D9] rounded-full"></span>
                     </h2>
+                    <p class="text-lg text-gray-600 max-w-4xl mx-auto mb-10">Estas son las empresas que más oportunidades han brindado a nuestros estudiantes</p>
 
                     <div class="container mx-auto max-w-5xl px-4">
                         @if($empresasDestacadas->isNotEmpty())
                             <!-- Slider principal -->
                             <div class="relative">
-                                <div class="swiper-container empresas-slider mb-6 w-full">
-                                    <div class="swiper-wrapper">
-                                        @foreach($empresasDestacadas as $empresa)
-                                            <div class="swiper-slide">
-                                                <div class="bg-white p-6 rounded-lg shadow-md text-center transform transition-all hover:shadow-xl hover:-translate-y-1 h-full flex flex-col justify-between">
-                                                    @if($empresa->logo)
-                                                        <img src="{{ asset('storage/'.$empresa->logo) }}" alt="{{ $empresa->nombre }}" class="h-16 mx-auto mb-4">
-                                                    @else
-                                                        <div class="h-16 mx-auto mb-4 flex items-center justify-center bg-gray-200 text-gray-500 rounded">
-                                                            {{ substr($empresa->nombre, 0, 2) }}
+                                <!-- Contenedor principal del slider con clase personalizada -->
+                                <div class="empresas-slider-container mb-6 w-full relative">
+                                    <!-- Contenedor del slider -->
+                                    <div class="swiper-container empresas-slider w-full overflow-hidden">
+                                        <div class="swiper-wrapper">
+                                            @foreach($empresasDestacadas->sortByDesc('alumnos_contratados') as $empresa)
+                                                <div class="swiper-slide">
+                                                    <div class="bg-white p-6 rounded-lg shadow-md text-center transform transition-all hover:shadow-xl hover:-translate-y-1 h-full flex flex-col justify-between">
+                                                        <div class="relative">
+                                                            @if($empresa->user->imagen)
+                                                                <img src="{{ asset('storage/'.$empresa->user->logo) }}" alt="{{ $empresa->user->nombre }}" class="h-16 mx-auto mb-4">
+                                                            @else
+                                                                <div class="h-16 mx-auto mb-4 flex items-center justify-center bg-gray-200 text-gray-500 rounded">
+                                                                    {{ substr($empresa->user->nombre, 0, 2) }}
+                                                                </div>
+                                                            @endif
+                                                            <!-- Badge para destacar el ranking -->
+                                                            <div class="absolute -top-3 -right-3 bg-[#7705B6] text-white rounded-full w-8 h-8 flex items-center justify-center shadow-lg font-bold text-sm">
+                                                                #{{ $loop->iteration }}
+                                                            </div>
                                                         </div>
-                                                    @endif
-                                                    <div>
-                                                        <h3 class="font-bold text-lg">{{ $empresa->nombre }}</h3>
-                                                        <p class="text-gray-600">{{ $empresa->alumnos_contratados }} alumnos contratados</p>
+                                                        <div>
+                                                            <h3 class="font-bold text-lg">{{ $empresa->user->nombre }}</h3>
+                                                            <p class="text-gray-600 font-medium">
+                                                                <span class="text-[#7705B6] font-bold">{{ $empresa->alumnos_contratados }}</span> 
+                                                                {{ $empresa->alumnos_contratados == 1 ? 'alumno contratado' : 'alumnos contratados' }}
+                                                            </p>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        @endforeach
+                                            @endforeach
+                                        </div>
                                     </div>
-                                    <!-- Paginación dentro del slider -->
-                                    <div class="swiper-pagination mt-4"></div>
+                                    
+                                    <!-- Paginación -->
+                                    <div class="swiper-pagination mt-4 text-center"></div>
+                                    
+                                    <!-- Controles de navegación -->
+                                    <div class="swiper-button-next text-[#7705B6] absolute top-1/2 -mt-6 right-0 z-10"></div>
+                                    <div class="swiper-button-prev text-[#7705B6] absolute top-1/2 -mt-6 left-0 z-10"></div>
                                 </div>
-                                <!-- Controles de navegación fuera del slider pero dentro del contenedor relativo -->
-                                <div class="swiper-button-next text-[#7705B6] absolute top-1/2 -mt-6 right-0 z-10"></div>
-                                <div class="swiper-button-prev text-[#7705B6] absolute top-1/2 -mt-6 left-0 z-10"></div>
                             </div>
                         @else
                             <div class="text-center text-gray-500">
@@ -83,29 +99,35 @@
                 @push('scripts')
                 <script>
                     document.addEventListener('DOMContentLoaded', function() {
-                        const swiper = new Swiper('.empresas-slider', {
+                        // Destruir cualquier instancia previa si existe
+                        if (window.empresasSwiper) {
+                            window.empresasSwiper.destroy(true, true);
+                        }
+                        
+                        // Usar la configuración más simple posible para garantizar funcionamiento
+                        window.empresasSwiper = new Swiper('.empresas-slider', {
+                            // Configuración básica
                             slidesPerView: 1,
-                            spaceBetween: 30,
-                            centeredSlides: false,
-                            loop: true,
-                            grabCursor: true,
-                            preventClicks: true,
-                            preventClicksPropagation: true,
-                            // Autoplay desactivado como solicitó el usuario
-                            autoplay: false,
-                            // Configuración para evitar scroll lateral
-                            cssMode: true,
-                            mousewheel: false,
-                            keyboard: false,
-                            pagination: {
-                                el: '.swiper-pagination',
-                                clickable: true,
-                                dynamicBullets: true,
-                            },
+                            spaceBetween: 20,
+                            speed: 300,
+                            
+                            // Navegación
                             navigation: {
                                 nextEl: '.swiper-button-next',
                                 prevEl: '.swiper-button-prev',
                             },
+                            
+                            // Paginación simple
+                            pagination: {
+                                el: '.swiper-pagination',
+                                clickable: true,
+                                type: 'bullets'
+                            },
+                            
+                            // Sin bucle infinito
+                            loop: false,
+                            
+                            // Puntos de ruptura para diseño responsive
                             breakpoints: {
                                 640: {
                                     slidesPerView: 2,
@@ -113,7 +135,7 @@
                                 },
                                 1024: {
                                     slidesPerView: 3,
-                                    spaceBetween: 30,
+                                    spaceBetween: 20,
                                 }
                             }
                         });
@@ -123,7 +145,7 @@
 
             <!-- CTA FINAL - Solo visible para usuarios no autenticados -->
                 @guest
-                <section class="my-10 text-center py-12 bg-gradient-to-r from-purple-100 to-purple-200 rounded-xl">
+                <section class="mb-0 text-center py-12 bg-gradient-to-r from-purple-100 to-purple-200 rounded-xl">
                     <h2 class="text-3xl font-bold text-[#7705B6] mb-8 relative inline-block">
                         Échale un vistazo
                         <span class="absolute bottom-0 left-0 w-full h-1 bg-[#9B30D9] rounded-full"></span>
@@ -140,5 +162,4 @@
                 </section>
                 @endguest
         </section>
-        <div class="pb-4"></div> <!-- Pequeño espacio antes del footer -->
     @endsection
