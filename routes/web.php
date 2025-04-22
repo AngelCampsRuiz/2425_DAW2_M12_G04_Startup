@@ -103,7 +103,7 @@ Route::middleware(['auth'])->group(function () {
 
 // Rutas de perfil
 Route::middleware(['auth'])->group(function () {
-    Route::get('/profile/{user}', [ProfileController::class, 'show'])->name('profile.view');
+    Route::get('/profile/{user}', [ProfileController::class, 'show'])->name('profile.show');
     Route::put('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
 });
 

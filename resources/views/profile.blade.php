@@ -912,14 +912,24 @@
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
-                                        <input type="text" name="nombre" value="{{ $user->nombre }}"
-                                               class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500">
+                                        <input type="text" name="nombre" id="nombre" value="{{ $user->nombre }}"
+                                               class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                                               onblur="validarNombre(this)">
+                                        <span id="error-nombre" class="error-message text-xs text-red-500 mt-1 hidden"></span>
+                                        @error('nombre')
+                                            <span class="error-message text-xs text-red-500 mt-1">{{ $message }}</span>
+                                        @enderror
                                     </div>
 
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
-                                        <textarea name="descripcion" rows="3"
-                                                  class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500">{{ $user->descripcion }}</textarea>
+                                        <textarea name="descripcion" id="descripcion" rows="3"
+                                                  class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                                                  onblur="validarDescripcion(this)">{{ $user->descripcion }}</textarea>
+                                        <span id="error-descripcion" class="error-message text-xs text-red-500 mt-1 hidden"></span>
+                                        @error('descripcion')
+                                            <span class="error-message text-xs text-red-500 mt-1">{{ $message }}</span>
+                                        @enderror
                                     </div>
                                 </div>
                             </div>
@@ -973,20 +983,35 @@
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
-                                        <input type="text" name="telefono" value="{{ $user->telefono }}"
-                                               class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500">
+                                        <input type="text" name="telefono" id="telefono" value="{{ $user->telefono }}"
+                                               class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                                               onblur="validarTelefono(this)">
+                                        <span id="error-telefono" class="error-message text-xs text-red-500 mt-1 hidden"></span>
+                                        @error('telefono')
+                                            <span class="error-message text-xs text-red-500 mt-1">{{ $message }}</span>
+                                        @enderror
                                     </div>
 
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">DNI</label>
-                                        <input type="text" name="dni" value="{{ $user->dni }}"
-                                               class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500">
+                                        <input type="text" name="dni" id="dni" value="{{ $user->dni }}"
+                                               class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                                               onblur="validarDNI(this)">
+                                        <span id="error-dni" class="error-message text-xs text-red-500 mt-1 hidden"></span>
+                                        @error('dni')
+                                            <span class="error-message text-xs text-red-500 mt-1">{{ $message }}</span>
+                                        @enderror
                                     </div>
 
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">Ciudad</label>
-                                        <input type="text" name="ciudad" value="{{ $user->ciudad }}"
-                                               class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500">
+                                        <input type="text" name="ciudad" id="ciudad" value="{{ $user->ciudad }}"
+                                               class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                                               onblur="validarCiudad(this)">
+                                        <span id="error-ciudad" class="error-message text-xs text-red-500 mt-1 hidden"></span>
+                                        @error('ciudad')
+                                            <span class="error-message text-xs text-red-500 mt-1">{{ $message }}</span>
+                                        @enderror
                                     </div>
                                 </div>
                             </div>
@@ -997,7 +1022,7 @@
 
                                 <div class="space-y-4">
                                     {{-- Foto de Perfil --}}
-        <div>
+                                    <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">Foto de Perfil Actual</label>
                                         @if($user->imagen)
                                             <div class="mt-2 mb-4">
@@ -1008,31 +1033,41 @@
                                         @else
                                             <p class="mt-2 text-sm text-gray-500">No hay foto de perfil</p>
                                         @endif
-                                        <input type="file" name="imagen" accept="image/*"
-                                               class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100">
+                                        <input type="file" name="imagen" id="imagen" accept="image/*"
+                                               class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
+                                               onchange="validarImagen(this)">
+                                        <span id="error-imagen" class="error-message text-xs text-red-500 mt-1 hidden"></span>
+                                        @error('imagen')
+                                            <span class="error-message text-xs text-red-500 mt-1">{{ $message }}</span>
+                                        @enderror
                                     </div>
 
                                     {{-- CV --}}
                                     @if($user->role_id == 3)
-                <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">CV Actual</label>
-                                            @if($user->estudiante && $user->estudiante->cv_pdf)
-                                                <div class="mt-2 mb-4">
-                                                    <a href="{{ asset('cv/' . $user->estudiante->cv_pdf) }}"
-                                                       target="_blank"
-                                                       class="inline-flex items-center px-4 py-2 bg-purple-100 text-purple-700 rounded-xl hover:bg-purple-200">
-                                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                                                        </svg>
-                                                        Ver CV actual
-                                                    </a>
-                                                </div>
-                                            @else
-                                                <p class="mt-2 text-sm text-gray-500">No hay CV subido</p>
-                                            @endif
-                                            <input type="file" name="cv_pdf" accept=".pdf"
-                                                   class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100">
-                                        </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">CV Actual</label>
+                                        @if($user->estudiante && $user->estudiante->cv_pdf)
+                                            <div class="mt-2 mb-4">
+                                                <a href="{{ asset('cv/' . $user->estudiante->cv_pdf) }}"
+                                                   target="_blank"
+                                                   class="inline-flex items-center px-4 py-2 bg-purple-100 text-purple-700 rounded-xl hover:bg-purple-200">
+                                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                                    </svg>
+                                                    Ver CV actual
+                                                </a>
+                                            </div>
+                                        @else
+                                            <p class="mt-2 text-sm text-gray-500">No hay CV subido</p>
+                                        @endif
+                                        <input type="file" name="cv_pdf" id="cv_pdf" accept=".pdf"
+                                               class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
+                                               onchange="validarCV(this)">
+                                        <span id="error-cv_pdf" class="error-message text-xs text-red-500 mt-1 hidden"></span>
+                                        @error('cv_pdf')
+                                            <span class="error-message text-xs text-red-500 mt-1">{{ $message }}</span>
+                                        @enderror
+                                    </div>
                                     @endif
                                 </div>
                             </div>
@@ -1043,7 +1078,7 @@
                                         class="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors duration-200">
                                     Cancelar
                                 </button>
-                                <button type="submit"
+                                <button type="submit" id="submitBtn"
                                         class="px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors duration-200">
                                     Guardar Cambios
                                 </button>
@@ -1074,6 +1109,8 @@
             function openEditModal() {
                 document.getElementById('editModal').classList.remove('hidden');
                 document.body.style.overflow = 'hidden';
+                // Resetear errores al abrir modal
+                resetAllErrors();
             }
 
             function closeEditModal() {
@@ -1097,7 +1134,183 @@
                 }
             });
 
+            // Funciones de validación
+            function showError(field, message) {
+                const errorElement = document.getElementById('error-' + field.id);
+                if (errorElement) {
+                    errorElement.textContent = message;
+                    errorElement.classList.remove('hidden');
+                    field.classList.add('border-red-500');
+                }
+            }
+
+            function hideError(field) {
+                const errorElement = document.getElementById('error-' + field.id);
+                if (errorElement) {
+                    errorElement.classList.add('hidden');
+                    field.classList.remove('border-red-500');
+                }
+            }
+
+            function resetAllErrors() {
+                document.querySelectorAll('.error-message').forEach(el => {
+                    el.classList.add('hidden');
+                });
+                document.querySelectorAll('input, textarea').forEach(el => {
+                    el.classList.remove('border-red-500');
+                });
+            }
+
+            // Añadir onblur a todos los campos cuando se carga la página
+            document.addEventListener('DOMContentLoaded', function() {
+                const nombreInput = document.getElementById('nombre');
+                const descripcionInput = document.getElementById('descripcion');
+                const telefonoInput = document.getElementById('telefono');
+                const dniInput = document.getElementById('dni');
+                const ciudadInput = document.getElementById('ciudad');
+                
+                if (nombreInput) nombreInput.addEventListener('blur', function() { validarNombre(this); });
+                if (descripcionInput) descripcionInput.addEventListener('blur', function() { validarDescripcion(this); });
+                if (telefonoInput) telefonoInput.addEventListener('blur', function() { validarTelefono(this); });
+                if (dniInput) dniInput.addEventListener('blur', function() { validarDNI(this); });
+                if (ciudadInput) ciudadInput.addEventListener('blur', function() { validarCiudad(this); });
+            });
+
+            function validarNombre(field) {
+                if (!field.value.trim()) {
+                    showError(field, "El nombre es obligatorio");
+                    return false;
+                } else if (field.value.trim().length < 2) {
+                    showError(field, "El nombre debe tener al menos 2 caracteres");
+                    return false;
+                } else if (field.value.trim().length > 100) {
+                    showError(field, "El nombre no puede exceder los 100 caracteres");
+                    return false;
+                } else {
+                    hideError(field);
+                    return true;
+                }
+            }
+
+            function validarDescripcion(field) {
+                if (field.value.trim().length > 500) {
+                    showError(field, "La descripción no puede exceder los 500 caracteres");
+                    return false;
+                } else {
+                    hideError(field);
+                    return true;
+                }
+            }
+
+            function validarTelefono(field) {
+                if (field.value.trim() && !/^[0-9]{9}$/.test(field.value.trim())) {
+                    showError(field, "El teléfono debe contener 9 dígitos");
+                    return false;
+                } else {
+                    hideError(field);
+                    return true;
+                }
+            }
+
+            function validarDNI(field) {
+                if (field.value.trim()) {
+                    const dniRegex = /^[0-9]{8}[A-Za-z]$/;
+                    const nieRegex = /^[XYZxyz][0-9]{7}[A-Za-z]$/;
+                    
+                    if (!dniRegex.test(field.value.trim()) && !nieRegex.test(field.value.trim())) {
+                        showError(field, "Formato de DNI/NIE no válido");
+                        return false;
+                    } else {
+                        hideError(field);
+                        return true;
+                    }
+                } else {
+                    hideError(field);
+                    return true;
+                }
+            }
+
+            function validarCiudad(field) {
+                if (field.value.trim() && field.value.trim().length < 2) {
+                    showError(field, "La ciudad debe tener al menos 2 caracteres");
+                    return false;
+                } else if (field.value.trim().length > 100) {
+                    showError(field, "La ciudad no puede exceder los 100 caracteres");
+                    return false;
+                } else {
+                    hideError(field);
+                    return true;
+                }
+            }
+
+            function validarImagen(field) {
+                if (field.files.length > 0) {
+                    const file = field.files[0];
+                    const fileType = file.type;
+                    const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                    
+                    if (!validImageTypes.includes(fileType)) {
+                        showError(field, "El archivo debe ser una imagen (JPG, PNG, GIF o WEBP)");
+                        return false;
+                    } else if (file.size > 2 * 1024 * 1024) { // 2MB
+                        showError(field, "La imagen no puede exceder los 2MB");
+                        return false;
+                    } else {
+                        hideError(field);
+                        return true;
+                    }
+                } else {
+                    hideError(field);
+                    return true;
+                }
+            }
+
+            function validarCV(field) {
+                if (field.files.length > 0) {
+                    const file = field.files[0];
+                    
+                    if (file.type !== 'application/pdf') {
+                        showError(field, "El archivo debe ser un PDF");
+                        return false;
+                    } else if (file.size > 5 * 1024 * 1024) { // 5MB
+                        showError(field, "El CV no puede exceder los 5MB");
+                        return false;
+                    } else {
+                        hideError(field);
+                        return true;
+                    }
+                } else {
+                    hideError(field);
+                    return true;
+                }
+            }
+
+            // Validar todo el formulario antes de enviar
             document.getElementById('profileForm').addEventListener('submit', function(e) {
+                // Primero validar todos los campos
+                let isValid = true;
+                
+                if (!validarNombre(document.getElementById('nombre'))) isValid = false;
+                if (!validarDescripcion(document.getElementById('descripcion'))) isValid = false;
+                if (!validarTelefono(document.getElementById('telefono'))) isValid = false;
+                if (!validarDNI(document.getElementById('dni'))) isValid = false;
+                if (!validarCiudad(document.getElementById('ciudad'))) isValid = false;
+                
+                const imagenInput = document.getElementById('imagen');
+                if (imagenInput && imagenInput.files.length > 0) {
+                    if (!validarImagen(imagenInput)) isValid = false;
+                }
+                
+                const cvInput = document.getElementById('cv_pdf');
+                if (cvInput && cvInput.files.length > 0) {
+                    if (!validarCV(cvInput)) isValid = false;
+                }
+                
+                if (!isValid) {
+                    e.preventDefault();
+                    return false;
+                }
+
                 e.preventDefault();
 
                 const formData = new FormData(this);
@@ -1193,7 +1406,7 @@
                         if (user.imagen) {
                             const imagenPerfil = document.querySelector('.w-40.h-40.rounded-full img');
                             if (imagenPerfil) {
-                                imagenPerfil.src = `/public/profile_images/${user.imagen}`;
+                                imagenPerfil.src = `{{ asset('public/profile_images/') }}/${user.imagen}`;
                             }
                         }
 
@@ -1216,20 +1429,42 @@
                             closeEditModal();
                             successMessage.remove();
                         }, 2000);
+                    } else if (data.errors) {
+                        // Mostrar errores de validación
+                        resetAllErrors();
+                        Object.entries(data.errors).forEach(([field, messages]) => {
+                            const inputField = document.querySelector(`[name="${field}"]`);
+                            if (inputField) {
+                                const errorMessage = Array.isArray(messages) ? messages[0] : messages;
+                                showError(inputField, errorMessage);
+                            }
+                        });
                     } else {
-                        throw new Error(data.message);
+                        throw new Error(data.message || "Ha ocurrido un error al guardar los cambios");
                     }
                 })
                 .catch(error => {
-                    // Mostrar mensaje de error
-                    const errorMessage = document.createElement('div');
-                    errorMessage.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
-                    errorMessage.textContent = error.message;
-                    document.body.appendChild(errorMessage);
-
-                    setTimeout(() => {
-                        errorMessage.remove();
-                    }, 3000);
+                    // Primero intentar parsear el error como JSON en caso de que sea una respuesta del servidor
+                    let parsedError;
+                    try {
+                        // Si la respuesta es un objeto Response, intentamos obtener el JSON
+                        if (error instanceof Response) {
+                            return error.json().then(data => {
+                                handleApiError(data);
+                            });
+                        }
+                        // Si ya tenemos un objeto, lo usamos directamente
+                        else if (error.message) {
+                            handleApiError({ message: error.message });
+                        }
+                        // Último caso, error sin formato claro
+                        else {
+                            handleApiError({ message: "Ha ocurrido un error desconocido" });
+                        }
+                    } catch (e) {
+                        // Si falla el parsing, usamos el error como string
+                        handleApiError({ message: error.toString() });
+                    }
                 })
                 .finally(() => {
                     // Restaurar el botón
@@ -1237,5 +1472,66 @@
                     submitButton.innerHTML = originalButtonText;
                 });
             });
+
+            // Función para manejar errores de la API
+            function handleApiError(errorData) {
+                const errorMsg = errorData.message || "Ha ocurrido un error al procesar la solicitud";
+                
+                // Detectar tipos específicos de errores
+                if (errorMsg.includes('Duplicate entry') && errorMsg.includes('user_telefono_unique')) {
+                    // Error de teléfono duplicado
+                    const telefonoInput = document.getElementById('telefono');
+                    if (telefonoInput) {
+                        showError(telefonoInput, "Este número de teléfono ya está registrado");
+                        return;
+                    }
+                } else if (errorMsg.includes('Duplicate entry') && errorMsg.includes('user_dni_unique')) {
+                    // Error de DNI duplicado
+                    const dniInput = document.getElementById('dni');
+                    if (dniInput) {
+                        showError(dniInput, "Este DNI/NIE ya está registrado");
+                        return;
+                    }
+                } else if (errorMsg.includes('Duplicate entry') && errorMsg.includes('user_email_unique')) {
+                    // Error de email duplicado
+                    const emailInput = document.getElementById('email');
+                    if (emailInput) {
+                        showError(emailInput, "Este email ya está registrado");
+                        return;
+                    }
+                }
+                
+                // Para otros errores, mostrar un mensaje dentro del modal
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'mt-4 p-4 bg-red-50 text-red-700 rounded-lg';
+                errorDiv.innerHTML = `
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-red-800">Ha ocurrido un error</h3>
+                            <div class="mt-1 text-sm text-red-700">
+                                ${errorMsg}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Insertar el error en el formulario
+                const form = document.getElementById('profileForm');
+                const submitBtn = document.getElementById('submitBtn');
+                
+                // Remover cualquier mensaje de error anterior
+                const prevError = document.querySelector('.bg-red-50.text-red-700');
+                if (prevError) prevError.remove();
+                
+                // Insertar antes del botón de envío
+                if (form && submitBtn) {
+                    form.insertBefore(errorDiv, submitBtn.parentNode);
+                }
+            }
         </script>
     @endsection

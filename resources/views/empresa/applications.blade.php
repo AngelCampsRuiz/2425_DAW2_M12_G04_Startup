@@ -92,7 +92,7 @@
                                     <div class="flex-1 min-w-0">
                                         <div class="flex items-center justify-between">
                                             <div class="flex items-center space-x-4">
-                                                <a href="{{ route('profile.view', $solicitud->estudiante->user->id) }}" 
+                                                <a href="{{ route('profile.show', $solicitud->estudiante->user->id) }}" 
                                                    class="group flex items-center space-x-3 hover:text-purple-600 transition-colors duration-200">
                                                     <h3 class="text-lg font-semibold text-gray-900 group-hover:text-purple-600">
                                                         {{ $solicitud->estudiante->user->nombre }}
