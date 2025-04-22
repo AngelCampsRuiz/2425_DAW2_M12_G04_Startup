@@ -19,6 +19,10 @@
                                 Inicio
                             </a>
                             <span class="mx-2 text-gray-400">/</span>
+                            <a href="{{ route('empresa.dashboard') }}" class="text-gray-500 hover:text-[#5e0490]">
+                                Dashboard
+                            </a>
+                            <span class="mx-2 text-gray-400">/</span>
                             <span class="text-[#5e0490] font-medium">Perfil de {{ $user->role_id == 3 ? 'Estudiante' : 'Empresa' }}</span>
                         </div>
                     </div>
@@ -195,8 +199,8 @@
                                     <span class="text-6xl font-bold text-purple-600">
                                         {{ strtoupper(substr($user->nombre, 0, 2)) }}
                                     </span>
-                    @endif
-                </div>
+                                @endif
+                            </div>
                         </div>
                     </div>
 
@@ -480,8 +484,8 @@
                         <div class="relative h-64 bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600">
                             <div class="absolute -bottom-20 left-8">
                                 <div class="w-40 h-40 rounded-full bg-white border-4 border-white shadow-xl flex items-center justify-center overflow-hidden transform transition-transform duration-300 hover:scale-105">
-                                    @if($user->empresa->logo_url)
-                                        <img src="{{ $user->empresa->logo_url }}"
+                                    @if($user->imagen)
+                                        <img src="{{ asset('public/profile_images/' . $user->imagen) }}"
                                              alt="Logo empresa"
                                              class="w-full h-full object-cover">
                                     @else
@@ -987,7 +991,7 @@
 
                         // Actualizar imagen de perfil si se cambió
                         if (user.imagen) {
-                            const imagenPerfil = document.querySelector('.w-40.h-40.rounded-full');
+                            const imagenPerfil = document.querySelector('.w-40.h-40.rounded-full img');
                             if (imagenPerfil) {
                                 imagenPerfil.src = `/public/profile_images/${user.imagen}`;
                             }
