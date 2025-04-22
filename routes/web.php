@@ -64,11 +64,6 @@ Route::middleware(['auth'])->group(function () {
         ->middleware('auth');
 });
 
-// RUTAS PROTEGIDAS PARA EMPRESAS
-Route::middleware(['auth'])->group(function () {
-    Route::get('/empresa/dashboard', [CompanyDashboardController::class, 'index'])->name('empresa.dashboard');
-});
-
 Route::middleware(['auth'])->group(function () {
     Route::post('/update-visibility', [HomeController::class, 'updateVisibility']);
 });
@@ -79,12 +74,14 @@ Route::middleware(['auth', \App\Http\Middleware\AdminMiddleware::class])->prefix
 
     // Rutas para gestionar las publicaciones
     Route::resource('publicaciones', PublicacionController::class);
-    Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
 
     // Rutas de categorías
     Route::resource('categorias', CategoriaController::class);
 
     // Rutas de subcategorías
+    Route::get('subcategorias/check/{id}', [SubcategoriaController::class, 'checkPublicaciones'])->name('subcategorias.check');
+    Route::delete('subcategorias/delete-directo/{id}', [SubcategoriaController::class, 'deleteDirecto'])->name('subcategorias.delete-directo');
+    Route::post('subcategorias/eliminar-sql/{id}', [SubcategoriaController::class, 'deleteDirecto'])->name('subcategorias.eliminar-sql');
     Route::resource('subcategorias', SubcategoriaController::class);
 });
 
@@ -111,5 +108,9 @@ Route::middleware(['auth'])->group(function () {
 });
 
 // Rutas para valoraciones
-Route::post('/valoraciones', [ValoracionController::class, 'store'])->name('valoraciones.store');
-Route::get('/valoraciones/convenios/{receptorId}', [ValoracionController::class, 'getConvenios'])->name('valoraciones.getConvenios');
+Route::middleware(['auth'])->group(function () {
+    Route::post('/valoraciones', [ValoracionController::class, 'store'])->name('valoraciones.store');
+    Route::get('/valoraciones/convenios/{receptorId}', [ValoracionController::class, 'getConvenios'])->name('valoraciones.getConvenios');
+    Route::put('/valoraciones/{id}', [ValoracionController::class, 'update'])->name('valoraciones.update');
+    Route::delete('/valoraciones/{id}', [ValoracionController::class, 'destroy'])->name('valoraciones.destroy');
+});

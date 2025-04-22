@@ -180,81 +180,111 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         // Manejo de envío de formularios
-        document.getElementById('form-subcategoria').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-            const url = this.getAttribute('action');
-            const method = document.getElementById('form_method').value;
-            
-            if (method === 'PUT') {
-                formData.append('_method', 'PUT');
-            }
-            
-            console.log('Enviando datos:', {
-                url: url,
-                method: method,
-                nombre: formData.get('nombre_subcategoria'),
-                categoria: formData.get('categoria_id')
-            });
-            
-            fetch(url, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        const formSubcategoria = document.getElementById('form-subcategoria');
+        if (formSubcategoria) {
+            formSubcategoria.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                const url = this.getAttribute('action');
+                const method = document.getElementById('form_method').value;
+                
+                if (method === 'PUT') {
+                    formData.append('_method', 'PUT');
                 }
-            })
-            .then(response => {
-                console.log('Respuesta recibida:', response.status);
-                return response.json();
-            })
-            .then(data => {
-                console.log('Datos recibidos:', data);
-                if (data.success) {
-                    document.getElementById('modal-subcategoria').classList.add('hidden');
-                    mostrarNotificacion(data.message, 'success');
-                    actualizarTabla();
-                    resetForm();
-                } else if (data.errors) {
-                    mostrarErrores(data.errors);
-                } else if (data.message) {
-                    mostrarNotificacion(data.message, 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                mostrarNotificacion('Ha ocurrido un error en la comunicación con el servidor', 'error');
+                
+                console.log('Enviando datos:', {
+                    url: url,
+                    method: method,
+                    nombre: formData.get('nombre_subcategoria'),
+                    categoria: formData.get('categoria_id')
+                });
+                
+                fetch(url, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                })
+                .then(response => {
+                    console.log('Respuesta recibida:', response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Datos recibidos:', data);
+                    if (data.success) {
+                        document.getElementById('modal-subcategoria').classList.add('hidden');
+                        mostrarNotificacion(data.message, 'success');
+                        actualizarTabla();
+                        resetForm();
+                    } else if (data.errors) {
+                        mostrarErrores(data.errors);
+                    } else if (data.message) {
+                        mostrarNotificacion(data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    mostrarNotificacion('Ha ocurrido un error en la comunicación con el servidor', 'error');
+                });
             });
-        });
+        }
         
         // Formulario de eliminar
-        document.getElementById('form-eliminar').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const url = this.getAttribute('action');
-            const formData = new FormData(this);
-            
-            fetch(url, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        const formEliminar = document.getElementById('form-eliminar');
+        if (formEliminar) {
+            formEliminar.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Obtener el ID directamente
+                const subcategoriaId = document.getElementById('eliminar_id').value;
+                if (!subcategoriaId) {
+                    console.error("Error: ID de subcategoría no encontrado para eliminación");
+                    mostrarNotificacion('Error: ID de subcategoría no encontrado', 'error');
+                    return;
                 }
-            })
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('modal-eliminar').classList.add('hidden');
-                if (data.success) {
-                    mostrarNotificacion(data.message, 'success');
-                    actualizarTabla();
-                } else {
-                    mostrarNotificacion(data.message, 'error');
+                
+                const url = '{{ route('admin.subcategorias.destroy', ['subcategoria' => '__ID__']) }}'.replace('__ID__', subcategoriaId);
+                const formData = new FormData(this);
+                console.log("Enviando eliminación para ID:", subcategoriaId, "a URL:", url);
+                
+                fetch(url, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('modal-eliminar').classList.add('hidden');
+                    
+                    console.log('Respuesta eliminación:', data);
+                    if (data.success) {
+                        mostrarNotificacion(data.message || 'Subcategoría eliminada correctamente', 'success');
+                        actualizarTabla();
+                    } else if (data.message) {
+                        mostrarNotificacion(data.message, 'error');
+                    } else {
+                        mostrarNotificacion('Error al eliminar la subcategoría', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al eliminar:', error);
+                    mostrarNotificacion('Error al intentar eliminar la subcategoría', 'error');
+                });
+            });
+        }
+        
+        // Detectar cuando se cierra el modal al hacer clic fuera de él
+        const modales = document.querySelectorAll('#modal-subcategoria, #modal-eliminar');
+        modales.forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.add('hidden');
                 }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                mostrarNotificacion('Ha ocurrido un error al intentar eliminar', 'error');
             });
         });
     }
@@ -262,9 +292,17 @@ document.addEventListener('DOMContentLoaded', function() {
     // Funciones auxiliares
     function resetForm() {
         const form = document.getElementById('form-subcategoria');
-        form.reset();
-        document.getElementById('form-errors').classList.add('hidden');
-        document.getElementById('error-list').innerHTML = '';
+        if (form) {
+            form.reset();
+            const errorsDiv = document.getElementById('form-errors');
+            const errorsList = document.getElementById('error-list');
+            if (errorsDiv) {
+                errorsDiv.classList.add('hidden');
+            }
+            if (errorsList) {
+                errorsList.innerHTML = '';
+            }
+        }
     }
     
     function cargarSubcategoria(id) {
@@ -285,15 +323,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 const subcategoria = data.subcategoria;
                 
-                document.getElementById('subcategoria_id').value = subcategoria.id;
-                document.getElementById('nombre_subcategoria').value = subcategoria.nombre_subcategoria;
-                document.getElementById('categoria_id').value = subcategoria.categoria_id;
+                const subcategoriaIdField = document.getElementById('subcategoria_id');
+                const nombreField = document.getElementById('nombre_subcategoria');
+                const categoriaField = document.getElementById('categoria_id');
+                const tituloModal = document.getElementById('modal-titulo');
+                const formSubcategoria = document.getElementById('form-subcategoria');
+                const modalSubcategoria = document.getElementById('modal-subcategoria');
                 
-                document.getElementById('modal-titulo').textContent = 'Editar Subcategoría';
-                document.getElementById('form-subcategoria').setAttribute('action', '{{ route('admin.subcategorias.update', ['subcategoria' => '__ID__']) }}'.replace('__ID__', id));
-                document.getElementById('form_method').value = 'PUT';
+                if (subcategoriaIdField) subcategoriaIdField.value = subcategoria.id;
+                if (nombreField) nombreField.value = subcategoria.nombre_subcategoria;
+                if (categoriaField) categoriaField.value = subcategoria.categoria_id;
                 
-                document.getElementById('modal-subcategoria').classList.remove('hidden');
+                if (tituloModal) tituloModal.textContent = 'Editar Subcategoría';
+                if (formSubcategoria) formSubcategoria.setAttribute('action', '{{ route('admin.subcategorias.update', ['subcategoria' => '__ID__']) }}'.replace('__ID__', id));
+                
+                const formMethodField = document.getElementById('form_method');
+                if (formMethodField) formMethodField.value = 'PUT';
+                
+                if (modalSubcategoria) modalSubcategoria.classList.remove('hidden');
             } else {
                 mostrarNotificacion('Error al cargar la subcategoría', 'error');
             }
@@ -307,6 +354,8 @@ document.addEventListener('DOMContentLoaded', function() {
     function mostrarNotificacion(mensaje, tipo) {
         const notification = document.getElementById('ajax-notification');
         const notificationText = document.getElementById('notification-text');
+        
+        if (!notification || !notificationText) return;
         
         // Cambiar el estilo según el tipo de notificación
         if (tipo === 'success') {
@@ -330,6 +379,8 @@ document.addEventListener('DOMContentLoaded', function() {
     function mostrarErrores(errores) {
         const errorsDiv = document.getElementById('form-errors');
         const errorsList = document.getElementById('error-list');
+        
+        if (!errorsDiv || !errorsList) return;
         
         errorsList.innerHTML = '';
         
@@ -367,8 +418,11 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => response.json())
         .then(data => {
-            document.getElementById('tabla-container').innerHTML = data.tabla;
-            console.log('Tabla actualizada');
+            const tablaContainer = document.getElementById('tabla-container');
+            if (tablaContainer) {
+                tablaContainer.innerHTML = data.tabla;
+                console.log('Tabla actualizada');
+            }
         })
         .catch(error => {
             console.error('Error:', error);
