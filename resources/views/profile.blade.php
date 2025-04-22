@@ -846,48 +846,86 @@
         </div>
 
         <!-- Sección de Valoraciones -->
-        <div class="valoraciones-section">
-            <h2 class="valoraciones-title">Valoraciones Recibidas</h2>
-            <div class="valoraciones-container">
+        <div class="valoraciones-section mt-8">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">Valoraciones Recibidas</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 @forelse($valoracionesRecibidas as $valoracion)
-                    <div class="valoracion-card">
-                        <div class="valoracion-header">
-                            <div class="valoracion-user">
-                                <img src="{{ asset('path/to/default/avatar.jpg') }}" alt="Avatar" class="valoracion-avatar">
-                                <div class="valoracion-info">
-                                    <h3>{{ $valoracion->emisor->nombre }}</h3>
-                                    <p class="valoracion-fecha">{{ $valoracion->fecha_valoracion->format('d/m/Y') }}</p>
+                    <div class="bg-white rounded-xl shadow-lg p-6 transform transition-all duration-300 hover:shadow-xl">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mr-4">
+                                    @if($valoracion->emisor->imagen)
+                                        <img src="{{ asset('public/profile_images/' . $valoracion->emisor->imagen) }}"
+                                             alt="Avatar"
+                                             class="w-full h-full rounded-full object-cover">
+                                    @else
+                                        <span class="text-xl font-bold text-purple-600">
+                                            {{ strtoupper(substr($valoracion->emisor->nombre, 0, 2)) }}
+                                        </span>
+                                    @endif
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-900">{{ $valoracion->emisor->nombre }}</h3>
+                                    <p class="text-sm text-gray-500">{{ $valoracion->fecha_valoracion->format('d/m/Y') }}</p>
                                 </div>
                             </div>
-                            <div class="valoracion-puntuacion">
+                            @if(auth()->id() == $valoracion->emisor_id)
+                                <div class="flex space-x-2">
+                                    <button onclick="editValoracion({{ $valoracion->id }}, {{ $valoracion->puntuacion }}, '{{ $valoracion->comentario }}')"
+                                            class="text-purple-600 hover:text-purple-800">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                        </svg>
+                                    </button>
+                                    <button onclick="deleteValoracion({{ $valoracion->id }})"
+                                            class="text-red-600 hover:text-red-800">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            @endif
+                        </div>
+                        <div class="mb-4">
+                            <div class="flex text-yellow-400">
                                 @for($i = 1; $i <= 5; $i++)
-                                    <i class="fas fa-star {{ $i <= $valoracion->puntuacion ? 'star-filled' : 'star-empty' }}"></i>
+                                    <svg class="w-5 h-5 {{ $i <= $valoracion->puntuacion ? 'text-yellow-400' : 'text-gray-300' }}"
+                                         fill="currentColor"
+                                         viewBox="0 0 20 20">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                    </svg>
                                 @endfor
                             </div>
                         </div>
-                        <div class="valoracion-comentario">
-                            <p>{{ $valoracion->comentario }}</p>
-                        </div>
-                        <div class="valoracion-footer">
-                            <span class="valoracion-tipo">{{ $valoracion->tipo == 'alumno_a_empresa' ? 'Valoración de Alumno' : 'Valoración de Empresa' }}</span>
+                        <p class="text-gray-700">{{ $valoracion->comentario }}</p>
+                        <div class="mt-4 text-sm text-gray-500">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full bg-purple-100 text-purple-800">
+                                {{ $valoracion->tipo == 'alumno_a_empresa' ? 'Valoración de Alumno' : 'Valoración de Empresa' }}
+                            </span>
                         </div>
                     </div>
                 @empty
-                    <p class="no-valoraciones">No hay valoraciones recibidas aún.</p>
+                    <div class="col-span-2">
+                        <div class="text-center py-8 bg-white rounded-xl shadow-lg">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <h3 class="mt-2 text-sm font-medium text-gray-900">No hay valoraciones recibidas</h3>
+                            <p class="mt-1 text-sm text-gray-500">Aún no has recibido ninguna valoración.</p>
+                        </div>
+                    </div>
                 @endforelse
             </div>
         </div>
-    </div>
 
-        {{-- Modal de Edición --}}
-        <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
-            <div class="relative top-20 mx-auto p-5 w-full max-w-2xl">
-                <div class="bg-white rounded-2xl shadow-2xl overflow-hidden transform transition-all duration-300">
-                    {{-- Header del Modal --}}
+        <!-- Modal de Edición de Valoración -->
+        <div id="editValoracionModal" class="fixed inset-0 bg-black bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+            <div class="relative top-20 mx-auto p-5 w-full max-w-md">
+                <div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
                     <div class="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-4">
                         <div class="flex justify-between items-center">
-                            <h3 class="text-xl font-semibold text-white">Editar Perfil</h3>
-                            <button onclick="closeEditModal()" class="text-white hover:text-purple-200 transition-colors duration-200">
+                            <h3 class="text-xl font-semibold text-white">Editar Valoración</h3>
+                            <button onclick="closeEditValoracionModal()" class="text-white hover:text-purple-200">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                                 </svg>
@@ -895,343 +933,164 @@
                         </div>
                     </div>
 
-                    {{-- Contenido del Modal --}}
-                    <div class="p-6">
-                        <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data" id="profileForm" class="space-y-6">
-                            @csrf
-                            @method('PUT')
+                    <form id="editValoracionForm" class="p-6">
+                        @csrf
+                        @method('PUT')
+                        <input type="hidden" id="valoracionId">
 
-                            {{-- Información Básica --}}
-                            <div class="space-y-4">
-                                <h4 class="text-lg font-medium text-gray-900 border-b pb-2">Información Básica</h4>
-
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
-                                        <input type="text" name="nombre" value="{{ $user->nombre }}"
-                                               class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500">
-                                    </div>
-
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
-                                        <textarea name="descripcion" rows="3"
-                                                  class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500">{{ $user->descripcion }}</textarea>
-                                    </div>
-                                </div>
+                        <!-- Estrellas de Valoración -->
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Puntuación</label>
+                            <div class="flex space-x-2">
+                                @for($i = 1; $i <= 5; $i++)
+                                    <button type="button" onclick="setEditRating({{ $i }})"
+                                            class="edit-rating-star text-3xl text-gray-300 hover:text-yellow-400 transition-colors duration-200"
+                                            data-rating="{{ $i }}">★</button>
+                                @endfor
                             </div>
+                            <input type="hidden" name="puntuacion" id="editPuntuacion" required>
+                        </div>
 
-                            {{-- Campos Opcionales --}}
-                            <div class="space-y-4">
-                                <h4 class="text-lg font-medium text-gray-900 border-b pb-2">Visibilidad de Campos</h4>
+                        <!-- Comentario -->
+                        <div class="mb-6">
+                            <label for="editComentario" class="block text-sm font-medium text-gray-700 mb-2">Comentario</label>
+                            <textarea id="editComentario" name="comentario" rows="4" required
+                                      class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                                      placeholder="Escribe tu valoración..."></textarea>
+                        </div>
 
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <label class="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors duration-200">
-                                        <input type="checkbox" name="show_telefono" value="1"
-                                               {{ $user->show_telefono ? 'checked' : '' }}
-                                               class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-500 focus:ring-purple-500">
-                                        <span class="text-sm text-gray-700">Mostrar Teléfono</span>
-                                    </label>
-
-                                    <label class="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors duration-200">
-                                        <input type="checkbox" name="show_dni" value="1"
-                                               {{ $user->show_dni ? 'checked' : '' }}
-                                               class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-500 focus:ring-purple-500">
-                                        <span class="text-sm text-gray-700">Mostrar DNI</span>
-                                    </label>
-
-                                    <label class="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors duration-200">
-                                        <input type="checkbox" name="show_ciudad" value="1"
-                                               {{ $user->show_ciudad ? 'checked' : '' }}
-                                               class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-500 focus:ring-purple-500">
-                                        <span class="text-sm text-gray-700">Mostrar Ciudad</span>
-                                    </label>
-
-                                    <label class="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors duration-200">
-                                        <input type="checkbox" name="show_direccion" value="1"
-                                               {{ $user->show_direccion ? 'checked' : '' }}
-                                               class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-500 focus:ring-purple-500">
-                                        <span class="text-sm text-gray-700">Mostrar Dirección</span>
-                                    </label>
-
-                                    <label class="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors duration-200">
-                                        <input type="checkbox" name="show_web" value="1"
-                                               {{ $user->show_web ? 'checked' : '' }}
-                                               class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-500 focus:ring-purple-500">
-                                        <span class="text-sm text-gray-700">Mostrar Sitio Web</span>
-                                    </label>
-                                </div>
-                            </div>
-
-                            {{-- Información Personal --}}
-                            <div class="space-y-4">
-                                <h4 class="text-lg font-medium text-gray-900 border-b pb-2">Información Personal</h4>
-
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
-                                        <input type="text" name="telefono" value="{{ $user->telefono }}"
-                                               class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500">
-                                    </div>
-
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">DNI</label>
-                                        <input type="text" name="dni" value="{{ $user->dni }}"
-                                               class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500">
-                                    </div>
-
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Ciudad</label>
-                                        <input type="text" name="ciudad" value="{{ $user->ciudad }}"
-                                               class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500">
-                                    </div>
-                                </div>
-                            </div>
-
-                            {{-- Archivos --}}
-                            <div class="space-y-4">
-                                <h4 class="text-lg font-medium text-gray-900 border-b pb-2">Archivos</h4>
-
-                                <div class="space-y-4">
-                                    {{-- Foto de Perfil --}}
-        <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Foto de Perfil Actual</label>
-                                        @if($user->imagen)
-                                            <div class="mt-2 mb-4">
-                                                <img src="{{ asset('public/profile_images/' . $user->imagen) }}"
-                                                     alt="Foto actual"
-                                                     class="h-24 w-24 rounded-full object-cover border-4 border-purple-100">
-                                            </div>
-                                        @else
-                                            <p class="mt-2 text-sm text-gray-500">No hay foto de perfil</p>
-                                        @endif
-                                        <input type="file" name="imagen" accept="image/*"
-                                               class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100">
-                                    </div>
-
-                                    {{-- CV --}}
-                                    @if($user->role_id == 3)
-                <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">CV Actual</label>
-                                            @if($user->estudiante && $user->estudiante->cv_pdf)
-                                                <div class="mt-2 mb-4">
-                                                    <a href="{{ asset('cv/' . $user->estudiante->cv_pdf) }}"
-                                                       target="_blank"
-                                                       class="inline-flex items-center px-4 py-2 bg-purple-100 text-purple-700 rounded-xl hover:bg-purple-200">
-                                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                                                        </svg>
-                                                        Ver CV actual
-                                                    </a>
-                                                </div>
-                                            @else
-                                                <p class="mt-2 text-sm text-gray-500">No hay CV subido</p>
-                                            @endif
-                                            <input type="file" name="cv_pdf" accept=".pdf"
-                                                   class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100">
-                                        </div>
-                                    @endif
-                                </div>
-                            </div>
-
-                            {{-- Botones --}}
-                            <div class="flex justify-end space-x-4 pt-4 border-t">
-                                <button type="button" onclick="closeEditModal()"
-                                        class="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors duration-200">
-                                    Cancelar
-                                </button>
-                                <button type="submit"
-                                        class="px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors duration-200">
-                                    Guardar Cambios
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+                        <!-- Botones -->
+                        <div class="flex justify-end space-x-4">
+                            <button type="button" onclick="closeEditValoracionModal()"
+                                    class="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200">
+                                Cancelar
+                            </button>
+                            <button type="submit"
+                                    class="px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700">
+                                Guardar Cambios
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
 
-        <!-- Scripts para animaciones y modal -->
         <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                // Animación de entrada para las tarjetas
-                const cards = document.querySelectorAll('.bg-white');
-                cards.forEach((card, index) => {
-                    card.style.opacity = '0';
-                    card.style.transform = 'translateY(20px)';
-                    setTimeout(() => {
-                        card.style.transition = 'all 0.3s ease-out';
-                        card.style.opacity = '1';
-                        card.style.transform = 'translateY(0)';
-                    }, index * 100);
+        // Funciones para el modal de edición de valoración
+        function editValoracion(id, puntuacion, comentario) {
+            document.getElementById('valoracionId').value = id;
+            document.getElementById('editPuntuacion').value = puntuacion;
+            document.getElementById('editComentario').value = comentario;
+
+            // Actualizar estrellas
+            setEditRating(puntuacion);
+
+            // Mostrar modal
+            document.getElementById('editValoracionModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeEditValoracionModal() {
+            document.getElementById('editValoracionModal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        function setEditRating(rating) {
+            document.getElementById('editPuntuacion').value = rating;
+            const stars = document.querySelectorAll('.edit-rating-star');
+            stars.forEach((star, index) => {
+                star.classList.toggle('text-yellow-400', index < rating);
+                star.classList.toggle('text-gray-300', index >= rating);
+            });
+        }
+
+        // Manejar el envío del formulario de edición
+        document.getElementById('editValoracionForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const valoracionId = document.getElementById('valoracionId').value;
+            const formData = new FormData(this);
+
+            fetch(`/valoraciones/${valoracionId}`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: '¡Éxito!',
+                        text: 'Valoración actualizada correctamente',
+                        icon: 'success',
+                        confirmButtonColor: '#7C3AED'
+                    }).then(() => {
+                        location.reload();
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Ha ocurrido un error al actualizar la valoración',
+                    icon: 'error',
+                    confirmButtonColor: '#7C3AED'
                 });
             });
+        });
 
-            // Funciones para el modal
-            function openEditModal() {
-                document.getElementById('editModal').classList.remove('hidden');
-                document.body.style.overflow = 'hidden';
-            }
-
-            function closeEditModal() {
-                document.getElementById('editModal').classList.add('hidden');
-                document.body.style.overflow = 'auto';
-            }
-
-            // Cerrar modal al hacer clic fuera
-            window.onclick = function(event) {
-                const modal = document.getElementById('editModal');
-                if (event.target == modal) {
-                    closeEditModal();
-                }
-            }
-
-            // Actualizar el botón de editar para abrir el modal
-            document.addEventListener('DOMContentLoaded', function() {
-                const editButton = document.querySelector('.edit-button');
-                if (editButton) {
-                    editButton.onclick = openEditModal;
+        // Función para eliminar valoración
+        function deleteValoracion(id) {
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: "No podrás revertir esta acción",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#7C3AED',
+                cancelButtonColor: '#EF4444',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/valoraciones/${id}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                title: '¡Eliminado!',
+                                text: 'La valoración ha sido eliminada.',
+                                icon: 'success',
+                                confirmButtonColor: '#7C3AED'
+                            }).then(() => {
+                                location.reload();
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire({
+                            title: 'Error',
+                            text: 'Ha ocurrido un error al eliminar la valoración',
+                            icon: 'error',
+                            confirmButtonColor: '#7C3AED'
+                        });
+                    });
                 }
             });
+        }
 
-            document.getElementById('profileForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-
-                const formData = new FormData(this);
-                const submitButton = this.querySelector('button[type="submit"]');
-                const originalButtonText = submitButton.innerHTML;
-
-                // Mostrar indicador de carga
-                submitButton.disabled = true;
-                submitButton.innerHTML = `
-                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Guardando...
-                `;
-
-                fetch(this.action, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Actualizar la barra de progreso
-                        const progressBar = document.getElementById('progressBar');
-                        const progressText = document.getElementById('progressText');
-                        const progressPercentage = document.getElementById('progressPercentage');
-                        const progressMessage = document.getElementById('progressMessage');
-
-                        if (progressBar && progressText && progressPercentage && progressMessage) {
-                            progressBar.style.width = data.porcentaje + '%';
-                            progressText.textContent = data.porcentaje + '%';
-                            progressPercentage.textContent = data.porcentaje + '%';
-
-                            // Actualizar mensaje según el porcentaje
-                            if (data.porcentaje < 50) {
-                                progressMessage.textContent = '¡Sigue completando tu perfil!';
-                            } else if (data.porcentaje < 80) {
-                                progressMessage.textContent = '¡Vas por buen camino!';
-                            } else {
-                                progressMessage.textContent = '¡Casi lo tienes!';
-                            }
-                        }
-
-                        // Actualizar la información del perfil
-                        const user = data.user;
-
-                        // Actualizar nombre
-                        const nombreElement = document.querySelector('h1.text-4xl');
-                        if (nombreElement) nombreElement.textContent = user.nombre;
-
-                        // Actualizar descripción
-                        const descripcionElement = document.querySelector('.text-gray-700.leading-relaxed');
-                        if (descripcionElement) descripcionElement.textContent = user.descripcion || '';
-
-                        // Actualizar campos de visibilidad
-                        const camposVisibles = {
-                            'telefono': user.show_telefono,
-                            'dni': user.show_dni,
-                            'ciudad': user.show_ciudad,
-                            'direccion': user.show_direccion,
-                            'web': user.show_web
-                        };
-
-                        // Actualizar la visibilidad de cada campo
-                        Object.entries(camposVisibles).forEach(([campo, visible]) => {
-                            const elemento = document.querySelector(`[data-campo="${campo}"]`);
-                            if (elemento) {
-                                elemento.style.display = visible ? 'flex' : 'none';
-                            }
-                        });
-
-                        // Actualizar valores de los campos
-                        const camposValores = {
-                            'telefono': user.telefono,
-                            'dni': user.dni,
-                            'ciudad': user.ciudad,
-                            'direccion': user.direccion,
-                            'web': user.web
-                        };
-
-                        Object.entries(camposValores).forEach(([campo, valor]) => {
-                            const elemento = document.querySelector(`[data-valor="${campo}"]`);
-                            if (elemento) {
-                                elemento.textContent = valor || 'No especificado';
-                            }
-                        });
-
-                        // Actualizar imagen de perfil si se cambió
-                        if (user.imagen) {
-                            const imagenPerfil = document.querySelector('.w-40.h-40.rounded-full');
-                            if (imagenPerfil) {
-                                imagenPerfil.src = `/public/profile_images/${user.imagen}`;
-                            }
-                        }
-
-                        // Actualizar CV si se cambió
-                        if (user.estudiante && user.estudiante.cv_pdf) {
-                            const cvLink = document.querySelector('a[href*="cv/"]');
-                            if (cvLink) {
-                                cvLink.href = `/cv/${user.estudiante.cv_pdf}`;
-                            }
-                        }
-
-                        // Mostrar mensaje de éxito
-                        const successMessage = document.createElement('div');
-                        successMessage.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
-                        successMessage.textContent = data.message;
-                        document.body.appendChild(successMessage);
-
-                        // Cerrar el modal después de 2 segundos
-                        setTimeout(() => {
-                            closeEditModal();
-                            successMessage.remove();
-                        }, 2000);
-                    } else {
-                        throw new Error(data.message);
-                    }
-                })
-                .catch(error => {
-                    // Mostrar mensaje de error
-                    const errorMessage = document.createElement('div');
-                    errorMessage.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
-                    errorMessage.textContent = error.message;
-                    document.body.appendChild(errorMessage);
-
-                    setTimeout(() => {
-                        errorMessage.remove();
-                    }, 3000);
-                })
-                .finally(() => {
-                    // Restaurar el botón
-                    submitButton.disabled = false;
-                    submitButton.innerHTML = originalButtonText;
-                });
-            });
+        // Cerrar modal al hacer clic fuera
+        document.getElementById('editValoracionModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeEditValoracionModal();
+            }
+        });
         </script>
     @endsection
