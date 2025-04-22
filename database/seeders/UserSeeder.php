@@ -33,16 +33,16 @@ class UserSeeder extends Seeder
 
         // Crear usuarios empresa (role_id = 2)
         $empresas = [
-            ['nombre' => 'Indra Sistemas', 'email' => 'contacto@indra.es', 'ciudad' => 'Madrid', 'dni' => 'B12345678', 'telefono' => '913456789', 'sitio_web' => 'https://www.indracompany.com', 'descripcion' => 'Empresa líder en tecnología y consultoría en España.'],
-            ['nombre' => 'Telefónica', 'email' => 'info@telefonica.com', 'ciudad' => 'Madrid', 'dni' => 'B23456789', 'telefono' => '914567890', 'sitio_web' => 'https://www.telefonica.com', 'descripcion' => 'Compañía global de telecomunicaciones con presencia en más de 170 países.'],
-            ['nombre' => 'Accenture', 'email' => 'contacto@accenture.es', 'ciudad' => 'Barcelona', 'dni' => 'B34567890', 'telefono' => '934567891', 'sitio_web' => 'https://www.accenture.com', 'descripcion' => 'Consultora global de servicios profesionales con amplia experiencia en transformación digital.'],
-            ['nombre' => 'BBVA', 'email' => 'info@bbva.es', 'ciudad' => 'Bilbao', 'dni' => 'B45678901', 'telefono' => '944567892', 'sitio_web' => 'https://www.bbva.es', 'descripcion' => 'Banco global con fuerte presencia en España y Latinoamérica.'],
-            ['nombre' => 'Mercadona', 'email' => 'contacto@mercadona.es', 'ciudad' => 'Valencia', 'dni' => 'B56789012', 'telefono' => '964567893', 'sitio_web' => 'https://www.mercadona.es', 'descripcion' => 'Cadena de supermercados líder en España.'],
-            ['nombre' => 'Iberdrola', 'email' => 'info@iberdrola.es', 'ciudad' => 'Bilbao', 'dni' => 'B67890123', 'telefono' => '944567894', 'sitio_web' => 'https://www.iberdrola.es', 'descripcion' => 'Compañía energética global con fuerte compromiso con las renovables.'],
-            ['nombre' => 'El Corte Inglés', 'email' => 'contacto@elcorteingles.es', 'ciudad' => 'Madrid', 'dni' => 'B78901234', 'telefono' => '915678905', 'sitio_web' => 'https://www.elcorteingles.es', 'descripcion' => 'Grupo de distribución líder en España.'],
-            ['nombre' => 'CaixaBank', 'email' => 'info@caixabank.es', 'ciudad' => 'Barcelona', 'dni' => 'B89012345', 'telefono' => '935678906', 'sitio_web' => 'https://www.caixabank.es', 'descripcion' => 'Banco líder en España con amplia red de oficinas.'],
-            ['nombre' => 'Repsol', 'email' => 'contacto@repsol.com', 'ciudad' => 'Madrid', 'dni' => 'B90123456', 'telefono' => '916789007', 'sitio_web' => 'https://www.repsol.com', 'descripcion' => 'Compañía energética global con sede en España.'],
-            ['nombre' => 'Zara', 'email' => 'info@zara.com', 'ciudad' => 'A Coruña', 'dni' => 'B01234567', 'telefono' => '981678908', 'sitio_web' => 'https://www.zara.com', 'descripcion' => 'Marca de moda global del grupo Inditex.']
+            ['nombre' => 'Indra Sistemas', 'email' => 'contacto@indra.es', 'ciudad' => 'Madrid', 'dni' => 'B12345678', 'telefono' => '913456789', 'sitio_web' => 'https://www.indracompany.com', 'descripcion' => 'Empresa líder en tecnología y consultoría en España.', 'imagen' => 'indra.png'],
+            ['nombre' => 'Telefónica', 'email' => 'info@telefonica.com', 'ciudad' => 'Madrid', 'dni' => 'B23456789', 'telefono' => '914567890', 'sitio_web' => 'https://www.telefonica.com', 'descripcion' => 'Compañía global de telecomunicaciones con presencia en más de 170 países.', 'imagen' => 'telefonica.webp'],
+            ['nombre' => 'Accenture', 'email' => 'contacto@accenture.es', 'ciudad' => 'Barcelona', 'dni' => 'B34567890', 'telefono' => '934567891', 'sitio_web' => 'https://www.accenture.com', 'descripcion' => 'Consultora global de servicios profesionales con amplia experiencia en transformación digital.', 'imagen' => 'Accenture.png'],
+            ['nombre' => 'BBVA', 'email' => 'info@bbva.es', 'ciudad' => 'Bilbao', 'dni' => 'B45678901', 'telefono' => '944567892', 'sitio_web' => 'https://www.bbva.es', 'descripcion' => 'Banco global con fuerte presencia en España y Latinoamérica.', 'imagen' => 'BBVA.png'],
+            ['nombre' => 'Mercadona', 'email' => 'contacto@mercadona.es', 'ciudad' => 'Valencia', 'dni' => 'B56789012', 'telefono' => '964567893', 'sitio_web' => 'https://www.mercadona.es', 'descripcion' => 'Cadena de supermercados líder en España.', 'imagen' => 'Mercadona.png'],
+            ['nombre' => 'Iberdrola', 'email' => 'info@iberdrola.es', 'ciudad' => 'Bilbao', 'dni' => 'B67890123', 'telefono' => '944567894', 'sitio_web' => 'https://www.iberdrola.es', 'descripcion' => 'Compañía energética global con fuerte compromiso con las renovables.', 'imagen' => 'iberdrola.png'],
+            ['nombre' => 'El Corte Inglés', 'email' => 'contacto@elcorteingles.es', 'ciudad' => 'Madrid', 'dni' => 'B78901234', 'telefono' => '915678905', 'sitio_web' => 'https://www.elcorteingles.es', 'descripcion' => 'Grupo de distribución líder en España.', 'imagen' => 'corteingles.png'],
+            ['nombre' => 'CaixaBank', 'email' => 'info@caixabank.es', 'ciudad' => 'Barcelona', 'dni' => 'B89012345', 'telefono' => '935678906', 'sitio_web' => 'https://www.caixabank.es', 'descripcion' => 'Banco líder en España con amplia red de oficinas.', 'imagen' => 'caixa.png'],
+            ['nombre' => 'Repsol', 'email' => 'contacto@repsol.com', 'ciudad' => 'Madrid', 'dni' => 'B90123456', 'telefono' => '916789007', 'sitio_web' => 'https://www.repsol.com', 'descripcion' => 'Compañía energética global con sede en España.', 'imagen' => 'repsol.png'],
+            ['nombre' => 'Zara', 'email' => 'info@zara.com', 'ciudad' => 'A Coruña', 'dni' => 'B01234567', 'telefono' => '981678908', 'sitio_web' => 'https://www.zara.com', 'descripcion' => 'Marca de moda global del grupo Inditex.', 'imagen' => 'zara.svg']
         ];
 
         foreach ($empresas as $index => $empresa) {
@@ -58,7 +58,7 @@ class UserSeeder extends Seeder
                 'sitio_web' => $empresa['sitio_web'],
                 'telefono' => $empresa['telefono'],
                 'descripcion' => $empresa['descripcion'],
-                'imagen' => 'empresas/empresa_' . ($index + 1) . '.jpg'
+                'imagen' => $empresa['imagen']
             ]);
         }
 
