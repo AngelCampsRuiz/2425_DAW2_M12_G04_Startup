@@ -850,38 +850,276 @@
         </div>
 
         <!-- Sección de Valoraciones -->
-        <div class="valoraciones-section">
-            <h2 class="valoraciones-title">Valoraciones Recibidas</h2>
-            <div class="valoraciones-container">
+        <div class="valoraciones-section mt-8">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">Valoraciones Recibidas</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 @forelse($valoracionesRecibidas as $valoracion)
-                    <div class="valoracion-card">
-                        <div class="valoracion-header">
-                            <div class="valoracion-user">
-                                <img src="{{ asset('path/to/default/avatar.jpg') }}" alt="Avatar" class="valoracion-avatar">
-                                <div class="valoracion-info">
-                                    <h3>{{ $valoracion->emisor->nombre }}</h3>
-                                    <p class="valoracion-fecha">{{ $valoracion->fecha_valoracion->format('d/m/Y') }}</p>
+                    <div class="bg-white rounded-xl shadow-lg p-6 transform transition-all duration-300 hover:shadow-xl">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mr-4">
+                                    @if($valoracion->emisor->imagen)
+                                        <img src="{{ asset('public/profile_images/' . $valoracion->emisor->imagen) }}"
+                                             alt="Avatar"
+                                             class="w-full h-full rounded-full object-cover">
+                                    @else
+                                        <span class="text-xl font-bold text-purple-600">
+                                            {{ strtoupper(substr($valoracion->emisor->nombre, 0, 2)) }}
+                                        </span>
+                                    @endif
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-900">{{ $valoracion->emisor->nombre }}</h3>
+                                    <p class="text-sm text-gray-500">{{ $valoracion->fecha_valoracion->format('d/m/Y') }}</p>
                                 </div>
                             </div>
-                            <div class="valoracion-puntuacion">
+                            @if(auth()->id() == $valoracion->emisor_id)
+                                <div class="flex space-x-2">
+                                    <button onclick="editValoracion({{ $valoracion->id }}, {{ $valoracion->puntuacion }}, '{{ $valoracion->comentario }}')"
+                                            class="text-purple-600 hover:text-purple-800">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                        </svg>
+                                    </button>
+                                    <button onclick="deleteValoracion({{ $valoracion->id }})"
+                                            class="text-red-600 hover:text-red-800">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            @endif
+                        </div>
+                        <div class="mb-4">
+                            <div class="flex text-yellow-400">
                                 @for($i = 1; $i <= 5; $i++)
-                                    <i class="fas fa-star {{ $i <= $valoracion->puntuacion ? 'star-filled' : 'star-empty' }}"></i>
+                                    <svg class="w-5 h-5 {{ $i <= $valoracion->puntuacion ? 'text-yellow-400' : 'text-gray-300' }}"
+                                         fill="currentColor"
+                                         viewBox="0 0 20 20">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                    </svg>
                                 @endfor
                             </div>
                         </div>
-                        <div class="valoracion-comentario">
-                            <p>{{ $valoracion->comentario }}</p>
-                        </div>
-                        <div class="valoracion-footer">
-                            <span class="valoracion-tipo">{{ $valoracion->tipo == 'alumno_a_empresa' ? 'Valoración de Alumno' : 'Valoración de Empresa' }}</span>
+                        <p class="text-gray-700">{{ $valoracion->comentario }}</p>
+                        <div class="mt-4 text-sm text-gray-500">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full bg-purple-100 text-purple-800">
+                                {{ $valoracion->tipo == 'alumno_a_empresa' ? 'Valoración de Alumno' : 'Valoración de Empresa' }}
+                            </span>
                         </div>
                     </div>
                 @empty
-                    <p class="no-valoraciones">No hay valoraciones recibidas aún.</p>
+                    <div class="col-span-2">
+                        <div class="text-center py-8 bg-white rounded-xl shadow-lg">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <h3 class="mt-2 text-sm font-medium text-gray-900">No hay valoraciones recibidas</h3>
+                            <p class="mt-1 text-sm text-gray-500">Aún no has recibido ninguna valoración.</p>
+                        </div>
+                    </div>
                 @endforelse
             </div>
         </div>
-    </div>
+
+        <!-- Modal de Edición de Valoración -->
+        <div id="editValoracionModal" class="fixed inset-0 bg-black bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+            <div class="relative top-20 mx-auto p-5 w-full max-w-md">
+                <div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
+                    <div class="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-4">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-xl font-semibold text-white">Editar Valoración</h3>
+                            <button onclick="closeEditValoracionModal()" class="text-white hover:text-purple-200">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <form id="editValoracionForm" class="p-6">
+                        @csrf
+                        @method('PUT')
+                        <input type="hidden" id="valoracionId" name="valoracion_id">
+
+                        {{-- Estrellas de Valoración --}}
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Puntuación</label>
+                            <div class="flex space-x-2">
+                                @for($i = 1; $i <= 5; $i++)
+                                    <button type="button" onclick="setEditRating({{ $i }})"
+                                            class="edit-rating-star text-3xl text-gray-300 hover:text-yellow-400 transition-colors duration-200"
+                                            data-rating="{{ $i }}">★</button>
+                                @endfor
+                            </div>
+                            <input type="hidden" name="puntuacion" id="editPuntuacion" required>
+                        </div>
+
+                        {{-- Comentario --}}
+                        <div class="mb-6">
+                            <label for="editComentario" class="block text-sm font-medium text-gray-700 mb-2">Comentario</label>
+                            <textarea id="editComentario" name="comentario" rows="4" required
+                                      class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                                      placeholder="Escribe tu valoración..."></textarea>
+                        </div>
+
+                        {{-- Botones --}}
+                        <div class="flex justify-end space-x-4">
+                            <button type="button" onclick="closeEditValoracionModal()"
+                                    class="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200">
+                                Cancelar
+                            </button>
+                            <button type="submit"
+                                    class="px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700">
+                                Guardar Cambios
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function editValoracion(id, puntuacion, comentario) {
+                document.getElementById('valoracionId').value = id;
+                document.getElementById('editPuntuacion').value = puntuacion;
+                document.getElementById('editComentario').value = comentario;
+
+                // Actualizar estrellas
+                const stars = document.querySelectorAll('.edit-rating-star');
+                stars.forEach((star, index) => {
+                    star.classList.toggle('text-yellow-400', index < puntuacion);
+                    star.classList.toggle('text-gray-300', index >= puntuacion);
+                });
+
+                // Abrir modal
+                document.getElementById('editValoracionModal').classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeEditValoracionModal() {
+                document.getElementById('editValoracionModal').classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }
+
+            function setEditRating(rating) {
+                document.getElementById('editPuntuacion').value = rating;
+                const stars = document.querySelectorAll('.edit-rating-star');
+                stars.forEach((star, index) => {
+                    star.classList.toggle('text-yellow-400', index < rating);
+                    star.classList.toggle('text-gray-300', index >= rating);
+                });
+            }
+
+            // Manejar el envío del formulario de edición de valoración
+            document.getElementById('editValoracionForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const valoracionId = document.getElementById('valoracionId').value;
+                const formData = new FormData(this);
+                const submitButton = this.querySelector('button[type="submit"]');
+                const originalButtonText = submitButton.innerHTML;
+
+                // Mostrar indicador de carga
+                submitButton.disabled = true;
+                submitButton.innerHTML = `
+                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Guardando...
+                `;
+
+                fetch(`/valoraciones/${valoracionId}`, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Mostrar mensaje de éxito
+                        Swal.fire({
+                            title: 'Éxito',
+                            text: 'La valoración se ha actualizado correctamente',
+                            icon: 'success',
+                            confirmButtonColor: '#7C3AED'
+                        }).then(() => {
+                            location.reload();
+                        });
+                    } else {
+                        throw new Error(data.message || 'Error al actualizar la valoración');
+                    }
+                })
+                .catch(error => {
+                    Swal.fire({
+                        title: 'Error',
+                        text: error.message || 'Ha ocurrido un error al actualizar la valoración',
+                        icon: 'error',
+                        confirmButtonColor: '#7C3AED'
+                    });
+                })
+                .finally(() => {
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = originalButtonText;
+                });
+            });
+
+            function deleteValoracion(id) {
+                Swal.fire({
+                    title: '¿Estás seguro?',
+                    text: "No podrás revertir esta acción",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#7C3AED',
+                    cancelButtonColor: '#EF4444',
+                    confirmButtonText: 'Sí, eliminar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        fetch(`/valoraciones/${id}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({
+                                    title: 'Eliminada',
+                                    text: 'La valoración ha sido eliminada',
+                                    icon: 'success',
+                                    confirmButtonColor: '#7C3AED'
+                                }).then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                throw new Error(data.message);
+                            }
+                        })
+                        .catch(error => {
+                            Swal.fire({
+                                title: 'Error',
+                                text: 'Ha ocurrido un error al eliminar la valoración',
+                                icon: 'error',
+                                confirmButtonColor: '#7C3AED'
+                            });
+                        });
+                    }
+                });
+            }
+
+            // Cerrar modal al hacer clic fuera
+            document.getElementById('editValoracionModal').addEventListener('click', function(event) {
+                if (event.target === this) {
+                    closeEditValoracionModal();
+                }
+            });
+        </script>
 
         {{-- Modal de Edición --}}
         <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
@@ -1044,7 +1282,7 @@
 
                                     {{-- CV --}}
                                     @if($user->role_id == 3)
-                                    <div>
+                                                            <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">CV Actual</label>
                                         @if($user->estudiante && $user->estudiante->cv_pdf)
                                             <div class="mt-2 mb-4">
@@ -1089,23 +1327,8 @@
             </div>
         </div>
 
-        <!-- Scripts para animaciones y modal -->
+        {{-- Scripts para el modal --}}
         <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                // Animación de entrada para las tarjetas
-                const cards = document.querySelectorAll('.bg-white');
-                cards.forEach((card, index) => {
-                    card.style.opacity = '0';
-                    card.style.transform = 'translateY(20px)';
-                    setTimeout(() => {
-                        card.style.transition = 'all 0.3s ease-out';
-                        card.style.opacity = '1';
-                        card.style.transform = 'translateY(0)';
-                    }, index * 100);
-                });
-            });
-
-            // Funciones para el modal
             function openEditModal() {
                 document.getElementById('editModal').classList.remove('hidden');
                 document.body.style.overflow = 'hidden';
@@ -1126,14 +1349,7 @@
                 }
             }
 
-            // Actualizar el botón de editar para abrir el modal
-            document.addEventListener('DOMContentLoaded', function() {
-                const editButton = document.querySelector('.edit-button');
-                if (editButton) {
-                    editButton.onclick = openEditModal;
-                }
-            });
-
+            // Manejar envío del formulario
             // Funciones de validación
             function showError(field, message) {
                 const errorElement = document.getElementById('error-' + field.id);
@@ -1323,9 +1539,9 @@
                     <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Guardando...
-                `;
+                </svg>
+                Guardando...
+            `;
 
                 fetch(this.action, {
                     method: 'POST',
@@ -1424,10 +1640,10 @@
                         successMessage.textContent = data.message;
                         document.body.appendChild(successMessage);
 
-                        // Cerrar el modal después de 2 segundos
+                        // Cerrar el modal y recargar la página después de 2 segundos
                         setTimeout(() => {
                             closeEditModal();
-                            successMessage.remove();
+                            location.reload();
                         }, 2000);
                     } else if (data.errors) {
                         // Mostrar errores de validación
