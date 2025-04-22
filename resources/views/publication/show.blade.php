@@ -47,12 +47,21 @@
                 <div class="flex flex-col md:flex-row">
                     {{-- IMAGEN DE LA EMPRESA --}}
                     <div class="w-full md:w-1/3 p-6 flex flex-col items-center justify-center bg-gray-50">
-                        <div class="w-48 h-48 rounded-lg overflow-hidden border-4 border-white shadow-lg mb-4" style="aspect-ratio: 1/1;">
-                            <img src="{{ $publication->empresa->logo_url ?? asset('assets/images/company-default.png') }}" 
+                        <div class="w-48 h-48 rounded-lg overflow-hidden border-4 border-white shadow-lg mb-4 flex items-center justify-center" style="aspect-ratio: 1/1;">
+                            <img src="{{ asset('public/profile_images/' . ($publication->empresa->user->imagen ?? 'company-default.png')) }}" 
                                 alt="{{ $publication->empresa->nombre }}"
-                                class="w-full h-full object-cover">
+                                class="max-w-[85%] max-h-[85%] object-contain">
                         </div>
-                        <h3 class="text-xl font-bold text-[#5e0490] text-center">{{ $publication->empresa->nombre }}</h3>
+                        <a href="{{ route('profile.show', $publication->empresa->user->id) }}" class="group">
+                            <h3 class="text-xl font-bold text-[#5e0490] text-center group-hover:text-[#4a0370] transition-colors duration-300">
+                                {{ $publication->empresa->user->nombre }}
+                                <span class="inline-block ml-1 transition-transform duration-300 group-hover:translate-x-1">
+                                    <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                                    </svg>
+                                </span>
+                            </h3>
+                        </a>
                         
                         <!-- Información de contacto de la empresa si está disponible -->
                         @if(isset($publication->empresa->email) || isset($publication->empresa->telefono))
@@ -243,6 +252,21 @@
             0% { transform: scale(1); }
             50% { transform: scale(1.2); }
             100% { transform: scale(1); }
+        }
+        
+        /* Estilos para la imagen de la empresa */
+        .w-48.h-48.rounded-lg {
+            background-color: white;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .w-48.h-48.rounded-lg img {
+            transition: transform 0.3s ease;
+        }
+        
+        .w-48.h-48.rounded-lg:hover img {
+            transform: scale(1.05);
         }
         
         /* Ajustes para breadcrumbs en móvil */
