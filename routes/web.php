@@ -103,10 +103,14 @@ Route::middleware(['auth'])->group(function () {
 
 // Rutas de perfil
 Route::middleware(['auth'])->group(function () {
-    Route::get('/profile/{user}', [ProfileController::class, 'show'])->name('profile.view');
+    Route::get('/profile/{user}', [ProfileController::class, 'show'])->name('profile.show');
     Route::put('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
 });
 
 // Rutas para valoraciones
-Route::post('/valoraciones', [ValoracionController::class, 'store'])->name('valoraciones.store');
-Route::get('/valoraciones/convenios/{receptorId}', [ValoracionController::class, 'getConvenios'])->name('valoraciones.getConvenios');
+Route::middleware(['auth'])->group(function () {
+    Route::post('/valoraciones', [ValoracionController::class, 'store'])->name('valoraciones.store');
+    Route::get('/valoraciones/convenios/{receptorId}', [ValoracionController::class, 'getConvenios'])->name('valoraciones.getConvenios');
+    Route::put('/valoraciones/{id}', [ValoracionController::class, 'update'])->name('valoraciones.update');
+    Route::delete('/valoraciones/{id}', [ValoracionController::class, 'destroy'])->name('valoraciones.destroy');
+});

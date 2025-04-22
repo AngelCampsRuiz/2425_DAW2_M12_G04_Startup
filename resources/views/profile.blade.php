@@ -19,6 +19,10 @@
                                 Inicio
                             </a>
                             <span class="mx-2 text-gray-400">/</span>
+                            <a href="{{ route('empresa.dashboard') }}" class="text-gray-500 hover:text-[#5e0490]">
+                                Dashboard
+                            </a>
+                            <span class="mx-2 text-gray-400">/</span>
                             <span class="text-[#5e0490] font-medium">Perfil de {{ $user->role_id == 3 ? 'Estudiante' : 'Empresa' }}</span>
                         </div>
                     </div>
@@ -195,8 +199,8 @@
                                     <span class="text-6xl font-bold text-purple-600">
                                         {{ strtoupper(substr($user->nombre, 0, 2)) }}
                                     </span>
-                    @endif
-                </div>
+                                @endif
+                            </div>
                         </div>
                     </div>
 
@@ -480,8 +484,8 @@
                         <div class="relative h-64 bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600">
                             <div class="absolute -bottom-20 left-8">
                                 <div class="w-40 h-40 rounded-full bg-white border-4 border-white shadow-xl flex items-center justify-center overflow-hidden transform transition-transform duration-300 hover:scale-105">
-                                    @if($user->empresa->logo_url)
-                                        <img src="{{ $user->empresa->logo_url }}"
+                                    @if($user->imagen)
+                                        <img src="{{ asset('public/profile_images/' . $user->imagen) }}"
                                              alt="Logo empresa"
                                              class="w-full h-full object-cover">
                                     @else
@@ -626,11 +630,12 @@
                                             <div class="flex-shrink-0">
                                                 <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
-                                            </svg>
-                                        </div>
-                                        <div class="ml-4">
-                                            <p class="text-sm text-gray-500">Sitio Web</p>
-                                            <p class="font-medium text-gray-900" data-valor="web">{{ $user->web ?? 'No especificado' }}</p>
+                                                </svg>
+                                            </div>
+                                            <div class="ml-4">
+                                                <p class="text-sm text-gray-500">Sitio Web</p>
+                                                <p class="font-medium text-gray-900" data-valor="web">{{ $user->web ?? 'No especificado' }}</p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -641,43 +646,480 @@
             </div>
         </div>
 
+        {{-- Botón y Modal de Valoración --}}
+        @php
+            $canRate = false;
+            $seguimientoId = null;
+
+            if (auth()->check()) {
+                if (auth()->user()->role_id == 2 && $user->role_id == 3) {
+                    // Empresa valorando a estudiante
+                    $seguimiento = App\Models\Seguimiento::where('empresa_id', auth()->user()->empresa->id)
+                        ->where('alumno_id', $user->estudiante->id)
+                        ->where('estado', 'aceptado')
+                        ->whereHas('convenio')
+                        ->whereDoesntHave('convenio.valoraciones', function($query) use ($user) {
+                            $query->where('emisor_id', auth()->id())
+                                  ->where('receptor_id', $user->id);
+                        })
+                        ->first();
+                    if ($seguimiento) {
+                        $canRate = true;
+                        $seguimientoId = $seguimiento->id;
+                    }
+                } elseif (auth()->user()->role_id == 3 && $user->role_id == 2) {
+                    // Estudiante valorando a empresa
+                    $seguimiento = App\Models\Seguimiento::where('alumno_id', auth()->user()->estudiante->id)
+                        ->where('empresa_id', $user->empresa->id)
+                        ->where('estado', 'aceptado')
+                        ->whereHas('convenio')
+                        ->whereDoesntHave('convenio.valoraciones', function($query) use ($user) {
+                            $query->where('emisor_id', auth()->id())
+                                  ->where('receptor_id', $user->id);
+                        })
+                        ->first();
+                    if ($seguimiento) {
+                        $canRate = true;
+                        $seguimientoId = $seguimiento->id;
+                    }
+                }
+            }
+        @endphp
+
+        @if($canRate && auth()->id() != $user->id)
+            <div class="fixed bottom-8 right-8">
+                <button onclick="openRatingModal()"
+                        class="px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors duration-200 flex items-center space-x-2 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+                    </svg>
+                    <span>Valorar {{ $user->role_id == 3 ? 'Estudiante' : 'Empresa' }}</span>
+                </button>
+            </div>
+
+            {{-- Modal de Valoración --}}
+            <div id="ratingModal" class="fixed inset-0 bg-black bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+                <div class="relative top-20 mx-auto p-5 w-full max-w-md">
+                    <div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
+                        <div class="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-4">
+                            <div class="flex justify-between items-center">
+                                <h3 class="text-xl font-semibold text-white">Valorar {{ $user->role_id == 3 ? 'Estudiante' : 'Empresa' }}</h3>
+                                <button onclick="closeRatingModal()" class="text-white hover:text-purple-200">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <form action="{{ route('valoraciones.store') }}" method="POST" id="ratingForm" class="p-6">
+                            @csrf
+                            <input type="hidden" name="seguimiento_id" value="{{ $seguimientoId }}">
+                            <input type="hidden" name="receptor_id" value="{{ $user->id }}">
+                            <input type="hidden" name="tipo" value="{{ auth()->user()->role_id == 2 ? 'empresa_a_alumno' : 'alumno_a_empresa' }}">
+
+                            {{-- Estrellas de Valoración --}}
+                            <div class="mb-6">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Puntuación</label>
+                                <div class="flex space-x-2">
+                                    @for($i = 1; $i <= 5; $i++)
+                                        <button type="button" onclick="setRating({{ $i }})"
+                                                class="rating-star text-3xl text-gray-300 hover:text-yellow-400 transition-colors duration-200"
+                                                data-rating="{{ $i }}">★</button>
+                                    @endfor
+                                </div>
+                                <input type="hidden" name="puntuacion" id="puntuacion" required>
+                            </div>
+
+                            {{-- Comentario --}}
+                            <div class="mb-6">
+                                <label for="comentario" class="block text-sm font-medium text-gray-700 mb-2">Comentario</label>
+                                <textarea id="comentario" name="comentario" rows="4" required
+                                          class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                                          placeholder="Escribe tu valoración..."></textarea>
+                            </div>
+
+                            {{-- Botones --}}
+                            <div class="flex justify-end space-x-4">
+                                <button type="button" onclick="closeRatingModal()"
+                                        class="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200">
+                                    Cancelar
+                                </button>
+                                <button type="submit"
+                                        class="px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700">
+                                    Enviar Valoración
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                function openRatingModal() {
+                    document.getElementById('ratingModal').classList.remove('hidden');
+                    document.body.style.overflow = 'hidden';
+                }
+
+                function closeRatingModal() {
+                    document.getElementById('ratingModal').classList.add('hidden');
+                    document.body.style.overflow = 'auto';
+                }
+
+                function setRating(rating) {
+                    document.getElementById('puntuacion').value = rating;
+                    const stars = document.querySelectorAll('.rating-star');
+                    stars.forEach((star, index) => {
+                        star.classList.toggle('text-yellow-400', index < rating);
+                        star.classList.toggle('text-gray-300', index >= rating);
+                    });
+                }
+
+                // Cerrar modal al hacer clic fuera
+                document.getElementById('ratingModal').addEventListener('click', function(event) {
+                    if (event.target === this) {
+                        closeRatingModal();
+                    }
+                });
+
+                // Manejar envío del formulario
+                document.getElementById('ratingForm').addEventListener('submit', function(e) {
+                    e.preventDefault();
+
+                    const formData = new FormData(this);
+                    const submitButton = this.querySelector('button[type="submit"]');
+                    const originalButtonText = submitButton.innerHTML;
+
+                    // Mostrar indicador de carga
+                    submitButton.disabled = true;
+                    submitButton.innerHTML = `
+                        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Enviando...
+                    `;
+
+                    fetch(this.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Mostrar mensaje de éxito
+                            const successMessage = document.createElement('div');
+                            successMessage.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+                            successMessage.textContent = data.message;
+                            document.body.appendChild(successMessage);
+
+                            // Cerrar el modal y recargar la página después de 2 segundos
+                            setTimeout(() => {
+                                closeRatingModal();
+                                location.reload();
+                            }, 2000);
+                        } else {
+                            throw new Error(data.message);
+                        }
+                    })
+                    .catch(error => {
+                        // Mostrar mensaje de error
+                        const errorMessage = document.createElement('div');
+                        errorMessage.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+                        errorMessage.textContent = error.message;
+                        document.body.appendChild(errorMessage);
+
+                        setTimeout(() => {
+                            errorMessage.remove();
+                        }, 3000);
+                    })
+                    .finally(() => {
+                        // Restaurar el botón
+                        submitButton.disabled = false;
+                        submitButton.innerHTML = originalButtonText;
+                    });
+                });
+            </script>
+        @endif
+
         <div>
 
         </div>
 
         <!-- Sección de Valoraciones -->
-        <div class="valoraciones-section">
-            <h2 class="valoraciones-title">Valoraciones Recibidas</h2>
-            <div class="valoraciones-container">
+        <div class="valoraciones-section mt-8">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">Valoraciones Recibidas</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 @forelse($valoracionesRecibidas as $valoracion)
-                    <div class="valoracion-card">
-                        <div class="valoracion-header">
-                            <div class="valoracion-user">
-                                <img src="{{ asset('path/to/default/avatar.jpg') }}" alt="Avatar" class="valoracion-avatar">
-                                <div class="valoracion-info">
-                                    <h3>{{ $valoracion->emisor->nombre }}</h3>
-                                    <p class="valoracion-fecha">{{ $valoracion->fecha_valoracion->format('d/m/Y') }}</p>
+                    <div class="bg-white rounded-xl shadow-lg p-6 transform transition-all duration-300 hover:shadow-xl">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mr-4">
+                                    @if($valoracion->emisor->imagen)
+                                        <img src="{{ asset('public/profile_images/' . $valoracion->emisor->imagen) }}"
+                                             alt="Avatar"
+                                             class="w-full h-full rounded-full object-cover">
+                                    @else
+                                        <span class="text-xl font-bold text-purple-600">
+                                            {{ strtoupper(substr($valoracion->emisor->nombre, 0, 2)) }}
+                                        </span>
+                                    @endif
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-900">{{ $valoracion->emisor->nombre }}</h3>
+                                    <p class="text-sm text-gray-500">{{ $valoracion->fecha_valoracion->format('d/m/Y') }}</p>
                                 </div>
                             </div>
-                            <div class="valoracion-puntuacion">
+                            @if(auth()->id() == $valoracion->emisor_id)
+                                <div class="flex space-x-2">
+                                    <button onclick="editValoracion({{ $valoracion->id }}, {{ $valoracion->puntuacion }}, '{{ $valoracion->comentario }}')"
+                                            class="text-purple-600 hover:text-purple-800">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                        </svg>
+                                    </button>
+                                    <button onclick="deleteValoracion({{ $valoracion->id }})"
+                                            class="text-red-600 hover:text-red-800">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            @endif
+                        </div>
+                        <div class="mb-4">
+                            <div class="flex text-yellow-400">
                                 @for($i = 1; $i <= 5; $i++)
-                                    <i class="fas fa-star {{ $i <= $valoracion->puntuacion ? 'star-filled' : 'star-empty' }}"></i>
+                                    <svg class="w-5 h-5 {{ $i <= $valoracion->puntuacion ? 'text-yellow-400' : 'text-gray-300' }}"
+                                         fill="currentColor"
+                                         viewBox="0 0 20 20">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                    </svg>
                                 @endfor
                             </div>
                         </div>
-                        <div class="valoracion-comentario">
-                            <p>{{ $valoracion->comentario }}</p>
-                        </div>
-                        <div class="valoracion-footer">
-                            <span class="valoracion-tipo">{{ $valoracion->tipo == 'alumno_a_empresa' ? 'Valoración de Alumno' : 'Valoración de Empresa' }}</span>
+                        <p class="text-gray-700">{{ $valoracion->comentario }}</p>
+                        <div class="mt-4 text-sm text-gray-500">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full bg-purple-100 text-purple-800">
+                                {{ $valoracion->tipo == 'alumno_a_empresa' ? 'Valoración de Alumno' : 'Valoración de Empresa' }}
+                            </span>
                         </div>
                     </div>
                 @empty
-                    <p class="no-valoraciones">No hay valoraciones recibidas aún.</p>
+                    <div class="col-span-2">
+                        <div class="text-center py-8 bg-white rounded-xl shadow-lg">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <h3 class="mt-2 text-sm font-medium text-gray-900">No hay valoraciones recibidas</h3>
+                            <p class="mt-1 text-sm text-gray-500">Aún no has recibido ninguna valoración.</p>
+                        </div>
+                    </div>
                 @endforelse
             </div>
         </div>
-    </div>
+
+        <!-- Modal de Edición de Valoración -->
+        <div id="editValoracionModal" class="fixed inset-0 bg-black bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+            <div class="relative top-20 mx-auto p-5 w-full max-w-md">
+                <div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
+                    <div class="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-4">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-xl font-semibold text-white">Editar Valoración</h3>
+                            <button onclick="closeEditValoracionModal()" class="text-white hover:text-purple-200">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <form id="editValoracionForm" class="p-6">
+                        @csrf
+                        @method('PUT')
+                        <input type="hidden" id="valoracionId" name="valoracion_id">
+
+                        {{-- Estrellas de Valoración --}}
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Puntuación</label>
+                            <div class="flex space-x-2">
+                                @for($i = 1; $i <= 5; $i++)
+                                    <button type="button" onclick="setEditRating({{ $i }})"
+                                            class="edit-rating-star text-3xl text-gray-300 hover:text-yellow-400 transition-colors duration-200"
+                                            data-rating="{{ $i }}">★</button>
+                                @endfor
+                            </div>
+                            <input type="hidden" name="puntuacion" id="editPuntuacion" required>
+                        </div>
+
+                        {{-- Comentario --}}
+                        <div class="mb-6">
+                            <label for="editComentario" class="block text-sm font-medium text-gray-700 mb-2">Comentario</label>
+                            <textarea id="editComentario" name="comentario" rows="4" required
+                                      class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                                      placeholder="Escribe tu valoración..."></textarea>
+                        </div>
+
+                        {{-- Botones --}}
+                        <div class="flex justify-end space-x-4">
+                            <button type="button" onclick="closeEditValoracionModal()"
+                                    class="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200">
+                                Cancelar
+                            </button>
+                            <button type="submit"
+                                    class="px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700">
+                                Guardar Cambios
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function editValoracion(id, puntuacion, comentario) {
+                document.getElementById('valoracionId').value = id;
+                document.getElementById('editPuntuacion').value = puntuacion;
+                document.getElementById('editComentario').value = comentario;
+
+                // Actualizar estrellas
+                const stars = document.querySelectorAll('.edit-rating-star');
+                stars.forEach((star, index) => {
+                    star.classList.toggle('text-yellow-400', index < puntuacion);
+                    star.classList.toggle('text-gray-300', index >= puntuacion);
+                });
+
+                // Abrir modal
+                document.getElementById('editValoracionModal').classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeEditValoracionModal() {
+                document.getElementById('editValoracionModal').classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }
+
+            function setEditRating(rating) {
+                document.getElementById('editPuntuacion').value = rating;
+                const stars = document.querySelectorAll('.edit-rating-star');
+                stars.forEach((star, index) => {
+                    star.classList.toggle('text-yellow-400', index < rating);
+                    star.classList.toggle('text-gray-300', index >= rating);
+                });
+            }
+
+            // Manejar el envío del formulario de edición de valoración
+            document.getElementById('editValoracionForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const valoracionId = document.getElementById('valoracionId').value;
+                const formData = new FormData(this);
+                const submitButton = this.querySelector('button[type="submit"]');
+                const originalButtonText = submitButton.innerHTML;
+
+                // Mostrar indicador de carga
+                submitButton.disabled = true;
+                submitButton.innerHTML = `
+                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Guardando...
+                `;
+
+                fetch(`/valoraciones/${valoracionId}`, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Mostrar mensaje de éxito
+                        Swal.fire({
+                            title: 'Éxito',
+                            text: 'La valoración se ha actualizado correctamente',
+                            icon: 'success',
+                            confirmButtonColor: '#7C3AED'
+                        }).then(() => {
+                            location.reload();
+                        });
+                    } else {
+                        throw new Error(data.message || 'Error al actualizar la valoración');
+                    }
+                })
+                .catch(error => {
+                    Swal.fire({
+                        title: 'Error',
+                        text: error.message || 'Ha ocurrido un error al actualizar la valoración',
+                        icon: 'error',
+                        confirmButtonColor: '#7C3AED'
+                    });
+                })
+                .finally(() => {
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = originalButtonText;
+                });
+            });
+
+            function deleteValoracion(id) {
+                Swal.fire({
+                    title: '¿Estás seguro?',
+                    text: "No podrás revertir esta acción",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#7C3AED',
+                    cancelButtonColor: '#EF4444',
+                    confirmButtonText: 'Sí, eliminar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        fetch(`/valoraciones/${id}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({
+                                    title: 'Eliminada',
+                                    text: 'La valoración ha sido eliminada',
+                                    icon: 'success',
+                                    confirmButtonColor: '#7C3AED'
+                                }).then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                throw new Error(data.message);
+                            }
+                        })
+                        .catch(error => {
+                            Swal.fire({
+                                title: 'Error',
+                                text: 'Ha ocurrido un error al eliminar la valoración',
+                                icon: 'error',
+                                confirmButtonColor: '#7C3AED'
+                            });
+                        });
+                    }
+                });
+            }
+
+            // Cerrar modal al hacer clic fuera
+            document.getElementById('editValoracionModal').addEventListener('click', function(event) {
+                if (event.target === this) {
+                    closeEditValoracionModal();
+                }
+            });
+        </script>
 
         {{-- Modal de Edición --}}
         <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
@@ -708,14 +1150,24 @@
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
-                                        <input type="text" name="nombre" value="{{ $user->nombre }}"
-                                               class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500">
+                                        <input type="text" name="nombre" id="nombre" value="{{ $user->nombre }}"
+                                               class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                                               onblur="validarNombre(this)">
+                                        <span id="error-nombre" class="error-message text-xs text-red-500 mt-1 hidden"></span>
+                                        @error('nombre')
+                                            <span class="error-message text-xs text-red-500 mt-1">{{ $message }}</span>
+                                        @enderror
                                     </div>
 
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
-                                        <textarea name="descripcion" rows="3"
-                                                  class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500">{{ $user->descripcion }}</textarea>
+                                        <textarea name="descripcion" id="descripcion" rows="3"
+                                                  class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                                                  onblur="validarDescripcion(this)">{{ $user->descripcion }}</textarea>
+                                        <span id="error-descripcion" class="error-message text-xs text-red-500 mt-1 hidden"></span>
+                                        @error('descripcion')
+                                            <span class="error-message text-xs text-red-500 mt-1">{{ $message }}</span>
+                                        @enderror
                                     </div>
                                 </div>
                             </div>
@@ -769,20 +1221,35 @@
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
-                                        <input type="text" name="telefono" value="{{ $user->telefono }}"
-                                               class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500">
+                                        <input type="text" name="telefono" id="telefono" value="{{ $user->telefono }}"
+                                               class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                                               onblur="validarTelefono(this)">
+                                        <span id="error-telefono" class="error-message text-xs text-red-500 mt-1 hidden"></span>
+                                        @error('telefono')
+                                            <span class="error-message text-xs text-red-500 mt-1">{{ $message }}</span>
+                                        @enderror
                                     </div>
 
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">DNI</label>
-                                        <input type="text" name="dni" value="{{ $user->dni }}"
-                                               class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500">
+                                        <input type="text" name="dni" id="dni" value="{{ $user->dni }}"
+                                               class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                                               onblur="validarDNI(this)">
+                                        <span id="error-dni" class="error-message text-xs text-red-500 mt-1 hidden"></span>
+                                        @error('dni')
+                                            <span class="error-message text-xs text-red-500 mt-1">{{ $message }}</span>
+                                        @enderror
                                     </div>
 
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">Ciudad</label>
-                                        <input type="text" name="ciudad" value="{{ $user->ciudad }}"
-                                               class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500">
+                                        <input type="text" name="ciudad" id="ciudad" value="{{ $user->ciudad }}"
+                                               class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                                               onblur="validarCiudad(this)">
+                                        <span id="error-ciudad" class="error-message text-xs text-red-500 mt-1 hidden"></span>
+                                        @error('ciudad')
+                                            <span class="error-message text-xs text-red-500 mt-1">{{ $message }}</span>
+                                        @enderror
                                     </div>
                                 </div>
                             </div>
@@ -793,7 +1260,7 @@
 
                                 <div class="space-y-4">
                                     {{-- Foto de Perfil --}}
-        <div>
+                                    <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">Foto de Perfil Actual</label>
                                         @if($user->imagen)
                                             <div class="mt-2 mb-4">
@@ -804,31 +1271,41 @@
                                         @else
                                             <p class="mt-2 text-sm text-gray-500">No hay foto de perfil</p>
                                         @endif
-                                        <input type="file" name="imagen" accept="image/*"
-                                               class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100">
+                                        <input type="file" name="imagen" id="imagen" accept="image/*"
+                                               class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
+                                               onchange="validarImagen(this)">
+                                        <span id="error-imagen" class="error-message text-xs text-red-500 mt-1 hidden"></span>
+                                        @error('imagen')
+                                            <span class="error-message text-xs text-red-500 mt-1">{{ $message }}</span>
+                                        @enderror
                                     </div>
 
                                     {{-- CV --}}
                                     @if($user->role_id == 3)
-                <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-1">CV Actual</label>
-                                            @if($user->estudiante && $user->estudiante->cv_pdf)
-                                                <div class="mt-2 mb-4">
-                                                    <a href="{{ asset('cv/' . $user->estudiante->cv_pdf) }}"
-                                                       target="_blank"
-                                                       class="inline-flex items-center px-4 py-2 bg-purple-100 text-purple-700 rounded-xl hover:bg-purple-200">
-                                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                                                        </svg>
-                                                        Ver CV actual
-                                                    </a>
-                                                </div>
-                                            @else
-                                                <p class="mt-2 text-sm text-gray-500">No hay CV subido</p>
-                                            @endif
-                                            <input type="file" name="cv_pdf" accept=".pdf"
-                                                   class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100">
-                                        </div>
+                                                            <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">CV Actual</label>
+                                        @if($user->estudiante && $user->estudiante->cv_pdf)
+                                            <div class="mt-2 mb-4">
+                                                <a href="{{ asset('cv/' . $user->estudiante->cv_pdf) }}"
+                                                   target="_blank"
+                                                   class="inline-flex items-center px-4 py-2 bg-purple-100 text-purple-700 rounded-xl hover:bg-purple-200">
+                                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                                    </svg>
+                                                    Ver CV actual
+                                                </a>
+                                            </div>
+                                        @else
+                                            <p class="mt-2 text-sm text-gray-500">No hay CV subido</p>
+                                        @endif
+                                        <input type="file" name="cv_pdf" id="cv_pdf" accept=".pdf"
+                                               class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
+                                               onchange="validarCV(this)">
+                                        <span id="error-cv_pdf" class="error-message text-xs text-red-500 mt-1 hidden"></span>
+                                        @error('cv_pdf')
+                                            <span class="error-message text-xs text-red-500 mt-1">{{ $message }}</span>
+                                        @enderror
+                                    </div>
                                     @endif
                                 </div>
                             </div>
@@ -839,7 +1316,7 @@
                                         class="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors duration-200">
                                     Cancelar
                                 </button>
-                                <button type="submit"
+                                <button type="submit" id="submitBtn"
                                         class="px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors duration-200">
                                     Guardar Cambios
                                 </button>
@@ -850,26 +1327,13 @@
             </div>
         </div>
 
-        <!-- Scripts para animaciones y modal -->
+        {{-- Scripts para el modal --}}
         <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                // Animación de entrada para las tarjetas
-                const cards = document.querySelectorAll('.bg-white');
-                cards.forEach((card, index) => {
-                    card.style.opacity = '0';
-                    card.style.transform = 'translateY(20px)';
-                    setTimeout(() => {
-                        card.style.transition = 'all 0.3s ease-out';
-                        card.style.opacity = '1';
-                        card.style.transform = 'translateY(0)';
-                    }, index * 100);
-                });
-            });
-
-            // Funciones para el modal
             function openEditModal() {
                 document.getElementById('editModal').classList.remove('hidden');
                 document.body.style.overflow = 'hidden';
+                // Resetear errores al abrir modal
+                resetAllErrors();
             }
 
             function closeEditModal() {
@@ -885,15 +1349,184 @@
                 }
             }
 
-            // Actualizar el botón de editar para abrir el modal
-            document.addEventListener('DOMContentLoaded', function() {
-                const editButton = document.querySelector('.edit-button');
-                if (editButton) {
-                    editButton.onclick = openEditModal;
+            // Manejar envío del formulario
+            // Funciones de validación
+            function showError(field, message) {
+                const errorElement = document.getElementById('error-' + field.id);
+                if (errorElement) {
+                    errorElement.textContent = message;
+                    errorElement.classList.remove('hidden');
+                    field.classList.add('border-red-500');
                 }
+            }
+
+            function hideError(field) {
+                const errorElement = document.getElementById('error-' + field.id);
+                if (errorElement) {
+                    errorElement.classList.add('hidden');
+                    field.classList.remove('border-red-500');
+                }
+            }
+
+            function resetAllErrors() {
+                document.querySelectorAll('.error-message').forEach(el => {
+                    el.classList.add('hidden');
+                });
+                document.querySelectorAll('input, textarea').forEach(el => {
+                    el.classList.remove('border-red-500');
+                });
+            }
+
+            // Añadir onblur a todos los campos cuando se carga la página
+            document.addEventListener('DOMContentLoaded', function() {
+                const nombreInput = document.getElementById('nombre');
+                const descripcionInput = document.getElementById('descripcion');
+                const telefonoInput = document.getElementById('telefono');
+                const dniInput = document.getElementById('dni');
+                const ciudadInput = document.getElementById('ciudad');
+                
+                if (nombreInput) nombreInput.addEventListener('blur', function() { validarNombre(this); });
+                if (descripcionInput) descripcionInput.addEventListener('blur', function() { validarDescripcion(this); });
+                if (telefonoInput) telefonoInput.addEventListener('blur', function() { validarTelefono(this); });
+                if (dniInput) dniInput.addEventListener('blur', function() { validarDNI(this); });
+                if (ciudadInput) ciudadInput.addEventListener('blur', function() { validarCiudad(this); });
             });
 
+            function validarNombre(field) {
+                if (!field.value.trim()) {
+                    showError(field, "El nombre es obligatorio");
+                    return false;
+                } else if (field.value.trim().length < 2) {
+                    showError(field, "El nombre debe tener al menos 2 caracteres");
+                    return false;
+                } else if (field.value.trim().length > 100) {
+                    showError(field, "El nombre no puede exceder los 100 caracteres");
+                    return false;
+                } else {
+                    hideError(field);
+                    return true;
+                }
+            }
+
+            function validarDescripcion(field) {
+                if (field.value.trim().length > 500) {
+                    showError(field, "La descripción no puede exceder los 500 caracteres");
+                    return false;
+                } else {
+                    hideError(field);
+                    return true;
+                }
+            }
+
+            function validarTelefono(field) {
+                if (field.value.trim() && !/^[0-9]{9}$/.test(field.value.trim())) {
+                    showError(field, "El teléfono debe contener 9 dígitos");
+                    return false;
+                } else {
+                    hideError(field);
+                    return true;
+                }
+            }
+
+            function validarDNI(field) {
+                if (field.value.trim()) {
+                    const dniRegex = /^[0-9]{8}[A-Za-z]$/;
+                    const nieRegex = /^[XYZxyz][0-9]{7}[A-Za-z]$/;
+                    
+                    if (!dniRegex.test(field.value.trim()) && !nieRegex.test(field.value.trim())) {
+                        showError(field, "Formato de DNI/NIE no válido");
+                        return false;
+                    } else {
+                        hideError(field);
+                        return true;
+                    }
+                } else {
+                    hideError(field);
+                    return true;
+                }
+            }
+
+            function validarCiudad(field) {
+                if (field.value.trim() && field.value.trim().length < 2) {
+                    showError(field, "La ciudad debe tener al menos 2 caracteres");
+                    return false;
+                } else if (field.value.trim().length > 100) {
+                    showError(field, "La ciudad no puede exceder los 100 caracteres");
+                    return false;
+                } else {
+                    hideError(field);
+                    return true;
+                }
+            }
+
+            function validarImagen(field) {
+                if (field.files.length > 0) {
+                    const file = field.files[0];
+                    const fileType = file.type;
+                    const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                    
+                    if (!validImageTypes.includes(fileType)) {
+                        showError(field, "El archivo debe ser una imagen (JPG, PNG, GIF o WEBP)");
+                        return false;
+                    } else if (file.size > 2 * 1024 * 1024) { // 2MB
+                        showError(field, "La imagen no puede exceder los 2MB");
+                        return false;
+                    } else {
+                        hideError(field);
+                        return true;
+                    }
+                } else {
+                    hideError(field);
+                    return true;
+                }
+            }
+
+            function validarCV(field) {
+                if (field.files.length > 0) {
+                    const file = field.files[0];
+                    
+                    if (file.type !== 'application/pdf') {
+                        showError(field, "El archivo debe ser un PDF");
+                        return false;
+                    } else if (file.size > 5 * 1024 * 1024) { // 5MB
+                        showError(field, "El CV no puede exceder los 5MB");
+                        return false;
+                    } else {
+                        hideError(field);
+                        return true;
+                    }
+                } else {
+                    hideError(field);
+                    return true;
+                }
+            }
+
+            // Validar todo el formulario antes de enviar
             document.getElementById('profileForm').addEventListener('submit', function(e) {
+                // Primero validar todos los campos
+                let isValid = true;
+                
+                if (!validarNombre(document.getElementById('nombre'))) isValid = false;
+                if (!validarDescripcion(document.getElementById('descripcion'))) isValid = false;
+                if (!validarTelefono(document.getElementById('telefono'))) isValid = false;
+                if (!validarDNI(document.getElementById('dni'))) isValid = false;
+                if (!validarCiudad(document.getElementById('ciudad'))) isValid = false;
+                
+                const imagenInput = document.getElementById('imagen');
+                if (imagenInput && imagenInput.files.length > 0) {
+                    if (!validarImagen(imagenInput)) isValid = false;
+                }
+                
+                const cvInput = document.getElementById('cv_pdf');
+                if (cvInput && cvInput.files.length > 0) {
+                    if (!validarCV(cvInput)) isValid = false;
+                }
+                
+                if (!isValid) {
+                    e.preventDefault();
+                    return false;
+                }
+
                 e.preventDefault();
 
                 const formData = new FormData(this);
@@ -906,9 +1539,9 @@
                     <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Guardando...
-                `;
+                </svg>
+                Guardando...
+            `;
 
                 fetch(this.action, {
                     method: 'POST',
@@ -987,9 +1620,9 @@
 
                         // Actualizar imagen de perfil si se cambió
                         if (user.imagen) {
-                            const imagenPerfil = document.querySelector('.w-40.h-40.rounded-full');
+                            const imagenPerfil = document.querySelector('.w-40.h-40.rounded-full img');
                             if (imagenPerfil) {
-                                imagenPerfil.src = `/public/profile_images/${user.imagen}`;
+                                imagenPerfil.src = `{{ asset('public/profile_images/') }}/${user.imagen}`;
                             }
                         }
 
@@ -1007,25 +1640,47 @@
                         successMessage.textContent = data.message;
                         document.body.appendChild(successMessage);
 
-                        // Cerrar el modal después de 2 segundos
+                        // Cerrar el modal y recargar la página después de 2 segundos
                         setTimeout(() => {
                             closeEditModal();
-                            successMessage.remove();
+                            location.reload();
                         }, 2000);
+                    } else if (data.errors) {
+                        // Mostrar errores de validación
+                        resetAllErrors();
+                        Object.entries(data.errors).forEach(([field, messages]) => {
+                            const inputField = document.querySelector(`[name="${field}"]`);
+                            if (inputField) {
+                                const errorMessage = Array.isArray(messages) ? messages[0] : messages;
+                                showError(inputField, errorMessage);
+                            }
+                        });
                     } else {
-                        throw new Error(data.message);
+                        throw new Error(data.message || "Ha ocurrido un error al guardar los cambios");
                     }
                 })
                 .catch(error => {
-                    // Mostrar mensaje de error
-                    const errorMessage = document.createElement('div');
-                    errorMessage.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
-                    errorMessage.textContent = error.message;
-                    document.body.appendChild(errorMessage);
-
-                    setTimeout(() => {
-                        errorMessage.remove();
-                    }, 3000);
+                    // Primero intentar parsear el error como JSON en caso de que sea una respuesta del servidor
+                    let parsedError;
+                    try {
+                        // Si la respuesta es un objeto Response, intentamos obtener el JSON
+                        if (error instanceof Response) {
+                            return error.json().then(data => {
+                                handleApiError(data);
+                            });
+                        }
+                        // Si ya tenemos un objeto, lo usamos directamente
+                        else if (error.message) {
+                            handleApiError({ message: error.message });
+                        }
+                        // Último caso, error sin formato claro
+                        else {
+                            handleApiError({ message: "Ha ocurrido un error desconocido" });
+                        }
+                    } catch (e) {
+                        // Si falla el parsing, usamos el error como string
+                        handleApiError({ message: error.toString() });
+                    }
                 })
                 .finally(() => {
                     // Restaurar el botón
@@ -1033,5 +1688,66 @@
                     submitButton.innerHTML = originalButtonText;
                 });
             });
+
+            // Función para manejar errores de la API
+            function handleApiError(errorData) {
+                const errorMsg = errorData.message || "Ha ocurrido un error al procesar la solicitud";
+                
+                // Detectar tipos específicos de errores
+                if (errorMsg.includes('Duplicate entry') && errorMsg.includes('user_telefono_unique')) {
+                    // Error de teléfono duplicado
+                    const telefonoInput = document.getElementById('telefono');
+                    if (telefonoInput) {
+                        showError(telefonoInput, "Este número de teléfono ya está registrado");
+                        return;
+                    }
+                } else if (errorMsg.includes('Duplicate entry') && errorMsg.includes('user_dni_unique')) {
+                    // Error de DNI duplicado
+                    const dniInput = document.getElementById('dni');
+                    if (dniInput) {
+                        showError(dniInput, "Este DNI/NIE ya está registrado");
+                        return;
+                    }
+                } else if (errorMsg.includes('Duplicate entry') && errorMsg.includes('user_email_unique')) {
+                    // Error de email duplicado
+                    const emailInput = document.getElementById('email');
+                    if (emailInput) {
+                        showError(emailInput, "Este email ya está registrado");
+                        return;
+                    }
+                }
+                
+                // Para otros errores, mostrar un mensaje dentro del modal
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'mt-4 p-4 bg-red-50 text-red-700 rounded-lg';
+                errorDiv.innerHTML = `
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-red-800">Ha ocurrido un error</h3>
+                            <div class="mt-1 text-sm text-red-700">
+                                ${errorMsg}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Insertar el error en el formulario
+                const form = document.getElementById('profileForm');
+                const submitBtn = document.getElementById('submitBtn');
+                
+                // Remover cualquier mensaje de error anterior
+                const prevError = document.querySelector('.bg-red-50.text-red-700');
+                if (prevError) prevError.remove();
+                
+                // Insertar antes del botón de envío
+                if (form && submitBtn) {
+                    form.insertBefore(errorDiv, submitBtn.parentNode);
+                }
+            }
         </script>
     @endsection

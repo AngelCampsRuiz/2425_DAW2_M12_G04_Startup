@@ -2,32 +2,54 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\UpdateProfileRequest;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 
 class ProfileController extends Controller
 {
-    public function update(Request $request)
+    /**
+     * Muestra el perfil de un usuario
+     */
+    public function show(User $user)
+    {
+        $user->load(['tutor', 'estudiante', 'empresa']);
+
+        // Obtener las valoraciones recibidas por el usuario
+        $valoracionesRecibidas = $user->valoracionesRecibidas()
+            ->with(['emisor', 'convenio'])
+            ->orderBy('fecha_valoracion', 'desc')
+            ->get();
+
+        // Obtener las valoraciones emitidas por el usuario
+        $valoracionesEmitidas = $user->valoracionesEmitidas()
+            ->with(['receptor', 'convenio'])
+            ->orderBy('fecha_valoracion', 'desc')
+            ->get();
+
+        $data = [
+            'user' => $user,
+            'tutor' => $user->tutor,
+            'estudiante' => $user->estudiante,
+            'empresa' => $user->empresa,
+            'valoracionesRecibidas' => $valoracionesRecibidas,
+            'valoracionesEmitidas' => $valoracionesEmitidas
+        ];
+
+        if ($user->empresa) {
+            $data['experiencias'] = $user->empresa->experiencias()->with('alumno.user')->get();
+        }
+
+        return view('profile', $data);
+    }
+
+    public function update(UpdateProfileRequest $request)
     {
         $user = Auth::user();
         
-        // Validación de campos
-        $request->validate([
-            'nombre' => 'required|string|max:255',
-            'descripcion' => 'nullable|string|max:1000',
-            'telefono' => 'nullable|string|max:20',
-            'ciudad' => 'nullable|string|max:100',
-            'dni' => 'nullable|string|max:20',
-            'imagen' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'cv_pdf' => 'nullable|file|mimes:pdf|max:5120',
-            'show_telefono' => 'nullable|boolean',
-            'show_dni' => 'nullable|boolean',
-            'show_ciudad' => 'nullable|boolean',
-            'show_direccion' => 'nullable|boolean',
-            'show_web' => 'nullable|boolean',
-        ]);
-
         try {
             // Actualizar campos básicos
             $user->nombre = $request->nombre;
@@ -66,7 +88,7 @@ class ProfileController extends Controller
                     mkdir(public_path('cv'), 0755, true);
                 }
 
-                if ($user->estudiante->cv_pdf && file_exists(public_path('cv/' . $user->estudiante->cv_pdf))) {
+                if ($user->estudiante && $user->estudiante->cv_pdf && file_exists(public_path('cv/' . $user->estudiante->cv_pdf))) {
                     unlink(public_path('cv/' . $user->estudiante->cv_pdf));
                 }
                 
@@ -74,8 +96,10 @@ class ProfileController extends Controller
                 $filename = time() . '_' . $file->getClientOriginalName();
                 $file->move(public_path('cv'), $filename);
                 
-                $user->estudiante->cv_pdf = $filename;
-                $user->estudiante->save();
+                if ($user->estudiante) {
+                    $user->estudiante->cv_pdf = $filename;
+                    $user->estudiante->save();
+                }
             }
 
             // Guardar los cambios del usuario
@@ -100,7 +124,7 @@ class ProfileController extends Controller
             }
             
             // Si es estudiante, añadir CV
-            if($user->role_id == 3) {
+            if($user->role_id == 3 && $user->estudiante) {
                 $total_campos++;
                 if(!empty($user->estudiante->cv_pdf)) $campos_completados++;
             }
@@ -117,7 +141,33 @@ class ProfileController extends Controller
             }
 
             return redirect()->back()->with('success', 'Perfil actualizado correctamente');
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Capturar errores específicos de la base de datos (como duplicados)
+            $errorCode = $e->errorInfo[1];
+            $errorMsg = $e->getMessage();
+            
+            // Código 1062 es para errores de duplicados en MySQL
+            if ($errorCode === 1062) {
+                if ($request->ajax()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => $errorMsg
+                    ], 422);
+                }
+                return redirect()->back()->withInput()->with('error', 'Error de duplicado: ' . $errorMsg);
+            }
+            
+            // Otros errores de base de datos
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error en la base de datos: ' . $errorMsg
+                ], 500);
+            }
+            
+            return redirect()->back()->withInput()->with('error', 'Error en la base de datos: ' . $errorMsg);
         } catch (\Exception $e) {
+            // Errores generales
             if ($request->ajax()) {
                 return response()->json([
                     'success' => false,
@@ -125,7 +175,7 @@ class ProfileController extends Controller
                 ], 500);
             }
 
-            return redirect()->back()->with('error', 'Error al actualizar el perfil: ' . $e->getMessage());
+            return redirect()->back()->withInput()->with('error', 'Error al actualizar el perfil: ' . $e->getMessage());
         }
     }
 } 

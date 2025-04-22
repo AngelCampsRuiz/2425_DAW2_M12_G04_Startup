@@ -6,11 +6,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -22,19 +23,21 @@ class User extends Authenticatable
         'nombre',
         'email',
         'password',
-        'role_id',
         'fecha_nacimiento',
         'ciudad',
         'dni',
         'activo',
+        'sitio_web',
         'telefono',
+        'descripcion',
+        'imagen',
+        'visibilidad',
+        'role_id',
         'show_telefono',
         'show_dni',
         'show_ciudad',
         'show_direccion',
-        'show_web',
-        'descripcion',
-        'imagen'
+        'show_web'
     ];
 
     protected $casts = [
@@ -42,6 +45,12 @@ class User extends Authenticatable
         'activo' => 'boolean',
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'visibilidad' => 'boolean',
+        'show_telefono' => 'boolean',
+        'show_dni' => 'boolean',
+        'show_ciudad' => 'boolean',
+        'show_direccion' => 'boolean',
+        'show_web' => 'boolean'
     ];
 
     public function role()

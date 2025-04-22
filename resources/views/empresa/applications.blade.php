@@ -3,8 +3,15 @@
 @section('content')
 <div class="min-h-screen bg-gray-50">
     <div class="container mx-auto px-4 py-8">
+        <!-- Breadcrumbs -->
+        @component('components.breadcrumb')
+            @slot('items')
+                [{"name": "Dashboard", "route": "empresa.dashboard"}, {"name": "Solicitudes"}]
+            @endslot
+        @endcomponent
+
         <!-- Encabezado mejorado -->
-        <div class="mb-8 bg-white rounded-lg shadow-sm p-6">
+        <div class="mb-8 bg-white rounded-lg shadow-md p-6">
             <div class="flex justify-between items-center">
                 <div>
                     <h1 class="text-3xl font-bold text-gray-800">{{ $publication->titulo }}</h1>
@@ -32,23 +39,23 @@
 
         <!-- Filtros y estadísticas -->
         <div class="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div class="bg-white rounded-lg shadow-sm p-4">
+            <div class="bg-white rounded-lg shadow-md p-4">
                 <div class="text-sm font-medium text-gray-500">Total Solicitudes</div>
                 <div class="mt-1 text-2xl font-semibold text-gray-900">{{ $solicitudes->count() }}</div>
             </div>
-            <div class="bg-white rounded-lg shadow-sm p-4">
+            <div class="bg-white rounded-lg shadow-md p-4">
                 <div class="text-sm font-medium text-gray-500">Pendientes</div>
                 <div class="mt-1 text-2xl font-semibold text-yellow-600">
                     {{ $solicitudes->where('estado', 'pendiente')->count() }}
                 </div>
             </div>
-            <div class="bg-white rounded-lg shadow-sm p-4">
+            <div class="bg-white rounded-lg shadow-md p-4">
                 <div class="text-sm font-medium text-gray-500">Aceptadas</div>
                 <div class="mt-1 text-2xl font-semibold text-green-600">
                     {{ $solicitudes->where('estado', 'aceptada')->count() }}
                 </div>
             </div>
-            <div class="bg-white rounded-lg shadow-sm p-4">
+            <div class="bg-white rounded-lg shadow-md p-4">
                 <div class="text-sm font-medium text-gray-500">Rechazadas</div>
                 <div class="mt-1 text-2xl font-semibold text-red-600">
                     {{ $solicitudes->where('estado', 'rechazada')->count() }}
@@ -57,7 +64,7 @@
         </div>
 
         <!-- Lista de solicitudes -->
-        <div class="bg-white rounded-lg shadow-sm">
+        <div class="bg-white rounded-lg shadow-md">
             @if($solicitudes->isEmpty())
                 <div class="p-12 text-center">
                     <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
@@ -85,7 +92,7 @@
                                     <div class="flex-1 min-w-0">
                                         <div class="flex items-center justify-between">
                                             <div class="flex items-center space-x-4">
-                                                <a href="{{ route('profile.view', $solicitud->estudiante->user->id) }}" 
+                                                <a href="{{ route('profile.show', $solicitud->estudiante->user->id) }}" 
                                                    class="group flex items-center space-x-3 hover:text-purple-600 transition-colors duration-200">
                                                     <h3 class="text-lg font-semibold text-gray-900 group-hover:text-purple-600">
                                                         {{ $solicitud->estudiante->user->nombre }}

@@ -21,7 +21,7 @@
                                     Panel Alumno
                                 </a>
                             @elseif(auth()->user()->role->nombre_rol == 'Empresa')
-                                <a href="{{ route('home') }}" class="bg-[#7705B6] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#5E0490] transition">
+                                <a href="{{ route('empresa.dashboard') }}" class="bg-[#7705B6] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#5E0490] transition">
                                     Panel Empresa
                                 </a>
                             @endif
