@@ -3,6 +3,13 @@
 @section('content')
 <div class="min-h-screen bg-gray-100">
     <div class="container mx-auto px-4 py-8">
+        <!-- Breadcrumbs -->
+        @component('components.breadcrumb')
+            @slot('items')
+                [{"name": "Dashboard", "route": "empresa.dashboard"}, {"name": "Publicar oferta"}]
+            @endslot
+        @endcomponent
+
         <div class="max-w-2xl mx-auto">
             <!-- Header -->
             <div class="mb-8">

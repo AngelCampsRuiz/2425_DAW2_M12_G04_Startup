@@ -5,13 +5,20 @@
 @section('content')
 <div class="bg-gray-50 min-h-screen">
     <div class="container mx-auto px-4 py-8">
+        <!-- Breadcrumbs -->
+        @component('components.breadcrumb')
+            @slot('items')
+                [{"name": "Dashboard"}]
+            @endslot
+        @endcomponent
+
         <div class="flex flex-col md:flex-row gap-6">
             <!-- Sidebar -->
             <div class="w-full md:w-1/4">
                 <div class="bg-white rounded-lg shadow-md p-6 mb-6">
                     <div class="flex items-center space-x-4 mb-6">
-                        @if(Auth::user()->empresa->logo_url)
-                            <img src="{{ Auth::user()->empresa->logo_url }}" alt="Logo empresa" class="w-16 h-16 rounded-full object-cover">
+                        @if(Auth::user()->imagen)
+                            <img src="{{ asset('public/profile_images/' . Auth::user()->imagen) }}" alt="Logo empresa" class="w-16 h-16 rounded-full object-cover">
                         @else
                             <div class="w-16 h-16 rounded-full bg-purple-200 flex items-center justify-center text-purple-700 text-xl font-bold">
                                 {{ strtoupper(substr(Auth::user()->name, 0, 2)) }}
