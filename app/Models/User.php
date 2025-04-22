@@ -107,5 +107,15 @@ class User extends Authenticatable
         return $this->belongsToMany(Publication::class, 'favorite_publication', 'user_id', 'publicacion_id');
     }
 
-    // Removed duplicate casts method
+    // Relación con las valoraciones recibidas
+    public function valoracionesRecibidas()
+    {
+        return $this->hasMany(Valoracion::class, 'receptor_id');
+    }
+
+    // Relación con las valoraciones emitidas
+    public function valoracionesEmitidas()
+    {
+        return $this->hasMany(Valoracion::class, 'emisor_id');
+    }
 }

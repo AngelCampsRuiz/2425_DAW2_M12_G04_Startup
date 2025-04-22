@@ -77,11 +77,25 @@ class HomeController extends Controller
         $user = $id ? User::findOrFail($id) : Auth::user();
         $user->load(['tutor', 'estudiante', 'empresa']);
 
+        // Obtener las valoraciones recibidas por el usuario
+        $valoracionesRecibidas = $user->valoracionesRecibidas()
+            ->with(['emisor', 'convenio'])
+            ->orderBy('fecha_valoracion', 'desc')
+            ->get();
+
+        // Obtener las valoraciones emitidas por el usuario
+        $valoracionesEmitidas = $user->valoracionesEmitidas()
+            ->with(['receptor', 'convenio'])
+            ->orderBy('fecha_valoracion', 'desc')
+            ->get();
+
         $data = [
             'user' => $user,
             'tutor' => $user->tutor,
             'estudiante' => $user->estudiante,
             'empresa' => $user->empresa,
+            'valoracionesRecibidas' => $valoracionesRecibidas,
+            'valoracionesEmitidas' => $valoracionesEmitidas
         ];
 
         if ($user->empresa) {

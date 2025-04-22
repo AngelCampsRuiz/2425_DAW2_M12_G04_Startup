@@ -14,17 +14,33 @@ class Valoracion extends Model
     protected $fillable = [
         'puntuacion',
         'comentario',
-        'user_id',
-        'empresa_id'
+        'fecha_valoracion',
+        'tipo',
+        'emisor_id',
+        'receptor_id',
+        'convenio_id'
     ];
 
-    public function user()
+    protected $casts = [
+        'fecha_valoracion' => 'datetime',
+        'puntuacion' => 'integer'
+    ];
+
+    // Relación con el usuario que emite la valoración
+    public function emisor()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'emisor_id');
     }
 
-    public function empresa()
+    // Relación con el usuario que recibe la valoración
+    public function receptor()
     {
-        return $this->belongsTo(Empresa::class);
+        return $this->belongsTo(User::class, 'receptor_id');
+    }
+
+    // Relación con el convenio
+    public function convenio()
+    {
+        return $this->belongsTo(Convenio::class);
     }
 }

@@ -626,12 +626,11 @@
                                             <div class="flex-shrink-0">
                                                 <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
-                                                </svg>
-                                            </div>
-                                            <div class="ml-4">
-                                                <p class="text-sm text-gray-500">Sitio Web</p>
-                                                <p class="font-medium text-gray-900" data-valor="web">{{ $user->web ?? 'No especificado' }}</p>
-                                            </div>
+                                            </svg>
+                                        </div>
+                                        <div class="ml-4">
+                                            <p class="text-sm text-gray-500">Sitio Web</p>
+                                            <p class="font-medium text-gray-900" data-valor="web">{{ $user->web ?? 'No especificado' }}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -641,6 +640,44 @@
                 @endif
             </div>
         </div>
+
+        <div>
+
+        </div>
+
+        <!-- Sección de Valoraciones -->
+        <div class="valoraciones-section">
+            <h2 class="valoraciones-title">Valoraciones Recibidas</h2>
+            <div class="valoraciones-container">
+                @forelse($valoracionesRecibidas as $valoracion)
+                    <div class="valoracion-card">
+                        <div class="valoracion-header">
+                            <div class="valoracion-user">
+                                <img src="{{ asset('path/to/default/avatar.jpg') }}" alt="Avatar" class="valoracion-avatar">
+                                <div class="valoracion-info">
+                                    <h3>{{ $valoracion->emisor->nombre }}</h3>
+                                    <p class="valoracion-fecha">{{ $valoracion->fecha_valoracion->format('d/m/Y') }}</p>
+                                </div>
+                            </div>
+                            <div class="valoracion-puntuacion">
+                                @for($i = 1; $i <= 5; $i++)
+                                    <i class="fas fa-star {{ $i <= $valoracion->puntuacion ? 'star-filled' : 'star-empty' }}"></i>
+                                @endfor
+                            </div>
+                        </div>
+                        <div class="valoracion-comentario">
+                            <p>{{ $valoracion->comentario }}</p>
+                        </div>
+                        <div class="valoracion-footer">
+                            <span class="valoracion-tipo">{{ $valoracion->tipo == 'alumno_a_empresa' ? 'Valoración de Alumno' : 'Valoración de Empresa' }}</span>
+                        </div>
+                    </div>
+                @empty
+                    <p class="no-valoraciones">No hay valoraciones recibidas aún.</p>
+                @endforelse
+            </div>
+        </div>
+    </div>
 
         {{-- Modal de Edición --}}
         <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
