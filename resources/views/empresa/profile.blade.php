@@ -6,20 +6,24 @@
     <div class="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-50 py-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             {{-- Migas de pan --}}
-            <div class="bg-white shadow-sm mb-8">
+            <nav class="bg-white shadow-sm mb-6">
                 <div class="container mx-auto px-4 py-3">
-                    <div class="flex items-center text-sm">
-                        <a href="{{ route('home') }}" class="text-gray-500 hover:text-[#5e0490]">
+                    <div class="flex items-center text-sm overflow-x-auto whitespace-nowrap">
+                        <a href="{{ route('home') }}" class="text-gray-500 hover:text-[#5e0490] transition-colors">
                             <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
                             </svg>
                             Inicio
                         </a>
                         <span class="mx-2 text-gray-400">/</span>
+                        <a href="{{ route('empresa.dashboard') }}" class="text-gray-500 hover:text-[#5e0490] transition-colors">
+                            Dashboard
+                        </a>
+                        <span class="mx-2 text-gray-400">/</span>
                         <span class="text-[#5e0490] font-medium">Perfil de Empresa</span>
                     </div>
                 </div>
-            </div>
+            </nav>
 
             {{-- Barra de Progreso del Perfil --}}
             @php
@@ -142,9 +146,12 @@
                 {{-- Header del Perfil con gradiente --}}
                 <div class="relative h-64 bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600">
                     <div class="absolute -bottom-20 left-8">
+                        <!-- Mensaje de depuración -->
+                        <div class="hidden">Imagen: {{ $user->imagen ?? 'sin imagen' }}</div>
+                        
                         <div class="w-40 h-40 rounded-full bg-white border-4 border-white shadow-xl flex items-center justify-center overflow-hidden transform transition-transform duration-300 hover:scale-105">
-                            @if($user->empresa->logo_url)
-                                <img src="{{ $user->empresa->logo_url }}" 
+                            @if(!empty($user->imagen))
+                                <img src="{{ asset('public/profile_images/' . $user->imagen) }}"
                                      alt="Logo empresa" 
                                      class="w-full h-full object-cover">
                             @else
@@ -498,16 +505,16 @@
                             
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Logo Actual</label>
-                                @if($user->empresa->logo_url)
+                                @if($user->imagen)
                                     <div class="mt-2 mb-4">
-                                        <img src="{{ $user->empresa->logo_url }}" 
+                                        <img src="{{ asset('public/profile_images/' . $user->imagen) }}" 
                                              alt="Logo actual" 
                                              class="h-24 w-24 rounded-full object-cover border-4 border-purple-100">
                                     </div>
                                 @else
                                     <p class="mt-2 text-sm text-gray-500">No hay logo subido</p>
                                 @endif
-                                <input type="file" name="logo" accept="image/*" 
+                                <input type="file" name="imagen" accept="image/*" 
                                        class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100">
                             </div>
                         </div>
@@ -663,10 +670,10 @@
                     });
 
                     // Actualizar logo si se cambió
-                    if (user.empresa && user.empresa.logo_url) {
+                    if (user.imagen) {
                         const logoPerfil = document.querySelector('.w-40.h-40.rounded-full img');
                         if (logoPerfil) {
-                            logoPerfil.src = user.empresa.logo_url;
+                            logoPerfil.src = "{{ asset('public/profile_images') }}/" + user.imagen;
                         }
                     }
                     

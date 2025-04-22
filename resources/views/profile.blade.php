@@ -19,6 +19,10 @@
                                 Inicio
                             </a>
                             <span class="mx-2 text-gray-400">/</span>
+                            <a href="{{ route('empresa.dashboard') }}" class="text-gray-500 hover:text-[#5e0490]">
+                                Dashboard
+                            </a>
+                            <span class="mx-2 text-gray-400">/</span>
                             <span class="text-[#5e0490] font-medium">Perfil de {{ $user->role_id == 3 ? 'Estudiante' : 'Empresa' }}</span>
                         </div>
                     </div>
@@ -195,8 +199,8 @@
                                     <span class="text-6xl font-bold text-purple-600">
                                         {{ strtoupper(substr($user->nombre, 0, 2)) }}
                                     </span>
-                    @endif
-                </div>
+                                @endif
+                            </div>
                         </div>
                     </div>
 
@@ -480,8 +484,8 @@
                         <div class="relative h-64 bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600">
                             <div class="absolute -bottom-20 left-8">
                                 <div class="w-40 h-40 rounded-full bg-white border-4 border-white shadow-xl flex items-center justify-center overflow-hidden transform transition-transform duration-300 hover:scale-105">
-                                    @if($user->empresa->logo_url)
-                                        <img src="{{ $user->empresa->logo_url }}"
+                                    @if($user->imagen)
+                                        <img src="{{ asset('public/profile_images/' . $user->imagen) }}"
                                              alt="Logo empresa"
                                              class="w-full h-full object-cover">
                                     @else
@@ -995,6 +999,162 @@
             document.body.style.overflow = 'auto';
         }
 
+            // Cerrar modal al hacer clic fuera
+            window.onclick = function(event) {
+                const modal = document.getElementById('editModal');
+                if (event.target == modal) {
+                    closeEditModal();
+                }
+            }
+
+            // Actualizar el botón de editar para abrir el modal
+            document.addEventListener('DOMContentLoaded', function() {
+                const editButton = document.querySelector('.edit-button');
+                if (editButton) {
+                    editButton.onclick = openEditModal;
+                }
+            });
+
+            document.getElementById('profileForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const formData = new FormData(this);
+                const submitButton = this.querySelector('button[type="submit"]');
+                const originalButtonText = submitButton.innerHTML;
+
+                // Mostrar indicador de carga
+                submitButton.disabled = true;
+                submitButton.innerHTML = `
+                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Guardando...
+                `;
+
+                fetch(this.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Actualizar la barra de progreso
+                        const progressBar = document.getElementById('progressBar');
+                        const progressText = document.getElementById('progressText');
+                        const progressPercentage = document.getElementById('progressPercentage');
+                        const progressMessage = document.getElementById('progressMessage');
+
+                        if (progressBar && progressText && progressPercentage && progressMessage) {
+                            progressBar.style.width = data.porcentaje + '%';
+                            progressText.textContent = data.porcentaje + '%';
+                            progressPercentage.textContent = data.porcentaje + '%';
+
+                            // Actualizar mensaje según el porcentaje
+                            if (data.porcentaje < 50) {
+                                progressMessage.textContent = '¡Sigue completando tu perfil!';
+                            } else if (data.porcentaje < 80) {
+                                progressMessage.textContent = '¡Vas por buen camino!';
+                            } else {
+                                progressMessage.textContent = '¡Casi lo tienes!';
+                            }
+                        }
+
+                        // Actualizar la información del perfil
+                        const user = data.user;
+
+                        // Actualizar nombre
+                        const nombreElement = document.querySelector('h1.text-4xl');
+                        if (nombreElement) nombreElement.textContent = user.nombre;
+
+                        // Actualizar descripción
+                        const descripcionElement = document.querySelector('.text-gray-700.leading-relaxed');
+                        if (descripcionElement) descripcionElement.textContent = user.descripcion || '';
+
+                        // Actualizar campos de visibilidad
+                        const camposVisibles = {
+                            'telefono': user.show_telefono,
+                            'dni': user.show_dni,
+                            'ciudad': user.show_ciudad,
+                            'direccion': user.show_direccion,
+                            'web': user.show_web
+                        };
+
+                        // Actualizar la visibilidad de cada campo
+                        Object.entries(camposVisibles).forEach(([campo, visible]) => {
+                            const elemento = document.querySelector(`[data-campo="${campo}"]`);
+                            if (elemento) {
+                                elemento.style.display = visible ? 'flex' : 'none';
+                            }
+                        });
+
+                        // Actualizar valores de los campos
+                        const camposValores = {
+                            'telefono': user.telefono,
+                            'dni': user.dni,
+                            'ciudad': user.ciudad,
+                            'direccion': user.direccion,
+                            'web': user.web
+                        };
+
+                        Object.entries(camposValores).forEach(([campo, valor]) => {
+                            const elemento = document.querySelector(`[data-valor="${campo}"]`);
+                            if (elemento) {
+                                elemento.textContent = valor || 'No especificado';
+                            }
+                        });
+
+                        // Actualizar imagen de perfil si se cambió
+                        if (user.imagen) {
+                            const imagenPerfil = document.querySelector('.w-40.h-40.rounded-full img');
+                            if (imagenPerfil) {
+                                imagenPerfil.src = `/public/profile_images/${user.imagen}`;
+                            }
+                        }
+
+                        // Actualizar CV si se cambió
+                        if (user.estudiante && user.estudiante.cv_pdf) {
+                            const cvLink = document.querySelector('a[href*="cv/"]');
+                            if (cvLink) {
+                                cvLink.href = `/cv/${user.estudiante.cv_pdf}`;
+                            }
+                        }
+
+                        // Mostrar mensaje de éxito
+                        const successMessage = document.createElement('div');
+                        successMessage.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+                        successMessage.textContent = data.message;
+                        document.body.appendChild(successMessage);
+
+                        // Cerrar el modal después de 2 segundos
+                        setTimeout(() => {
+                            closeEditModal();
+                            successMessage.remove();
+                        }, 2000);
+                    } else {
+                        throw new Error(data.message);
+                    }
+                })
+                .catch(error => {
+                    // Mostrar mensaje de error
+                    const errorMessage = document.createElement('div');
+                    errorMessage.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+                    errorMessage.textContent = error.message;
+                    document.body.appendChild(errorMessage);
+
+                    setTimeout(() => {
+                        errorMessage.remove();
+                    }, 3000);
+                })
+                .finally(() => {
+                    // Restaurar el botón
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = originalButtonText;
+                });
+            });
         function setEditRating(rating) {
             document.getElementById('editPuntuacion').value = rating;
             const stars = document.querySelectorAll('.edit-rating-star');
