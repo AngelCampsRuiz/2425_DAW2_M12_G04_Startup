@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Categoria;
+use App\Models\Publication;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class CategoriaController extends Controller
 {
@@ -103,27 +105,60 @@ class CategoriaController extends Controller
      */
     public function destroy(Categoria $categoria)
     {
-        if ($categoria->subcategorias()->exists()) {
+        try {
+            // Iniciar transacción para asegurar que todo se elimine correctamente
+            DB::beginTransaction();
+            
+            // Verificar si hay publicaciones asociadas a alguna subcategoría de esta categoría
+            $subcategoriasIds = $categoria->subcategorias()->pluck('id')->toArray();
+            
+            if (!empty($subcategoriasIds)) {
+                $publicacionesAsociadas = Publication::whereIn('subcategoria_id', $subcategoriasIds)->exists();
+                
+                if ($publicacionesAsociadas) {
+                    DB::rollBack();
+                    if (request()->ajax()) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'No se puede eliminar la categoría porque tiene publicaciones asociadas a sus subcategorías'
+                        ], 422);
+                    }
+                    return redirect()->route('admin.categorias.index')
+                        ->with('error', 'No se puede eliminar la categoría porque tiene publicaciones asociadas a sus subcategorías');
+                }
+                
+                // Si no hay publicaciones, eliminar todas las subcategorías
+                $categoria->subcategorias()->delete();
+            }
+            
+            // Eliminar la categoría
+            $categoria->delete();
+            
+            // Confirmar la transacción
+            DB::commit();
+
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Categoría y sus subcategorías eliminadas exitosamente'
+                ]);
+            }
+
+            return redirect()->route('admin.categorias.index')
+                ->with('success', 'Categoría y sus subcategorías eliminadas exitosamente');
+        } catch (\Exception $e) {
+            // Si hay algún error, hacer rollback
+            DB::rollBack();
+            
             if (request()->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'No se puede eliminar la categoría porque tiene subcategorías asociadas'
-                ], 422);
+                    'message' => 'Error al eliminar la categoría: ' . $e->getMessage()
+                ], 500);
             }
+            
             return redirect()->route('admin.categorias.index')
-                ->with('error', 'No se puede eliminar la categoría porque tiene subcategorías asociadas');
+                ->with('error', 'Error al eliminar la categoría: ' . $e->getMessage());
         }
-
-        $categoria->delete();
-
-        if (request()->ajax()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Categoría eliminada exitosamente'
-            ]);
-        }
-
-        return redirect()->route('admin.categorias.index')
-            ->with('success', 'Categoría eliminada exitosamente');
     }
 }
