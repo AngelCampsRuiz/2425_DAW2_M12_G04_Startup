@@ -1253,4 +1253,257 @@
             }
         });
         </script>
+
+        {{-- Modal de Edición --}}
+        <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+            <div class="relative top-20 mx-auto p-5 w-full max-w-2xl">
+                <div class="bg-white rounded-2xl shadow-2xl overflow-hidden transform transition-all duration-300">
+                    {{-- Header del Modal --}}
+                    <div class="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-4">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-xl font-semibold text-white">Editar Perfil</h3>
+                            <button onclick="closeEditModal()" class="text-white hover:text-purple-200 transition-colors duration-200">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- Contenido del Modal --}}
+                    <div class="p-6">
+                        <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data" id="profileForm" class="space-y-6">
+                            @csrf
+                            @method('PUT')
+
+                            {{-- Información Básica --}}
+                            <div class="space-y-4">
+                                <h4 class="text-lg font-medium text-gray-900 border-b pb-2">Información Básica</h4>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+                                        <input type="text" name="nombre" value="{{ $user->nombre }}"
+                                               class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500">
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                                        <textarea name="descripcion" rows="3"
+                                                  class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500">{{ $user->descripcion }}</textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Campos Opcionales --}}
+                            <div class="space-y-4">
+                                <h4 class="text-lg font-medium text-gray-900 border-b pb-2">Visibilidad de Campos</h4>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <label class="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors duration-200">
+                                        <input type="checkbox" name="show_telefono" value="1"
+                                               {{ $user->show_telefono ? 'checked' : '' }}
+                                               class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-500 focus:ring-purple-500">
+                                        <span class="text-sm text-gray-700">Mostrar Teléfono</span>
+                                    </label>
+
+                                    <label class="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors duration-200">
+                                        <input type="checkbox" name="show_dni" value="1"
+                                               {{ $user->show_dni ? 'checked' : '' }}
+                                               class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-500 focus:ring-purple-500">
+                                        <span class="text-sm text-gray-700">Mostrar DNI</span>
+                                    </label>
+
+                                    <label class="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors duration-200">
+                                        <input type="checkbox" name="show_ciudad" value="1"
+                                               {{ $user->show_ciudad ? 'checked' : '' }}
+                                               class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-500 focus:ring-purple-500">
+                                        <span class="text-sm text-gray-700">Mostrar Ciudad</span>
+                                    </label>
+
+                                    <label class="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors duration-200">
+                                        <input type="checkbox" name="show_direccion" value="1"
+                                               {{ $user->show_direccion ? 'checked' : '' }}
+                                               class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-500 focus:ring-purple-500">
+                                        <span class="text-sm text-gray-700">Mostrar Dirección</span>
+                                    </label>
+
+                                    <label class="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors duration-200">
+                                        <input type="checkbox" name="show_web" value="1"
+                                               {{ $user->show_web ? 'checked' : '' }}
+                                               class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-500 focus:ring-purple-500">
+                                        <span class="text-sm text-gray-700">Mostrar Sitio Web</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            {{-- Información Personal --}}
+                            <div class="space-y-4">
+                                <h4 class="text-lg font-medium text-gray-900 border-b pb-2">Información Personal</h4>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                                        <input type="text" name="telefono" value="{{ $user->telefono }}"
+                                               class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500">
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">DNI</label>
+                                        <input type="text" name="dni" value="{{ $user->dni }}"
+                                               class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500">
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Ciudad</label>
+                                        <input type="text" name="ciudad" value="{{ $user->ciudad }}"
+                                               class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500">
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Archivos --}}
+                            <div class="space-y-4">
+                                <h4 class="text-lg font-medium text-gray-900 border-b pb-2">Archivos</h4>
+
+                                <div class="space-y-4">
+                                    {{-- Foto de Perfil --}}
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Foto de Perfil Actual</label>
+                                        @if($user->imagen)
+                                            <div class="mt-2 mb-4">
+                                                <img src="{{ asset('public/profile_images/' . $user->imagen) }}"
+                                                     alt="Foto actual"
+                                                     class="h-24 w-24 rounded-full object-cover border-4 border-purple-100">
+                                            </div>
+                                        @else
+                                            <p class="mt-2 text-sm text-gray-500">No hay foto de perfil</p>
+                                        @endif
+                                        <input type="file" name="imagen" accept="image/*"
+                                               class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100">
+                                    </div>
+
+                                    {{-- CV --}}
+                                    @if($user->role_id == 3)
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">CV Actual</label>
+                                            @if($user->estudiante && $user->estudiante->cv_pdf)
+                                                <div class="mt-2 mb-4">
+                                                    <a href="{{ asset('cv/' . $user->estudiante->cv_pdf) }}"
+                                                       target="_blank"
+                                                       class="inline-flex items-center px-4 py-2 bg-purple-100 text-purple-700 rounded-xl hover:bg-purple-200">
+                                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                                        </svg>
+                                                        Ver CV actual
+                                                    </a>
+                                                </div>
+                                            @else
+                                                <p class="mt-2 text-sm text-gray-500">No hay CV subido</p>
+                                            @endif
+                                            <input type="file" name="cv_pdf" accept=".pdf"
+                                                   class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100">
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+
+                            {{-- Botones --}}
+                            <div class="flex justify-end space-x-4 pt-4 border-t">
+                                <button type="button" onclick="closeEditModal()"
+                                        class="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors duration-200">
+                                    Cancelar
+                                </button>
+                                <button type="submit"
+                                        class="px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors duration-200">
+                                    Guardar Cambios
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Scripts para el modal --}}
+        <script>
+            function openEditModal() {
+                document.getElementById('editModal').classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeEditModal() {
+                document.getElementById('editModal').classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }
+
+            // Cerrar modal al hacer clic fuera
+            window.onclick = function(event) {
+                const modal = document.getElementById('editModal');
+                if (event.target == modal) {
+                    closeEditModal();
+                }
+            }
+
+            // Manejar envío del formulario
+            document.getElementById('profileForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const formData = new FormData(this);
+                const submitButton = this.querySelector('button[type="submit"]');
+                const originalButtonText = submitButton.innerHTML;
+
+                // Mostrar indicador de carga
+                submitButton.disabled = true;
+                submitButton.innerHTML = `
+                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Guardando...
+            `;
+
+                fetch(this.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Mostrar mensaje de éxito
+                        const successMessage = document.createElement('div');
+                        successMessage.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+                        successMessage.textContent = data.message;
+                        document.body.appendChild(successMessage);
+
+                        // Cerrar el modal y recargar la página después de 2 segundos
+                        setTimeout(() => {
+                            closeEditModal();
+                            location.reload();
+                        }, 2000);
+                    } else {
+                        throw new Error(data.message);
+                    }
+                })
+                .catch(error => {
+                    // Mostrar mensaje de error
+                    const errorMessage = document.createElement('div');
+                    errorMessage.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+                    errorMessage.textContent = error.message;
+                    document.body.appendChild(errorMessage);
+
+                    setTimeout(() => {
+                        errorMessage.remove();
+                    }, 3000);
+                })
+                .finally(() => {
+                    // Restaurar el botón
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = originalButtonText;
+                });
+            });
+        </script>
     @endsection
