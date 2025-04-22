@@ -74,7 +74,7 @@ class HomeController extends Controller
 
     public function profile($id = null)
     {
-        $user = $id ? User::findOrFail($id) : Auth::user();
+        $user = $id ? User::where('id', $id)->firstOrFail() : Auth::user();
         $user->load(['tutor', 'estudiante', 'empresa']);
 
         // Obtener las valoraciones recibidas por el usuario
@@ -107,7 +107,7 @@ class HomeController extends Controller
 
     public function updateVisibility(Request $request)
     {
-        $user = User::findOrFail($request->user_id);
+        $user = User::where('id', $request->user_id)->firstOrFail();
         $user->visibilidad = !$user->visibilidad; // Toggle visibility
         $user->save();
 

@@ -626,11 +626,12 @@
                                             <div class="flex-shrink-0">
                                                 <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
-                                            </svg>
-                                        </div>
-                                        <div class="ml-4">
-                                            <p class="text-sm text-gray-500">Sitio Web</p>
-                                            <p class="font-medium text-gray-900" data-valor="web">{{ $user->web ?? 'No especificado' }}</p>
+                                                </svg>
+                                            </div>
+                                            <div class="ml-4">
+                                                <p class="text-sm text-gray-500">Sitio Web</p>
+                                                <p class="font-medium text-gray-900" data-valor="web">{{ $user->web ?? 'No especificado' }}</p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -640,6 +641,205 @@
                 @endif
             </div>
         </div>
+
+        {{-- Botón y Modal de Valoración --}}
+        @php
+            $canRate = false;
+            $seguimientoId = null;
+
+            if (auth()->check()) {
+                if (auth()->user()->role_id == 2 && $user->role_id == 3) {
+                    // Empresa valorando a estudiante
+                    $seguimiento = App\Models\Seguimiento::where('empresa_id', auth()->user()->empresa->id)
+                        ->where('alumno_id', $user->estudiante->id)
+                        ->where('estado', 'aceptado')
+                        ->whereHas('convenio')
+                        ->whereDoesntHave('convenio.valoraciones', function($query) use ($user) {
+                            $query->where('emisor_id', auth()->id())
+                                  ->where('receptor_id', $user->id);
+                        })
+                        ->first();
+                    if ($seguimiento) {
+                        $canRate = true;
+                        $seguimientoId = $seguimiento->id;
+                    }
+                } elseif (auth()->user()->role_id == 3 && $user->role_id == 2) {
+                    // Estudiante valorando a empresa
+                    $seguimiento = App\Models\Seguimiento::where('alumno_id', auth()->user()->estudiante->id)
+                        ->where('empresa_id', $user->empresa->id)
+                        ->where('estado', 'aceptado')
+                        ->whereHas('convenio')
+                        ->whereDoesntHave('convenio.valoraciones', function($query) use ($user) {
+                            $query->where('emisor_id', auth()->id())
+                                  ->where('receptor_id', $user->id);
+                        })
+                        ->first();
+                    if ($seguimiento) {
+                        $canRate = true;
+                        $seguimientoId = $seguimiento->id;
+                    }
+                }
+            }
+        @endphp
+
+        @if($canRate && auth()->id() != $user->id)
+            <div class="fixed bottom-8 right-8">
+                <button onclick="openRatingModal()"
+                        class="px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors duration-200 flex items-center space-x-2 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+                    </svg>
+                    <span>Valorar {{ $user->role_id == 3 ? 'Estudiante' : 'Empresa' }}</span>
+                </button>
+            </div>
+
+            {{-- Modal de Valoración --}}
+            <div id="ratingModal" class="fixed inset-0 bg-black bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+                <div class="relative top-20 mx-auto p-5 w-full max-w-md">
+                    <div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
+                        <div class="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-4">
+                            <div class="flex justify-between items-center">
+                                <h3 class="text-xl font-semibold text-white">Valorar {{ $user->role_id == 3 ? 'Estudiante' : 'Empresa' }}</h3>
+                                <button onclick="closeRatingModal()" class="text-white hover:text-purple-200">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <form action="{{ route('valoraciones.store') }}" method="POST" id="ratingForm" class="p-6">
+                            @csrf
+                            <input type="hidden" name="seguimiento_id" value="{{ $seguimientoId }}">
+                            <input type="hidden" name="receptor_id" value="{{ $user->id }}">
+                            <input type="hidden" name="tipo" value="{{ auth()->user()->role_id == 2 ? 'empresa_a_alumno' : 'alumno_a_empresa' }}">
+
+                            {{-- Estrellas de Valoración --}}
+                            <div class="mb-6">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Puntuación</label>
+                                <div class="flex space-x-2">
+                                    @for($i = 1; $i <= 5; $i++)
+                                        <button type="button" onclick="setRating({{ $i }})"
+                                                class="rating-star text-3xl text-gray-300 hover:text-yellow-400 transition-colors duration-200"
+                                                data-rating="{{ $i }}">★</button>
+                                    @endfor
+                                </div>
+                                <input type="hidden" name="puntuacion" id="puntuacion" required>
+                            </div>
+
+                            {{-- Comentario --}}
+                            <div class="mb-6">
+                                <label for="comentario" class="block text-sm font-medium text-gray-700 mb-2">Comentario</label>
+                                <textarea id="comentario" name="comentario" rows="4" required
+                                          class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                                          placeholder="Escribe tu valoración..."></textarea>
+                            </div>
+
+                            {{-- Botones --}}
+                            <div class="flex justify-end space-x-4">
+                                <button type="button" onclick="closeRatingModal()"
+                                        class="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200">
+                                    Cancelar
+                                </button>
+                                <button type="submit"
+                                        class="px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700">
+                                    Enviar Valoración
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                function openRatingModal() {
+                    document.getElementById('ratingModal').classList.remove('hidden');
+                    document.body.style.overflow = 'hidden';
+                }
+
+                function closeRatingModal() {
+                    document.getElementById('ratingModal').classList.add('hidden');
+                    document.body.style.overflow = 'auto';
+                }
+
+                function setRating(rating) {
+                    document.getElementById('puntuacion').value = rating;
+                    const stars = document.querySelectorAll('.rating-star');
+                    stars.forEach((star, index) => {
+                        star.classList.toggle('text-yellow-400', index < rating);
+                        star.classList.toggle('text-gray-300', index >= rating);
+                    });
+                }
+
+                // Cerrar modal al hacer clic fuera
+                document.getElementById('ratingModal').addEventListener('click', function(event) {
+                    if (event.target === this) {
+                        closeRatingModal();
+                    }
+                });
+
+                // Manejar envío del formulario
+                document.getElementById('ratingForm').addEventListener('submit', function(e) {
+                    e.preventDefault();
+
+                    const formData = new FormData(this);
+                    const submitButton = this.querySelector('button[type="submit"]');
+                    const originalButtonText = submitButton.innerHTML;
+
+                    // Mostrar indicador de carga
+                    submitButton.disabled = true;
+                    submitButton.innerHTML = `
+                        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Enviando...
+                    `;
+
+                    fetch(this.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Mostrar mensaje de éxito
+                            const successMessage = document.createElement('div');
+                            successMessage.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+                            successMessage.textContent = data.message;
+                            document.body.appendChild(successMessage);
+
+                            // Cerrar el modal y recargar la página después de 2 segundos
+                            setTimeout(() => {
+                                closeRatingModal();
+                                location.reload();
+                            }, 2000);
+                        } else {
+                            throw new Error(data.message);
+                        }
+                    })
+                    .catch(error => {
+                        // Mostrar mensaje de error
+                        const errorMessage = document.createElement('div');
+                        errorMessage.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+                        errorMessage.textContent = error.message;
+                        document.body.appendChild(errorMessage);
+
+                        setTimeout(() => {
+                            errorMessage.remove();
+                        }, 3000);
+                    })
+                    .finally(() => {
+                        // Restaurar el botón
+                        submitButton.disabled = false;
+                        submitButton.innerHTML = originalButtonText;
+                    });
+                });
+            </script>
+        @endif
 
         <div>
 
