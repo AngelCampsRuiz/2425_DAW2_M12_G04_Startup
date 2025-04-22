@@ -940,9 +940,9 @@
                     <form id="editValoracionForm" class="p-6">
                         @csrf
                         @method('PUT')
-                        <input type="hidden" id="valoracionId">
+                        <input type="hidden" id="valoracionId" name="valoracion_id">
 
-                        <!-- Estrellas de Valoración -->
+                        {{-- Estrellas de Valoración --}}
                         <div class="mb-6">
                             <label class="block text-sm font-medium text-gray-700 mb-2">Puntuación</label>
                             <div class="flex space-x-2">
@@ -955,7 +955,7 @@
                             <input type="hidden" name="puntuacion" id="editPuntuacion" required>
                         </div>
 
-                        <!-- Comentario -->
+                        {{-- Comentario --}}
                         <div class="mb-6">
                             <label for="editComentario" class="block text-sm font-medium text-gray-700 mb-2">Comentario</label>
                             <textarea id="editComentario" name="comentario" rows="4" required
@@ -963,7 +963,7 @@
                                       placeholder="Escribe tu valoración..."></textarea>
                         </div>
 
-                        <!-- Botones -->
+                        {{-- Botones --}}
                         <div class="flex justify-end space-x-4">
                             <button type="button" onclick="closeEditValoracionModal()"
                                     class="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200">
@@ -980,44 +980,41 @@
         </div>
 
         <script>
-        // Funciones para el modal de edición de valoración
-        function editValoracion(id, puntuacion, comentario) {
-            document.getElementById('valoracionId').value = id;
-            document.getElementById('editPuntuacion').value = puntuacion;
-            document.getElementById('editComentario').value = comentario;
+            function editValoracion(id, puntuacion, comentario) {
+                document.getElementById('valoracionId').value = id;
+                document.getElementById('editPuntuacion').value = puntuacion;
+                document.getElementById('editComentario').value = comentario;
 
-            // Actualizar estrellas
-            setEditRating(puntuacion);
+                // Actualizar estrellas
+                const stars = document.querySelectorAll('.edit-rating-star');
+                stars.forEach((star, index) => {
+                    star.classList.toggle('text-yellow-400', index < puntuacion);
+                    star.classList.toggle('text-gray-300', index >= puntuacion);
+                });
 
-            // Mostrar modal
-            document.getElementById('editValoracionModal').classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeEditValoracionModal() {
-            document.getElementById('editValoracionModal').classList.add('hidden');
-            document.body.style.overflow = 'auto';
-        }
-
-            // Cerrar modal al hacer clic fuera
-            window.onclick = function(event) {
-                const modal = document.getElementById('editModal');
-                if (event.target == modal) {
-                    closeEditModal();
-                }
+                // Abrir modal
+                document.getElementById('editValoracionModal').classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
             }
 
-            // Actualizar el botón de editar para abrir el modal
-            document.addEventListener('DOMContentLoaded', function() {
-                const editButton = document.querySelector('.edit-button');
-                if (editButton) {
-                    editButton.onclick = openEditModal;
-                }
-            });
+            function closeEditValoracionModal() {
+                document.getElementById('editValoracionModal').classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }
 
-            document.getElementById('profileForm').addEventListener('submit', function(e) {
+            function setEditRating(rating) {
+                document.getElementById('editPuntuacion').value = rating;
+                const stars = document.querySelectorAll('.edit-rating-star');
+                stars.forEach((star, index) => {
+                    star.classList.toggle('text-yellow-400', index < rating);
+                    star.classList.toggle('text-gray-300', index >= rating);
+                });
+            }
+
+            // Manejar el envío del formulario de edición de valoración
+            document.getElementById('editValoracionForm').addEventListener('submit', function(e) {
                 e.preventDefault();
-
+                const valoracionId = document.getElementById('valoracionId').value;
                 const formData = new FormData(this);
                 const submitButton = this.querySelector('button[type="submit"]');
                 const originalButtonText = submitButton.innerHTML;
@@ -1032,7 +1029,7 @@
                     Guardando...
                 `;
 
-                fetch(this.action, {
+                fetch(`/valoraciones/${valoracionId}`, {
                     method: 'POST',
                     body: formData,
                     headers: {
@@ -1042,216 +1039,86 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // Actualizar la barra de progreso
-                        const progressBar = document.getElementById('progressBar');
-                        const progressText = document.getElementById('progressText');
-                        const progressPercentage = document.getElementById('progressPercentage');
-                        const progressMessage = document.getElementById('progressMessage');
-
-                        if (progressBar && progressText && progressPercentage && progressMessage) {
-                            progressBar.style.width = data.porcentaje + '%';
-                            progressText.textContent = data.porcentaje + '%';
-                            progressPercentage.textContent = data.porcentaje + '%';
-
-                            // Actualizar mensaje según el porcentaje
-                            if (data.porcentaje < 50) {
-                                progressMessage.textContent = '¡Sigue completando tu perfil!';
-                            } else if (data.porcentaje < 80) {
-                                progressMessage.textContent = '¡Vas por buen camino!';
-                            } else {
-                                progressMessage.textContent = '¡Casi lo tienes!';
-                            }
-                        }
-
-                        // Actualizar la información del perfil
-                        const user = data.user;
-
-                        // Actualizar nombre
-                        const nombreElement = document.querySelector('h1.text-4xl');
-                        if (nombreElement) nombreElement.textContent = user.nombre;
-
-                        // Actualizar descripción
-                        const descripcionElement = document.querySelector('.text-gray-700.leading-relaxed');
-                        if (descripcionElement) descripcionElement.textContent = user.descripcion || '';
-
-                        // Actualizar campos de visibilidad
-                        const camposVisibles = {
-                            'telefono': user.show_telefono,
-                            'dni': user.show_dni,
-                            'ciudad': user.show_ciudad,
-                            'direccion': user.show_direccion,
-                            'web': user.show_web
-                        };
-
-                        // Actualizar la visibilidad de cada campo
-                        Object.entries(camposVisibles).forEach(([campo, visible]) => {
-                            const elemento = document.querySelector(`[data-campo="${campo}"]`);
-                            if (elemento) {
-                                elemento.style.display = visible ? 'flex' : 'none';
-                            }
-                        });
-
-                        // Actualizar valores de los campos
-                        const camposValores = {
-                            'telefono': user.telefono,
-                            'dni': user.dni,
-                            'ciudad': user.ciudad,
-                            'direccion': user.direccion,
-                            'web': user.web
-                        };
-
-                        Object.entries(camposValores).forEach(([campo, valor]) => {
-                            const elemento = document.querySelector(`[data-valor="${campo}"]`);
-                            if (elemento) {
-                                elemento.textContent = valor || 'No especificado';
-                            }
-                        });
-
-                        // Actualizar imagen de perfil si se cambió
-                        if (user.imagen) {
-                            const imagenPerfil = document.querySelector('.w-40.h-40.rounded-full img');
-                            if (imagenPerfil) {
-                                imagenPerfil.src = `/public/profile_images/${user.imagen}`;
-                            }
-                        }
-
-                        // Actualizar CV si se cambió
-                        if (user.estudiante && user.estudiante.cv_pdf) {
-                            const cvLink = document.querySelector('a[href*="cv/"]');
-                            if (cvLink) {
-                                cvLink.href = `/cv/${user.estudiante.cv_pdf}`;
-                            }
-                        }
-
                         // Mostrar mensaje de éxito
-                        const successMessage = document.createElement('div');
-                        successMessage.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
-                        successMessage.textContent = data.message;
-                        document.body.appendChild(successMessage);
-
-                        // Cerrar el modal después de 2 segundos
-                        setTimeout(() => {
-                            closeEditModal();
-                            successMessage.remove();
-                        }, 2000);
+                        Swal.fire({
+                            title: 'Éxito',
+                            text: 'La valoración se ha actualizado correctamente',
+                            icon: 'success',
+                            confirmButtonColor: '#7C3AED'
+                        }).then(() => {
+                            location.reload();
+                        });
                     } else {
-                        throw new Error(data.message);
+                        throw new Error(data.message || 'Error al actualizar la valoración');
                     }
                 })
                 .catch(error => {
-                    // Mostrar mensaje de error
-                    const errorMessage = document.createElement('div');
-                    errorMessage.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
-                    errorMessage.textContent = error.message;
-                    document.body.appendChild(errorMessage);
-
-                    setTimeout(() => {
-                        errorMessage.remove();
-                    }, 3000);
+                    Swal.fire({
+                        title: 'Error',
+                        text: error.message || 'Ha ocurrido un error al actualizar la valoración',
+                        icon: 'error',
+                        confirmButtonColor: '#7C3AED'
+                    });
                 })
                 .finally(() => {
-                    // Restaurar el botón
                     submitButton.disabled = false;
                     submitButton.innerHTML = originalButtonText;
                 });
             });
-        function setEditRating(rating) {
-            document.getElementById('editPuntuacion').value = rating;
-            const stars = document.querySelectorAll('.edit-rating-star');
-            stars.forEach((star, index) => {
-                star.classList.toggle('text-yellow-400', index < rating);
-                star.classList.toggle('text-gray-300', index >= rating);
-            });
-        }
 
-        // Manejar el envío del formulario de edición
-        document.getElementById('editValoracionForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const valoracionId = document.getElementById('valoracionId').value;
-            const formData = new FormData(this);
-
-            fetch(`/valoraciones/${valoracionId}`, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    Swal.fire({
-                        title: '¡Éxito!',
-                        text: 'Valoración actualizada correctamente',
-                        icon: 'success',
-                        confirmButtonColor: '#7C3AED'
-                    }).then(() => {
-                        location.reload();
-                    });
-                }
-            })
-            .catch(error => {
+            function deleteValoracion(id) {
                 Swal.fire({
-                    title: 'Error',
-                    text: 'Ha ocurrido un error al actualizar la valoración',
-                    icon: 'error',
-                    confirmButtonColor: '#7C3AED'
-                });
-            });
-        });
-
-        // Función para eliminar valoración
-        function deleteValoracion(id) {
-            Swal.fire({
-                title: '¿Estás seguro?',
-                text: "No podrás revertir esta acción",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#7C3AED',
-                cancelButtonColor: '#EF4444',
-                confirmButtonText: 'Sí, eliminar',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    fetch(`/valoraciones/${id}`, {
-                        method: 'DELETE',
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                            'X-Requested-With': 'XMLHttpRequest'
-                        }
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
+                    title: '¿Estás seguro?',
+                    text: "No podrás revertir esta acción",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#7C3AED',
+                    cancelButtonColor: '#EF4444',
+                    confirmButtonText: 'Sí, eliminar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        fetch(`/valoraciones/${id}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({
+                                    title: 'Eliminada',
+                                    text: 'La valoración ha sido eliminada',
+                                    icon: 'success',
+                                    confirmButtonColor: '#7C3AED'
+                                }).then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                throw new Error(data.message);
+                            }
+                        })
+                        .catch(error => {
                             Swal.fire({
-                                title: '¡Eliminado!',
-                                text: 'La valoración ha sido eliminada.',
-                                icon: 'success',
+                                title: 'Error',
+                                text: 'Ha ocurrido un error al eliminar la valoración',
+                                icon: 'error',
                                 confirmButtonColor: '#7C3AED'
-                            }).then(() => {
-                                location.reload();
                             });
-                        }
-                    })
-                    .catch(error => {
-                        Swal.fire({
-                            title: 'Error',
-                            text: 'Ha ocurrido un error al eliminar la valoración',
-                            icon: 'error',
-                            confirmButtonColor: '#7C3AED'
                         });
-                    });
+                    }
+                });
+            }
+
+            // Cerrar modal al hacer clic fuera
+            document.getElementById('editValoracionModal').addEventListener('click', function(event) {
+                if (event.target === this) {
+                    closeEditValoracionModal();
                 }
             });
-        }
-
-        // Cerrar modal al hacer clic fuera
-        document.getElementById('editValoracionModal').addEventListener('click', function(event) {
-            if (event.target === this) {
-                closeEditValoracionModal();
-            }
-        });
         </script>
 
         {{-- Modal de Edición --}}
