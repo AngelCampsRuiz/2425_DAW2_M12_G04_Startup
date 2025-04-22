@@ -5,22 +5,74 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Publication;
 use App\Models\Empresa;
+use App\Models\Categoria;
+use App\Models\Subcategoria;
 
 class DemoController extends Controller
 {
     /**
      * Muestra una vista de demostración del dashboard de estudiante
      */
-    public function demoStudent()
+    public function demoStudent(Request $request)
     {
-        // Obtener algunas publicaciones para mostrar en la demo
-        $publicaciones = Publication::where('activa', true)
-            ->with('empresa')
-            ->take(6)
-            ->get();
-            
-        // Pasar un flag para indicar que es una vista de demostración
-        return view('demo.student', compact('publicaciones'));
+        $query = Publication::with(['empresa', 'categoria', 'subcategoria'])->where('activa', true);
+
+        // Aplicar búsqueda por título
+        if ($request->has('search')) {
+            $query->where('titulo', 'like', '%' . $request->get('search') . '%');
+        }
+
+        // Aplicar filtro de horario
+        if ($request->has('horario')) {
+            $query->whereIn('horario', $request->get('horario'));
+        }
+
+        // Aplicar filtro de categoría
+        if ($request->has('categoria')) {
+            $query->whereIn('categoria_id', $request->get('categoria'));
+        }
+
+        // Aplicar filtro de subcategoría
+        if ($request->has('subcategoria')) {
+            $query->whereIn('subcategoria_id', $request->get('subcategoria'));
+        }
+
+        // Aplicar filtro de fecha de publicación
+        if ($request->has('fecha_inicio') && $request->has('fecha_fin')) {
+            $query->whereBetween('fecha_publicacion', [$request->get('fecha_inicio'), $request->get('fecha_fin')]);
+        }
+
+        // Aplicar filtro de horas totales
+        if ($request->has('horas_totales_min') && $request->has('horas_totales_max')) {
+            $query->whereBetween('horas_totales', [$request->get('horas_totales_min'), $request->get('horas_totales_max')]);
+        }
+
+        // Aplicar ordenamiento
+        $orderBy = $request->get('order_by', 'fecha_publicacion');
+        $orderDirection = $request->get('order_direction', 'desc');
+        $query->orderBy($orderBy, $orderDirection);
+
+        // Obtener resultados paginados
+        $publications = $query->paginate(6);
+
+        // Obtener horarios únicos
+        $horarios = Publication::select('horario')->distinct()->pluck('horario');
+
+        // Obtener categorías con sus subcategorías
+        $categorias = Categoria::with('subcategorias')->get();
+
+        // Obtener valores mínimos y máximos de horas totales
+        $horasTotalesMin = Publication::min('horas_totales');
+        $horasTotalesMax = Publication::max('horas_totales');
+
+        return view('student.dashboard', [
+            'publications' => $publications,
+            'horarios' => $horarios,
+            'categorias' => $categorias,
+            'horasTotalesMin' => $horasTotalesMin,
+            'horasTotalesMax' => $horasTotalesMax,
+            'is_demo' => true // Agregar flag para indicar que es una demostración
+        ]);
     }
 
     /**
@@ -33,10 +85,10 @@ class DemoController extends Controller
         
         // Obtener algunas estadísticas ficticias para la demo
         $stats = [
-            'totalConvenios' => rand(5, 20),
-            'alumnosContratados' => rand(3, 15),
-            'ofertasActivas' => rand(2, 8),
-            'candidatosRecibidos' => rand(10, 50)
+            'ofertasActivas' => 3,
+            'totalSolicitudes' => 15,
+            'solicitudesPendientes' => 8,
+            'ofertasInactivas' => 2
         ];
         
         // Pasar un flag para indicar que es una vista de demostración
@@ -49,12 +101,6 @@ class DemoController extends Controller
      */
     public function redirectToRegister(Request $request)
     {
-        $type = $request->type ?? 'alumno';
-        
-        if ($type == 'empresa') {
-            return redirect()->route('register.empresa')->with('demo_message', 'Para realizar esta acción, necesitas registrarte como empresa.');
-        } else {
-            return redirect()->route('register.alumno')->with('demo_message', 'Para realizar esta acción, necesitas registrarte como estudiante.');
-        }
+        return redirect()->route('register')->with('demo_message', 'Para realizar esta acción, necesitas registrarte primero.');
     }
 }

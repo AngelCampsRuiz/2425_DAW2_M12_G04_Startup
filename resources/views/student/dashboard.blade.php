@@ -10,6 +10,16 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
     </head>
     <div class="min-h-screen bg-gray-100">
+        @if(isset($is_demo) && $is_demo)
+        <!-- Banner de demostración -->
+        <div class="bg-yellow-100 border-b border-yellow-200 p-4 text-center">
+            <p class="text-yellow-800 font-medium">
+                <span class="font-bold">Vista de demostración</span> - Así se vería la plataforma si fueras un estudiante. 
+                <a href="{{ route('register') }}" class="text-purple-700 underline font-bold">Regístrate ahora</a> para acceder a todas las funcionalidades.
+            </p>
+        </div>
+        @endif
+        
         {{-- BREADCRUMBS --}}
         <div class="bg-white shadow-sm">
             <div class="container mx-auto px-4 py-3">
@@ -103,7 +113,8 @@
                     {{-- BARRA DE BÚSQUEDA Y ORDENAMIENTO --}}
                     <div class="flex flex-col md:flex-row gap-4 mb-6">
                         <div class="flex-1">
-                            <form id="searchForm" class="flex gap-4 items-center" data-route="{{ route('student.dashboard') }}">
+                            <form id="searchForm" class="flex gap-4 items-center" 
+                                data-route="{{ isset($is_demo) && $is_demo ? route('demo.student') : route('student.dashboard') }}">
                                 <div class="relative flex-1">
                                     <input type="text" name="search" id="searchInput" value="{{ request('search') }}" 
                                     placeholder="Buscar publicaciones..."
@@ -124,19 +135,27 @@
                         <div class="w-full md:w-48">
                             <div class="relative">
                                 <select id="orderSelect" class="w-full pl-3 pr-10 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-primary focus:border-primary focus:outline-none appearance-none transition duration-200">
-                                <option value="{{ route('student.dashboard', ['order_by' => 'fecha_publicacion', 'order_direction' => 'desc']) }}"
+                                <option value="{{ isset($is_demo) && $is_demo ? 
+                                    route('demo.student', ['order_by' => 'fecha_publicacion', 'order_direction' => 'desc']) : 
+                                    route('student.dashboard', ['order_by' => 'fecha_publicacion', 'order_direction' => 'desc']) }}"
                                     {{ request('order_by') == 'fecha_publicacion' && request('order_direction') == 'desc' ? 'selected' : '' }}>
                                     Más recientes
                                 </option>
-                                <option value="{{ route('student.dashboard', ['order_by' => 'fecha_publicacion', 'order_direction' => 'asc']) }}"
+                                <option value="{{ isset($is_demo) && $is_demo ? 
+                                    route('demo.student', ['order_by' => 'fecha_publicacion', 'order_direction' => 'asc']) : 
+                                    route('student.dashboard', ['order_by' => 'fecha_publicacion', 'order_direction' => 'asc']) }}"
                                     {{ request('order_by') == 'fecha_publicacion' && request('order_direction') == 'asc' ? 'selected' : '' }}>
                                     Más antiguos
                                 </option>
-                                <option value="{{ route('student.dashboard', ['order_by' => 'horas_totales', 'order_direction' => 'desc']) }}"
+                                <option value="{{ isset($is_demo) && $is_demo ? 
+                                    route('demo.student', ['order_by' => 'horas_totales', 'order_direction' => 'desc']) : 
+                                    route('student.dashboard', ['order_by' => 'horas_totales', 'order_direction' => 'desc']) }}"
                                     {{ request('order_by') == 'horas_totales' && request('order_direction') == 'desc' ? 'selected' : '' }}>
                                     Mayor duración
                                 </option>
-                                <option value="{{ route('student.dashboard', ['order_by' => 'horas_totales', 'order_direction' => 'asc']) }}"
+                                <option value="{{ isset($is_demo) && $is_demo ? 
+                                    route('demo.student', ['order_by' => 'horas_totales', 'order_direction' => 'asc']) : 
+                                    route('student.dashboard', ['order_by' => 'horas_totales', 'order_direction' => 'asc']) }}"
                                     {{ request('order_by') == 'horas_totales' && request('order_direction') == 'asc' ? 'selected' : '' }}>
                                     Menor duración
                                 </option>
@@ -165,9 +184,15 @@
                                     <div class="w-2/3 p-4">
                                         <div class="flex justify-between items-start">
                                             <div>
+                                                @if(isset($is_demo) && $is_demo)
+                                                <a href="{{ route('register') }}" class="hover:text-[#5e0490] transition-colors">
+                                                    <h3 class="text-lg font-semibold text-gray-900">{{ $publication->titulo }}</h3>
+                                                </a>
+                                                @else
                                                 <a href="{{ route('publication.show', $publication->id) }}" class="hover:text-[#5e0490] transition-colors">
                                                     <h3 class="text-lg font-semibold text-gray-900">{{ $publication->titulo }}</h3>
                                                 </a>
+                                                @endif
                                                 <p class="text-sm text-gray-500">{{ $publication->empresa->nombre }}</p>
                                             </div>
                                         </div>

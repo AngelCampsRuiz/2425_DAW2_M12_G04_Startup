@@ -13,7 +13,17 @@
                     Inicio
                 </a>
                 <span class="mx-2 text-gray-400">/</span>
-                <a href="{{ route('chat.index') }}" class="text-gray-500 hover:text-[#5e0490]">Chats</a>
+                @if(auth()->user()->role_id == 2)
+                <a href="{{ route('empresa.dashboard') }}" class="text-gray-500 hover:text-[#5e0490]">
+                    Dashboard
+                </a>
+                @elseif(auth()->user()->role_id == 3)
+                <a href="{{ route('student.dashboard') }}" class="text-gray-500 hover:text-[#5e0490]">
+                    Dashboard
+                </a>
+                @endif
+                <span class="mx-2 text-gray-400">/</span>
+                <a href="{{ route('chat.index') }}" class="text-gray-500 hover:text-[#5e0490]">Mis Conversaciones</a>
                 <span class="mx-2 text-gray-400">/</span>
                 <span class="text-[#5e0490] font-medium">{{ $otherUser->nombre }}</span>
             </div>
