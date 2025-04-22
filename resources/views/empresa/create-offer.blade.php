@@ -12,8 +12,14 @@
 
             <!-- Form Card -->
             <div class="bg-white rounded-lg shadow-md p-6">
-                <form action="{{ route('empresa.offers.store') }}" method="POST">
+                <form action="{{ route('empresa.offers.store') }}" method="POST" id="offerForm">
                     @csrf
+                    
+                    @if(session('error'))
+                    <div class="mb-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4">
+                        <p>{{ session('error') }}</p>
+                    </div>
+                    @endif
 
                     <!-- Título -->
                     <div class="mb-6">
@@ -39,21 +45,14 @@
 
                     <!-- Horario -->
                     <div class="mb-6">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Horario</label>
-                        <div class="flex space-x-4">
-                            <label class="inline-flex items-center">
-                                <input type="radio" name="horario" value="mañana" 
-                                       class="form-radio text-primary focus:ring-primary"
-                                       {{ old('horario') == 'mañana' ? 'checked' : '' }} required>
-                                <span class="ml-2">Mañana</span>
-                            </label>
-                            <label class="inline-flex items-center">
-                                <input type="radio" name="horario" value="tarde" 
-                                       class="form-radio text-primary focus:ring-primary"
-                                       {{ old('horario') == 'tarde' ? 'checked' : '' }}>
-                                <span class="ml-2">Tarde</span>
-                            </label>
-                        </div>
+                        <label for="horario" class="block text-sm font-medium text-gray-700 mb-2">Horario</label>
+                        <select name="horario" id="horario" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
+                                required>
+                            <option value="">Selecciona un horario</option>
+                            <option value="mañana" {{ old('horario') == 'mañana' ? 'selected' : '' }}>Mañana</option>
+                            <option value="tarde" {{ old('horario') == 'tarde' ? 'selected' : '' }}>Tarde</option>
+                        </select>
                         @error('horario')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
@@ -114,7 +113,7 @@
                            class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
                             Cancelar
                         </a>
-                        <button type="submit" 
+                        <button type="submit" id="submitBtn"
                                 class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
                             Publicar Oferta
                         </button>
@@ -125,6 +124,5 @@
     </div>
 </div>
 @endsection
-
 
 <script src="{{ asset('js/create-offer.js') }}"></script>

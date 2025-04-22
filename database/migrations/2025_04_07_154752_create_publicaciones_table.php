@@ -16,13 +16,33 @@ return new class extends Migration
             $table->string('titulo', 100);
             $table->text('descripcion');
             $table->enum('horario', ['mañana', 'tarde']);
-            $table->integer('horas_totales');
-            $table->timestamp('fecha_publicacion');
+            $table->integer('horas_totales')->default(300);
             $table->boolean('activa')->default(true);
-            $table->foreignId('empresa_id')->constrained('empresas');
-            $table->foreignId('categoria_id')->constrained('categorias');
-            $table->foreignId('subcategoria_id')->constrained('subcategorias');
+            $table->unsignedBigInteger('empresa_id');
+            $table->unsignedBigInteger('categoria_id');
+            $table->unsignedBigInteger('subcategoria_id');
+            $table->timestamp('fecha_publicacion')->nullable();
             $table->timestamps();
+
+            // Añadir índice único compuesto para prevenir duplicados
+            // Esto evita que una empresa cree ofertas con el mismo título en 24 horas
+            // El límite de caracteres es necesario porque MySQL limita tamaño de índices
+            $table->unique(['empresa_id', 'titulo'], 'uq_emp_titulo_publicacion');
+            
+            $table->foreign('empresa_id')
+                  ->references('id')
+                  ->on('empresas')
+                  ->onDelete('cascade');
+
+            $table->foreign('categoria_id')
+                  ->references('id')
+                  ->on('categorias')
+                  ->onDelete('restrict');
+
+            $table->foreign('subcategoria_id')
+                  ->references('id')
+                  ->on('subcategorias')
+                  ->onDelete('restrict');
         });
     }
 

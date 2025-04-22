@@ -11,6 +11,8 @@ use App\Models\Solicitud;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class CompanyDashboardController extends Controller
 {
@@ -74,43 +76,179 @@ class CompanyDashboardController extends Controller
 
     public function storeOffer(Request $request)
     {
+        // SISTEMA DE PREVENCIÓN DE DUPLICADOS ABSOLUTO
+        Log::info('⚠️ INICIO PROCESO CREACIÓN OFERTA', [
+            'ip' => $request->ip(),
+            'user_id' => Auth::id(),
+            'tiempo' => now()->format('Y-m-d H:i:s.u')
+        ]);
+
+        // 1. BLOQUEO ABSOLUTO POR CLAVE - Adquirir un bloqueo distribuido exclusivo por usuario
+        $lockKey = 'LOCK_CREAR_OFERTA_' . Auth::id();
+        
         try {
-            $request->validate([
-                'titulo' => 'required|string|max:255',
-                'descripcion' => 'required|string',
-                'horario' => 'required|in:mañana,tarde',
-                'horas_totales' => 'required|integer|min:100|max:1000',
-                'categoria_id' => 'required|exists:categorias,id',
-                'subcategoria_id' => 'required|exists:subcategorias,id'
-            ]);
+            return DB::transaction(function() use ($request, $lockKey) {
+                // Obtenemos un bloqueo con un timeout corto (3 segundos de espera máximo)
+                return Cache::lock($lockKey, 30)->block(3, function() use ($request) {
+                    // 2. DENTRO DEL BLOQUEO Y LA TRANSACCIÓN
 
-            $publication = new Publicacion($request->all());
-            $publication->empresa_id = Auth::id();
-            $publication->activa = true;
-            $publication->fecha_publicacion = now();
-            $publication->save();
+                    try {
+                        // Validamos datos
+                        $validated = $request->validate([
+                            'titulo' => 'required|string|max:255',
+                            'descripcion' => 'required|string',
+                            'horario' => 'required|in:mañana,tarde',
+                            'horas_totales' => 'required|integer|min:100|max:1000',
+                            'categoria_id' => 'required|exists:categorias,id',
+                            'subcategoria_id' => 'required|exists:subcategorias,id'
+                        ]);
 
+                        // 3. VALIDACIÓN EN BASE DE DATOS - Verificación de duplicados extrema
+                        $duplicado = Publicacion::where('empresa_id', Auth::id())
+                            ->where(function($query) use ($validated) {
+                                $query->where('titulo', $validated['titulo'])
+                                    ->orWhere('descripcion', $validated['descripcion']);
+                            })
+                            ->where('created_at', '>=', now()->subHours(24))
+                            ->first();
+
+                        if ($duplicado) {
+                            Log::warning('⛔ DUPLICADO DETECTADO EN COMPROBACIÓN FINAL', [
+                                'titulo_duplicado' => $duplicado->titulo,
+                                'id_duplicado' => $duplicado->id,
+                                'created_at' => $duplicado->created_at
+                            ]);
+
+                            $mensaje = 'DUPLICADO DETECTADO: Ya has creado una oferta similar en las últimas 24 horas.';
+                            
+                            if ($request->ajax()) {
+                                return response()->json([
+                                    'success' => false,
+                                    'duplicate' => true,
+                                    'message' => $mensaje
+                                ], 409); // 409 Conflict
+                            }
+                            
+                            return redirect()->route('empresa.dashboard')
+                                ->with('error', $mensaje);
+                        }
+
+                        // 4. SI LLEGAMOS AQUÍ, PODEMOS CREAR LA OFERTA (SIN DUPLICADOS)
+                        $publication = new Publicacion($validated);
+                        $publication->empresa_id = Auth::id();
+                        $publication->activa = true;
+                        $publication->fecha_publicacion = now();
+                        $publication->save(); // Esto lanzará excepción si hay duplicado (ver boot() en modelo)
+
+                        Log::info('✅ OFERTA CREADA EXITOSAMENTE', [
+                            'id' => $publication->id,
+                            'titulo' => $publication->titulo
+                        ]);
+
+                        if ($request->ajax()) {
+                            return response()->json([
+                                'success' => true,
+                                'message' => 'Oferta creada exitosamente',
+                                'publication' => [
+                                    'id' => $publication->id,
+                                    'titulo' => $publication->titulo
+                                ]
+                            ]);
+                        }
+
+                        return redirect()->route('empresa.dashboard')
+                            ->with('success', 'Oferta creada exitosamente');
+                    } catch (\Illuminate\Validation\ValidationException $e) {
+                        Log::error('Error de validación', ['errors' => $e->errors()]);
+                        throw $e; // Re-lanzar para mantener el formato de errores de validación
+                    } catch (\Exception $e) {
+                        Log::error('Error en transacción', [
+                            'error' => $e->getMessage(),
+                            'trace' => $e->getTraceAsString()
+                        ]);
+                        throw $e;
+                    }
+                });
+            }, 3); // Nivel de aislamiento SERIALIZABLE
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Manejar errores de validación
             if ($request->ajax()) {
                 return response()->json([
-                    'success' => true,
-                    'message' => 'Oferta creada exitosamente'
-                ]);
-            }
-
-            return redirect()->route('empresa.dashboard')
-                ->with('success', 'Oferta creada exitosamente');
-
-        } catch (\Exception $e) {
-            if ($request->ajax()) {
-                return response()->json([
-                    'error' => true,
-                    'message' => 'Error al crear la oferta: ' . $e->getMessage()
+                    'success' => false,
+                    'message' => 'Error de validación',
+                    'errors' => $e->errors()
                 ], 422);
             }
 
             return redirect()->back()
-                ->withErrors(['error' => 'Error al crear la oferta'])
+                ->withErrors($e->errors())
                 ->withInput();
+        } catch (\Illuminate\Contracts\Cache\LockTimeoutException $e) {
+            Log::warning('🔒 No se pudo obtener el bloqueo', [
+                'user_id' => Auth::id(),
+                'tiempo' => now()->format('Y-m-d H:i:s.u')
+            ]);
+            
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Hay otra operación en curso. Espera un momento e inténtalo de nuevo.'
+                ], 423); // 423 Locked
+            }
+
+            return redirect()->back()
+                ->withErrors(['error' => 'Hay otra operación en curso. Espera un momento e inténtalo de nuevo.'])
+                ->withInput();
+        } catch (\Exception $e) {
+            // Si contiene 'DUPLICADO' es un error de duplicado del modelo
+            if (strpos($e->getMessage(), 'DUPLICADO') !== false) {
+                Log::warning('⛔ DUPLICADO DETECTADO EN MODELO', [
+                    'mensaje' => $e->getMessage()
+                ]);
+                
+                if ($request->ajax()) {
+                    return response()->json([
+                        'success' => false,
+                        'duplicate' => true,
+                        'message' => $e->getMessage()
+                    ], 409); // 409 Conflict
+                }
+                
+                return redirect()->route('empresa.dashboard')
+                    ->with('error', $e->getMessage());
+            }
+            
+            // Error general
+            Log::error('Error general', [
+                'message' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
+            ]);
+            
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error al crear la oferta: ' . $e->getMessage()
+                ], 500);
+            }
+
+            return redirect()->back()
+                ->withErrors(['error' => 'Error al crear la oferta: ' . $e->getMessage()])
+                ->withInput();
+        } finally {
+            // Asegurarnos de liberar el bloqueo en caso de que aún esté activo por algún error
+            try {
+                if (Cache::has($lockKey)) {
+                    Cache::forget($lockKey);
+                    Log::info('🔓 Bloqueo liberado manualmente', [
+                        'lockKey' => $lockKey
+                    ]);
+                }
+            } catch (\Exception $e) {
+                Log::error('Error al liberar bloqueo', [
+                    'message' => $e->getMessage()
+                ]);
+            }
         }
     }
 

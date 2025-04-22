@@ -278,141 +278,242 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-    // Modificar los enlaces/botones que abren el modal
-    document.querySelectorAll('[href="{{ route('empresa.offers.create') }}"]').forEach(element => {
-        element.setAttribute('onclick', 'openModal(); return false;');
-        element.removeAttribute('href');
-    });
+    // Verificar que estamos en la página correcta antes de ejecutar el script
+    if (document.querySelector('#modalNuevaOferta')) {
+        document.addEventListener('DOMContentLoaded', function() {
+            // Modificar los enlaces/botones que abren el modal (una sola vez)
+            document.querySelectorAll('[href="{{ route('empresa.offers.create') }}"]').forEach(element => {
+                element.setAttribute('onclick', 'openModal(); return false;');
+                element.removeAttribute('href');
+            });
 
-    function openModal() {
-        document.getElementById('modalNuevaOferta').classList.remove('hidden');
-    }
-
-    function closeModal() {
-        document.getElementById('modalNuevaOferta').classList.add('hidden');
-        document.getElementById('formNuevaOferta').reset();
-    }
-
-    // Cerrar modal al hacer clic fuera
-    document.getElementById('modalNuevaOferta').addEventListener('click', function(e) {
-        if (e.target === this) {
-            closeModal();
-        }
-    });
-
-    // Cargar subcategorías
-    function cargarSubcategorias() {
-        const categoriaId = document.getElementById('categoria_id').value;
-        const subcategoriasSelect = document.getElementById('subcategoria_id');
-        
-        console.log('Categoría seleccionada:', categoriaId);
-
-        if (!categoriaId) {
-            subcategoriasSelect.innerHTML = '<option value="">Primero seleccione una categoría</option>';
-            return;
-        }
-
-        // Mostrar indicador de carga
-        subcategoriasSelect.innerHTML = '<option value="">Cargando subcategorías...</option>';
-        subcategoriasSelect.disabled = true;
-
-        // Usar la URL base de la aplicación
-        const baseUrl = '{{ url('/') }}';
-        const url = `${baseUrl}/empresa/get-subcategorias/${categoriaId}`;
-        
-        console.log('URL de la petición:', url);
-
-        fetch(url, {
-            method: 'GET',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            credentials: 'same-origin' // Incluir cookies en la petición
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(response => {
-            if (response.error) {
-                throw new Error(response.message);
-            }
-
-            subcategoriasSelect.innerHTML = '<option value="">Seleccionar subcategoría</option>';
+            // Configuración para el modal
+            const modalNuevaOferta = document.getElementById('modalNuevaOferta');
+            const formNuevaOferta = document.getElementById('formNuevaOferta');
             
-            // Verificar si tenemos datos y son un array
-            const subcategorias = response.data || [];
-            if (subcategorias.length === 0) {
-                subcategoriasSelect.innerHTML = '<option value="">No hay subcategorías disponibles</option>';
-                return;
+            // Función para abrir el modal
+            window.openModal = function() {
+                if (modalNuevaOferta) {
+                    modalNuevaOferta.classList.remove('hidden');
+                }
+            };
+            
+            // Función para cerrar el modal
+            window.closeModal = function() {
+                if (modalNuevaOferta) {
+                    modalNuevaOferta.classList.add('hidden');
+                }
+                if (formNuevaOferta) {
+                    formNuevaOferta.reset();
+                    delete formNuevaOferta.dataset.processing;
+                }
+            };
+            
+            // Cerrar modal al hacer clic fuera (una sola vez)
+            if (modalNuevaOferta) {
+                modalNuevaOferta.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        closeModal();
+                    }
+                });
             }
+            
+            // Función para cargar subcategorías
+            window.cargarSubcategorias = function() {
+                const categoriaId = document.getElementById('categoria_id');
+                if (!categoriaId) return;
+                
+                const subcategoriasSelect = document.getElementById('subcategoria_id');
+                if (!subcategoriasSelect) return;
+                
+                if (!categoriaId.value) {
+                    subcategoriasSelect.innerHTML = '<option value="">Primero seleccione una categoría</option>';
+                    return;
+                }
+                
+                subcategoriasSelect.innerHTML = '<option value="">Cargando subcategorías...</option>';
+                subcategoriasSelect.disabled = true;
+                
+                const baseUrl = '{{ url('/') }}';
+                const url = `${baseUrl}/empresa/get-subcategorias/${categoriaId.value}`;
+                
+                fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin'
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(response => {
+                    if (response.error) {
+                        throw new Error(response.message);
+                    }
 
-            subcategorias.forEach(subcategoria => {
-                subcategoriasSelect.innerHTML += `
-                    <option value="${subcategoria.id}">${subcategoria.nombre_subcategoria}</option>
-                `;
-            });
-        })
-        .catch(error => {
-            console.error('Error al cargar subcategorías:', error);
-            Swal.fire({
-                title: '¡Error!',
-                text: 'No se pudieron cargar las subcategorías: ' + error.message,
-                icon: 'error',
-                confirmButtonText: 'Entendido',
-                confirmButtonColor: '#5e0490'
-            });
-            subcategoriasSelect.innerHTML = '<option value="">Error al cargar subcategorías</option>';
-        })
-        .finally(() => {
-            subcategoriasSelect.disabled = false;
+                    subcategoriasSelect.innerHTML = '<option value="">Seleccionar subcategoría</option>';
+                    
+                    const subcategorias = response.data || [];
+                    if (subcategorias.length === 0) {
+                        subcategoriasSelect.innerHTML = '<option value="">No hay subcategorías disponibles</option>';
+                        return;
+                    }
+
+                    // Usar un Set para evitar duplicados
+                    const addedIds = new Set();
+                    
+                    subcategorias.forEach(subcategoria => {
+                        if (!addedIds.has(subcategoria.id)) {
+                            addedIds.add(subcategoria.id);
+                            subcategoriasSelect.innerHTML += `
+                                <option value="${subcategoria.id}">${subcategoria.nombre_subcategoria}</option>
+                            `;
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('Error al cargar subcategorías:', error);
+                    if (window.Swal) {
+                        Swal.fire({
+                            title: '¡Error!',
+                            text: 'No se pudieron cargar las subcategorías: ' + error.message,
+                            icon: 'error',
+                            confirmButtonText: 'Entendido',
+                            confirmButtonColor: '#5e0490'
+                        });
+                    }
+                    subcategoriasSelect.innerHTML = '<option value="">Error al cargar subcategorías</option>';
+                })
+                .finally(() => {
+                    subcategoriasSelect.disabled = false;
+                });
+            };
+            
+            // Manejar envío del formulario (una sola vez)
+            if (formNuevaOferta) {
+                const requestsInProgress = new Set();
+                
+                formNuevaOferta.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    // Verificar si el formulario ya está siendo procesado
+                    if (this.dataset.processing === 'true') {
+                        console.log('Formulario ya está siendo procesado, ignorando envío duplicado');
+                        return false;
+                    }
+                    
+                    // Verificar si hay una solicitud idéntica en progreso usando datos del formulario como identificador
+                    const formData = new FormData(this);
+                    const requestId = Array.from(formData.entries())
+                        .map(([key, value]) => `${key}=${value}`)
+                        .join('&');
+                        
+                    if (requestsInProgress.has(requestId)) {
+                        console.log('Solicitud idéntica ya en progreso, ignorando');
+                        return false;
+                    }
+                    
+                    // Marcar el formulario como en procesamiento
+                    this.dataset.processing = 'true';
+                    requestsInProgress.add(requestId);
+                    
+                    // Deshabilitar el botón de submit
+                    const submitButton = this.querySelector('button[type="submit"]');
+                    if (submitButton) {
+                        submitButton.disabled = true;
+                        submitButton.innerHTML = 'Publicando...';
+                    }
+                    
+                    // Datos para el seguimiento de la petición
+                    const uniqueId = Date.now().toString();
+                    console.log(`[${uniqueId}] Iniciando envío del formulario`);
+                    
+                    fetch('{{ route('empresa.offers.store') }}', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'X-Request-ID': uniqueId,
+                            'X-Request-Unique': requestId
+                        }
+                    })
+                    .then(response => {
+                        console.log(`[${uniqueId}] Respuesta recibida, status: ${response.status}`);
+                        
+                        if (!response.ok) {
+                            throw new Error(`Error en la respuesta del servidor: ${response.status}`);
+                        }
+                        
+                        const contentType = response.headers.get('content-type');
+                        if (contentType && contentType.includes('application/json')) {
+                            return response.json().then(data => {
+                                console.log(`[${uniqueId}] Datos JSON recibidos:`, data);
+                                
+                                if (data.success) {
+                                    if (window.Swal) {
+                                        Swal.fire({
+                                            title: '¡Éxito!',
+                                            text: data.message || 'Oferta creada exitosamente',
+                                            icon: 'success',
+                                            confirmButtonText: 'Continuar',
+                                            confirmButtonColor: '#5e0490'
+                                        }).then(() => {
+                                            window.location.reload();
+                                        });
+                                    } else {
+                                        alert(data.message || 'Oferta creada exitosamente');
+                                        window.location.reload();
+                                    }
+                                } else {
+                                    throw new Error(data.message || 'Error al crear la oferta');
+                                }
+                            });
+                        } else {
+                            console.log(`[${uniqueId}] Respuesta no es JSON, recargando página`);
+                            window.location.reload();
+                        }
+                    })
+                    .catch(error => {
+                        console.error(`[${uniqueId}] Error:`, error);
+                        
+                        if (window.Swal) {
+                            Swal.fire({
+                                title: '¡Error!',
+                                text: error.message || 'Ha ocurrido un error al publicar la oferta',
+                                icon: 'error',
+                                confirmButtonText: 'Entendido',
+                                confirmButtonColor: '#5e0490'
+                            });
+                        } else {
+                            alert(error.message || 'Ha ocurrido un error al publicar la oferta');
+                        }
+                    })
+                    .finally(() => {
+                        console.log(`[${uniqueId}] Finalizada la petición`);
+                        
+                        // Eliminar la solicitud del conjunto de solicitudes en progreso
+                        requestsInProgress.delete(requestId);
+                        
+                        // Restablecer el estado del botón y formulario después de 2 segundos
+                        setTimeout(() => {
+                            delete this.dataset.processing;
+                            
+                            if (submitButton) {
+                                submitButton.disabled = false;
+                                submitButton.innerHTML = 'Publicar oferta';
+                            }
+                        }, 2000);
+                    });
+                });
+            }
         });
     }
-
-    // Manejar envío del formulario
-    document.getElementById('formNuevaOferta').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        fetch('{{ route('empresa.offers.store') }}', {
-            method: 'POST',
-            body: new FormData(this),
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            }
-        })
-        .then(response => {
-            // Si la respuesta es una redirección (lo cual es probable después de crear la oferta)
-            if (response.redirected) {
-                window.location.href = response.url;
-                return;
-            }
-            return response.json();
-        })
-        .then(data => {
-            // Solo mostrar el SweetAlert si llegamos aquí y hay un error
-            if (data && data.error) {
-                Swal.fire({
-                    title: '¡Error!',
-                    text: data.message || 'Ha ocurrido un error al publicar la oferta',
-                    icon: 'error',
-                    confirmButtonText: 'Entendido',
-                    confirmButtonColor: '#5e0490'
-                });
-            } else {
-                // Si no hay error, simplemente recargamos la página
-                window.location.reload();
-            }
-        })
-        .catch(error => {
-            // Si hay un error de parsing JSON, probablemente sea una redirección exitosa
-            // En este caso, simplemente recargamos la página
-            window.location.reload();
-        });
-    });
 </script>
 @endsection
 
