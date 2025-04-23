@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://www.ejemplo.com/nextgen-logo.png" width="400" alt="NextGen Logo">
+  <img src="public/assets/logo.svg" width="400" alt="NextGen Logo">
   <h1>🌟 NextGen 🌟</h1>
   <h3>🚀 Plataforma de Conexión Educativa y Profesional 🚀</h3>
 
@@ -39,9 +39,6 @@
 
 ## ✨ Visión General
 
-<div align="center">
-  <img src="https://www.ejemplo.com/nextgen-diagram.png" width="700" alt="NextGen Diagram">
-</div>
 
 **NextGen** es una plataforma innovadora diseñada para transformar la forma en que estudiantes y empresas se conectan en el ámbito educativo y profesional. Nuestro proyecto nace de la necesidad de crear un puente efectivo entre el mundo académico y el mercado laboral, facilitando:
 
@@ -249,9 +246,9 @@ Ahora puedes acceder a la aplicación en `http://localhost:8000`
 
 | Tipo | Email | Contraseña |
 |------|-------|------------|
-| 👨‍🎓 Estudiante | demo.student@nextgen.com | password |
-| 🏢 Empresa | demo.company@nextgen.com | password |
-| 👨‍💼 Admin | admin@nextgen.com | password |
+| 👨‍🎓 Estudiante | estudiante1@educacion.es | password |
+| 🏢 Empresa | contacto@indra.es | password |
+| 👨‍💼 Admin | admin@sistema.com | password |
 
 ---
 
@@ -333,7 +330,7 @@ nextgen/
 ## 📱 Capturas de Pantalla
 
 <div align="center">
-  <img src="https://www.ejemplo.com/nextgen-screenshot1.png" width="80%" alt="Dashboard">
+  <img src="public/readme/welcome.png" width="80%" alt="Dashboard">
   <p><i>Dashboard principal de NextGen</i></p>
   
   <br>
@@ -360,7 +357,7 @@ nextgen/
 ## 🔄 Flujo de Trabajo
 
 <div align="center">
-  <img src="https://www.ejemplo.com/nextgen-workflow.png" width="90%" alt="Flujo de Trabajo">
+  <img src="public/readme/pert.png" width="90%" alt="Flujo de Trabajo">
 </div>
 
 ### Proceso para Estudiantes 👨‍🎓
