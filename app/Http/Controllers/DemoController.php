@@ -58,8 +58,21 @@ class DemoController extends Controller
         // Obtener horarios únicos
         $horarios = Publication::select('horario')->distinct()->pluck('horario');
 
-        // Obtener categorías con sus subcategorías
-        $categorias = Categoria::with('subcategorias')->get();
+        // Obtener categorías con sus subcategorías que tienen publicaciones activas
+        $categoriasConPublicaciones = Publication::where('activa', true)
+            ->distinct()
+            ->pluck('categoria_id');
+
+        $subcategoriasConPublicaciones = Publication::where('activa', true)
+            ->whereNotNull('subcategoria_id')
+            ->distinct()
+            ->pluck('subcategoria_id');
+
+        $categorias = Categoria::whereIn('id', $categoriasConPublicaciones)
+            ->with(['subcategorias' => function($query) use ($subcategoriasConPublicaciones) {
+                $query->whereIn('id', $subcategoriasConPublicaciones);
+            }])
+            ->get();
 
         // Obtener valores mínimos y máximos de horas totales
         $horasTotalesMin = Publication::min('horas_totales');

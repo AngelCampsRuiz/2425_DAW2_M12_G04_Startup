@@ -54,6 +54,7 @@
                                                 <input type="checkbox" name="categoria[]" value="{{ $categoria->id }}" class="categoria-checkbox form-checkbox h-4 w-4 text-[#5e0490] rounded focus:ring-[#5e0490] border-gray-300">
                                                 <span class="ml-2 text-sm text-gray-700">{{ $categoria->nombre_categoria }}</span>
                                             </label>
+                                            @if($categoria->subcategorias->count() > 0)
                                             <div id="subcategorias-{{ $categoria->id }}" class="pl-6 mt-2 hidden">
                                                 @foreach($categoria->subcategorias as $subcategoria)
                                                     <label class="flex items-center">
@@ -62,6 +63,7 @@
                                                     </label>
                                                 @endforeach
                                             </div>
+                                            @endif
                                         </div>
                                     @endforeach
                                 </div>
@@ -429,10 +431,12 @@
             categoriaCheckboxes.forEach(checkbox => {
                 checkbox.addEventListener('change', function() {
                     const subcategoriasDiv = document.getElementById(`subcategorias-${this.value}`);
-                    if (this.checked) {
-                        subcategoriasDiv.classList.remove('hidden');
-                    } else {
-                        subcategoriasDiv.classList.add('hidden');
+                    if (subcategoriasDiv) {
+                        if (this.checked) {
+                            subcategoriasDiv.classList.remove('hidden');
+                        } else {
+                            subcategoriasDiv.classList.add('hidden');
+                        }
                     }
                     fetchPublications();
                 });
