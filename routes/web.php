@@ -79,7 +79,7 @@
                     Route::post('/update-visibility', [HomeController::class, 'updateVisibility']);
                 
                 // RUTAS DE PERFIL
-                    Route::get('/profile', [HomeController::class, 'profile'])->name('pr    ofile');
+                    Route::get('/profile', [HomeController::class, 'profile'])->name('profile');
                     Route::get('/profile/{id}', [HomeController::class, 'profile'])->name('profile.view');
                     Route::get('/profile/{user}', [ProfileController::class, 'show'])->name('profile.show');
                     Route::put('/profile/update', [ProfileController::class, 'update'])->name('profile.update');

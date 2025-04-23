@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="public/assets/logo.svg" width="400" alt="NextGen Logo">
+  <img src="public/readme/logonormal.png" width="400" alt="NextGen Logo">
   <h1>🌟 NextGen 🌟</h1>
   <h3>🚀 Plataforma de Conexión Educativa y Profesional 🚀</h3>
 
@@ -337,18 +337,18 @@ nextgen/
   
   <div style="display: flex; justify-content: space-between;">
     <div style="width: 48%;">
-      <img src="https://www.ejemplo.com/nextgen-screenshot2.png" width="100%" alt="Perfil de Estudiante">
+      <img src="public/readme/estudiante.png" width="100%" alt="Perfil de Estudiante">
       <p><i>Perfil de Estudiante</i></p>
     </div>
     <div style="width: 48%;">
-      <img src="https://www.ejemplo.com/nextgen-screenshot3.png" width="100%" alt="Panel de Empresa">
+      <img src="public/readme/empresa.png" width="100%" alt="Panel de Empresa">
       <p><i>Panel de Empresa</i></p>
     </div>
   </div>
   
   <br>
   
-  <img src="https://www.ejemplo.com/nextgen-screenshot4.png" width="80%" alt="Sistema de Chat">
+  <img src="public/readme/chat.png" width="80%" alt="Sistema de Chat">
   <p><i>Sistema de Chat en Tiempo Real</i></p>
 </div>
 
@@ -357,7 +357,7 @@ nextgen/
 ## 🔄 Flujo de Trabajo
 
 <div align="center">
-  <img src="public/readme/pert.png" width="90%" alt="Flujo de Trabajo">
+  <img src="public/readme/Pert.png" width="90%" alt="Flujo de Trabajo">
 </div>
 
 ### Proceso para Estudiantes 👨‍🎓
@@ -388,54 +388,54 @@ nextgen/
   <table>
     <tr>
       <td align="center">
-        <img src="https://avatars.githubusercontent.com/u/ejemplo1" width="100px" alt="Juanjo">
+        <!-- <img src="https://avatars.githubusercontent.com/u/ejemplo1" width="100px" alt="Juanjo"> -->
         <br>
         <b>Juanjo</b>
         <br>
         <i>Backend Developer</i>
         <br>
-        <a href="https://github.com/juanjo">GitHub</a>
+        <a href="https://github.com/JuanjGomez">GitHub</a>
       </td>
       <td align="center">
-        <img src="https://avatars.githubusercontent.com/u/ejemplo2" width="100px" alt="Àngel">
+        <!-- <img src="https://avatars.githubusercontent.com/u/ejemplo2" width="100px" alt="Àngel"> -->
         <br>
         <b>Àngel</b>
         <br>
         <i>Frontend Developer</i>
         <br>
-        <a href="https://github.com/angel">GitHub</a>
+        <a href="https://github.com/AngelCampsRuiz">GitHub</a>
       </td>
       <td align="center">
-        <img src="https://avatars.githubusercontent.com/u/ejemplo3" width="100px" alt="Deiby">
+        <!-- <img src="https://avatars.githubusercontent.com/u/ejemplo3" width="100px" alt="Deiby"> -->
         <br>
         <b>Deiby</b>
         <br>
         <i>Full Stack Developer</i>
         <br>
-        <a href="https://github.com/deiby">GitHub</a>
+        <a href="https://github.com/deiby14">GitHub</a>
       </td>
     </tr>
     <tr>
       <td align="center">
-        <img src="https://avatars.githubusercontent.com/u/ejemplo4" width="100px" alt="Aina">
+        <!-- <img src="https://avatars.githubusercontent.com/u/ejemplo4" width="100px" alt="Aina"> -->
         <br>
         <b>Aina</b>
         <br>
         <i>UI/UX Designer</i>
         <br>
-        <a href="https://github.com/aina">GitHub</a>
+        <a href="https://github.com/ainaorozcogonzalez">GitHub</a>
       </td>
       <td align="center">
-        <img src="https://avatars.githubusercontent.com/u/ejemplo5" width="100px" alt="Mario">
+        <!-- <img src="https://avatars.githubusercontent.com/u/ejemplo5" width="100px" alt="Mario"> -->
         <br>
         <b>Mario</b>
         <br>
         <i>DevOps Engineer</i>
         <br>
-        <a href="https://github.com/mario">GitHub</a>
+        <a href="https://github.com/MarioPalamari">GitHub</a>
       </td>
       <td align="center">
-        <img src="https://www.ejemplo.com/nextgen-mascot.png" width="100px" alt="NextBot">
+        <!-- <img src="https://www.ejemplo.com/nextgen-mascot.png" width="100px" alt="NextBot"> -->
         <br>
         <b>NextBot</b>
         <br>
