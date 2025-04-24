@@ -41,9 +41,9 @@ use App\Http\Controllers\ValoracionController;
 
     // Paso 3: Información específica según rol
     Route::get('/register/alumno', [RegisterController::class, 'showStudentRegistrationForm'])->name('register.alumno');
-    Route::post('/register/alumno', [RegisterController::class, 'registerStudent']);
+    Route::post('/register/alumno', [RegisterController::class, 'registerStudent'])->name('register.student.submit');
     Route::get('/register/empresa', [RegisterController::class, 'showCompanyRegistrationForm'])->name('register.empresa');
-    Route::post('/register/empresa', [RegisterController::class, 'registerCompany']);
+    Route::post('/register/empresa', [RegisterController::class, 'registerCompany'])->name('company.register');
 
     Route::middleware(['auth'])->group(function () {
         Route::get('/student/dashboard', [StudentDashboardController::class, 'index'])->name('student.dashboard');

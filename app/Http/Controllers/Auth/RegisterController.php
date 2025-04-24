@@ -24,8 +24,21 @@ class RegisterController extends Controller
     }
 
     // Vista de registro de estudiante
-    public function showStudentRegistrationForm()
+    public function showStudentRegistrationForm(Request $request)
     {
+        $registrationData = $request->session()->get('registration_data');
+        
+        if (!$registrationData) {
+            return redirect()->route('register')
+                ->withErrors(['error' => 'Por favor complete el primer paso del registro']);
+        }
+        
+        // Verificar que el rol sea alumno
+        if ($registrationData['role'] !== 'alumno') {
+            return redirect()->route('register')
+                ->withErrors(['error' => 'Esta página es solo para estudiantes']);
+        }
+
         $titulos = Titulo::all();
         return view('auth.register-student', compact('titulos'));
     }
@@ -52,22 +65,37 @@ class RegisterController extends Controller
     // Registro de estudiante (tercer paso)
     public function registerStudent(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        // Obtener datos de registro de la sesión
+        $registrationData = $request->session()->get('registration_data');
+        
+        if (!$registrationData) {
+            return redirect()->route('register')
+                ->withErrors(['error' => 'Por favor complete el primer paso del registro']);
+        }
+        
+        // Combinar datos de la sesión con los datos del formulario
+        $data = array_merge($request->all(), [
+            'name' => $registrationData['name'],
+            'email' => $registrationData['email'],
+        ]);
+
+        $validator = Validator::make($data, [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:user',
             'password' => 'required|string|min:8|confirmed',
-            'dni' => 'required|string|max:20|unique:user',
+            'dni' => ['required', 'string', 'max:20', 'unique:user', 'regex:/^[0-9]{8}[A-Za-z]$|^[XYZxyz][0-9]{7}[A-Za-z]$/'],
             'telefono' => 'required|string|max:20|unique:user',
             'ciudad' => 'required|string|max:100',
             'centro_estudios' => 'required|string|max:255',
             'titulo_id' => 'required|exists:titulos,id',
             'cv_pdf' => 'required|file|mimes:pdf|max:5120', // 5MB máximo
-            'numero_seguridad_social' => 'required|string|max:50|regex:/^SS[0-9]{8}$/'
+            'numero_seguridad_social' => ['required', 'string', 'max:50', 'regex:/^SS[0-9]{8}$/']
         ], [
             'numero_seguridad_social.regex' => 'El número de seguridad social debe tener el formato SS seguido de 8 dígitos',
             'cv_pdf.mimes' => 'El archivo debe ser un PDF',
             'cv_pdf.max' => 'El archivo no puede ser mayor a 5MB',
-            'dni.unique' => 'Este DNI ya está registrado',
+            'dni.unique' => 'Este DNI/NIE ya está registrado',
+            'dni.regex' => 'El formato del DNI/NIE no es válido. Debe ser un DNI (8 números y 1 letra) o un NIE (X/Y/Z seguido de 7 números y 1 letra)',
             'telefono.unique' => 'Este teléfono ya está registrado'
         ]);
 
@@ -79,8 +107,8 @@ class RegisterController extends Controller
 
         // Crear usuario
         $user = User::create([
-            'nombre' => $request->name,
-            'email' => $request->email,
+            'nombre' => $data['name'],
+            'email' => $data['email'],
             'password' => Hash::make($request->password),
             'role_id' => Rol::where('nombre_rol', 'Estudiante')->first()->id,
             'fecha_nacimiento' => now()->subYears(rand(18, 25)),
@@ -190,12 +218,12 @@ class RegisterController extends Controller
         }
 
         // Guardar datos en la sesión
-        session(['registration_data' => [
+        $request->session()->put('registration_data', [
             'name' => $request->name,
             'email' => $request->email,
             'role' => $request->role,
             'step' => 1
-        ]]);
+        ]);
 
         // Redirigir según el rol
         if ($request->role === 'alumno') {

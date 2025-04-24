@@ -110,10 +110,10 @@
                     <h4 class="font-semibold text-primary text-sm mb-2">Descarga nuestra app</h4>
                     <div class="flex space-x-2">
                         <a href="#" class="block">
-                            <img src="https://placehold.co/90x30/7705B6/FFFFFF?text=App+Store" alt="App Store" class="h-8 rounded-md hover:opacity-90 transition">
+                            <!-- <img src="https://placehold.co/90x30/7705B6/FFFFFF?text=App+Store" alt="App Store" class="h-8 rounded-md hover:opacity-90 transition"> -->
                         </a>
                         <a href="#" class="block">
-                            <img src="https://placehold.co/90x30/7705B6/FFFFFF?text=Google+Play" alt="Google Play" class="h-8 rounded-md hover:opacity-90 transition">
+                            <!-- <img src="https://placehold.co/90x30/7705B6/FFFFFF?text=Google+Play" alt="Google Play" class="h-8 rounded-md hover:opacity-90 transition"> -->
                         </a>
                     </div>
                 </div>
