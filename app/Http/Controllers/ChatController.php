@@ -72,16 +72,48 @@ class ChatController extends Controller
 
         // Validar el mensaje
         $request->validate([
-            'contenido' => 'required|string|max:1000'
+            'contenido' => 'required_without:archivo|string|max:1000',
+            'archivo' => 'required_without:contenido|file|max:10240', // 10MB máximo
         ]);
 
-        // Crear el mensaje
-        $mensaje = Mensaje::create([
-            'contenido' => $request->contenido,
+        // Crear datos base del mensaje
+        $mensajeData = [
+            'contenido' => $request->contenido ?? '',
             'chat_id' => $chat->id,
             'user_id' => $user->id,
             'fecha_envio' => now()
-        ]);
+        ];
+
+        // Manejar archivo adjunto si existe
+        if ($request->hasFile('archivo')) {
+            $file = $request->file('archivo');
+            $fileName = time() . '_' . $file->getClientOriginalName();
+            $fileType = $file->getClientMimeType();
+            
+            // Determinar la carpeta según el tipo de archivo
+            $folder = 'chat_files';
+            
+            // Si es imagen, guardar en una carpeta específica
+            if (strpos($fileType, 'image/') === 0) {
+                $folder = 'chat_images';
+            }
+            
+            // Mover el archivo a la carpeta pública
+            $file->move(public_path($folder), $fileName);
+            
+            // Añadir información del archivo al mensaje
+            $mensajeData['archivo_adjunto'] = $folder . '/' . $fileName;
+            $mensajeData['tipo_archivo'] = $fileType;
+            $mensajeData['nombre_archivo'] = $file->getClientOriginalName();
+        }
+
+        // Crear el mensaje
+        $mensaje = Mensaje::create($mensajeData);
+
+        // Si tiene archivo adjunto, generar la URL completa para la respuesta
+        if (!empty($mensaje->archivo_adjunto)) {
+            $mensaje->archivo_adjunto = url($mensaje->archivo_adjunto);
+        }
 
         return response()->json([
             'error' => false,
@@ -118,11 +150,24 @@ class ChatController extends Controller
             ], 403);
         }
 
+        // Marcar como leídos los mensajes del otro usuario
+        Mensaje::where('chat_id', $chat->id)
+            ->where('user_id', '!=', $user->id)
+            ->where('leido', false)
+            ->update(['leido' => true]);
+
         // Obtener los mensajes
         $mensajes = Mensaje::where('chat_id', $chat->id)
             ->with('user')
             ->orderBy('created_at', 'asc')
-            ->get();
+            ->get()
+            ->map(function ($mensaje) {
+                // Si tiene archivo adjunto, preparar la URL completa
+                if ($mensaje->archivo_adjunto) {
+                    $mensaje->archivo_adjunto = url($mensaje->archivo_adjunto);
+                }
+                return $mensaje;
+            });
 
         return response()->json([
             'error' => false,
@@ -155,11 +200,24 @@ class ChatController extends Controller
             return redirect()->back()->with('error', 'No tienes permiso para ver este chat');
         }
 
+        // Marcar como leídos los mensajes del otro usuario
+        Mensaje::where('chat_id', $chat->id)
+            ->where('user_id', '!=', $user->id)
+            ->where('leido', false)
+            ->update(['leido' => true]);
+
         // Obtener los mensajes
         $mensajes = Mensaje::where('chat_id', $chat->id)
             ->with('user')
             ->orderBy('created_at', 'asc')
-            ->get();
+            ->get()
+            ->map(function ($mensaje) {
+                // Si tiene archivo adjunto, preparar la URL completa
+                if ($mensaje->archivo_adjunto) {
+                    $mensaje->archivo_adjunto = url($mensaje->archivo_adjunto);
+                }
+                return $mensaje;
+            });
 
         // Determinar el otro usuario del chat
         $otherUser = null;

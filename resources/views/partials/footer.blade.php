@@ -238,7 +238,7 @@
                 <div class="mt-4 md:mt-0 flex items-center">
                     <p class="text-sm text-gray-600">Diseñado y desarrollado con</p>
                     <span class="mx-1 text-red-500 animate-pulse text-lg">❤</span>
-                    <p class="text-sm text-gray-600">por <span class="text-primary hover:underline">Grupo 04</span></p>
+                    <p class="text-sm text-gray-600">por <span class="text-primary hover:underline">Grupo 03</span></p>
                 </div>
             </div>
             
