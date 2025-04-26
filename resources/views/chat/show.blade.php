@@ -60,12 +60,88 @@
                         </a>
                     </div>
                 </div>
-                <div class="flex items-center space-x-2">
+                <div class="flex items-center space-x-3">
+                    <button id="video-call-btn" class="inline-flex items-center px-3 py-2 rounded-full text-sm font-medium bg-gradient-to-r from-[#5e0490] to-[#4a0370] text-white hover:shadow-lg transition-all duration-300 transform hover:scale-105">
+                        <i class="fas fa-video mr-2"></i>
+                        Videollamada
+                    </button>
                     <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-green-100 to-green-200 text-green-800 animate-pulse shadow-sm">
                         <span class="w-2 h-2 mr-2 rounded-full bg-green-400 animate-ping"></span>
                         Activo
                     </span>
                 </div>
+            </div>
+        </div>
+
+        <!-- Contenedor de videollamada (oculto por defecto) -->
+        <div id="video-container" class="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center hidden">
+            <div class="bg-white rounded-xl w-full max-w-4xl h-auto mx-4 overflow-hidden shadow-2xl">
+                <div class="flex justify-between items-center p-4 border-b">
+                    <h3 class="text-lg font-bold text-gray-800">Videollamada con {{ $otherUser->nombre }}</h3>
+                    <div class="flex space-x-3">
+                        <button id="toggle-audio" class="p-2 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors">
+                            <i class="fas fa-microphone"></i>
+                        </button>
+                        <button id="toggle-video" class="p-2 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors">
+                            <i class="fas fa-video"></i>
+                        </button>
+                        <button id="end-call" class="p-2 rounded-full bg-red-500 hover:bg-red-600 text-white transition-colors">
+                            <i class="fas fa-phone-slash"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 p-4 bg-gray-100 h-96">
+                    <div id="local-video-container" class="bg-black rounded-lg overflow-hidden relative h-full">
+                        <div id="local-video" class="w-full h-full"></div>
+                        <div class="absolute bottom-2 left-2 text-white text-sm bg-black bg-opacity-50 px-2 py-1 rounded-md">
+                            Tú
+                        </div>
+                    </div>
+                    <div id="remote-video-container" class="bg-black rounded-lg overflow-hidden relative h-full">
+                        <div id="remote-video" class="w-full h-full"></div>
+                        <div class="absolute bottom-2 left-2 text-white text-sm bg-black bg-opacity-50 px-2 py-1 rounded-md">
+                            {{ $otherUser->nombre }}
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4 border-t bg-white flex justify-between items-center">
+                    <div class="text-sm text-gray-500">
+                        <span id="call-status">Conectando...</span>
+                        <span id="call-timer" class="ml-2"></span>
+                    </div>
+                    <button id="close-video-container" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-md transition-colors">
+                        Minimizar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notificación de llamada entrante -->
+        <div id="incoming-call" class="fixed bottom-5 right-5 bg-white rounded-xl shadow-2xl p-4 flex items-center hidden animate-bounce z-50">
+            <div class="mr-4">
+                <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center overflow-hidden">
+                    @if($otherUser->imagen)
+                        <img src="{{ asset('public/profile_images/' . $otherUser->imagen) }}" 
+                            alt="Foto de perfil" 
+                            class="w-full h-full object-cover">
+                    @else
+                        <span class="text-xl font-bold text-[#5e0490]">
+                            {{ strtoupper(substr($otherUser->nombre, 0, 2)) }}
+                        </span>
+                    @endif
+                </div>
+            </div>
+            <div>
+                <p class="font-bold text-gray-800">{{ $otherUser->nombre }}</p>
+                <p class="text-sm text-gray-600">Videollamada entrante...</p>
+            </div>
+            <div class="ml-4 flex space-x-2">
+                <button id="accept-call" class="p-2 rounded-full bg-green-500 hover:bg-green-600 text-white transition-colors">
+                    <i class="fas fa-phone"></i>
+                </button>
+                <button id="reject-call" class="p-2 rounded-full bg-red-500 hover:bg-red-600 text-white transition-colors">
+                    <i class="fas fa-phone-slash"></i>
+                </button>
             </div>
         </div>
 
@@ -189,6 +265,12 @@
 <!-- Añadir Font Awesome -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
+<!-- Agregar el SDK de Agora -->
+<script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.18.2.js"></script>
+
+<!-- Agregar socket.io para la señalización -->
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+
 <!-- Estilos adicionales -->
 <style>
     .animate-fadeIn {
@@ -207,6 +289,41 @@
     @keyframes slideUp {
         from { transform: translateY(10px); opacity: 0; }
         to { transform: translateY(0); opacity: 1; }
+    }
+    
+    /* Estilos para videollamada */
+    #video-container.minimized {
+        inset: auto;
+        top: auto;
+        right: 20px;
+        bottom: 20px;
+        left: auto;
+        width: 300px;
+        height: auto;
+        background: transparent;
+    }
+    
+    #video-container.minimized .bg-white {
+        max-width: 300px;
+    }
+    
+    #video-container.minimized .grid-cols-2 {
+        grid-template-columns: 1fr;
+        height: 180px;
+    }
+    
+    #video-container.minimized #remote-video-container {
+        display: block;
+    }
+    
+    #video-container.minimized #local-video-container {
+        position: absolute;
+        right: 10px;
+        bottom: 60px;
+        width: 80px;
+        height: 80px;
+        z-index: 10;
+        border: 2px solid white;
     }
     
     /* Estilizar la barra de desplazamiento */
@@ -545,18 +662,376 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 2000);
     }
     
-    // Efecto visual al escribir
-    messageInput.addEventListener('input', function() {
-        // Aquí podríamos añadir un indicador de "Escribiendo..."
-    });
-    
-    // Comprobar notificación de scroll
-    chatMessages.addEventListener('scroll', function() {
-        // Si scroll llega al fondo, ocultar indicador de nuevos mensajes
-    });
-    
     // Actualizar mensajes cada 3 segundos
     setInterval(updateMessages, 3000);
+    
+    //--------------------------------------------------------------
+    // FUNCIONALIDAD DE VIDEOLLAMADA
+    //--------------------------------------------------------------
+    
+    // Configuración de Agora
+    const APP_ID = "ff42e2de41ee4ec7b9bfe51d3d9b4edd"; // App ID de Agora
+    const CHANNEL_NAME = "chat_{{ $chat->id }}";
+    const TOKEN = null; // Para producción, debes generar tokens en tu servidor
+    
+    // Elementos del DOM para videollamada
+    const videoCallBtn = document.getElementById('video-call-btn');
+    const videoContainer = document.getElementById('video-container');
+    const closeVideoContainer = document.getElementById('close-video-container');
+    const toggleAudio = document.getElementById('toggle-audio');
+    const toggleVideo = document.getElementById('toggle-video');
+    const endCall = document.getElementById('end-call');
+    const localVideoContainer = document.getElementById('local-video');
+    const remoteVideoContainer = document.getElementById('remote-video');
+    const callStatus = document.getElementById('call-status');
+    const callTimer = document.getElementById('call-timer');
+    const incomingCall = document.getElementById('incoming-call');
+    const acceptCall = document.getElementById('accept-call');
+    const rejectCall = document.getElementById('reject-call');
+    
+    // Variables para la videollamada
+    let rtcClient;
+    let localTracks = {
+        videoTrack: null,
+        audioTrack: null
+    };
+    let remoteUsers = {};
+    let isCallActive = false;
+    let isMinimized = false;
+    let callStartTime;
+    let timerInterval;
+    
+    // Socket para señalización - Intenta conectar con opciones de recuperación
+    const socket = io('http://localhost:3000', {
+        reconnectionAttempts: 3,
+        timeout: 10000,
+        transports: ['websocket', 'polling'],
+        autoConnect: true,
+        reconnection: true
+    });
+
+    // Manejar error de conexión Socket.io
+    socket.on('connect_error', (error) => {
+        console.warn('Error de conexión socket.io:', error.message);
+        // Podemos implementar una lógica alternativa aquí si es necesario
+    });
+    
+    // Inicializar cliente de Agora
+    async function initializeAgoraClient() {
+        rtcClient = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
+        
+        // Escuchar evento cuando un usuario remoto se une
+        rtcClient.on('user-published', async (user, mediaType) => {
+            await rtcClient.subscribe(user, mediaType);
+            
+            if (mediaType === 'video') {
+                remoteUsers[user.uid] = user;
+                user.videoTrack.play(remoteVideoContainer);
+                callStatus.textContent = 'Conectado';
+            }
+            
+            if (mediaType === 'audio') {
+                user.audioTrack.play();
+            }
+        });
+        
+        // Escuchar evento cuando un usuario remoto se desconecta
+        rtcClient.on('user-unpublished', (user, mediaType) => {
+            if (mediaType === 'video') {
+                if (remoteUsers[user.uid]) {
+                    delete remoteUsers[user.uid];
+                }
+            }
+        });
+        
+        // Escuchar evento cuando un usuario remoto abandona la llamada
+        rtcClient.on('user-left', (user) => {
+            if (remoteUsers[user.uid]) {
+                delete remoteUsers[user.uid];
+                endActiveCall();
+            }
+        });
+    }
+    
+    // Función para unirse a la llamada
+    async function joinCall() {
+        try {
+            // Iniciar el temporizador de la llamada
+            startCallTimer();
+            
+            // Inicializar el cliente de Agora
+            await initializeAgoraClient();
+            
+            try {
+                // Unirse al canal
+                const uid = await rtcClient.join(APP_ID, CHANNEL_NAME, TOKEN, null);
+                
+                // Crear tracks locales de audio y video
+                localTracks.audioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+                localTracks.videoTrack = await AgoraRTC.createCameraVideoTrack();
+                
+                // Reproducir track de video local
+                localTracks.videoTrack.play(localVideoContainer);
+                
+                // Publicar tracks locales
+                await rtcClient.publish(Object.values(localTracks));
+                
+                // Actualizar estado
+                isCallActive = true;
+                videoCallBtn.disabled = true;
+                callStatus.textContent = 'Esperando a que se conecte {{ $otherUser->nombre }}...';
+                
+                // Mostrar el contenedor de video
+                videoContainer.classList.remove('hidden');
+            } catch (agoraError) {
+                console.error('Error específico de Agora:', agoraError);
+                
+                // Mostrar mensaje de error específico de Agora
+                if (agoraError.message && agoraError.message.includes('invalid vendor key')) {
+                    callStatus.textContent = 'Error: Necesitas registrarte en Agora y configurar un App ID válido';
+                    alert('Para usar videollamadas, debes registrarte en Agora.io y configurar un App ID válido. Por favor, contacta al administrador.');
+                } else {
+                    callStatus.textContent = 'Error en el servicio de videollamadas';
+                }
+                
+                // Intentar limpiar recursos
+                leaveCall();
+            }
+        } catch (error) {
+            console.error('Error general al unirse a la llamada:', error);
+            callStatus.textContent = 'Error al iniciar la llamada';
+            
+            // Intentar limpiar recursos
+            leaveCall();
+        }
+    }
+    
+    // Función para terminar la llamada
+    async function leaveCall() {
+        // Detener tracks locales
+        for (const trackName in localTracks) {
+            const track = localTracks[trackName];
+            if (track) {
+                track.stop();
+                track.close();
+                localTracks[trackName] = null;
+            }
+        }
+        
+        // Abandonar el canal
+        if (rtcClient) {
+            await rtcClient.leave();
+        }
+        
+        // Actualizar estado
+        isCallActive = false;
+        videoCallBtn.disabled = false;
+        
+        // Ocultar el contenedor de video
+        videoContainer.classList.add('hidden');
+        videoContainer.classList.remove('minimized');
+        isMinimized = false;
+        
+        // Detener el temporizador
+        stopCallTimer();
+    }
+    
+    // Mostrar notificación de llamada entrante
+    function showIncomingCall() {
+        incomingCall.classList.remove('hidden');
+    }
+    
+    // Ocultar notificación de llamada entrante
+    function hideIncomingCall() {
+        incomingCall.classList.add('hidden');
+    }
+    
+    // Iniciar una llamada
+    async function startCall() {
+        if (!isCallActive) {
+            callStatus.textContent = 'Iniciando llamada...';
+            // Notificar al otro usuario sobre la llamada entrante
+            socket.emit('call-user', {
+                to: '{{ $otherUser->id }}',
+                from: '{{ auth()->id() }}',
+                chatId: '{{ $chat->id }}'
+            });
+            
+            await joinCall();
+        }
+    }
+    
+    // Terminar una llamada activa
+    async function endActiveCall() {
+        if (isCallActive) {
+            // Notificar al otro usuario que finalizamos la llamada
+            socket.emit('end-call', {
+                to: '{{ $otherUser->id }}',
+                from: '{{ auth()->id() }}',
+                chatId: '{{ $chat->id }}'
+            });
+            
+            await leaveCall();
+        }
+    }
+    
+    // Aceptar una llamada entrante
+    async function acceptIncomingCall() {
+        hideIncomingCall();
+        await joinCall();
+    }
+    
+    // Rechazar una llamada entrante
+    function rejectIncomingCall() {
+        hideIncomingCall();
+        socket.emit('reject-call', {
+            to: '{{ $otherUser->id }}',
+            from: '{{ auth()->id() }}',
+            chatId: '{{ $chat->id }}'
+        });
+    }
+    
+    // Alternar micrófono
+    function toggleMicrophone() {
+        if (localTracks.audioTrack) {
+            if (localTracks.audioTrack.isEnabled) {
+                localTracks.audioTrack.setEnabled(false);
+                toggleAudio.innerHTML = '<i class="fas fa-microphone-slash"></i>';
+                toggleAudio.classList.add('bg-red-100');
+            } else {
+                localTracks.audioTrack.setEnabled(true);
+                toggleAudio.innerHTML = '<i class="fas fa-microphone"></i>';
+                toggleAudio.classList.remove('bg-red-100');
+            }
+        }
+    }
+    
+    // Alternar cámara
+    function toggleCamera() {
+        if (localTracks.videoTrack) {
+            if (localTracks.videoTrack.isEnabled) {
+                localTracks.videoTrack.setEnabled(false);
+                toggleVideo.innerHTML = '<i class="fas fa-video-slash"></i>';
+                toggleVideo.classList.add('bg-red-100');
+            } else {
+                localTracks.videoTrack.setEnabled(true);
+                toggleVideo.innerHTML = '<i class="fas fa-video"></i>';
+                toggleVideo.classList.remove('bg-red-100');
+            }
+        }
+    }
+    
+    // Iniciar temporizador de llamada
+    function startCallTimer() {
+        callStartTime = new Date();
+        callTimer.textContent = '00:00';
+        
+        timerInterval = setInterval(() => {
+            const currentTime = new Date();
+            const diff = currentTime - callStartTime;
+            
+            const minutes = Math.floor(diff / 60000);
+            const seconds = Math.floor((diff % 60000) / 1000);
+            
+            callTimer.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }, 1000);
+    }
+    
+    // Detener temporizador de llamada
+    function stopCallTimer() {
+        clearInterval(timerInterval);
+        callTimer.textContent = '';
+    }
+    
+    // Minimizar/maximizar la ventana de videollamada
+    function toggleMinimize() {
+        if (isMinimized) {
+            videoContainer.classList.remove('minimized');
+            closeVideoContainer.textContent = 'Minimizar';
+        } else {
+            videoContainer.classList.add('minimized');
+            closeVideoContainer.textContent = 'Maximizar';
+        }
+        isMinimized = !isMinimized;
+    }
+    
+    // Event listeners para videollamada
+    videoCallBtn.addEventListener('click', async () => {
+        try {
+            // Intentar primero con Agora
+            await startCall();
+        } catch (error) {
+            console.error("Error al iniciar llamada con Agora:", error);
+            alert("No se pudo iniciar la videollamada con el servicio principal. Contacta al administrador para más información.");
+        }
+    });
+    closeVideoContainer.addEventListener('click', toggleMinimize);
+    toggleAudio.addEventListener('click', toggleMicrophone);
+    toggleVideo.addEventListener('click', toggleCamera);
+    endCall.addEventListener('click', endActiveCall);
+    acceptCall.addEventListener('click', acceptIncomingCall);
+    rejectCall.addEventListener('click', rejectIncomingCall);
+    
+    // Manejar eventos de socket.io
+    socket.on('connect', () => {
+        console.log('Conectado al servidor de señalización');
+        socket.emit('register', { userId: '{{ auth()->id() }}' });
+    });
+    
+    socket.on('incoming-call', (data) => {
+        if (data.chatId === '{{ $chat->id }}') {
+            showIncomingCall();
+        }
+    });
+    
+    socket.on('call-rejected', (data) => {
+        if (data.chatId === '{{ $chat->id }}') {
+            endActiveCall();
+            callStatus.textContent = 'Llamada rechazada';
+        }
+    });
+    
+    socket.on('call-ended', (data) => {
+        if (data.chatId === '{{ $chat->id }}') {
+            endActiveCall();
+        }
+    });
+    
+    // Función adicional de diagnóstico
+    async function checkVideoCallServices() {
+        // Verificar Agora
+        let agoraAvailable = typeof AgoraRTC !== 'undefined';
+        
+        // Verificar socket.io
+        let socketAvailable = socket && socket.connected;
+        
+        // Verificar permisos de cámara/micrófono
+        let mediaPermissions = false;
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+            stream.getTracks().forEach(track => track.stop());
+            mediaPermissions = true;
+        } catch (err) {
+            console.error("Error de permisos de medios:", err);
+        }
+        
+        console.log("Estado de servicios de videollamada:", {
+            agoraSDK: agoraAvailable,
+            socketIO: socketAvailable,
+            mediaPermisos: mediaPermissions,
+            appID: APP_ID !== "YOUR_AGORA_APP_ID" && APP_ID.length > 10
+        });
+        
+        return {
+            agoraSDK: agoraAvailable,
+            socketIO: socketAvailable,
+            mediaPermisos: mediaPermissions,
+            appID: APP_ID !== "YOUR_AGORA_APP_ID" && APP_ID.length > 10
+        };
+    }
+    
+    // Ejecutar diagnóstico al cargar la página
+    setTimeout(checkVideoCallServices, 2000);
 });
 </script>
 @endsection 
