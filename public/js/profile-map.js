@@ -85,10 +85,16 @@ async function saveLocation() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Accept': 'application/json'
             },
             body: JSON.stringify({ lat, lng, direccion, ciudad })
         });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Error al actualizar la ubicación');
+        }
 
         const data = await response.json();
 
@@ -103,6 +109,7 @@ async function saveLocation() {
             throw new Error(data.message || 'Error al actualizar la ubicación');
         }
     } catch (error) {
+        console.error('Error:', error);
         Swal.fire({
             title: 'Error',
             text: error.message || 'Error al guardar la ubicación',

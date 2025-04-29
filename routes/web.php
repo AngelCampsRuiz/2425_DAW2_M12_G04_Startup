@@ -83,6 +83,8 @@
                     Route::get('/profile/{id}', [HomeController::class, 'profile'])->name('profile.view');
                     Route::get('/profile/{user}', [ProfileController::class, 'show'])->name('profile.show');
                     Route::put('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
+                    Route::post('/profile/update-location', [ProfileController::class, 'updateLocation'])
+                        ->name('profile.update-location');
                 
                 // PUBLICACIONES VISIBLES PARA TODOS LOS USUARIOS
                     Route::get('/publication/{id}', [PublicationController::class, 'show'])->name('publication.show');
