@@ -3,9 +3,9 @@
     <!-- Elementos decorativos -->
     <div class="absolute top-0 right-0 w-40 h-40 bg-primary/5 rounded-full -mr-20 -mt-20"></div>
     <div class="absolute bottom-0 left-0 w-64 h-64 bg-primary/5 rounded-full -ml-32 -mb-32"></div>
-    
+
     <div class="container mx-auto px-4 relative z-10">
-        
+
         <!-- Main Footer Content -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
             <!-- Logo y descripción -->
@@ -16,8 +16,8 @@
                     </a>
                     <span class="ml-3 font-bold text-primary text-xl">NextGen</span>
                 </div>
-                <p class="mt-5 text-gray-600 leading-relaxed">Plataforma innovadora que conecta el talento estudiantil con oportunidades profesionales en empresas de vanguardia. Transformando el futuro laboral desde las aulas.</p>
-                
+                <p class="mt-5 text-gray-600 leading-relaxed">{{ __('footer.description') }}</p>
+
                 <!-- Redes sociales -->
                 <div class="mt-6 flex space-x-4">
                     <a href="#" class="text-primary hover:text-primary-dark transition bg-white p-2 rounded-full shadow-sm hover:shadow-md transform hover:scale-110 duration-300" aria-label="Facebook">
@@ -58,17 +58,17 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Enlaces rápidos -->
             <div class="col-span-1">
-                <h3 class="text-lg font-semibold text-primary mb-5 border-b border-primary/20 pb-2">Enlaces rápidos</h3>
+                <h3 class="text-lg font-semibold text-primary mb-5 border-b border-primary/20 pb-2">{{ __('footer.quick_links') }}</h3>
                 <ul class="space-y-3">
                     <li>
                         <a href="#" class="group flex items-center text-gray-600 hover:text-primary transition">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-primary/70 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                             </svg>
-                            Inicio
+                            {{ __('footer.home') }}
                         </a>
                     </li>
                     <li>
@@ -76,7 +76,7 @@
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-primary/70 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                             </svg>
-                            Ofertas de empleo
+                            {{ __('footer.job_offers') }}
                         </a>
                     </li>
                     <li>
@@ -84,7 +84,7 @@
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-primary/70 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                             </svg>
-                            Perfiles de estudiantes
+                            {{ __('footer.student_profiles') }}
                         </a>
                     </li>
                     <li>
@@ -92,7 +92,7 @@
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-primary/70 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                             </svg>
-                            Empresas colaboradoras
+                            {{ __('footer.partner_companies') }}
                         </a>
                     </li>
                     <li>
@@ -100,14 +100,14 @@
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-primary/70 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                             </svg>
-                            Blog
+                            {{ __('footer.blog') }}
                         </a>
                     </li>
                 </ul>
 
                 <!-- Aplicación móvil -->
                 <div class="mt-8 bg-white/80 rounded-lg p-4 shadow-sm backdrop-blur-sm">
-                    <h4 class="font-semibold text-primary text-sm mb-2">Descarga nuestra app</h4>
+                    <h4 class="font-semibold text-primary text-sm mb-2">{{ __('footer.download_app') }}</h4>
                     <div class="flex space-x-2">
                         <a href="#" class="block">
                             <img src="https://placehold.co/90x30/7705B6/FFFFFF?text=App+Store" alt="App Store" class="h-8 rounded-md hover:opacity-90 transition">
@@ -118,17 +118,17 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Recursos -->
             <div class="col-span-1">
-                <h3 class="text-lg font-semibold text-primary mb-5 border-b border-primary/20 pb-2">Recursos</h3>
+                <h3 class="text-lg font-semibold text-primary mb-5 border-b border-primary/20 pb-2">{{ __('footer.resources') }}</h3>
                 <ul class="space-y-3">
                     <li>
                         <a href="#" class="group flex items-center text-gray-600 hover:text-primary transition">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-primary/70 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                             </svg>
-                            Centro de ayuda
+                            {{ __('footer.help_center') }}
                         </a>
                     </li>
                     <li>
@@ -136,7 +136,7 @@
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-primary/70 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                             </svg>
-                            Guías para estudiantes
+                            {{ __('footer.student_guides') }}
                         </a>
                     </li>
                     <li>
@@ -144,7 +144,7 @@
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-primary/70 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                             </svg>
-                            Recursos para empresas
+                            {{ __('footer.company_resources') }}
                         </a>
                     </li>
                     <li>
@@ -152,7 +152,7 @@
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-primary/70 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                             </svg>
-                            Términos y condiciones
+                            {{ __('footer.terms_conditions') }}
                         </a>
                     </li>
                     <li>
@@ -160,25 +160,59 @@
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-primary/70 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                             </svg>
-                            Política de privacidad
+                            {{ __('footer.privacy_policy') }}
                         </a>
                     </li>
                 </ul>
 
                 <!-- Idiomas -->
                 <div class="mt-8 bg-white/80 rounded-lg p-4 shadow-sm backdrop-blur-sm">
-                    <h4 class="font-semibold text-primary text-sm mb-2">Selecciona tu idioma</h4>
-                    <select class="w-full p-2 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-primary text-sm">
-                        <option value="es">Español</option>
-                        <option value="en">English</option>
-                        <option value="ca">Català</option>
-                    </select>
+                    <h4 class="font-semibold text-primary text-sm mb-2">{{ __('footer.select_language') }}</h4>
+                    <form id="localeForm" action="{{ route('set-locale') }}" method="POST">
+                        @csrf
+                        <select name="locale" class="w-full p-2 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-primary text-sm">
+                            <option value="es" {{ app()->getLocale() == 'es' ? 'selected' : '' }}>Español</option>
+                            <option value="en" {{ app()->getLocale() == 'en' ? 'selected' : '' }}>English</option>
+                            <option value="ca" {{ app()->getLocale() == 'ca' ? 'selected' : '' }}>Català</option>
+                        </select>
+                    </form>
                 </div>
+
+                <script>
+                    document.querySelector('select[name="locale"]').addEventListener('change', function() {
+                        const form = document.getElementById('localeForm');
+                        const formData = new FormData(form);
+                        const select = this;
+
+                        // Deshabilitar el select mientras se procesa
+                        select.disabled = true;
+
+                        fetch(form.action, {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'application/json'
+                            },
+                            credentials: 'same-origin'
+                        }).then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                console.log('Idioma cambiado a:', data.locale);
+                                window.location.reload(true);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error al cambiar el idioma:', error);
+                            select.disabled = false;
+                        });
+                    });
+                </script>
             </div>
-            
+
             <!-- Contacto -->
             <div class="col-span-1">
-                <h3 class="text-lg font-semibold text-primary mb-5 border-b border-primary/20 pb-2">Contacto</h3>
+                <h3 class="text-lg font-semibold text-primary mb-5 border-b border-primary/20 pb-2">{{ __('footer.contact') }}</h3>
                 <ul class="space-y-4">
                     <li class="flex items-start group">
                         <div class="bg-white p-2 rounded-full shadow-sm mr-3 text-primary group-hover:bg-primary group-hover:text-white transition-colors duration-300">
@@ -188,8 +222,8 @@
                             </svg>
                         </div>
                         <div>
-                            <p class="text-gray-600 group-hover:text-primary transition-colors duration-300">Calle Principal 123</p>
-                            <p class="text-gray-600 group-hover:text-primary transition-colors duration-300">08001 Barcelona, España</p>
+                            <p class="text-gray-600 group-hover:text-primary transition-colors duration-300">{{ __('footer.address') }}</p>
+                            <p class="text-gray-600 group-hover:text-primary transition-colors duration-300">{{ __('footer.city') }}</p>
                         </div>
                     </li>
                     <li class="flex items-center group">
@@ -212,36 +246,36 @@
 
                 <!-- Horario de atención -->
                 <div class="mt-8 bg-white/80 rounded-lg p-4 shadow-sm backdrop-blur-sm">
-                    <h4 class="font-semibold text-primary text-sm mb-2">Horario de atención</h4>
+                    <h4 class="font-semibold text-primary text-sm mb-2">{{ __('footer.office_hours') }}</h4>
                     <div class="space-y-1 text-sm text-gray-600">
                         <p class="flex justify-between">
-                            <span>Lunes - Viernes:</span>
+                            <span>{{ __('footer.weekdays') }}:</span>
                             <span>9:00 - 18:00</span>
                         </p>
                         <p class="flex justify-between">
-                            <span>Sábado:</span>
+                            <span>{{ __('footer.saturday') }}:</span>
                             <span>10:00 - 14:00</span>
                         </p>
                         <p class="flex justify-between">
-                            <span>Domingo:</span>
-                            <span>Cerrado</span>
+                            <span>{{ __('footer.sunday') }}:</span>
+                            <span>{{ __('footer.closed') }}</span>
                         </p>
                     </div>
                 </div>
             </div>
         </div>
-        
+
         <!-- Línea divisoria -->
         <div class="mt-14 pt-8 border-t border-primary/20">
             <div class="flex flex-col md:flex-row justify-between items-center">
                 <p class="text-sm text-gray-600">© {{ date('Y') }} <span class="text-primary font-semibold">NextGen</span>. Todos los derechos reservados.</p>
                 <div class="mt-4 md:mt-0 flex items-center">
-                    <p class="text-sm text-gray-600">Diseñado y desarrollado con</p>
+                    <p class="text-sm text-gray-600">{{ __('footer.designed_developed') }}</p>
                     <span class="mx-1 text-red-500 animate-pulse text-lg">❤</span>
-                    <p class="text-sm text-gray-600">por <span class="text-primary hover:underline">Grupo 03</span></p>
+                    <p class="text-sm text-gray-600">{{ __('footer.by') }} <span class="text-primary hover:underline">Grupo 04</span></p>
                 </div>
             </div>
-            
+
             <!-- Botón volver arriba -->
             <div class="flex justify-end mt-6">
                 <button id="back-to-top" aria-label="Volver arriba" class="inline-flex items-center justify-center bg-primary text-white w-10 h-10 rounded-full shadow-lg hover:bg-primary-dark transition transform hover:translate-y-[-3px] focus:outline-none focus:ring-2 focus:ring-primary/30 opacity-0 invisible">
@@ -258,7 +292,7 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const backToTopButton = document.getElementById('back-to-top');
-        
+
         // Función para controlar la visibilidad del botón
         function toggleBackToTopButton() {
             if (window.scrollY > 300) {
@@ -267,7 +301,7 @@
             } else {
                 backToTopButton.classList.add('opacity-0');
                 backToTopButton.classList.remove('opacity-100');
-                
+
                 // Usar un timeout para asegurar que la transición de opacidad termine antes de ocultar el elemento
                 setTimeout(() => {
                     if (window.scrollY <= 300) {
@@ -277,17 +311,17 @@
                 }, 300);
             }
         }
-        
+
         // Escuchar el evento de scroll para mostrar/ocultar el botón
         window.addEventListener('scroll', toggleBackToTopButton);
-        
+
         // Aplicar el estado inicial
         toggleBackToTopButton();
-        
+
         // Manejar el click en el botón
         backToTopButton.addEventListener('click', function(e) {
             e.preventDefault();
-            
+
             // Aplicar desplazamiento suave al top
             window.scrollTo({
                 top: 0,
