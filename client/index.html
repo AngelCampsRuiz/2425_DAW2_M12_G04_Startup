@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebRTC Video Call App</title>
+    <!-- Font Awesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- Estilos CSS personalizados -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- Tarjeta de registro -->
+    <div class="card" id="register-card">
+        <h2>Bienvenido a la App de Videollamadas</h2>
+        <p>Introduce tu nombre para comenzar</p>
+        
+        <form id="register-form">
+            <div class="form-group">
+                <label for="username">Nombre de usuario</label>
+                <input type="text" id="username" placeholder="Tu nombre" required>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Entrar</button>
+        </form>
+    </div>
+    
+    <!-- Sección principal (oculta al inicio) -->
+    <section id="main-section">
+        <!-- Panel lateral con lista de usuarios -->
+        <div class="sidebar">
+            <h3>Usuarios conectados</h3>
+            <div id="users-list" class="users-list">
+                <!-- Los usuarios se cargarán dinámicamente -->
+            </div>
+        </div>
+        
+        <!-- Panel de video -->
+        <div class="video-panel">
+            <!-- Videos -->
+            <div class="video-container">
+                <div class="video-wrapper">
+                    <video id="remote-video" autoplay playsinline></video>
+                    <div class="video-overlay">
+                        <div id="remote-user-name" class="video-label">Esperando conexión...</div>
+                    </div>
+                </div>
+                <div class="video-wrapper local">
+                    <video id="local-video" autoplay playsinline muted></video>
+                    <div class="video-overlay">
+                        <div id="local-user-name" class="video-label">Tú</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Controles de llamada (ocultos al inicio) -->
+            <div class="call-controls" id="call-controls">
+                <button id="mute-audio" class="control-btn">
+                    <i class="fas fa-microphone"></i>
+                </button>
+                <button id="disable-video" class="control-btn">
+                    <i class="fas fa-video"></i>
+                </button>
+                <button id="end-call" class="control-btn danger">
+                    <i class="fas fa-phone-slash"></i>
+                </button>
+            </div>
+            
+            <!-- Controles de llamada entrante (ocultos al inicio) -->
+            <div class="incoming-call-controls" id="incoming-call-controls">
+                <div id="incoming-call-text">Llamada entrante...</div>
+                <div class="incoming-call-actions">
+                    <button id="accept-call" class="control-btn success">
+                        <i class="fas fa-phone"></i>
+                    </button>
+                    <button id="reject-call" class="control-btn danger">
+                        <i class="fas fa-phone-slash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Contenedor de notificaciones -->
+    <div class="notifications"></div>
+    
+    <!-- Scripts -->
+    <script src="http://localhost:3000/socket.io/socket.io.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html> 
