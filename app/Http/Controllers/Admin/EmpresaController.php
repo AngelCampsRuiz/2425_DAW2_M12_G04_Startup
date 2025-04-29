@@ -64,6 +64,15 @@ class EmpresaController extends Controller
                 throw new \Exception('El rol Empresa no existe en el sistema');
             }
             
+            // Procesar imagen si se proporciona
+            $imagenPath = null;
+            if ($request->hasFile('imagen')) {
+                $imagen = $request->file('imagen');
+                $nombreImagen = time() . '_' . $imagen->getClientOriginalName();
+                $imagen->move(public_path('public/profile_images'), $nombreImagen);
+                $imagenPath = $nombreImagen;
+            }
+            
             // Crear usuario
             $user = User::create([
                 'nombre' => $request->input('nombre'),
@@ -76,7 +85,8 @@ class EmpresaController extends Controller
                 'sitio_web' => $request->input('sitio_web') ?? null,
                 'telefono' => $request->input('telefono') ?? null,
                 'descripcion' => $request->input('descripcion') ?? null,
-                'role_id' => $rolEmpresa->id
+                'role_id' => $rolEmpresa->id,
+                'imagen' => $imagenPath,
             ]);
             
             // Crear empresa
@@ -179,6 +189,31 @@ class EmpresaController extends Controller
                 'telefono' => $request->input('telefono') ?? null,
                 'descripcion' => $request->input('descripcion') ?? null,
             ];
+            
+            // Procesamiento de imagen
+            if ($request->hasFile('imagen')) {
+                // Eliminar imagen anterior si existe
+                if ($user->imagen) {
+                    $imagenPath = public_path('public/profile_images/' . $user->imagen);
+                    if (file_exists($imagenPath)) {
+                        unlink($imagenPath);
+                    }
+                }
+                
+                // Guardar nueva imagen
+                $imagen = $request->file('imagen');
+                $nombreImagen = time() . '_' . $imagen->getClientOriginalName();
+                $imagen->move(public_path('public/profile_images'), $nombreImagen);
+                $imagenPath = $nombreImagen;
+                $userData['imagen'] = $imagenPath;
+            } elseif ($request->has('eliminar_imagen_actual') && $user->imagen) {
+                // Si se solicita eliminar la imagen actual
+                $imagenPath = public_path('public/profile_images/' . $user->imagen);
+                if (file_exists($imagenPath)) {
+                    unlink($imagenPath);
+                }
+                $userData['imagen'] = null;
+            }
             
             // Si se proporcionó una nueva contraseña, actualizarla
             if ($request->filled('password')) {

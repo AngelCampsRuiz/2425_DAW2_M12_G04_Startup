@@ -29,7 +29,7 @@
                 <ul id="error-list" class="mt-2 list-disc list-inside"></ul>
             </div>
             
-            <form id="form-empresa" method="POST">
+            <form id="form-empresa" method="POST" enctype="multipart/form-data">
                 @csrf
                 <input type="hidden" id="empresa_id" name="empresa_id" value="">
                 <input type="hidden" id="form_method" name="_method" value="POST">
@@ -100,6 +100,16 @@
                         <input type="url" name="sitio_web" id="sitio_web" 
                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"
                                placeholder="https://...">
+                    </div>
+                    
+                    <div>
+                        <label for="foto" class="block text-sm font-medium text-gray-700 mb-1">Fotografía</label>
+                        <input type="file" name="imagen" id="imagen" accept="image/*"
+                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50">
+                        <div id="imagen-preview" class="mt-2 hidden">
+                            <img id="imagen-preview-img" src="" alt="Vista previa" class="h-24 w-auto object-cover rounded">
+                            <button type="button" id="eliminar-imagen" class="text-xs text-red-600 mt-1">Eliminar imagen</button>
+                        </div>
                     </div>
                 
                     <!-- Datos de Empresa -->
@@ -252,6 +262,33 @@
             document.getElementById('modal-eliminar').classList.add('hidden');
         });
         
+        // Manejo de la previsualización de la foto
+        document.getElementById('imagen').addEventListener('change', function(e) {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('imagen-preview-img').src = e.target.result;
+                    document.getElementById('imagen-preview').classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // Eliminar foto
+        document.getElementById('eliminar-imagen').addEventListener('click', function() {
+            document.getElementById('imagen').value = '';
+            document.getElementById('imagen-preview').classList.add('hidden');
+            document.getElementById('imagen-preview-img').src = '';
+            // Agregar campo oculto para indicar que se debe eliminar la foto existente
+            const inputEliminarImagen = document.getElementById('eliminar_imagen_actual') || document.createElement('input');
+            inputEliminarImagen.type = 'hidden';
+            inputEliminarImagen.id = 'eliminar_imagen_actual';
+            inputEliminarImagen.name = 'eliminar_imagen_actual';
+            inputEliminarImagen.value = '1';
+            document.getElementById('form-empresa').appendChild(inputEliminarImagen);
+        });
+        
         // Delegación de eventos para los botones dinámicos
         document.addEventListener('click', function(e) {
             // Botón Crear
@@ -304,8 +341,9 @@
 
         // Add validation to form submission
         document.getElementById('form-empresa').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
             if (!validatePasswords()) {
-                e.preventDefault();
                 return false;
             }
             
@@ -318,14 +356,20 @@
             const url = this.getAttribute('action');
             const method = document.getElementById('form_method').value;
             
+            // Incluir método PUT para ediciones
+            if (method === 'PUT') {
+                formData.append('_method', 'PUT');
+            }
+            
             // Deshabilitar botones durante la petición
             document.getElementById('btn-guardar').disabled = true;
             
             fetch(url, {
-                method: method === 'PUT' ? 'POST' : 'POST',
+                method: 'POST', // Siempre POST para enviar archivos
                 body: formData,
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest'
+                    // No incluir Content-Type para permitir que el navegador establezca el boundary correcto para FormData
                 }
             })
             .then(response => response.json())
@@ -401,6 +445,16 @@
         document.getElementById('password').setAttribute('required', 'required');
         document.getElementById('password_confirmation').setAttribute('required', 'required');
         
+        // Resetear campo de foto
+        document.getElementById('imagen-preview').classList.add('hidden');
+        document.getElementById('imagen-preview-img').src = '';
+        
+        // Eliminar campo oculto de eliminar foto si existe
+        const eliminarImagenInput = document.getElementById('eliminar_imagen_actual');
+        if (eliminarImagenInput) {
+            eliminarImagenInput.remove();
+        }
+        
         // Ocultar el checkbox de activo para nuevas empresas
         document.getElementById('activo-container').classList.add('hidden');
         
@@ -430,6 +484,12 @@
         // Mostrar el checkbox de activo para empresas existentes
         document.getElementById('activo-container').classList.remove('hidden');
         
+        // Eliminar campo oculto de eliminar foto si existe
+        const eliminarImagenInput = document.getElementById('eliminar_imagen_actual');
+        if (eliminarImagenInput) {
+            eliminarImagenInput.remove();
+        }
+        
         fetch(`/admin/empresas/${id}/edit`, {
             headers: {
                 'X-Requested-With': 'XMLHttpRequest'
@@ -450,6 +510,15 @@
             document.getElementById('sitio_web').value = empresa.user.sitio_web || '';
             document.getElementById('descripcion').value = empresa.user.descripcion || '';
             document.getElementById('activo').checked = empresa.user.activo ? true : false;
+            
+            // Cargar y mostrar foto si existe
+            if (empresa.user.imagen) {
+                document.getElementById('imagen-preview-img').src = `/public/profile_images/${empresa.user.imagen}`;
+                document.getElementById('imagen-preview').classList.remove('hidden');
+            } else {
+                document.getElementById('imagen-preview').classList.add('hidden');
+                document.getElementById('imagen-preview-img').src = '';
+            }
             
             // Datos de empresa
             document.getElementById('cif').value = empresa.cif || '';
@@ -570,10 +639,14 @@
         })
         .then(response => response.json())
         .then(data => {
-            document.getElementById('tabla-container').innerHTML = data.tabla;
+            if (data.tabla) {
+                document.getElementById('tabla-container').innerHTML = data.tabla;
+            } else {
+                console.error('No se recibió contenido HTML para la tabla');
+            }
         })
         .catch(error => {
-            console.error('Error:', error);
+            console.error('Error al actualizar la tabla:', error);
         });
     }
 
