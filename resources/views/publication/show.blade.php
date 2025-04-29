@@ -88,8 +88,8 @@
                             </div>
                             <div class="flex flex-wrap gap-2">
                                 <span class="bg-white/20 text-white text-sm font-medium px-4 py-2 rounded-full backdrop-blur-sm shadow-inner">
-                                    {{ ucfirst($publication->categoria->nombre_categoria ?? 'General') }}
-                                </span>
+                            {{ ucfirst($publication->categoria->nombre_categoria ?? 'General') }}
+                        </span>
                                 
                                 <!-- Estado en la parte superior como badge -->
                                 @if(isset($publication->estado))
@@ -152,28 +152,28 @@
                             <div class="p-4 bg-gray-50 rounded-lg border border-gray-100 hover:shadow-md transition-shadow duration-300">
                                 <h4 class="text-sm font-semibold text-gray-700 mb-3">Información de contacto</h4>
                                 
-                                @if(isset($publication->empresa->email))
+                            @if(isset($publication->empresa->email))
                                 <div class="flex items-center justify-center mb-3 px-3">
                                     <span class="flex-shrink-0 inline-flex items-center justify-center w-8 h-8 mr-2 rounded-full bg-purple-100 text-[#5e0490]">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                                        </svg>
-                                    </span>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                    </svg>
+                                </span>
                                     <span class="text-sm text-gray-600 overflow-hidden text-ellipsis">{{ $publication->empresa->email }}</span>
                                 </div>
-                                @endif
+                            @endif
                                 
-                                @if(isset($publication->empresa->telefono))
+                            @if(isset($publication->empresa->telefono))
                                 <div class="flex items-center justify-center px-3">
                                     <span class="flex-shrink-0 inline-flex items-center justify-center w-8 h-8 mr-2 rounded-full bg-purple-100 text-[#5e0490]">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
-                                        </svg>
-                                    </span>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                                    </svg>
+                                </span>
                                     <span class="text-sm text-gray-600">{{ $publication->empresa->telefono }}</span>
-                                </div>
-                                @endif
-                                
+                        </div>
+                        @endif
+                        
                                 @if(isset($publication->empresa->sitio_web))
                                 <div class="flex items-center justify-center mt-3 px-3">
                                     <span class="flex-shrink-0 inline-flex items-center justify-center w-8 h-8 mr-2 rounded-full bg-purple-100 text-[#5e0490]">
@@ -607,7 +607,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Sweet Alert CSS y JS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-material-ui@5/material-ui.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -1041,7 +1041,7 @@
             const solicitudForm = document.getElementById('solicitudForm');
             if (solicitudForm) {
                 solicitudForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
+            e.preventDefault();
                     
                     // Mostrar indicador de carga
                     const submitButton = this.querySelector('button[type="submit"]');
@@ -1054,66 +1054,66 @@
                         </svg>
                         Enviando...
                     `;
-                    
-                    fetch(this.action, {
-                        method: 'POST',
-                        body: new FormData(this),
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                        }
-                    })
-                    .then(response => response.json())
-                    .then(data => {
+            
+            fetch(this.action, {
+                method: 'POST',
+                body: new FormData(this),
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
                         // Restaurar botón
                         submitButton.disabled = false;
                         submitButton.innerHTML = originalText;
                         
-                        if (data.status === 'success') {
-                            closeSolicitudModal();
-                            
-                            // Actualizar el botón de solicitud
-                            const solicitudButton = document.querySelector('[onclick="openSolicitudModal()"]').parentElement;
-                            solicitudButton.innerHTML = `
-                                <button disabled class="inline-flex items-center px-6 py-3 bg-gray-400 text-white font-medium rounded-lg shadow cursor-not-allowed">
-                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                                    </svg>
-                                    Solicitud enviada (Pendiente)
-                                </button>
-                            `;
-                            
+                if (data.status === 'success') {
+                    closeSolicitudModal();
+                    
+                    // Actualizar el botón de solicitud
+                    const solicitudButton = document.querySelector('[onclick="openSolicitudModal()"]').parentElement;
+                    solicitudButton.innerHTML = `
+                        <button disabled class="inline-flex items-center px-6 py-3 bg-gray-400 text-white font-medium rounded-lg shadow cursor-not-allowed">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Solicitud enviada (Pendiente)
+                        </button>
+                    `;
+                    
                             // Actualizar los botones móviles si existen
                             const mobileSolicitudButton = document.querySelector('.md\\:hidden [onclick="openSolicitudModal()"]');
                             if (mobileSolicitudButton) {
                                 mobileSolicitudButton.remove();
                             }
-                            
-                            // Mostrar mensaje de éxito
-                            Swal.fire({
-                                title: '¡Solicitud enviada!',
+                    
+                    // Mostrar mensaje de éxito
+                    Swal.fire({
+                        title: '¡Solicitud enviada!',
                                 html: 'Tu solicitud ha sido enviada correctamente<br><small>La empresa se pondrá en contacto contigo pronto</small>',
-                                icon: 'success',
-                                confirmButtonText: 'Aceptar',
-                                confirmButtonColor: '#5e0490',
-                                background: '#fff',
-                                customClass: {
-                                    confirmButton: 'px-4 py-2 bg-[#5e0490] text-white rounded-lg hover:bg-[#4a0370] transition-colors duration-300'
-                                }
-                            });
-                        } else if (data.status === 'error') {
-                            Swal.fire({
-                                title: '¡Error!',
-                                text: data.message || 'Ha ocurrido un error al enviar la solicitud',
-                                icon: 'error',
-                                confirmButtonText: 'Entendido',
-                                confirmButtonColor: '#5e0490',
-                                background: '#fff',
-                                customClass: {
-                                    confirmButton: 'px-4 py-2 bg-[#5e0490] text-white rounded-lg hover:bg-[#4a0370] transition-colors duration-300'
-                                }
-                            });
+                        icon: 'success',
+                        confirmButtonText: 'Aceptar',
+                        confirmButtonColor: '#5e0490',
+                        background: '#fff',
+                        customClass: {
+                            confirmButton: 'px-4 py-2 bg-[#5e0490] text-white rounded-lg hover:bg-[#4a0370] transition-colors duration-300'
                         }
-                    })
+                    });
+                } else if (data.status === 'error') {
+                    Swal.fire({
+                        title: '¡Error!',
+                        text: data.message || 'Ha ocurrido un error al enviar la solicitud',
+                        icon: 'error',
+                        confirmButtonText: 'Entendido',
+                        confirmButtonColor: '#5e0490',
+                        background: '#fff',
+                        customClass: {
+                            confirmButton: 'px-4 py-2 bg-[#5e0490] text-white rounded-lg hover:bg-[#4a0370] transition-colors duration-300'
+                        }
+                    });
+                }
+            })
                     .catch(error => {
                         // Restaurar botón
                         submitButton.disabled = false;
