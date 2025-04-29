@@ -25,7 +25,7 @@
                         @else
                             <div class="relative">
                                 <div class="w-16 h-16 rounded-full bg-gradient-to-br from-purple-400 to-indigo-500 flex items-center justify-center text-white text-xl font-bold shadow-md">
-                                    {{ strtoupper(substr(Auth::user()->name, 0, 2)) }}
+                                {{ strtoupper(substr(Auth::user()->name, 0, 2)) }}
                                 </div>
                                 <div class="absolute bottom-0 right-0 w-4 h-4 bg-green-400 rounded-full border-2 border-white"></div>
                             </div>
@@ -110,9 +110,9 @@
                         <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-5 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border border-purple-100 transform hover:-translate-y-1">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <h3 class="font-medium text-purple-800 mb-1">Ofertas activas</h3>
+                            <h3 class="font-medium text-purple-800 mb-1">Ofertas activas</h3>
                                     <p class="text-3xl font-bold text-purple-900">{{ $activePublications->count() }}</p>
-                                </div>
+                        </div>
                                 <div class="bg-white p-3 rounded-lg shadow-sm">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -131,9 +131,9 @@
                         <div class="bg-gradient-to-br from-green-50 to-green-100 p-5 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border border-green-100 transform hover:-translate-y-1">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <h3 class="font-medium text-green-800 mb-1">Total solicitudes</h3>
+                            <h3 class="font-medium text-green-800 mb-1">Total solicitudes</h3>
                                     <p class="text-3xl font-bold text-green-900">{{ $activePublications->sum('solicitudes_count') + $inactivePublications->sum('solicitudes_count') }}</p>
-                                </div>
+                        </div>
                                 <div class="bg-white p-3 rounded-lg shadow-sm">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -152,9 +152,9 @@
                         <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-5 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border border-blue-100 transform hover:-translate-y-1">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <h3 class="font-medium text-blue-800 mb-1">Solicitudes pendientes</h3>
+                            <h3 class="font-medium text-blue-800 mb-1">Solicitudes pendientes</h3>
                                     <p class="text-3xl font-bold text-blue-900">{{ $activePublications->sum('solicitudes_count') }}</p>
-                                </div>
+                        </div>
                                 <div class="bg-white p-3 rounded-lg shadow-sm">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -248,57 +248,57 @@
                                 <div class="inline-flex items-center justify-center p-4 bg-purple-100 rounded-full mb-6">
                                     <svg class="h-14 w-14 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                                    </svg>
+                                </svg>
                                 </div>
                                 <h3 class="text-xl font-medium text-gray-900 mb-2">No hay ofertas activas</h3>
                                 <p class="text-gray-500 max-w-md mx-auto mb-8">Comienza publicando tu primera oferta de prácticas y conecta con los mejores estudiantes para impulsar tu empresa.</p>
                                 <button id="btnPrimeraOferta" class="inline-flex items-center px-5 py-3 shadow-md text-base font-medium rounded-lg text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors">
                                     <svg class="-ml-1 mr-3 h-5 w-5 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                                    </svg>
-                                    Nueva oferta
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                        </svg>
+                                        Nueva oferta
                                 </button>
                             </div>
                         @else
                             <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
                                 <div class="overflow-x-auto">
-                                    <table class="min-w-full divide-y divide-gray-200">
-                                        <thead class="bg-gray-50">
-                                            <tr>
-                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Título</th>
-                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Horario</th>
-                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Solicitudes</th>
-                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="bg-white divide-y divide-gray-200">
-                                            @foreach($activePublications as $publication)
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Título</th>
+                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Horario</th>
+                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Solicitudes</th>
+                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200">
+                                        @foreach($activePublications as $publication)
                                                 <tr class="hover:bg-gray-50 transition-colors">
                                                     <td class="px-6 py-4">
                                                         <div class="text-sm font-medium text-gray-900 mb-1">{{ $publication->titulo }}</div>
                                                         <div class="text-xs text-gray-500 max-w-xs">{{ Str::limit($publication->descripcion, 60) }}</div>
-                                                    </td>
-                                                    <td class="px-6 py-4 whitespace-nowrap">
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
                                                         <div class="flex items-center">
                                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-500 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                             </svg>
                                                             <div>
-                                                                <div class="text-sm text-gray-900">{{ ucfirst($publication->horario) }}</div>
+                                                    <div class="text-sm text-gray-900">{{ ucfirst($publication->horario) }}</div>
                                                                 <div class="text-xs text-gray-500">{{ $publication->horas_totales }} horas</div>
                                                             </div>
                                                         </div>
-                                                    </td>
-                                                    <td class="px-6 py-4 whitespace-nowrap">
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
                                                         <span class="px-3 py-1 inline-flex items-center rounded-full bg-green-100 text-green-800 text-xs font-medium">
                                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                                                             </svg>
-                                                            Activa
-                                                        </span>
-                                                    </td>
-                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                        Activa
+                                                    </span>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                         <div class="flex items-center">
                                                             <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">{{ $publication->solicitudes_count }}</span>
                                                             @if($publication->solicitudes_count > 0)
@@ -307,8 +307,8 @@
                                                                 </span>
                                                             @endif
                                                         </div>
-                                                    </td>
-                                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                                         <div class="flex space-x-3">
                                                             <a href="{{ route('empresa.applications.view', $publication->id) }}" class="flex items-center text-purple-600 hover:text-purple-900 transition-colors">
                                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -317,21 +317,21 @@
                                                                 </svg>
                                                                 Ver
                                                             </a>
-                                                            <form action="{{ route('empresa.offers.toggle', $publication->id) }}" method="POST" class="inline">
-                                                                @csrf
+                                                    <form action="{{ route('empresa.offers.toggle', $publication->id) }}" method="POST" class="inline">
+                                                        @csrf
                                                                 <button type="submit" class="flex items-center text-red-600 hover:text-red-900 transition-colors">
                                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                                                                     </svg>
                                                                     Desactivar
                                                                 </button>
-                                                            </form>
+                                                    </form>
                                                         </div>
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
                                 </div>
                             </div>
                         @endif
@@ -360,43 +360,43 @@
                         @else
                             <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
                                 <div class="overflow-x-auto">
-                                    <table class="min-w-full divide-y divide-gray-200">
-                                        <thead class="bg-gray-50">
-                                            <tr>
-                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Título</th>
-                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Horario</th>
-                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Solicitudes</th>
-                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="bg-white divide-y divide-gray-200">
-                                            @foreach($inactivePublications as $publication)
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Título</th>
+                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Horario</th>
+                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Solicitudes</th>
+                                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200">
+                                        @foreach($inactivePublications as $publication)
                                                 <tr class="hover:bg-gray-50 transition-colors">
                                                     <td class="px-6 py-4">
                                                         <div class="text-sm font-medium text-gray-900 mb-1">{{ $publication->titulo }}</div>
                                                         <div class="text-xs text-gray-500 max-w-xs">{{ Str::limit($publication->descripcion, 60) }}</div>
-                                                    </td>
-                                                    <td class="px-6 py-4 whitespace-nowrap">
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
                                                         <div class="flex items-center">
                                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                             </svg>
                                                             <div>
-                                                                <div class="text-sm text-gray-900">{{ ucfirst($publication->horario) }}</div>
+                                                    <div class="text-sm text-gray-900">{{ ucfirst($publication->horario) }}</div>
                                                                 <div class="text-xs text-gray-500">{{ $publication->horas_totales }} horas</div>
                                                             </div>
                                                         </div>
-                                                    </td>
-                                                    <td class="px-6 py-4 whitespace-nowrap">
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
                                                         <span class="px-3 py-1 inline-flex items-center rounded-full bg-gray-100 text-gray-800 text-xs font-medium">
                                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
                                                             </svg>
-                                                            Inactiva
-                                                        </span>
-                                                    </td>
-                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                        Inactiva
+                                                    </span>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                         <div class="flex items-center">
                                                             <span class="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded-full">{{ $publication->solicitudes_count }}</span>
                                                             @if($publication->solicitudes_count > 0)
@@ -405,8 +405,8 @@
                                                                 </span>
                                                             @endif
                                                         </div>
-                                                    </td>
-                                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                                         <div class="flex space-x-3">
                                                             <a href="{{ route('empresa.applications.view', $publication->id) }}" class="flex items-center text-purple-600 hover:text-purple-900 transition-colors">
                                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -415,21 +415,21 @@
                                                                 </svg>
                                                                 Ver
                                                             </a>
-                                                            <form action="{{ route('empresa.offers.toggle', $publication->id) }}" method="POST" class="inline">
-                                                                @csrf
+                                                    <form action="{{ route('empresa.offers.toggle', $publication->id) }}" method="POST" class="inline">
+                                                        @csrf
                                                                 <button type="submit" class="flex items-center text-emerald-600 hover:text-emerald-900 transition-colors">
                                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                                     </svg>
                                                                     Activar
                                                                 </button>
-                                                            </form>
+                                                    </form>
                                                         </div>
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
                                 </div>
                             </div>
                         @endif
@@ -451,11 +451,11 @@
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
                                         </svg>
-                                    </div>
+                </div>
                                     <h3 class="text-lg font-semibold text-gray-800">Optimice sus descripciones</h3>
-                                </div>
+            </div>
                                 <p class="text-gray-600 leading-relaxed">Las ofertas con descripciones detalladas (más de 200 palabras) reciben un 70% más de solicitudes. Incluya requisitos, beneficios y tareas específicas.</p>
-                            </div>
+        </div>
                             
                             <div class="bg-white p-5 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border border-purple-100 transform hover:-translate-y-1">
                                 <div class="flex items-center mb-4">
@@ -512,14 +512,14 @@
                     Publicar Nueva Oferta
                 </h3>
                 <button onclick="closeModal()" class="text-white hover:text-gray-200 focus:outline-none transition-colors">
-                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
-                </button>
-            </div>
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
 
             <form id="formNuevaOferta" class="p-6">
-                @csrf
+            @csrf
                 <!-- Información básica -->
                 <div class="mb-6">
                     <h4 class="text-md font-medium text-gray-800 mb-3 flex items-center">
@@ -529,14 +529,14 @@
                     <div class="bg-gray-50 p-4 rounded-lg space-y-4">
                         <div>
                             <label for="titulo" class="block text-sm font-medium text-gray-700 mb-1">Título de la oferta *</label>
-                            <input type="text" name="titulo" id="titulo" required
+                    <input type="text" name="titulo" id="titulo" required
                                    class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-sm transition-all">
                             <p class="mt-1 text-xs text-gray-500">Un buen título aumenta la visibilidad de su oferta (máx. 100 caracteres)</p>
-                        </div>
+                </div>
 
                         <div>
                             <label for="descripcion" class="block text-sm font-medium text-gray-700 mb-1">Descripción *</label>
-                            <textarea name="descripcion" id="descripcion" rows="4" required
+                    <textarea name="descripcion" id="descripcion" rows="4" required
                                     class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-sm transition-all"></textarea>
                             <p class="mt-1 text-xs text-gray-500">Incluya detalles sobre tareas, requisitos y beneficios para el estudiante</p>
                         </div>
@@ -551,20 +551,20 @@
                     </h4>
                     <div class="bg-gray-50 p-4 rounded-lg">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
+                <div>
                                 <label for="horario" class="block text-sm font-medium text-gray-700 mb-1">Horario *</label>
-                                <select name="horario" id="horario" required
+                    <select name="horario" id="horario" required
                                         class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-sm transition-all">
-                                    <option value="">Seleccionar horario</option>
-                                    <option value="mañana">Mañana</option>
-                                    <option value="tarde">Tarde</option>
+                        <option value="">Seleccionar horario</option>
+                        <option value="mañana">Mañana</option>
+                        <option value="tarde">Tarde</option>
                                     <option value="flexible">Flexible</option>
-                                </select>
-                            </div>
+                    </select>
+                </div>
 
-                            <div>
+                <div>
                                 <label for="horas_totales" class="block text-sm font-medium text-gray-700 mb-1">Horas totales *</label>
-                                <input type="number" name="horas_totales" id="horas_totales" min="100" max="400" required
+                    <input type="number" name="horas_totales" id="horas_totales" min="100" max="400" required
                                        class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-sm transition-all">
                                 <p class="mt-1 text-xs text-gray-500">Entre 100 y 400 horas</p>
                             </div>
@@ -580,44 +580,44 @@
                     </h4>
                     <div class="bg-gray-50 p-4 rounded-lg">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
+                <div>
                                 <label for="categoria_id" class="block text-sm font-medium text-gray-700 mb-1">Categoría *</label>
-                                <select name="categoria_id" id="categoria_id" required onchange="cargarSubcategorias()"
+                    <select name="categoria_id" id="categoria_id" required onchange="cargarSubcategorias()"
                                         class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-sm transition-all">
-                                    <option value="">Seleccionar categoría</option>
-                                    @foreach($categorias as $categoria)
-                                        <option value="{{ $categoria->id }}">{{ $categoria->nombre_categoria }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <div>
-                                <label for="subcategoria_id" class="block text-sm font-medium text-gray-700 mb-1">Subcategoría *</label>
-                                <select name="subcategoria_id" id="subcategoria_id" required
-                                        class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-sm transition-all">
-                                    <option value="">Primero seleccione una categoría</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
+                        <option value="">Seleccionar categoría</option>
+                        @foreach($categorias as $categoria)
+                            <option value="{{ $categoria->id }}">{{ $categoria->nombre_categoria }}</option>
+                        @endforeach
+                    </select>
                 </div>
 
-                <div class="flex justify-end space-x-3 pt-4 border-t">
-                    <button type="button" onclick="closeModal()"
+                <div>
+                                <label for="subcategoria_id" class="block text-sm font-medium text-gray-700 mb-1">Subcategoría *</label>
+                    <select name="subcategoria_id" id="subcategoria_id" required
+                                        class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-sm transition-all">
+                        <option value="">Primero seleccione una categoría</option>
+                    </select>
+                            </div>
+                        </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-3 pt-4 border-t">
+                <button type="button" onclick="closeModal()"
                             class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all">
-                        Cancelar
-                    </button>
+                    Cancelar
+                </button>
                     <button type="submit" id="submitButton"
                             class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-purple-600 to-indigo-600 border border-transparent rounded-lg hover:from-purple-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all shadow-lg">
                         <div class="flex items-center">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                             </svg>
-                            Publicar oferta
+                    Publicar oferta
                         </div>
-                    </button>
-                </div>
-            </form>
+                </button>
+            </div>
+        </form>
         </div>
     </div>
 </div>
@@ -695,15 +695,15 @@
                 }, 200);
             }
         };
-        
-        // Cerrar modal al hacer clic fuera
+
+    // Cerrar modal al hacer clic fuera
         if (modalNuevaOferta) {
             modalNuevaOferta.addEventListener('click', function(e) {
-                if (e.target === this) {
-                    closeModal();
-                }
-            });
-            
+        if (e.target === this) {
+            closeModal();
+        }
+    });
+
             // Cerrar con tecla Escape
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape' && !modalNuevaOferta.classList.contains('hidden')) {
@@ -721,80 +721,80 @@
             if (!subcategoriasSelect) return;
             
             if (!categoriaId.value) {
-                subcategoriasSelect.innerHTML = '<option value="">Primero seleccione una categoría</option>';
+            subcategoriasSelect.innerHTML = '<option value="">Primero seleccione una categoría</option>';
+            return;
+        }
+
+        subcategoriasSelect.innerHTML = '<option value="">Cargando subcategorías...</option>';
+        subcategoriasSelect.disabled = true;
+
+        const baseUrl = '{{ url('/') }}';
+            const url = `${baseUrl}/empresa/get-subcategorias/${categoriaId.value}`;
+
+        fetch(url, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+                credentials: 'same-origin'
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(response => {
+            if (response.error) {
+                throw new Error(response.message);
+            }
+
+            subcategoriasSelect.innerHTML = '<option value="">Seleccionar subcategoría</option>';
+            
+            const subcategorias = response.data || [];
+            if (subcategorias.length === 0) {
+                subcategoriasSelect.innerHTML = '<option value="">No hay subcategorías disponibles</option>';
                 return;
             }
-            
-            subcategoriasSelect.innerHTML = '<option value="">Cargando subcategorías...</option>';
-            subcategoriasSelect.disabled = true;
-            
-            const baseUrl = '{{ url('/') }}';
-            const url = `${baseUrl}/empresa/get-subcategorias/${categoriaId.value}`;
-            
-            fetch(url, {
-                method: 'GET',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'same-origin'
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(response => {
-                if (response.error) {
-                    throw new Error(response.message);
-                }
-
-                subcategoriasSelect.innerHTML = '<option value="">Seleccionar subcategoría</option>';
-                
-                const subcategorias = response.data || [];
-                if (subcategorias.length === 0) {
-                    subcategoriasSelect.innerHTML = '<option value="">No hay subcategorías disponibles</option>';
-                    return;
-                }
 
                 // Usar un Set para evitar duplicados
                 const addedIds = new Set();
-                
-                subcategorias.forEach(subcategoria => {
+
+            subcategorias.forEach(subcategoria => {
                     if (!addedIds.has(subcategoria.id)) {
                         addedIds.add(subcategoria.id);
-                        subcategoriasSelect.innerHTML += `
-                            <option value="${subcategoria.id}">${subcategoria.nombre_subcategoria}</option>
-                        `;
+                subcategoriasSelect.innerHTML += `
+                    <option value="${subcategoria.id}">${subcategoria.nombre_subcategoria}</option>
+                `;
                     }
-                });
-            })
-            .catch(error => {
-                console.error('Error al cargar subcategorías:', error);
-                if (window.Swal) {
-                    Swal.fire({
-                        title: '¡Error!',
-                        text: 'No se pudieron cargar las subcategorías: ' + error.message,
-                        icon: 'error',
-                        confirmButtonText: 'Entendido',
-                        confirmButtonColor: '#7E22CE'
-                    });
-                }
-                subcategoriasSelect.innerHTML = '<option value="">Error al cargar subcategorías</option>';
-            })
-            .finally(() => {
-                subcategoriasSelect.disabled = false;
             });
+        })
+        .catch(error => {
+            console.error('Error al cargar subcategorías:', error);
+                if (window.Swal) {
+            Swal.fire({
+                title: '¡Error!',
+                text: 'No se pudieron cargar las subcategorías: ' + error.message,
+                icon: 'error',
+                confirmButtonText: 'Entendido',
+                        confirmButtonColor: '#7E22CE'
+            });
+                }
+            subcategoriasSelect.innerHTML = '<option value="">Error al cargar subcategorías</option>';
+        })
+        .finally(() => {
+            subcategoriasSelect.disabled = false;
+        });
         };
-        
-        // Manejar envío del formulario
+
+    // Manejar envío del formulario
         if (formNuevaOferta) {
             const requestsInProgress = new Set();
             
             formNuevaOferta.addEventListener('submit', function(e) {
-                e.preventDefault();
+        e.preventDefault();
                 
                 // Verificar si el formulario ya está siendo procesado
                 if (this.dataset.processing === 'true') {
@@ -851,17 +851,17 @@
                 // Datos para el seguimiento de la petición
                 const uniqueId = Date.now().toString();
                 console.log(`[${uniqueId}] Iniciando envío del formulario`);
-                
-                fetch('{{ route('empresa.offers.store') }}', {
-                    method: 'POST',
+        
+        fetch('{{ route('empresa.offers.store') }}', {
+            method: 'POST',
                     body: formData,
-                    headers: {
+            headers: {
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                         'X-Request-ID': uniqueId,
                         'X-Request-Unique': requestId
-                    }
-                })
-                .then(response => {
+            }
+        })
+        .then(response => {
                     console.log(`[${uniqueId}] Respuesta recibida, status: ${response.status}`);
                     
                     if (!response.ok) {
@@ -902,14 +902,14 @@
                     console.error(`[${uniqueId}] Error:`, error);
                     
                     if (window.Swal) {
-                        Swal.fire({
-                            title: '¡Error!',
+                Swal.fire({
+                    title: '¡Error!',
                             text: error.message || 'Ha ocurrido un error al publicar la oferta',
-                            icon: 'error',
-                            confirmButtonText: 'Entendido',
+                    icon: 'error',
+                    confirmButtonText: 'Entendido',
                             confirmButtonColor: '#7E22CE'
-                        });
-                    } else {
+                });
+            } else {
                         alert(error.message || 'Ha ocurrido un error al publicar la oferta');
                     }
                 })

@@ -8,6 +8,7 @@ use App\Models\Categoria;
 use App\Models\Subcategoria;
 use App\Models\Empresa;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB; // Importar DB para SQL directo
 
 class PublicacionController extends Controller
 {
@@ -16,12 +17,12 @@ class PublicacionController extends Controller
      */
     public function index()
     {
-        $publicaciones = Publication::with(['empresa', 'categoria', 'subcategoria'])
+        $publicaciones = Publication::with(['empresa.user', 'categoria', 'subcategoria'])
                         ->orderBy('id', 'asc')
                         ->paginate(10);
         $categorias = Categoria::all();
         $subcategorias = Subcategoria::all();
-        $empresas = Empresa::all();
+        $empresas = Empresa::with('user')->get();
         
         if (request()->ajax()) {
             return response()->json([
@@ -37,6 +38,9 @@ class PublicacionController extends Controller
      */
     public function store(Request $request)
     {
+        // Registrar datos recibidos para debug
+        \Log::info('Datos recibidos en creación de publicación:', $request->all());
+        
         $validated = $request->validate([
             'titulo' => 'required|max:100',
             'descripcion' => 'required',
@@ -52,12 +56,30 @@ class PublicacionController extends Controller
         // Ajuste para el checkbox
         $validated['activa'] = $request->has('activa') ? 1 : 0;
         
-        Publication::create($validated);
+        // Verificar que la empresa exista antes de crear
+        $empresa = \App\Models\Empresa::find($validated['empresa_id']);
+        if (!$empresa) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'La empresa seleccionada no existe',
+                    'errors' => ['empresa_id' => ['La empresa seleccionada no existe']]
+                ], 422);
+            }
+            
+            return redirect()->back()
+                ->withErrors(['empresa_id' => 'La empresa seleccionada no existe'])
+                ->withInput();
+        }
+        
+        $publication = Publication::create($validated);
+        \Log::info('Publicación creada:', $publication->toArray());
 
         if ($request->ajax()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Publicación creada correctamente'
+                'message' => 'Publicación creada correctamente',
+                'publication' => $publication
             ]);
         }
         
@@ -70,7 +92,7 @@ class PublicacionController extends Controller
      */
     public function edit($id)
     {
-        $publicacion = Publication::findOrFail($id);
+        $publicacion = Publication::with(['empresa.user', 'categoria', 'subcategoria'])->findOrFail($id);
         
         if (request()->ajax()) {
             return response()->json([
@@ -80,7 +102,7 @@ class PublicacionController extends Controller
         
         $categorias = Categoria::all();
         $subcategorias = Subcategoria::all();
-        $empresas = Empresa::all();
+        $empresas = Empresa::with('user')->get();
         return view('admin.publicaciones.edit', compact('publicacion', 'categorias', 'subcategorias', 'empresas'));
     }
 
@@ -136,5 +158,58 @@ class PublicacionController extends Controller
         
         return redirect()->route('admin.publicaciones.index')
             ->with('success', 'Publicación eliminada correctamente');
+    }
+
+    /**
+     * Elimina una publicación mediante SQL directo
+     */
+    public function destroySQL($id)
+    {
+        try {
+            // Registrar la solicitud para debug
+            \Log::info('Intento de eliminación SQL para publicación ID: ' . $id);
+            
+            // Ejecutar SQL directo para eliminar
+            $affected = DB::delete('DELETE FROM publications WHERE id = ?', [$id]);
+            
+            // Comprobar si se eliminó algún registro
+            if ($affected > 0) {
+                \Log::info('Publicación eliminada correctamente mediante SQL directo. ID: ' . $id);
+                
+                if (request()->ajax()) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'Publicación eliminada correctamente mediante SQL directo'
+                    ]);
+                }
+                
+                return redirect()->route('admin.publicaciones.index')
+                    ->with('success', 'Publicación eliminada correctamente mediante SQL directo');
+            } else {
+                \Log::warning('No se encontró la publicación para eliminar. ID: ' . $id);
+                
+                if (request()->ajax()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'No se encontró la publicación para eliminar'
+                    ]);
+                }
+                
+                return redirect()->route('admin.publicaciones.index')
+                    ->with('error', 'No se encontró la publicación para eliminar');
+            }
+        } catch (\Exception $e) {
+            \Log::error('Error al eliminar publicación mediante SQL: ' . $e->getMessage());
+            
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error al eliminar: ' . $e->getMessage()
+                ]);
+            }
+            
+            return redirect()->route('admin.publicaciones.index')
+                ->with('error', 'Error al eliminar: ' . $e->getMessage());
+        }
     }
 } 

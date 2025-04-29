@@ -54,25 +54,14 @@
 
         <!-- Menú de navegación -->
         <div class="bg-white shadow-md rounded-lg p-4 mb-6">
-            <div class="flex flex-wrap justify-center space-x-4">
-                <a href="{{ route('admin.publicaciones.index') }}" class="px-4 py-2 rounded-md {{ request()->routeIs('admin.publicaciones.*') ? 'bg-purple-600 text-white' : 'text-gray-600 hover:bg-gray-100' }}">
-                    <i class="fas fa-newspaper mr-2"></i>Ofertas
-                </a>
-                <a href="{{ route('admin.categorias.index') }}" class="px-4 py-2 rounded-md {{ request()->routeIs('admin.categorias.*') ? 'bg-purple-600 text-white' : 'text-gray-600 hover:bg-gray-100' }}">
-                    <i class="fas fa-tags mr-2"></i>Categorías
-                </a>
-                <a href="{{ route('admin.subcategorias.index') }}" class="px-4 py-2 rounded-md {{ request()->routeIs('admin.subcategorias.*') ? 'bg-purple-600 text-white' : 'text-gray-600 hover:bg-gray-100' }}">
-                    <i class="fas fa-tag mr-2"></i>Subcategorías
-                </a>
-                <a href="#" class="px-4 py-2 rounded-md {{ request()->routeIs('admin.empresas.*') ? 'bg-purple-600 text-white' : 'text-gray-600 hover:bg-gray-100' }}">
-                    <i class="fas fa-building mr-2"></i>Empresas
-                </a>
-                <a href="#" class="px-4 py-2 rounded-md {{ request()->routeIs('admin.alumnos.*') ? 'bg-purple-600 text-white' : 'text-gray-600 hover:bg-gray-100' }}">
-                    <i class="fas fa-user-graduate mr-2"></i>Alumnos
-                </a>
-                <a href="#" class="px-4 py-2 rounded-md {{ request()->routeIs('admin.profesores.*') ? 'bg-purple-600 text-white' : 'text-gray-600 hover:bg-gray-100' }}">
-                    <i class="fas fa-chalkboard-teacher mr-2"></i>Profesores
-                </a>
+            <div class="flex justify-center space-x-4 py-4 border-b border-purple-200 overflow-x-auto">
+                <a href="{{ route('admin.dashboard') }}" class="px-4 py-2 {{ Request::routeIs('admin.dashboard') ? 'text-white bg-purple-600' : 'text-purple-600 hover:bg-purple-100' }} rounded-md transition-colors">Dashboard</a>
+                <a href="{{ route('admin.publicaciones.index') }}" class="px-4 py-2 {{ Request::routeIs('admin.publicaciones.*') ? 'text-white bg-purple-600' : 'text-purple-600 hover:bg-purple-100' }} rounded-md transition-colors">Ofertas</a>
+                <a href="{{ route('admin.categorias.index') }}" class="px-4 py-2 {{ Request::routeIs('admin.categorias.*') ? 'text-white bg-purple-600' : 'text-purple-600 hover:bg-purple-100' }} rounded-md transition-colors">Categorías</a>
+                <a href="{{ route('admin.subcategorias.index') }}" class="px-4 py-2 {{ Request::routeIs('admin.subcategorias.*') ? 'text-white bg-purple-600' : 'text-purple-600 hover:bg-purple-100' }} rounded-md transition-colors">Subcategorías</a>
+                <a href="{{ route('admin.empresas.index') }}" class="px-4 py-2 {{ Request::routeIs('admin.empresas.*') ? 'text-white bg-purple-600' : 'text-purple-600 hover:bg-purple-100' }} rounded-md transition-colors">Empresas</a>
+                <a href="#" class="px-4 py-2 text-purple-600 hover:bg-purple-100 rounded-md transition-colors">Alumnos</a>
+                <a href="#" class="px-4 py-2 text-purple-600 hover:bg-purple-100 rounded-md transition-colors">Profesores</a>
             </div>
         </div>
 

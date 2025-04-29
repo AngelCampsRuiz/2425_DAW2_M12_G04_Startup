@@ -1,0 +1,342 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\Empresa;
+use App\Models\User;
+use App\Models\Rol;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Validator;
+
+class EmpresaController extends Controller
+{
+    /**
+     * Muestra el listado de empresas
+     */
+    public function index()
+    {
+        $empresas = Empresa::with('user')
+                ->orderBy('id', 'asc')
+                ->paginate(10);
+        
+        if (request()->ajax()) {
+            return response()->json([
+                'tabla' => view('admin.empresas.tabla', compact('empresas'))->render()
+            ]);
+        }
+        
+        return view('admin.empresas.index', compact('empresas'));
+    }
+
+    /**
+     * Almacena una nueva empresa
+     */
+    public function store(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'nombre' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:user,email',
+            'password' => 'required|string|min:8',
+            'password_confirmation' => 'required|same:password',
+            'dni' => 'required|string|max:255|unique:user,dni',
+            'telefono' => 'required|string|max:15',
+            'cif' => 'required|string|max:255|unique:empresas,cif',
+            'direccion' => 'required|string|max:255',
+            'latitud' => 'nullable|numeric',
+            'longitud' => 'nullable|numeric',
+            'provincia' => 'required|string|max:255',
+        ]);
+
+        // Iniciar transacción
+        DB::beginTransaction();
+        
+        try {
+            // Obtener ID del rol Empresa
+            $rolEmpresa = Rol::where('nombre_rol', 'Empresa')->first();
+            
+            if (!$rolEmpresa) {
+                throw new \Exception('El rol Empresa no existe en el sistema');
+            }
+            
+            // Crear usuario
+            $user = User::create([
+                'nombre' => $request->input('nombre'),
+                'email' => $request->input('email'),
+                'password' => Hash::make($request->input('password')),
+                'fecha_nacimiento' => $request->input('fecha_nacimiento') ?? null,
+                'ciudad' => $request->input('ciudad') ?? null,
+                'dni' => $request->input('dni'),
+                'activo' => true,
+                'sitio_web' => $request->input('sitio_web') ?? null,
+                'telefono' => $request->input('telefono') ?? null,
+                'descripcion' => $request->input('descripcion') ?? null,
+                'role_id' => $rolEmpresa->id
+            ]);
+            
+            // Crear empresa
+            $empresa = Empresa::create([
+                'id' => $user->id,
+                'cif' => $request->input('cif'),
+                'direccion' => $request->input('direccion'),
+                'provincia' => $request->input('provincia') ?? null,
+                'latitud' => $request->input('latitud') ?? 0,
+                'longitud' => $request->input('longitud') ?? 0,
+            ]);
+            
+            DB::commit();
+            
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Empresa creada correctamente',
+                    'empresa' => $empresa
+                ]);
+            }
+            
+            return redirect()->route('admin.empresas.index')
+                ->with('success', 'Empresa creada correctamente');
+                
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error al crear empresa: ' . $e->getMessage());
+            
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error al crear la empresa: ' . $e->getMessage(),
+                    'errors' => ['general' => ['Error al crear la empresa: ' . $e->getMessage()]]
+                ], 500);
+            }
+            
+            return redirect()->back()
+                ->withErrors(['general' => 'Error al crear la empresa: ' . $e->getMessage()])
+                ->withInput();
+        }
+    }
+
+    /**
+     * Obtiene los datos de una empresa para editar
+     */
+    public function edit($id)
+    {
+        $empresa = Empresa::with('user')->findOrFail($id);
+        
+        if (request()->ajax()) {
+            return response()->json([
+                'empresa' => $empresa
+            ]);
+        }
+        
+        return view('admin.empresas.edit', compact('empresa'));
+    }
+
+    /**
+     * Actualiza una empresa
+     */
+    public function update(Request $request, $id)
+    {
+        $empresa = Empresa::findOrFail($id);
+        $user = $empresa->user;
+
+        $rules = [
+            'nombre' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:user,email,'.$user->id,
+            'dni' => 'required|string|max:255|unique:user,dni,'.$user->id,
+            'telefono' => 'required|string|max:15',
+            'cif' => 'required|string|max:255|unique:empresas,cif,'.$empresa->id,
+            'direccion' => 'required|string|max:255',
+            'latitud' => 'nullable|numeric',
+            'longitud' => 'nullable|numeric',
+            'provincia' => 'required|string|max:255',
+        ];
+
+        if ($request->filled('password')) {
+            $rules['password'] = 'string|min:8';
+            $rules['password_confirmation'] = 'required|same:password';
+        }
+
+        $validator = Validator::make($request->all(), $rules);
+
+        // Iniciar transacción
+        DB::beginTransaction();
+        
+        try {
+            // Actualizar usuario
+            $userData = [
+                'nombre' => $request->input('nombre'),
+                'email' => $request->input('email'),
+                'fecha_nacimiento' => $request->input('fecha_nacimiento') ?? null,
+                'ciudad' => $request->input('ciudad') ?? null,
+                'dni' => $request->input('dni'),
+                'activo' => $request->has('activo') ? true : false,
+                'sitio_web' => $request->input('sitio_web') ?? null,
+                'telefono' => $request->input('telefono') ?? null,
+                'descripcion' => $request->input('descripcion') ?? null,
+            ];
+            
+            // Si se proporcionó una nueva contraseña, actualizarla
+            if ($request->filled('password')) {
+                $userData['password'] = Hash::make($request->input('password'));
+            }
+            
+            $user->update($userData);
+            
+            // Actualizar empresa
+            $empresa->update([
+                'cif' => $request->input('cif'),
+                'direccion' => $request->input('direccion'),
+                'provincia' => $request->input('provincia') ?? null,
+                'latitud' => $request->input('latitud') ?? $empresa->latitud,
+                'longitud' => $request->input('longitud') ?? $empresa->longitud,
+            ]);
+            
+            DB::commit();
+            
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Empresa actualizada correctamente'
+                ]);
+            }
+            
+            return redirect()->route('admin.empresas.index')
+                ->with('success', 'Empresa actualizada correctamente');
+                
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error al actualizar empresa: ' . $e->getMessage());
+            
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error al actualizar la empresa: ' . $e->getMessage(),
+                    'errors' => ['general' => ['Error al actualizar la empresa: ' . $e->getMessage()]]
+                ], 500);
+            }
+            
+            return redirect()->back()
+                ->withErrors(['general' => 'Error al actualizar la empresa: ' . $e->getMessage()])
+                ->withInput();
+        }
+    }
+
+    /**
+     * Elimina una empresa
+     */
+    public function destroy($id)
+    {
+        // Buscar la empresa con relaciones
+        $empresa = Empresa::with(['user', 'publicaciones'])->findOrFail($id);
+        
+        // Iniciar transacción
+        DB::beginTransaction();
+        
+        try {
+            // Verificar si tiene publicaciones
+            if ($empresa->publicaciones->count() > 0) {
+                throw new \Exception('No se puede eliminar la empresa porque tiene publicaciones asociadas');
+            }
+            
+            // Eliminar primero la empresa y luego el usuario
+            $empresa->delete();
+            $empresa->user->delete();
+            
+            DB::commit();
+            
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Empresa eliminada correctamente'
+                ]);
+            }
+            
+            return redirect()->route('admin.empresas.index')
+                ->with('success', 'Empresa eliminada correctamente');
+                
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error al eliminar empresa: ' . $e->getMessage());
+            
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error al eliminar la empresa: ' . $e->getMessage()
+                ], 500);
+            }
+            
+            return redirect()->back()
+                ->withErrors(['general' => 'Error al eliminar la empresa: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Elimina una empresa mediante SQL directo
+     */
+    public function destroySQL($id)
+    {
+        try {
+            // Registrar la solicitud para debug
+            \Log::info('Intento de eliminación SQL para empresa ID: ' . $id);
+            
+            // Iniciar transacción
+            DB::beginTransaction();
+            
+            // Primero eliminar registros relacionados en empresa
+            $affectedEmpresa = DB::delete('DELETE FROM empresas WHERE id = ?', [$id]);
+            
+            if ($affectedEmpresa > 0) {
+                // Luego eliminar el usuario
+                $affectedUser = DB::delete('DELETE FROM user WHERE id = ?', [$id]);
+                
+                if ($affectedUser == 0) {
+                    throw new \Exception('Se eliminó la empresa pero no se encontró el usuario asociado');
+                }
+                
+                DB::commit();
+                \Log::info('Empresa y usuario eliminados correctamente mediante SQL directo. ID: ' . $id);
+                
+                if (request()->ajax()) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'Empresa eliminada correctamente mediante SQL directo'
+                    ]);
+                }
+                
+                return redirect()->route('admin.empresas.index')
+                    ->with('success', 'Empresa eliminada correctamente mediante SQL directo');
+            } else {
+                DB::rollBack();
+                \Log::warning('No se encontró la empresa para eliminar. ID: ' . $id);
+                
+                if (request()->ajax()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'No se encontró la empresa para eliminar'
+                    ]);
+                }
+                
+                return redirect()->route('admin.empresas.index')
+                    ->with('error', 'No se encontró la empresa para eliminar');
+            }
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Error al eliminar empresa mediante SQL: ' . $e->getMessage());
+            
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error al eliminar: ' . $e->getMessage()
+                ]);
+            }
+            
+            return redirect()->route('admin.empresas.index')
+                ->with('error', 'Error al eliminar: ' . $e->getMessage());
+        }
+    }
+} 
