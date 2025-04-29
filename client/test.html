@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba Socket.IO</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        #status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .connected {
+            background-color: #dff2bf;
+            color: #4F8A10;
+        }
+        .disconnected {
+            background-color: #ffbaba;
+            color: #D8000C;
+        }
+        #log {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border-radius: 5px;
+            height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Prueba de Conexión Socket.IO</h1>
+    
+    <div id="status" class="disconnected">Desconectado</div>
+    
+    <h2>Log de eventos:</h2>
+    <div id="log"></div>
+    
+    <button id="testBtn">Enviar evento de prueba</button>
+    
+    <script src="http://localhost:3000/socket.io/socket.io.js"></script>
+    <script>
+        const statusDiv = document.getElementById('status');
+        const logDiv = document.getElementById('log');
+        const testBtn = document.getElementById('testBtn');
+        
+        // Intentar conectar al servidor Socket.IO
+        const socket = io('http://localhost:3000');
+        
+        // Registrar eventos
+        socket.on('connect', () => {
+            statusDiv.textContent = 'Conectado al servidor';
+            statusDiv.className = 'connected';
+            logEvent('Conectado al servidor. ID de socket: ' + socket.id);
+        });
+        
+        socket.on('disconnect', () => {
+            statusDiv.textContent = 'Desconectado';
+            statusDiv.className = 'disconnected';
+            logEvent('Desconectado del servidor');
+        });
+        
+        socket.on('connect_error', (error) => {
+            statusDiv.textContent = 'Error de conexión: ' + error.message;
+            statusDiv.className = 'disconnected';
+            logEvent('Error de conexión: ' + error.message);
+        });
+        
+        // Evento personalizado - escuchar respuesta del servidor
+        socket.on('test_response', (data) => {
+            logEvent('Respuesta recibida: ' + JSON.stringify(data));
+        });
+        
+        // Botón de prueba
+        testBtn.addEventListener('click', () => {
+            if (socket.connected) {
+                socket.emit('test_event', { message: 'Hola servidor' });
+                logEvent('Evento de prueba enviado');
+            } else {
+                logEvent('No se puede enviar el evento: no hay conexión');
+            }
+        });
+        
+        // Función para registrar eventos en el log
+        function logEvent(message) {
+            const date = new Date();
+            const timeString = date.toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.textContent = `[${timeString}] ${message}`;
+            logDiv.appendChild(logEntry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+    </script>
+</body>
+</html> 

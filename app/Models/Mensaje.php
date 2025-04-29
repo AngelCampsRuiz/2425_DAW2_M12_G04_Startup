@@ -15,7 +15,16 @@ class Mensaje extends Model
         'contenido',
         'chat_id',
         'user_id',
-        'fecha_envio'
+        'fecha_envio',
+        'archivo_adjunto',
+        'tipo_archivo',
+        'nombre_archivo',
+        'leido'
+    ];
+
+    protected $casts = [
+        'leido' => 'boolean',
+        'fecha_envio' => 'datetime'
     ];
 
     public function chat()
