@@ -39,4 +39,7 @@ return [
     'contracts_managed' => 'convenios gestionados',
     'students_from_educational_centers' => 'estudiantes de centros educativos',
     'students_find_practices_in_their_area' => 'encuentran prácticas en su área',
+    'companies_trust_us' => 'empresas confían en nosotros',
+    'offers_published' => 'ofertas publicadas',
+    'companies_repeat' => '% de empresas repiten',
 ];

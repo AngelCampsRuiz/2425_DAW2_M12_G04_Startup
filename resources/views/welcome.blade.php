@@ -4,8 +4,8 @@
 {{-- CONTENIDO --}}
     @section('content')
         <section class="py-12 text-center bg-gradient-to-b from-purple-50 to-white">
-            <h1 class="text-4xl font-bold text-[#7705B6] mb-4 leading-tight max-w-5xl mx-auto">{{ __('footer.bridge_between_school_and_work') }}</h1>
-            <p class="text-lg text-gray-600 max-w-4xl mx-auto mb-12">{{ __('footer.connecting_students_with_best_companies') }}</p>
+            <h1 class="text-4xl font-bold text-[#7705B6] mb-4 leading-tight max-w-5xl mx-auto">{{ __('messages.bridge_between_school_and_work') }}</h1>
+            <p class="text-lg text-gray-600 max-w-4xl mx-auto mb-12">{{ __('messages.connecting_students_with_best_companies') }}</p>
 
             <!-- BLOQUE DE ESTUDIANTES -->
                 <div class="container mx-auto max-w-5xl flex flex-col md:flex-row items-center justify-center my-16 px-4 bg-white rounded-xl shadow-lg p-8 transform transition-transform hover:scale-[1.02]">
@@ -13,10 +13,10 @@
                         <img src="{{ asset('assets/images/estudiantes.jpg') }}" alt="Estudiantes" class="rounded-lg shadow-xl w-full max-w-md">
                     </div>
                     <div class="md:w-1/2 space-y-6 md:pl-12 flex flex-col justify-center text-left">
-                        <div class="text-2xl font-semibold text-[#7705B6]">🎓 {{ $totalAlumnos }} {{ __('footer.students_have_found_practices') }}</div>
-                        <div class="text-lg">🧾 {{ $totalConvenios }} {{ __('footer.contracts_managed') }}</div>
-                        <div class="text-lg">📍 {{ $totalCentros }} {{ __('footer.students_from_educational_centers') }}</div>
-                        <div class="text-lg">📈 {{ $porcentajeExito }}% {{ __('footer.students_find_practices_in_their_area') }}</div>
+                        <div class="text-2xl font-semibold text-[#7705B6]">🎓 {{ $totalAlumnos }} {{ __('messages.students_have_found_practices') }}</div>
+                        <div class="text-lg">🧾 {{ $totalConvenios }} {{ __('messages.contracts_managed') }}</div>
+                        <div class="text-lg">📍 {{ $totalCentros }} {{ __('messages.students_from_educational_centers') }}</div>
+                        <div class="text-lg">📈 {{ $porcentajeExito }}% {{ __('messages.students_find_practices_in_their_area') }}</div>
                     </div>
                 </div>
 
@@ -26,9 +26,9 @@
                         <img src="{{ asset('assets/images/empresas.jpg') }}" alt="Empresas" class="rounded-lg shadow-xl w-full max-w-md">
                     </div>
                     <div class="md:w-1/2 space-y-6 md:pr-12 flex flex-col justify-center text-right">
-                        <div class="text-2xl font-semibold text-[#7705B6]">🏢 {{ $totalEmpresas }} empresas confían en nosotros</div>
-                        <div class="text-lg">💼 {{ $totalOfertas }} ofertas publicadas</div>
-                        <div class="text-lg">🤝 {{ $porcentajeRepiten }}% de empresas repiten</div>
+                        <div class="text-2xl font-semibold text-[#7705B6]">🏢 {{ $totalEmpresas }} {{ __('messages.companies_trust_us') }}</div>
+                        <div class="text-lg">💼 {{ $totalOfertas }} {{ __('messages.offers_published') }}</div>
+                        <div class="text-lg">🤝 {{ $porcentajeRepiten }}% {{ __('messages.companies_repeat') }}</div>
                         <div class="text-lg">🌍 Presencia en {{ $totalProvincias }} provincias</div>
                     </div>
                 </div>

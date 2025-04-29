@@ -39,4 +39,7 @@ return [
     'contracts_managed' => 'contracts managed',
     'students_from_educational_centers' => 'students from educational centers',
     'students_find_practices_in_their_area' => 'find practices in their area',
+    'companies_trust_us' => 'companies trust us',
+    'offers_published' => 'offers published',
+    'companies_repeat' => '% of companies repeat',
 ];
