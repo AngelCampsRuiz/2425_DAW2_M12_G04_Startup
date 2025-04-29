@@ -6,8 +6,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="{{ asset('js/profile.js') }}"></script>
-    <script src="{{ asset('js/profile-functions.js') }}"></script>
-    <script src="{{ asset('js/profile-edit.js') }}"></script>
     @section('content')
         <div class="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-50">
             {{-- MIGAS DE PAN --}}
@@ -171,9 +169,37 @@
                             </div>
                         </div>
                     </div>
+
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const content = document.getElementById('progressContent');
+                            const button = document.getElementById('toggleButton');
+                            const icon = document.getElementById('toggleIcon');
+                            let isExpanded = true;
+
+                            // Función para alternar la visibilidad
+                            function toggleProgress() {
+                                isExpanded = !isExpanded;
+
+                                if (isExpanded) {
+                                    content.style.maxHeight = content.scrollHeight + "px";
+                                    icon.style.transform = 'rotate(0deg)';
+                                } else {
+                                    content.style.maxHeight = "0";
+                                    icon.style.transform = 'rotate(180deg)';
+                                }
+                            }
+
+                            // Añadir el evento al botón
+                            button.addEventListener('click', toggleProgress);
+
+                            // Inicializar el estado
+                            content.style.maxHeight = content.scrollHeight + "px";
+                        });
+                    </script>
                 @endif
 
-                @if($user->role_id == 3)
+                    @if($user->role_id == 3)
                 <div class="bg-white rounded-2xl shadow-xl overflow-hidden transform transition-all duration-300 hover:shadow-2xl">
                     {{-- Header del Perfil con gradiente --}}
                     <div class="relative h-64 bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600">
@@ -773,6 +799,95 @@
                     </div>
                 </div>
             </div>
+
+            <script>
+                function openRatingModal() {
+                    document.getElementById('ratingModal').classList.remove('hidden');
+                    document.body.style.overflow = 'hidden';
+                }
+
+                function closeRatingModal() {
+                    document.getElementById('ratingModal').classList.add('hidden');
+                    document.body.style.overflow = 'auto';
+                }
+
+                function setRating(rating) {
+                    document.getElementById('puntuacion').value = rating;
+                    const stars = document.querySelectorAll('.rating-star');
+                    stars.forEach((star, index) => {
+                        star.classList.toggle('text-yellow-400', index < rating);
+                        star.classList.toggle('text-gray-300', index >= rating);
+                    });
+                }
+
+                // Cerrar modal al hacer clic fuera
+                document.getElementById('ratingModal').addEventListener('click', function(event) {
+                    if (event.target === this) {
+                        closeRatingModal();
+                    }
+                });
+
+                // Manejar envío del formulario
+                document.getElementById('ratingForm').addEventListener('submit', function(e) {
+                    e.preventDefault();
+
+                    const formData = new FormData(this);
+                    const submitButton = this.querySelector('button[type="submit"]');
+                    const originalButtonText = submitButton.innerHTML;
+
+                    // Mostrar indicador de carga
+                    submitButton.disabled = true;
+                    submitButton.innerHTML = `
+                        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Enviando...
+                    `;
+
+                    fetch(this.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Mostrar mensaje de éxito
+                            const successMessage = document.createElement('div');
+                            successMessage.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+                            successMessage.textContent = data.message;
+                            document.body.appendChild(successMessage);
+
+                            // Cerrar el modal y recargar la página después de 2 segundos
+                            setTimeout(() => {
+                                closeRatingModal();
+                                location.reload();
+                            }, 2000);
+                        } else {
+                            throw new Error(data.message);
+                        }
+                    })
+                    .catch(error => {
+                        // Mostrar mensaje de error
+                        const errorMessage = document.createElement('div');
+                        errorMessage.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+                        errorMessage.textContent = error.message;
+                        document.body.appendChild(errorMessage);
+
+                        setTimeout(() => {
+                            errorMessage.remove();
+                        }, 3000);
+                    })
+                    .finally(() => {
+                        // Restaurar el botón
+                        submitButton.disabled = false;
+                        submitButton.innerHTML = originalButtonText;
+                    });
+                });
+            </script>
         @endif
 
         <div>
@@ -925,6 +1040,148 @@
                 </div>
             </div>
         </div>
+
+        <script>
+            function editValoracion(id, puntuacion, comentario) {
+                document.getElementById('valoracionId').value = id;
+                document.getElementById('editPuntuacion').value = puntuacion;
+                document.getElementById('editComentario').value = comentario;
+
+                // Actualizar estrellas
+                const stars = document.querySelectorAll('.edit-rating-star');
+                stars.forEach((star, index) => {
+                    star.classList.toggle('text-yellow-400', index < puntuacion);
+                    star.classList.toggle('text-gray-300', index >= puntuacion);
+                });
+
+                // Abrir modal
+                document.getElementById('editValoracionModal').classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeEditValoracionModal() {
+                document.getElementById('editValoracionModal').classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }
+
+            function setEditRating(rating) {
+                document.getElementById('editPuntuacion').value = rating;
+                const stars = document.querySelectorAll('.edit-rating-star');
+                stars.forEach((star, index) => {
+                    star.classList.toggle('text-yellow-400', index < rating);
+                    star.classList.toggle('text-gray-300', index >= rating);
+                });
+            }
+
+            // Manejar el envío del formulario de edición de valoración
+            document.getElementById('editValoracionForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const valoracionId = document.getElementById('valoracionId').value;
+                const formData = new FormData(this);
+                const submitButton = this.querySelector('button[type="submit"]');
+                const originalButtonText = submitButton.innerHTML;
+
+                // Mostrar indicador de carga
+                submitButton.disabled = true;
+                submitButton.innerHTML = `
+                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Guardando...
+                `;
+
+                fetch(`/valoraciones/${valoracionId}`, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Mostrar mensaje de éxito
+                        Swal.fire({
+                            title: 'Éxito',
+                            text: 'La valoración se ha actualizado correctamente',
+                            icon: 'success',
+                            confirmButtonColor: '#7C3AED'
+                        }).then(() => {
+                            location.reload();
+                        });
+                    } else {
+                        throw new Error(data.message || 'Error al actualizar la valoración');
+                    }
+                })
+                .catch(error => {
+                    Swal.fire({
+                        title: 'Error',
+                        text: error.message || 'Ha ocurrido un error al actualizar la valoración',
+                        icon: 'error',
+                        confirmButtonColor: '#7C3AED'
+                    });
+                })
+                .finally(() => {
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = originalButtonText;
+                });
+            });
+
+            function deleteValoracion(id) {
+                Swal.fire({
+                    title: '¿Estás seguro?',
+                    text: "No podrás revertir esta acción",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#7C3AED',
+                    cancelButtonColor: '#EF4444',
+                    confirmButtonText: 'Sí, eliminar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        fetch(`/valoraciones/${id}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({
+                                    title: 'Eliminada',
+                                    text: 'La valoración ha sido eliminada',
+                                    icon: 'success',
+                                    confirmButtonColor: '#7C3AED'
+                                }).then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                throw new Error(data.message);
+                            }
+                        })
+                        .catch(error => {
+                            Swal.fire({
+                                title: 'Error',
+                                text: 'Ha ocurrido un error al eliminar la valoración',
+                                icon: 'error',
+                                confirmButtonColor: '#7C3AED'
+                            });
+                        });
+                    }
+                });
+            }
+
+            // Cerrar modal al hacer clic fuera
+            document.getElementById('editValoracionModal').addEventListener('click', function(event) {
+                if (event.target === this) {
+                    closeEditValoracionModal();
+                }
+            });
+        </script>
 
         {{-- Modal de Edición --}}
         <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 hidden overflow-y-auto h-full w-full z-50 backdrop-blur-sm">
@@ -1166,4 +1423,429 @@
                 </div>
             </div>
         </div>
+
+        {{-- Scripts para el modal --}}
+        <script>
+            function openEditModal() {
+                document.getElementById('editModal').classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+                // Resetear errores al abrir modal
+                resetAllErrors();
+            }
+
+            function closeEditModal() {
+                document.getElementById('editModal').classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }
+
+            // Cerrar modal al hacer clic fuera
+            window.onclick = function(event) {
+                const modal = document.getElementById('editModal');
+                if (event.target == modal) {
+                    closeEditModal();
+                }
+            }
+
+            // Manejar envío del formulario
+            // Funciones de validación
+            function showError(field, message) {
+                const errorElement = document.getElementById('error-' + field.id);
+                if (errorElement) {
+                    errorElement.textContent = message;
+                    errorElement.classList.remove('hidden');
+                    field.classList.add('border-red-500');
+                }
+            }
+
+            function hideError(field) {
+                const errorElement = document.getElementById('error-' + field.id);
+                if (errorElement) {
+                    errorElement.classList.add('hidden');
+                    field.classList.remove('border-red-500');
+                }
+            }
+
+            function resetAllErrors() {
+                document.querySelectorAll('.error-message').forEach(el => {
+                    el.classList.add('hidden');
+                });
+                document.querySelectorAll('input, textarea').forEach(el => {
+                    el.classList.remove('border-red-500');
+                });
+            }
+
+            // Añadir onblur a todos los campos cuando se carga la página
+            document.addEventListener('DOMContentLoaded', function() {
+                const nombreInput = document.getElementById('nombre');
+                const descripcionInput = document.getElementById('descripcion');
+                const telefonoInput = document.getElementById('telefono');
+                const dniInput = document.getElementById('dni');
+                const ciudadInput = document.getElementById('ciudad');
+                
+                if (nombreInput) nombreInput.addEventListener('blur', function() { validarNombre(this); });
+                if (descripcionInput) descripcionInput.addEventListener('blur', function() { validarDescripcion(this); });
+                if (telefonoInput) telefonoInput.addEventListener('blur', function() { validarTelefono(this); });
+                if (dniInput) dniInput.addEventListener('blur', function() { validarDNI(this); });
+                if (ciudadInput) ciudadInput.addEventListener('blur', function() { validarCiudad(this); });
+            });
+
+            function validarNombre(field) {
+                if (!field.value.trim()) {
+                    showError(field, "El nombre es obligatorio");
+                    return false;
+                } else if (field.value.trim().length < 2) {
+                    showError(field, "El nombre debe tener al menos 2 caracteres");
+                    return false;
+                } else if (field.value.trim().length > 100) {
+                    showError(field, "El nombre no puede exceder los 100 caracteres");
+                    return false;
+                } else {
+                    hideError(field);
+                    return true;
+                }
+            }
+
+            function validarDescripcion(field) {
+                if (field.value.trim().length > 500) {
+                    showError(field, "La descripción no puede exceder los 500 caracteres");
+                    return false;
+                } else {
+                    hideError(field);
+                    return true;
+                }
+            }
+
+            function validarTelefono(field) {
+                if (field.value.trim() && !/^[0-9]{9}$/.test(field.value.trim())) {
+                    showError(field, "El teléfono debe contener 9 dígitos");
+                    return false;
+                } else {
+                    hideError(field);
+                    return true;
+                }
+            }
+
+            function validarDNI(field) {
+                if (field.value.trim()) {
+                    const dniRegex = /^[0-9]{8}[A-Za-z]$/;
+                    const nieRegex = /^[XYZxyz][0-9]{7}[A-Za-z]$/;
+                    
+                    if (!dniRegex.test(field.value.trim()) && !nieRegex.test(field.value.trim())) {
+                        showError(field, "Formato de DNI/NIE no válido");
+                        return false;
+                    } else {
+                        hideError(field);
+                        return true;
+                    }
+                } else {
+                    hideError(field);
+                    return true;
+                }
+            }
+
+            function validarCiudad(field) {
+                if (field.value.trim() && field.value.trim().length < 2) {
+                    showError(field, "La ciudad debe tener al menos 2 caracteres");
+                    return false;
+                } else if (field.value.trim().length > 100) {
+                    showError(field, "La ciudad no puede exceder los 100 caracteres");
+                    return false;
+                } else {
+                    hideError(field);
+                    return true;
+                }
+            }
+
+            function validarImagen(field) {
+                if (field.files.length > 0) {
+                    const file = field.files[0];
+                    const fileType = file.type;
+                    const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                    
+                    if (!validImageTypes.includes(fileType)) {
+                        showError(field, "El archivo debe ser una imagen (JPG, PNG, GIF o WEBP)");
+                        return false;
+                    } else if (file.size > 2 * 1024 * 1024) { // 2MB
+                        showError(field, "La imagen no puede exceder los 2MB");
+                        return false;
+                    } else {
+                        hideError(field);
+                        return true;
+                    }
+                } else {
+                    hideError(field);
+                    return true;
+                }
+            }
+
+            function validarCV(field) {
+                if (field.files.length > 0) {
+                    const file = field.files[0];
+                    
+                    if (file.type !== 'application/pdf') {
+                        showError(field, "El archivo debe ser un PDF");
+                        return false;
+                    } else if (file.size > 5 * 1024 * 1024) { // 5MB
+                        showError(field, "El CV no puede exceder los 5MB");
+                        return false;
+                    } else {
+                        hideError(field);
+                        return true;
+                    }
+                } else {
+                    hideError(field);
+                    return true;
+                }
+            }
+
+            // Validar todo el formulario antes de enviar
+            document.getElementById('profileForm').addEventListener('submit', function(e) {
+                // Primero validar todos los campos
+                let isValid = true;
+                
+                if (!validarNombre(document.getElementById('nombre'))) isValid = false;
+                if (!validarDescripcion(document.getElementById('descripcion'))) isValid = false;
+                if (!validarTelefono(document.getElementById('telefono'))) isValid = false;
+                if (!validarDNI(document.getElementById('dni'))) isValid = false;
+                if (!validarCiudad(document.getElementById('ciudad'))) isValid = false;
+                
+                const imagenInput = document.getElementById('imagen');
+                if (imagenInput && imagenInput.files.length > 0) {
+                    if (!validarImagen(imagenInput)) isValid = false;
+                }
+                
+                const cvInput = document.getElementById('cv_pdf');
+                if (cvInput && cvInput.files.length > 0) {
+                    if (!validarCV(cvInput)) isValid = false;
+                }
+                
+                if (!isValid) {
+                    e.preventDefault();
+                    return false;
+                }
+
+                e.preventDefault();
+
+                const formData = new FormData(this);
+                const submitButton = this.querySelector('button[type="submit"]');
+                const originalButtonText = submitButton.innerHTML;
+
+                // Mostrar indicador de carga
+                submitButton.disabled = true;
+                submitButton.innerHTML = `
+                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Guardando...
+            `;
+
+                fetch(this.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Actualizar la barra de progreso
+                        const progressBar = document.getElementById('progressBar');
+                        const progressText = document.getElementById('progressText');
+                        const progressPercentage = document.getElementById('progressPercentage');
+                        const progressMessage = document.getElementById('progressMessage');
+
+                        if (progressBar && progressText && progressPercentage && progressMessage) {
+                            progressBar.style.width = data.porcentaje + '%';
+                            progressText.textContent = data.porcentaje + '%';
+                            progressPercentage.textContent = data.porcentaje + '%';
+
+                            // Actualizar mensaje según el porcentaje
+                            if (data.porcentaje < 50) {
+                                progressMessage.textContent = '¡Sigue completando tu perfil!';
+                            } else if (data.porcentaje < 80) {
+                                progressMessage.textContent = '¡Vas por buen camino!';
+                            } else {
+                                progressMessage.textContent = '¡Casi lo tienes!';
+                            }
+                        }
+
+                        // Actualizar la información del perfil
+                        const user = data.user;
+
+                        // Actualizar nombre
+                        const nombreElement = document.querySelector('h1.text-4xl');
+                        if (nombreElement) nombreElement.textContent = user.nombre;
+
+                        // Actualizar descripción
+                        const descripcionElement = document.querySelector('.text-gray-700.leading-relaxed');
+                        if (descripcionElement) descripcionElement.textContent = user.descripcion || '';
+
+                        // Actualizar campos de visibilidad
+                        const camposVisibles = {
+                            'telefono': user.show_telefono,
+                            'dni': user.show_dni,
+                            'ciudad': user.show_ciudad,
+                            'direccion': user.show_direccion,
+                            'web': user.show_web
+                        };
+
+                        // Actualizar la visibilidad de cada campo
+                        Object.entries(camposVisibles).forEach(([campo, visible]) => {
+                            const elemento = document.querySelector(`[data-campo="${campo}"]`);
+                            if (elemento) {
+                                elemento.style.display = visible ? 'flex' : 'none';
+                            }
+                        });
+
+                        // Actualizar valores de los campos
+                        const camposValores = {
+                            'telefono': user.telefono,
+                            'dni': user.dni,
+                            'ciudad': user.ciudad,
+                            'direccion': user.direccion,
+                            'web': user.web
+                        };
+
+                        Object.entries(camposValores).forEach(([campo, valor]) => {
+                            const elemento = document.querySelector(`[data-valor="${campo}"]`);
+                            if (elemento) {
+                                elemento.textContent = valor || 'No especificado';
+                            }
+                        });
+
+                        // Actualizar imagen de perfil si se cambió
+                        if (user.imagen) {
+                            const imagenPerfil = document.querySelector('.w-40.h-40.rounded-full img');
+                            if (imagenPerfil) {
+                                imagenPerfil.src = `{{ asset('public/profile_images/') }}/${user.imagen}`;
+                            }
+                        }
+
+                        // Actualizar CV si se cambió
+                        if (user.estudiante && user.estudiante.cv_pdf) {
+                            const cvLink = document.querySelector('a[href*="cv/"]');
+                            if (cvLink) {
+                                cvLink.href = `/cv/${user.estudiante.cv_pdf}`;
+                            }
+                        }
+
+                        // Mostrar mensaje de éxito
+                        const successMessage = document.createElement('div');
+                        successMessage.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+                        successMessage.textContent = data.message;
+                        document.body.appendChild(successMessage);
+
+                        // Cerrar el modal y recargar la página después de 2 segundos
+                        setTimeout(() => {
+                            closeEditModal();
+                            location.reload();
+                        }, 2000);
+                    } else if (data.errors) {
+                        // Mostrar errores de validación
+                        resetAllErrors();
+                        Object.entries(data.errors).forEach(([field, messages]) => {
+                            const inputField = document.querySelector(`[name="${field}"]`);
+                            if (inputField) {
+                                const errorMessage = Array.isArray(messages) ? messages[0] : messages;
+                                showError(inputField, errorMessage);
+                            }
+                        });
+                    } else {
+                        throw new Error(data.message || "Ha ocurrido un error al guardar los cambios");
+                    }
+                })
+                .catch(error => {
+                    // Primero intentar parsear el error como JSON en caso de que sea una respuesta del servidor
+                    let parsedError;
+                    try {
+                        // Si la respuesta es un objeto Response, intentamos obtener el JSON
+                        if (error instanceof Response) {
+                            return error.json().then(data => {
+                                handleApiError(data);
+                            });
+                        }
+                        // Si ya tenemos un objeto, lo usamos directamente
+                        else if (error.message) {
+                            handleApiError({ message: error.message });
+                        }
+                        // Último caso, error sin formato claro
+                        else {
+                            handleApiError({ message: "Ha ocurrido un error desconocido" });
+                        }
+                    } catch (e) {
+                        // Si falla el parsing, usamos el error como string
+                        handleApiError({ message: error.toString() });
+                    }
+                })
+                .finally(() => {
+                    // Restaurar el botón
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = originalButtonText;
+                });
+            });
+
+            // Función para manejar errores de la API
+            function handleApiError(errorData) {
+                const errorMsg = errorData.message || "Ha ocurrido un error al procesar la solicitud";
+                
+                // Detectar tipos específicos de errores
+                if (errorMsg.includes('Duplicate entry') && errorMsg.includes('user_telefono_unique')) {
+                    // Error de teléfono duplicado
+                    const telefonoInput = document.getElementById('telefono');
+                    if (telefonoInput) {
+                        showError(telefonoInput, "Este número de teléfono ya está registrado");
+                        return;
+                    }
+                } else if (errorMsg.includes('Duplicate entry') && errorMsg.includes('user_dni_unique')) {
+                    // Error de DNI duplicado
+                    const dniInput = document.getElementById('dni');
+                    if (dniInput) {
+                        showError(dniInput, "Este DNI/NIE ya está registrado");
+                        return;
+                    }
+                } else if (errorMsg.includes('Duplicate entry') && errorMsg.includes('user_email_unique')) {
+                    // Error de email duplicado
+                    const emailInput = document.getElementById('email');
+                    if (emailInput) {
+                        showError(emailInput, "Este email ya está registrado");
+                        return;
+                    }
+                }
+                
+                // Para otros errores, mostrar un mensaje dentro del modal
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'mt-4 p-4 bg-red-50 text-red-700 rounded-lg';
+                errorDiv.innerHTML = `
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-red-800">Ha ocurrido un error</h3>
+                            <div class="mt-1 text-sm text-red-700">
+                                ${errorMsg}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Insertar el error en el formulario
+                const form = document.getElementById('profileForm');
+                const submitBtn = document.getElementById('submitBtn');
+                
+                // Remover cualquier mensaje de error anterior
+                const prevError = document.querySelector('.bg-red-50.text-red-700');
+                if (prevError) prevError.remove();
+                
+                // Insertar antes del botón de envío
+                if (form && submitBtn) {
+                    form.insertBefore(errorDiv, submitBtn.parentNode);
+                }
+            }
+        </script>
     @endsection
+
