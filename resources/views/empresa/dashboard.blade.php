@@ -1321,3 +1321,12 @@
 </style>
 @endsection
 
+{{-- CSS y JS externos --}}
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('css/empresa-dashboard.css') }}">
+@endpush
+
+@push('scripts')
+    <script src="{{ asset('js/empresa-dashboard.js') }}"></script>
+@endpush
+
