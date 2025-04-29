@@ -541,6 +541,4 @@ Queremos expresar nuestro sincero agradecimiento a:
     <a href="https://github.com/tu-usuario/nextgen">💻 GitHub</a> •
     <a href="mailto:info@nextgenedu.es">📧 Contact</a>
   </p>
-  
-  <img src="https://www.ejemplo.com/nextgen-footer.png" width="300" alt="NextGen Footer">
 </div>
