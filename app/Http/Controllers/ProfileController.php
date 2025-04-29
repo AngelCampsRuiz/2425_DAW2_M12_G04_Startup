@@ -182,33 +182,19 @@ class ProfileController extends Controller
     public function updateLocation(Request $request)
     {
         try {
-            $validated = $request->validate([
-                'lat' => 'required|numeric',
-                'lng' => 'required|numeric',
-                'direccion' => 'required|string|max:255',
-                'ciudad' => 'required|string|max:100',
-            ]);
-
             $user = auth()->user();
-            
-            // Asegúrate de que los campos se actualicen correctamente
-            $updated = $user->update([
-                'lat' => $validated['lat'],
-                'lng' => $validated['lng'],
-                'direccion' => $validated['direccion'],
-                'ciudad' => $validated['ciudad'],
+            $user->update([
+                'lat' => $request->lat,
+                'lng' => $request->lng,
+                'direccion' => $request->direccion,
+                'ciudad' => $request->ciudad
             ]);
-
-            if (!$updated) {
-                throw new \Exception('No se pudo actualizar la ubicación');
-            }
 
             return response()->json([
                 'success' => true,
                 'message' => 'Ubicación actualizada correctamente'
             ]);
         } catch (\Exception $e) {
-            \Log::error('Error actualizando ubicación: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Error al actualizar la ubicación: ' . $e->getMessage()
