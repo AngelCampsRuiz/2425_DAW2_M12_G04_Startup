@@ -14,12 +14,12 @@
         <!-- Banner de demostración -->
         <div class="bg-yellow-100 border-b border-yellow-200 p-4 text-center">
             <p class="text-yellow-800 font-medium">
-                <span class="font-bold">Vista de demostración</span> - Así se vería la plataforma si fueras un estudiante. 
+                <span class="font-bold">Vista de demostración</span> - Así se vería la plataforma si fueras un estudiante.
                 <a href="{{ route('register') }}" class="text-purple-700 underline font-bold">Regístrate ahora</a> para acceder a todas las funcionalidades.
             </p>
         </div>
         @endif
-        
+
         {{-- BREADCRUMBS --}}
         <div class="bg-white shadow-sm">
             <div class="container mx-auto px-4 py-3">
@@ -35,7 +35,7 @@
                 </div>
             </div>
         </div>
-        
+
         {{-- CONTENIDO PRINCIPAL --}}
         <div class="container mx-auto px-4 py-8">
             <div class="flex flex-col md:flex-row gap-6">
@@ -115,10 +115,10 @@
                     {{-- BARRA DE BÚSQUEDA Y ORDENAMIENTO --}}
                     <div class="flex flex-col md:flex-row gap-4 mb-6">
                         <div class="flex-1">
-                            <form id="searchForm" class="flex gap-4 items-center" 
+                            <form id="searchForm" class="flex gap-4 items-center"
                                 data-route="{{ isset($is_demo) && $is_demo ? route('demo.student') : route('student.dashboard') }}">
                                 <div class="relative flex-1">
-                                    <input type="text" name="search" id="searchInput" value="{{ request('search') }}" 
+                                    <input type="text" name="search" id="searchInput" value="{{ request('search') }}"
                                     placeholder="Buscar publicaciones..."
                                         class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-primary focus:border-primary focus:outline-none transition duration-200">
                                     <svg class="absolute left-3 top-2.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -137,26 +137,26 @@
                         <div class="w-full md:w-48">
                             <div class="relative">
                                 <select id="orderSelect" class="w-full pl-3 pr-10 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-primary focus:border-primary focus:outline-none appearance-none transition duration-200">
-                                <option value="{{ isset($is_demo) && $is_demo ? 
-                                    route('demo.student', ['order_by' => 'fecha_publicacion', 'order_direction' => 'desc']) : 
+                                <option value="{{ isset($is_demo) && $is_demo ?
+                                    route('demo.student', ['order_by' => 'fecha_publicacion', 'order_direction' => 'desc']) :
                                     route('student.dashboard', ['order_by' => 'fecha_publicacion', 'order_direction' => 'desc']) }}"
                                     {{ request('order_by') == 'fecha_publicacion' && request('order_direction') == 'desc' ? 'selected' : '' }}>
                                     Más recientes
                                 </option>
-                                <option value="{{ isset($is_demo) && $is_demo ? 
-                                    route('demo.student', ['order_by' => 'fecha_publicacion', 'order_direction' => 'asc']) : 
+                                <option value="{{ isset($is_demo) && $is_demo ?
+                                    route('demo.student', ['order_by' => 'fecha_publicacion', 'order_direction' => 'asc']) :
                                     route('student.dashboard', ['order_by' => 'fecha_publicacion', 'order_direction' => 'asc']) }}"
                                     {{ request('order_by') == 'fecha_publicacion' && request('order_direction') == 'asc' ? 'selected' : '' }}>
                                     Más antiguos
                                 </option>
-                                <option value="{{ isset($is_demo) && $is_demo ? 
-                                    route('demo.student', ['order_by' => 'horas_totales', 'order_direction' => 'desc']) : 
+                                <option value="{{ isset($is_demo) && $is_demo ?
+                                    route('demo.student', ['order_by' => 'horas_totales', 'order_direction' => 'desc']) :
                                     route('student.dashboard', ['order_by' => 'horas_totales', 'order_direction' => 'desc']) }}"
                                     {{ request('order_by') == 'horas_totales' && request('order_direction') == 'desc' ? 'selected' : '' }}>
                                     Mayor duración
                                 </option>
-                                <option value="{{ isset($is_demo) && $is_demo ? 
-                                    route('demo.student', ['order_by' => 'horas_totales', 'order_direction' => 'asc']) : 
+                                <option value="{{ isset($is_demo) && $is_demo ?
+                                    route('demo.student', ['order_by' => 'horas_totales', 'order_direction' => 'asc']) :
                                     route('student.dashboard', ['order_by' => 'horas_totales', 'order_direction' => 'asc']) }}"
                                     {{ request('order_by') == 'horas_totales' && request('order_direction') == 'asc' ? 'selected' : '' }}>
                                     Menor duración
@@ -178,7 +178,7 @@
                                 <div class="flex">
                                     {{-- IMAGEN DE LA EMPRESA --}}
                                     <div class="w-1/3 relative overflow-hidden flex flex-col items-center justify-center" style="aspect-ratio: 1/1;">
-                                        <img src="{{ asset('public/profile_images/' . ($publication->empresa->user->imagen ?? 'company-default.png')) }}" 
+                                        <img src="{{ asset('public/profile_images/' . ($publication->empresa->user->imagen ?? 'company-default.png')) }}"
                                             alt="{{ $publication->empresa->user->nombre }}"
                                             class="max-w-full max-h-full object-contain p-2 transition-all duration-300 hover:scale-105 m-auto">
                                         <div class="bg-gray-50 text-center w-full py-1 absolute bottom-0">
@@ -206,14 +206,14 @@
                                         </div>
                                         <div class="flex items-center text-sm text-gray-600 mb-2">
                                             <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                             </svg>
                                             {{ ucfirst($publication->horario) }}
                                         </div>
                                         <div class="flex items-center text-sm text-gray-600 mb-3">
                                             <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                             </svg>
                                             {{ $publication->horas_totales }} horas totales
@@ -241,7 +241,7 @@
         .noUi-connect {
             background: #5e0490 !important;
         }
-        
+
         /* Estilos para las imágenes de empresas */
         .w-1/3.relative.overflow-hidden {
             min-height: 100px;
@@ -253,7 +253,7 @@
             padding: 8px;
             padding-bottom: 25px; /* Espacio para el nombre de la empresa */
         }
-        
+
         .w-1/3.relative.overflow-hidden img {
             object-position: center;
             object-fit: contain;
@@ -265,23 +265,23 @@
             box-shadow: none;
             margin: 0 auto;
         }
-        
+
         .bg-gray-50.text-center {
             box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
         }
-        
+
         .bg-gray-50.text-center p {
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        
+
         @media (max-width: 640px) {
             .w-1/3.relative.overflow-hidden {
                 min-height: 80px;
             }
         }
-        
+
         .noUi-handle {
             border-radius: 50% !important;
             background-color: #5e0490 !important;
@@ -294,20 +294,20 @@
             cursor: pointer !important;
             transition: transform 0.2s ease, box-shadow 0.2s ease !important;
         }
-        
+
         .noUi-handle:hover {
             transform: scale(1.1);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3) !important;
         }
-        
+
         .noUi-handle:active {
             transform: scale(1.2);
         }
-        
+
         .noUi-handle:before, .noUi-handle:after {
             display: none !important;
         }
-        
+
         .noUi-target {
             border-radius: 4px !important;
             border: none !important;
@@ -315,11 +315,11 @@
             box-shadow: none !important;
             height: 8px !important;
         }
-        
+
         .noUi-horizontal {
             height: 8px !important;
         }
-        
+
         .noUi-tooltip {
             display: none !important;
         }
@@ -328,17 +328,17 @@
         .flex.justify-between.text-sm.text-gray-600 {
             margin-top: 8px; /* Espacio entre el slider y los valores */
         }
-        
+
         /* Estilos para la paginación */
         .pagination-container nav {
             display: flex;
             justify-content: center;
         }
-        
+
         .pagination-container .flex.justify-between.flex-1 {
             display: none; /* Ocultar el texto de paginación */
         }
-        
+
         .pagination-container .relative.inline-flex.items-center {
             padding: 0.5rem 1rem;
             margin: 0 0.25rem;
@@ -351,17 +351,17 @@
             box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
             transition: all 0.2s;
         }
-        
+
         .pagination-container .relative.inline-flex.items-center:hover {
             background-color: #f3f4f6;
             color: #111827;
         }
-        
+
         .pagination-container .relative.z-0.inline-flex.shadow-sm {
             border-radius: 0.375rem;
             overflow: hidden;
         }
-        
+
         .pagination-container span[aria-current="page"] .relative.inline-flex.items-center {
             background-color: #5e0490;
             color: white;
@@ -377,11 +377,11 @@
             const horasTotalesMax = document.getElementById('horasTotalesMax');
             const horasTotalesMinValue = document.getElementById('horasTotalesMinValue');
             const horasTotalesMaxValue = document.getElementById('horasTotalesMaxValue');
-            
+
             if (horasTotalesSlider) {
                 const minValue = parseInt(horasTotalesMin.value);
                 const maxValue = parseInt(horasTotalesMax.value);
-                
+
                 noUiSlider.create(horasTotalesSlider, {
                     start: [minValue, maxValue],
                     connect: true,
@@ -391,7 +391,7 @@
                         'max': maxValue
                     }
                 });
-                
+
                 // Actualizar los valores mostrados y los campos ocultos
                 horasTotalesSlider.noUiSlider.on('update', function(values, handle) {
                     const value = Math.round(values[handle]);
@@ -403,13 +403,13 @@
                         horasTotalesMax.value = value;
                     }
                 });
-                
+
                 // Ejecutar la búsqueda cuando el usuario suelta el control deslizante
                 horasTotalesSlider.noUiSlider.on('change', function() {
                     fetchPublications();
                 });
             }
-            
+
             // Resto del código de dashboard.js
             let debounceTimer;
             const searchForm = document.getElementById('searchForm');
@@ -444,7 +444,7 @@
 
             const fetchPublications = () => {
                 if (!searchForm) return;
-                
+
                 const searchTerm = searchInput.value;
                 const orderByValue = orderBy.value;
                 const orderDirectionValue = orderDirection.value;
@@ -489,7 +489,7 @@
                     if (newContent) {
                         document.querySelector('.grid').innerHTML = newContent.innerHTML;
                     }
-                    
+
                     // Reinicializar los botones de favoritos después de actualizar el contenido
                     initFavoriteButtons();
                 });
@@ -526,14 +526,14 @@
                 });
                 fechaInicio.value = '';
                 fechaFin.value = '';
-                
+
                 // Resetear el slider de rango
                 if (horasTotalesSlider && horasTotalesSlider.noUiSlider) {
                     const minValue = parseInt(horasTotalesSlider.noUiSlider.options.range.min);
                     const maxValue = parseInt(horasTotalesSlider.noUiSlider.options.range.max);
                     horasTotalesSlider.noUiSlider.set([minValue, maxValue]);
                 }
-                
+
                 fetchPublications();
             });
 
@@ -557,7 +557,7 @@
                     // Eliminar eventos anteriores para evitar duplicados
                     const newButton = button.cloneNode(true);
                     button.parentNode.replaceChild(newButton, button);
-                    
+
                     newButton.addEventListener('click', function() {
                         const publicationId = this.dataset.publicationId;
                         const icon = this.querySelector('i');

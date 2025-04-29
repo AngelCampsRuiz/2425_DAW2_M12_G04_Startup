@@ -16,14 +16,14 @@
                                 <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
                                 </svg>
-                                Inicio
+                                {{ __('messages.home') }}
                             </a>
                             <span class="mx-2 text-gray-400">/</span>
                             <a href="{{ route('empresa.dashboard') }}" class="text-gray-500 hover:text-[#5e0490]">
                                 Dashboard
                             </a>
                             <span class="mx-2 text-gray-400">/</span>
-                            <span class="text-[#5e0490] font-medium">Perfil de {{ $user->role_id == 3 ? 'Estudiante' : 'Empresa' }}</span>
+                            <span class="text-[#5e0490] font-medium">{{ __('messages.profile_of') }} {{ $user->role_id == 3 ? __('messages.student') : __('messages.company') }}</span>
                         </div>
                     </div>
                 </div>
@@ -94,8 +94,8 @@
                                     </svg>
                                 </div>
                                 <div>
-                                    <h3 class="text-lg font-semibold text-gray-900">Progreso del Perfil</h3>
-                                    <p class="text-sm text-gray-500">Completa tu perfil para mejorar tu visibilidad</p>
+                                    <h3 class="text-lg font-semibold text-gray-900">{{ __('messages.profile_progress') }}</h3>
+                                    <p class="text-sm text-gray-500">{{ __('messages.complete_your_profile') }}</p>
                                 </div>
                             </div>
                             <button id="toggleButton" class="text-gray-500 hover:text-[#5e0490] transition-colors">
@@ -144,11 +144,11 @@
                                     <div id="progressPercentage" class="text-3xl font-bold text-[#5e0490] mb-1">{{ $porcentaje }}%</div>
                                     <div id="progressMessage" class="text-sm text-gray-500 text-center">
                                         @if($porcentaje < 50)
-                                            ¡Sigue completando tu perfil!
+                                            {{ __('messages.keep_completing_your_profile') }}
                                         @elseif($porcentaje < 80)
-                                            ¡Vas por buen camino!
+                                            {{ __('messages.you_are_on_the_right_track') }}
                                         @else
-                                            ¡Casi lo tienes!
+                                            {{ __('messages.almost_there') }}
                                         @endif
                                     </div>
                                 </div>
@@ -227,7 +227,7 @@
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                         </svg>
-                                        <span>Editar Perfil</span>
+                                        <span>{{ __('messages.edit_profile') }}</span>
                         </button>
 
                                     <a href="{{ route('chat.index') }}"
@@ -235,7 +235,7 @@
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
                                         </svg>
-                                        <span>Ir al Chat</span>
+                                        <span>{{ __('messages.go_to_chat') }}</span>
                                     </a>
                                 </div>
                             @endif
@@ -258,7 +258,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
                                         </svg>
                                     </div>
-                                    <h2 class="text-2xl font-bold text-gray-900">Información Académica</h2>
+                                    <h2 class="text-2xl font-bold text-gray-900">{{ __('messages.academic_information') }}</h2>
                                 </div>
                                 <div class="space-y-4">
                                     @if($user->estudiante)
@@ -266,7 +266,7 @@
                                             <svg class="w-5 h-5 text-purple-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                             </svg>
-                                            <span class="text-gray-700">Ciclo: {{ $user->estudiante->ciclo }}</span>
+                                            <span class="text-gray-700">{{ __('messages.cycle') }}: {{ $user->estudiante->ciclo }}</span>
                                         </div>
                                         @if($user->estudiante->cv_pdf)
                                             <div class="flex items-center">
@@ -276,7 +276,7 @@
                                                 <a href="{{ asset('public/cv_pdfs/' . $user->estudiante->cv_pdf) }}"
                                                    class="text-purple-600 hover:text-purple-800"
                                                    target="_blank">
-                                                    Ver CV
+                                                    {{ __('messages.view_cv') }}
                                                 </a>
                                             </div>
                                         @endif
@@ -293,17 +293,17 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                                             </svg>
                                         </div>
-                                        <h2 class="text-2xl font-bold text-gray-900">Experiencias de Estudiantes</h2>
+                                        <h2 class="text-2xl font-bold text-gray-900">{{ __('messages.student_experiences') }}</h2>
                                     </div>
                                     <div class="overflow-x-auto">
                                         <table class="min-w-full divide-y divide-gray-200">
                                             <thead class="bg-gray-50">
                                                 <tr>
-                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estudiante</th>
-                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Puesto</th>
-                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Inicio</th>
-                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Fin</th>
-                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descripción</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('messages.student') }}</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('messages.position') }}</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('messages.start_date') }}</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('messages.end_date') }}</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('messages.description') }}</th>
                                                 </tr>
                                             </thead>
                                             <tbody class="bg-white divide-y divide-gray-200">
@@ -357,7 +357,7 @@
                                             </svg>
                                         </div>
                                         <div class="ml-4">
-                                            <p class="text-sm text-gray-500">Ciudad</p>
+                                            <p class="text-sm text-gray-500">{{ __('messages.city_profile') }}</p>
                                             <p class="font-medium text-gray-900" data-valor="ciudad">{{ $user->ciudad ?? 'No especificada' }}</p>
                                         </div>
                                     </div>
@@ -369,7 +369,7 @@
                                             </svg>
                                         </div>
                                         <div class="ml-4">
-                                            <p class="text-sm text-gray-500">Teléfono</p>
+                                            <p class="text-sm text-gray-500">{{ __('messages.phone') }}</p>
                                             <p class="font-medium text-gray-900" data-valor="telefono">{{ $user->telefono ?? 'No especificado' }}</p>
                                         </div>
                                     </div>
@@ -381,7 +381,7 @@
                                             </svg>
                                         </div>
                                         <div class="ml-4">
-                                            <p class="text-sm text-gray-500">DNI</p>
+                                            <p class="text-sm text-gray-500">{{ __('messages.dni') }}</p>
                                             <p class="font-medium text-gray-900" data-valor="dni">{{ $user->dni ?? 'No especificado' }}</p>
                                         </div>
                                     </div>
@@ -393,7 +393,7 @@
                                             </svg>
                                         </div>
                                         <div class="ml-4">
-                                            <p class="text-sm text-gray-500">Dirección</p>
+                                            <p class="text-sm text-gray-500">{{ __('messages.address_profile') }}</p>
                                             <p class="font-medium text-gray-900" data-valor="direccion">{{ $user->direccion ?? 'No especificada' }}</p>
                                         </div>
                                     </div>
@@ -405,7 +405,7 @@
                                             </svg>
                                         </div>
                                         <div class="ml-4">
-                                            <p class="text-sm text-gray-500">Sitio Web</p>
+                                            <p class="text-sm text-gray-500">{{ __('messages.website') }}</p>
                                             <p class="font-medium text-gray-900" data-valor="web">{{ $user->web ?? 'No especificado' }}</p>
                                         </div>
                                     </div>
@@ -461,7 +461,7 @@
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
                                                 </svg>
                                             </div>
-                                            <h3 class="text-xl font-semibold text-gray-900 ml-4">Curriculum Vitae</h3>
+                                            <h3 class="text-xl font-semibold text-gray-900 ml-4">{{ __('messages.cv') }}</h3>
                                         </div>
                                         <a href="{{ asset('cv/' . $user->estudiante->cv_pdf) }}"
                                            target="_blank"
@@ -520,7 +520,7 @@
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                             </svg>
-                                            <span>Editar Perfil</span>
+                                            <span>{{ __('messages.edit_profile') }}</span>
                                         </button>
 
                                         <a href="{{ route('chat.index') }}"
@@ -528,7 +528,7 @@
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
                                             </svg>
-                                            <span>Ir al Chat</span>
+                                            <span>{{ __('messages.go_to_chat') }}</span>
                                         </a>
                                     </div>
                                 @endif
@@ -551,7 +551,7 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                                             </svg>
                                         </div>
-                                        <h3 class="text-xl font-semibold text-gray-900 ml-4">Información de la Empresa</h3>
+                                        <h3 class="text-xl font-semibold text-gray-900 ml-4">{{ __('messages.company_information') }}</h3>
                                     </div>
                                     <div class="space-y-4">
                                         <div class="flex items-start">
@@ -561,8 +561,8 @@
                                                 </svg>
                                             </div>
                                             <div class="ml-4">
-                                                <p class="text-sm text-gray-500">CIF</p>
-                                                <p class="font-medium text-gray-900">{{ $user->empresa->cif ?? 'No especificado' }}</p>
+                                                <p class="text-sm text-gray-500">{{ __('messages.cif') }}</p>
+                                                <p class="font-medium text-gray-900">{{ $user->empresa->cif ?? __('messages.no_specified') }}</p>
                                             </div>
                                         </div>
                                         <div class="flex items-start">
@@ -572,8 +572,8 @@
                                                 </svg>
                                             </div>
                                             <div class="ml-4">
-                                                <p class="text-sm text-gray-500">Sector</p>
-                                                <p class="font-medium text-gray-900">{{ $user->empresa->sector ?? 'No especificado' }}</p>
+                                                <p class="text-sm text-gray-500">{{ __('messages.sector') }}</p>
+                                                <p class="font-medium text-gray-900">{{ $user->empresa->sector ?? __('messages.no_specified') }}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -587,7 +587,7 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
                                             </svg>
                                         </div>
-                                        <h3 class="text-xl font-semibold text-gray-900 ml-4">Información de Contacto</h3>
+                                        <h3 class="text-xl font-semibold text-gray-900 ml-4">{{ __('messages.contact_information') }}</h3>
                                     </div>
                                     <div class="space-y-4">
                                         <div class="flex items-start" data-campo="telefono" style="display: {{ $user->show_telefono ? 'flex' : 'none' }}">
@@ -597,8 +597,8 @@
                                                 </svg>
                                             </div>
                                             <div class="ml-4">
-                                                <p class="text-sm text-gray-500">Teléfono</p>
-                                                <p class="font-medium text-gray-900" data-valor="telefono">{{ $user->telefono ?? 'No especificado' }}</p>
+                                                <p class="text-sm text-gray-500">{{ __('messages.phone') }}</p>
+                                                <p class="font-medium text-gray-900" data-valor="telefono">{{ $user->telefono ?? __('messages.no_specified') }}</p>
                                             </div>
                                         </div>
 
@@ -609,8 +609,8 @@
                                                 </svg>
                                             </div>
                                             <div class="ml-4">
-                                                <p class="text-sm text-gray-500">Ciudad</p>
-                                                <p class="font-medium text-gray-900" data-valor="ciudad">{{ $user->ciudad ?? 'No especificada' }}</p>
+                                                <p class="text-sm text-gray-500">{{ __('messages.city_profile') }}</p>
+                                                <p class="font-medium text-gray-900" data-valor="ciudad">{{ $user->ciudad ?? __('messages.no_specified') }}</p>
                                             </div>
                                         </div>
 
@@ -621,8 +621,8 @@
                                                 </svg>
                                             </div>
                                             <div class="ml-4">
-                                                <p class="text-sm text-gray-500">Dirección</p>
-                                                <p class="font-medium text-gray-900" data-valor="direccion">{{ $user->direccion ?? 'No especificada' }}</p>
+                                                <p class="text-sm text-gray-500">{{ __('messages.address_profile') }}</p>
+                                                <p class="font-medium text-gray-900" data-valor="direccion">{{ $user->direccion ?? __('messages.no_specified') }}</p>
                                             </div>
                                         </div>
 
@@ -633,8 +633,8 @@
                                                 </svg>
                                             </div>
                                             <div class="ml-4">
-                                                <p class="text-sm text-gray-500">Sitio Web</p>
-                                                <p class="font-medium text-gray-900" data-valor="web">{{ $user->web ?? 'No especificado' }}</p>
+                                                <p class="text-sm text-gray-500">{{ __('messages.website') }}</p>
+                                                <p class="font-medium text-gray-900" data-valor="web">{{ $user->web ?? __('messages.no_specified') }}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -693,7 +693,7 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
                     </svg>
-                    <span>Valorar {{ $user->role_id == 3 ? 'Estudiante' : 'Empresa' }}</span>
+                    <span>{{ __('messages.rate') }} {{ $user->role_id == 3 ? __('messages.student') : __('messages.company') }}</span>
                 </button>
             </div>
 
@@ -703,7 +703,7 @@
                     <div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
                         <div class="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-4">
                             <div class="flex justify-between items-center">
-                                <h3 class="text-xl font-semibold text-white">Valorar {{ $user->role_id == 3 ? 'Estudiante' : 'Empresa' }}</h3>
+                                <h3 class="text-xl font-semibold text-white">{{ __('messages.rate') }} {{ $user->role_id == 3 ? __('messages.student') : __('messages.company') }}</h3>
                                 <button onclick="closeRatingModal()" class="text-white hover:text-purple-200">
                                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -733,21 +733,21 @@
 
                             {{-- Comentario --}}
                             <div class="mb-6">
-                                <label for="comentario" class="block text-sm font-medium text-gray-700 mb-2">Comentario</label>
+                                <label for="comentario" class="block text-sm font-medium text-gray-700 mb-2">{{ __('messages.comment') }}</label>
                                 <textarea id="comentario" name="comentario" rows="4" required
                                           class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
-                                          placeholder="Escribe tu valoración..."></textarea>
+                                          placeholder="{{ __('messages.write_your_rating') }}"></textarea>
                             </div>
 
                             {{-- Botones --}}
                             <div class="flex justify-end space-x-4">
                                 <button type="button" onclick="closeRatingModal()"
                                         class="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200">
-                                    Cancelar
+                                    {{ __('messages.cancel') }}
                                 </button>
                                 <button type="submit"
                                         class="px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700">
-                                    Enviar Valoración
+                                    {{ __('messages.send_rating') }}
                                 </button>
                             </div>
                         </form>
@@ -914,8 +914,8 @@
                             <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
-                            <h3 class="mt-2 text-sm font-medium text-gray-900">No hay valoraciones recibidas</h3>
-                            <p class="mt-1 text-sm text-gray-500">Aún no has recibido ninguna valoración.</p>
+                            <h3 class="mt-2 text-sm font-medium text-gray-900">{{ __('messages.no_ratings_received') }}</h3>
+                            <p class="mt-1 text-sm text-gray-500">{{ __('messages.no_ratings_received_description') }}</p>
                         </div>
                     </div>
                 @endforelse
@@ -928,7 +928,7 @@
                 <div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
                     <div class="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-4">
                         <div class="flex justify-between items-center">
-                            <h3 class="text-xl font-semibold text-white">Editar Valoración</h3>
+                            <h3 class="text-xl font-semibold text-white">{{ __('messages.edit_rating') }}</h3>
                             <button onclick="closeEditValoracionModal()" class="text-white hover:text-purple-200">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -944,7 +944,7 @@
 
                         {{-- Estrellas de Valoración --}}
                         <div class="mb-6">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Puntuación</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('messages.rating') }}</label>
                             <div class="flex space-x-2">
                                 @for($i = 1; $i <= 5; $i++)
                                     <button type="button" onclick="setEditRating({{ $i }})"
@@ -957,21 +957,21 @@
 
                         {{-- Comentario --}}
                         <div class="mb-6">
-                            <label for="editComentario" class="block text-sm font-medium text-gray-700 mb-2">Comentario</label>
+                            <label for="editComentario" class="block text-sm font-medium text-gray-700 mb-2">{{ __('messages.comment') }}</label>
                             <textarea id="editComentario" name="comentario" rows="4" required
                                       class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
-                                      placeholder="Escribe tu valoración..."></textarea>
+                                      placeholder="{{ __('messages.write_your_rating') }}"></textarea>
                         </div>
 
                         {{-- Botones --}}
                         <div class="flex justify-end space-x-4">
                             <button type="button" onclick="closeEditValoracionModal()"
                                     class="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200">
-                                Cancelar
+                                {{ __('messages.cancel') }}
                             </button>
                             <button type="submit"
                                     class="px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700">
-                                Guardar Cambios
+                                {{ __('messages.save_changes') }}
                             </button>
                         </div>
                     </form>
@@ -1384,7 +1384,7 @@
                 const telefonoInput = document.getElementById('telefono');
                 const dniInput = document.getElementById('dni');
                 const ciudadInput = document.getElementById('ciudad');
-                
+
                 if (nombreInput) nombreInput.addEventListener('blur', function() { validarNombre(this); });
                 if (descripcionInput) descripcionInput.addEventListener('blur', function() { validarDescripcion(this); });
                 if (telefonoInput) telefonoInput.addEventListener('blur', function() { validarTelefono(this); });
@@ -1432,7 +1432,7 @@
                 if (field.value.trim()) {
                     const dniRegex = /^[0-9]{8}[A-Za-z]$/;
                     const nieRegex = /^[XYZxyz][0-9]{7}[A-Za-z]$/;
-                    
+
                     if (!dniRegex.test(field.value.trim()) && !nieRegex.test(field.value.trim())) {
                         showError(field, "Formato de DNI/NIE no válido");
                         return false;
@@ -1464,7 +1464,7 @@
                     const file = field.files[0];
                     const fileType = file.type;
                     const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-                    
+
                     if (!validImageTypes.includes(fileType)) {
                         showError(field, "El archivo debe ser una imagen (JPG, PNG, GIF o WEBP)");
                         return false;
@@ -1484,7 +1484,7 @@
             function validarCV(field) {
                 if (field.files.length > 0) {
                     const file = field.files[0];
-                    
+
                     if (file.type !== 'application/pdf') {
                         showError(field, "El archivo debe ser un PDF");
                         return false;
@@ -1505,23 +1505,23 @@
             document.getElementById('profileForm').addEventListener('submit', function(e) {
                 // Primero validar todos los campos
                 let isValid = true;
-                
+
                 if (!validarNombre(document.getElementById('nombre'))) isValid = false;
                 if (!validarDescripcion(document.getElementById('descripcion'))) isValid = false;
                 if (!validarTelefono(document.getElementById('telefono'))) isValid = false;
                 if (!validarDNI(document.getElementById('dni'))) isValid = false;
                 if (!validarCiudad(document.getElementById('ciudad'))) isValid = false;
-                
+
                 const imagenInput = document.getElementById('imagen');
                 if (imagenInput && imagenInput.files.length > 0) {
                     if (!validarImagen(imagenInput)) isValid = false;
                 }
-                
+
                 const cvInput = document.getElementById('cv_pdf');
                 if (cvInput && cvInput.files.length > 0) {
                     if (!validarCV(cvInput)) isValid = false;
                 }
-                
+
                 if (!isValid) {
                     e.preventDefault();
                     return false;
@@ -1692,7 +1692,7 @@
             // Función para manejar errores de la API
             function handleApiError(errorData) {
                 const errorMsg = errorData.message || "Ha ocurrido un error al procesar la solicitud";
-                
+
                 // Detectar tipos específicos de errores
                 if (errorMsg.includes('Duplicate entry') && errorMsg.includes('user_telefono_unique')) {
                     // Error de teléfono duplicado
@@ -1716,7 +1716,7 @@
                         return;
                     }
                 }
-                
+
                 // Para otros errores, mostrar un mensaje dentro del modal
                 const errorDiv = document.createElement('div');
                 errorDiv.className = 'mt-4 p-4 bg-red-50 text-red-700 rounded-lg';
@@ -1735,15 +1735,15 @@
                         </div>
                     </div>
                 `;
-                
+
                 // Insertar el error en el formulario
                 const form = document.getElementById('profileForm');
                 const submitBtn = document.getElementById('submitBtn');
-                
+
                 // Remover cualquier mensaje de error anterior
                 const prevError = document.querySelector('.bg-red-50.text-red-700');
                 if (prevError) prevError.remove();
-                
+
                 // Insertar antes del botón de envío
                 if (form && submitBtn) {
                     form.insertBefore(errorDiv, submitBtn.parentNode);

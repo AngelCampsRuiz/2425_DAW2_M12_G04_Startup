@@ -46,15 +46,15 @@
                 <div class="mt-8 grid grid-cols-3 gap-2 bg-white/80 rounded-lg p-4 shadow-sm backdrop-blur-sm">
                     <div class="text-center">
                         <span class="block text-primary font-bold text-xl">1200+</span>
-                        <span class="text-xs text-gray-500">Estudiantes</span>
+                        <span class="text-xs text-gray-500">{{ __('messages.students') }}</span>
                     </div>
                     <div class="text-center">
                         <span class="block text-primary font-bold text-xl">500+</span>
-                        <span class="text-xs text-gray-500">Empresas</span>
+                        <span class="text-xs text-gray-500">{{ __('messages.companies') }}</span>
                     </div>
                     <div class="text-center">
                         <span class="block text-primary font-bold text-xl">350+</span>
-                        <span class="text-xs text-gray-500">Conexiones</span>
+                        <span class="text-xs text-gray-500">{{ __('messages.connections') }}</span>
                     </div>
                 </div>
             </div>

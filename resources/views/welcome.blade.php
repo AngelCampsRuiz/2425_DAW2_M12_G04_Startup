@@ -29,17 +29,17 @@
                         <div class="text-2xl font-semibold text-[#7705B6]">🏢 {{ $totalEmpresas }} {{ __('messages.companies_trust_us') }}</div>
                         <div class="text-lg">💼 {{ $totalOfertas }} {{ __('messages.offers_published') }}</div>
                         <div class="text-lg">🤝 {{ $porcentajeRepiten }}% {{ __('messages.companies_repeat') }}</div>
-                        <div class="text-lg">🌍 Presencia en {{ $totalProvincias }} provincias</div>
+                        <div class="text-lg">🌍 {{ __('messages.presence_in_provinces') }} {{ $totalProvincias }} {{ __('messages.general_provinces') }}</div>
                     </div>
                 </div>
 
             <!-- EMPRESAS QUE CONFIAN -->
                 <section class="my-16">
                     <h2 class="text-3xl font-bold text-[#7705B6] mb-4 relative inline-block">
-                        Empresas con más alumnos contratados
+                        {{ __('messages.companies_with_most_students_hired') }}
                         <span class="absolute bottom-0 left-0 w-full h-1 bg-[#9B30D9] rounded-full"></span>
                     </h2>
-                    <p class="text-lg text-gray-600 max-w-4xl mx-auto mb-10">Estas son las empresas que más oportunidades han brindado a nuestros estudiantes</p>
+                    <p class="text-lg text-gray-600 max-w-4xl mx-auto mb-10">{{ __('messages.companies_with_most_students_hired_description') }}</p>
 
                     <div class="container mx-auto max-w-5xl px-4">
                         @if($empresasDestacadas->isNotEmpty())
@@ -70,7 +70,7 @@
                                                             <h3 class="font-bold text-lg">{{ $empresa->user->nombre }}</h3>
                                                             <p class="text-gray-600 font-medium">
                                                                 <span class="text-[#7705B6] font-bold">{{ $empresa->alumnos_contratados }}</span>
-                                                                {{ $empresa->alumnos_contratados == 1 ? 'alumno contratado' : 'alumnos contratados' }}
+                                                                {{ $empresa->alumnos_contratados == 1 ? __('messages.student_hired') : __('messages.students_hired') }}
                                                             </p>
                                                         </div>
                                                     </div>
@@ -89,7 +89,7 @@
                             </div>
                         @else
                             <div class="text-center text-gray-500">
-                                Aún no hay empresas destacadas.
+                                {{ __('messages.no_companies_highlighted') }}.
                             </div>
                         @endif
                     </div>
@@ -147,16 +147,16 @@
                 @guest
                 <section class="mb-0 text-center py-12 bg-gradient-to-r from-purple-100 to-purple-200 rounded-xl">
                     <h2 class="text-3xl font-bold text-[#7705B6] mb-8 relative inline-block">
-                        Échale un vistazo
+                        {{ __('messages.take_a_look') }}
                         <span class="absolute bottom-0 left-0 w-full h-1 bg-[#9B30D9] rounded-full"></span>
                     </h2>
-                    <p class="text-xl text-gray-700 max-w-3xl mx-auto mb-10">Únete a nuestra plataforma y descubre todas las oportunidades que tenemos para ti</p>
+                    <p class="text-xl text-gray-700 max-w-3xl mx-auto mb-10">{{ __('messages.join_our_platform') }}</p>
                     <div class="container mx-auto max-w-5xl flex flex-col md:flex-row justify-center space-y-4 md:space-y-0 md:space-x-8">
                         <a href="{{ route('demo.student') }}" class="bg-[#7705B6] text-white px-10 py-4 rounded-lg font-bold text-lg hover:bg-[#5E0490] transition mx-auto md:mx-0 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
-                            SOY ALUMNO
+                            {{ __('messages.i_am_a_student') }}
                         </a>
                         <a href="{{ route('demo.company') }}" class="bg-[#7705B6] text-white px-10 py-4 rounded-lg font-bold text-lg hover:bg-[#5E0490] transition mx-auto md:mx-0 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
-                            SOY EMPRESA
+                            {{ __('messages.i_am_a_company') }}
                         </a>
                     </div>
                 </section>
