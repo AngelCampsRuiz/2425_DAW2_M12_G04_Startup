@@ -521,6 +521,21 @@
             color: white;
             border-color: #5e0490;
         }
+        
+        /* Traducción de la paginación */
+        .pagination div:first-child p {
+            position: relative;
+            font-size: 0;
+        }
+        
+        .pagination div:first-child p::after {
+            content: "Mostrando " attr(data-from) " a " attr(data-to) " de " attr(data-total) " resultados";
+            position: absolute;
+            left: 0;
+            top: 0;
+            font-size: 0.875rem;
+            color: #4b5563;
+        }
     </style>
 
     <script>
@@ -540,6 +555,31 @@
                     }
                 });
             }
+            
+            // Traducir el texto de paginación
+            function translatePagination() {
+                const paginationText = document.querySelector('.pagination div:first-child p');
+                if (paginationText) {
+                    const text = paginationText.textContent;
+                    // Extraer números del texto "Showing X to Y of Z results"
+                    const regex = /Showing\s+(\d+)\s+to\s+(\d+)\s+of\s+(\d+)\s+results/i;
+                    const match = regex.exec(text);
+                    
+                    if (match) {
+                        const from = match[1];
+                        const to = match[2];
+                        const total = match[3];
+                        
+                        // Añadir atributos de datos para el pseudo-elemento CSS
+                        paginationText.setAttribute('data-from', from);
+                        paginationText.setAttribute('data-to', to);
+                        paginationText.setAttribute('data-total', total);
+                    }
+                }
+            }
+            
+            // Llamar a la función al cargar la página
+            translatePagination();
             
             // Cambio entre vista grid y lista
             const gridViewButton = document.getElementById('gridViewButton');
@@ -630,7 +670,6 @@
             const fechaFin = document.getElementById('fechaFin');
             const route = searchForm ? searchForm.getAttribute('data-route') : '';
             const searchSpinner = document.getElementById('searchSpinner');
-            const favoritosCheckbox = document.getElementById('favoritosCheckbox');
             const paginationContainer = document.querySelector('.pagination-container');
 
             // Mostrar/ocultar subcategorías al seleccionar una categoría
@@ -674,6 +713,8 @@
                         .then(response => response.text())
                         .then(html => {
                             updatePageContent(html);
+                            // Traducir la paginación después de actualizar el contenido
+                            translatePagination();
                         })
                         .catch(error => {
                             console.error('Error:', error);
@@ -714,7 +755,6 @@
                 const fechaFinValue = fechaFin.value;
                 const horasTotalesMinValue = horasTotalesMin.value;
                 const horasTotalesMaxValue = horasTotalesMax.value;
-                const favoritosValue = favoritosCheckbox && favoritosCheckbox.checked ? 'on' : 'off';
 
                 const params = new URLSearchParams();
                 if (searchTerm) params.append('search', searchTerm);
@@ -727,7 +767,6 @@
                 if (fechaFinValue) params.append('fecha_fin', fechaFinValue);
                 params.append('horas_totales_min', horasTotalesMinValue);
                 params.append('horas_totales_max', horasTotalesMaxValue);
-                params.append('favoritos', favoritosValue);
 
                 fetch(`${route}?${params.toString()}`, {
                     headers: {
@@ -737,6 +776,8 @@
                 .then(response => response.text())
                 .then(html => {
                     updatePageContent(html);
+                    // Traducir la paginación después de actualizar el contenido
+                    translatePagination();
                 })
                 .catch(error => {
                     console.error('Error:', error);
@@ -784,9 +825,6 @@
                         paginationContainer.innerHTML = newPagination.innerHTML;
                     }
                 }
-                
-                // Reinicializar los botones de favoritos después de actualizar el contenido
-                initFavoriteButtons();
             };
 
             searchInput && searchInput.addEventListener('input', function() {
@@ -837,9 +875,6 @@
                     const maxValue = parseInt(horasTotalesSlider.noUiSlider.options.range.max);
                     horasTotalesSlider.noUiSlider.set([minValue, maxValue]);
                 }
-                
-                // Resetear favoritos
-                if (favoritosCheckbox) favoritosCheckbox.checked = false;
             }
 
             horarioCheckboxes.forEach(checkbox => {
@@ -853,18 +888,6 @@
             fechaInicio && fechaInicio.addEventListener('change', fetchPublications);
             fechaFin && fechaFin.addEventListener('change', fetchPublications);
 
-            favoritosCheckbox && favoritosCheckbox.addEventListener('change', fetchPublications);
-
-            // Función para inicializar los botones de favoritos
-            function initFavoriteButtons() {
-                const favoriteButtons = document.querySelectorAll('.favorite-button');
-                favoriteButtons.forEach(button => {
-                    // Eliminar eventos anteriores para evitar duplicados
-                    const newButton = button.cloneNode(true);
-                    button.parentNode.replaceChild(newButton, button);
-                });
-            }
-            
             // Función para mostrar toast de notificaciones
             function showToast(message, type = 'info') {
                 // Verificar si ya existe un toast para no duplicar
