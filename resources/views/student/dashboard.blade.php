@@ -54,6 +54,7 @@
                                                 <input type="checkbox" name="categoria[]" value="{{ $categoria->id }}" class="categoria-checkbox form-checkbox h-4 w-4 text-[#5e0490] rounded focus:ring-[#5e0490] border-gray-300">
                                                 <span class="ml-2 text-sm text-gray-700">{{ $categoria->nombre_categoria }}</span>
                                             </label>
+                                            @if($categoria->subcategorias->count() > 0)
                                             <div id="subcategorias-{{ $categoria->id }}" class="pl-6 mt-2 hidden">
                                                 @foreach($categoria->subcategorias as $subcategoria)
                                                     <label class="flex items-center">
@@ -62,6 +63,7 @@
                                                     </label>
                                                 @endforeach
                                             </div>
+                                            @endif
                                         </div>
                                     @endforeach
                                 </div>
@@ -175,10 +177,17 @@
                             <div class="bg-white rounded-lg shadow overflow-hidden relative">
                                 <div class="flex">
                                     {{-- IMAGEN DE LA EMPRESA --}}
-                                    <div class="w-1/3 relative" style="aspect-ratio: 1/1;">
-                                        <img src="{{ $publication->empresa->logo_url ?? asset('assets/images/company-default.png') }}" 
-                                            alt="{{ $publication->empresa->nombre }}"
-                                            class="absolute inset-0 w-full h-full object-cover">
+                                    <div class="w-1/3 relative overflow-hidden flex flex-col items-center justify-center" style="aspect-ratio: 1/1;">
+                                        <img src="{{ asset('public/profile_images/' . ($publication->empresa->user->imagen ?? 'company-default.png')) }}" 
+                                            alt="{{ $publication->empresa->user->nombre }}"
+                                            class="max-w-full max-h-full object-contain p-2 transition-all duration-300 hover:scale-105 m-auto">
+                                        <div class="bg-gray-50 text-center w-full py-1 absolute bottom-0">
+                                            <a href="{{ route('profile.show', $publication->empresa->user->id) }}" class="group">
+                                                <p class="text-xs font-medium text-gray-700 hover:text-[#5e0490] truncate px-1 transition-colors duration-200">
+                                                    {{ $publication->empresa->user->nombre }}
+                                                </p>
+                                            </a>
+                                        </div>
                                     </div>
                                     {{-- INFORMACIÓN DE LA PUBLICACIÓN --}}
                                     <div class="w-2/3 p-4">
@@ -193,7 +202,6 @@
                                                     <h3 class="text-lg font-semibold text-gray-900">{{ $publication->titulo }}</h3>
                                                 </a>
                                                 @endif
-                                                <p class="text-sm text-gray-500">{{ $publication->empresa->nombre }}</p>
                                             </div>
                                         </div>
                                         <div class="flex items-center text-sm text-gray-600 mb-2">
@@ -232,6 +240,46 @@
         /* Estilos para noUiSlider */
         .noUi-connect {
             background: #5e0490 !important;
+        }
+        
+        /* Estilos para las imágenes de empresas */
+        .w-1/3.relative.overflow-hidden {
+            min-height: 100px;
+            max-height: 140px;
+            border-right: 1px solid #f3f4f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+            padding-bottom: 25px; /* Espacio para el nombre de la empresa */
+        }
+        
+        .w-1/3.relative.overflow-hidden img {
+            object-position: center;
+            object-fit: contain;
+            max-width: 85%;
+            max-height: 85%;
+            width: auto;
+            height: auto;
+            position: relative;
+            box-shadow: none;
+            margin: 0 auto;
+        }
+        
+        .bg-gray-50.text-center {
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .bg-gray-50.text-center p {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        @media (max-width: 640px) {
+            .w-1/3.relative.overflow-hidden {
+                min-height: 80px;
+            }
         }
         
         .noUi-handle {
@@ -383,10 +431,12 @@
             categoriaCheckboxes.forEach(checkbox => {
                 checkbox.addEventListener('change', function() {
                     const subcategoriasDiv = document.getElementById(`subcategorias-${this.value}`);
-                    if (this.checked) {
-                        subcategoriasDiv.classList.remove('hidden');
-                    } else {
-                        subcategoriasDiv.classList.add('hidden');
+                    if (subcategoriasDiv) {
+                        if (this.checked) {
+                            subcategoriasDiv.classList.remove('hidden');
+                        } else {
+                            subcategoriasDiv.classList.add('hidden');
+                        }
                     }
                     fetchPublications();
                 });
