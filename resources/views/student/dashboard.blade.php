@@ -9,7 +9,7 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.0/nouislider.min.js"></script>
         <meta name="csrf-token" content="{{ csrf_token() }}">
     </head>
-    <div class="min-h-screen bg-gray-100">
+    <div class="min-h-screen bg-gray-50">
         @if(isset($is_demo) && $is_demo)
         <!-- Banner de demostración -->
         <div class="bg-yellow-100 border-b border-yellow-200 p-4 text-center">
@@ -41,25 +41,34 @@
             <div class="flex flex-col md:flex-row gap-6">
                 {{-- SIDEBAR DE FILTROS --}}
                 <div class="w-full md:w-1/4">
-                    <div class="bg-white rounded-lg shadow p-6">
-                        <h2 class="text-lg font-semibold text-gray-800 mb-4">Filtros</h2>
-                        <div class="space-y-4">
+                    <div class="bg-white rounded-xl shadow-md p-6 sticky top-4">
+                        <div class="flex items-center justify-between mb-4">
+                            <h2 class="text-lg font-semibold text-gray-800">Filtros</h2>
+                            <button id="toggleFilters" class="md:hidden text-purple-600 hover:text-purple-800">
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                        </div>
+                        
+                        <div id="filterContent" class="space-y-6">
                             <!-- Filtro de Categoría y Subcategoría -->
-                            <div>
-                                <h3 class="text-sm font-medium text-gray-600 mb-2">Categoría</h3>
-                                <div class="space-y-2">
+                            <div class="border-b border-gray-100 pb-4">
+                                <h3 class="text-sm font-medium text-gray-600 mb-3 flex items-center">
+                                    <i class="fas fa-tag mr-2 text-purple-500"></i>
+                                    Categoría
+                                </h3>
+                                <div class="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
                                     @foreach($categorias as $categoria)
-                                        <div>
-                                            <label class="flex items-center">
+                                        <div class="transition-all duration-200 hover:bg-purple-50 rounded-lg p-1 -mx-1">
+                                            <label class="flex items-center cursor-pointer">
                                                 <input type="checkbox" name="categoria[]" value="{{ $categoria->id }}" class="categoria-checkbox form-checkbox h-4 w-4 text-[#5e0490] rounded focus:ring-[#5e0490] border-gray-300">
                                                 <span class="ml-2 text-sm text-gray-700">{{ $categoria->nombre_categoria }}</span>
                                             </label>
                                             @if($categoria->subcategorias->count() > 0)
                                             <div id="subcategorias-{{ $categoria->id }}" class="pl-6 mt-2 hidden">
                                                 @foreach($categoria->subcategorias as $subcategoria)
-                                                    <label class="flex items-center">
+                                                    <label class="flex items-center my-1 cursor-pointer">
                                                         <input type="checkbox" name="subcategoria[]" value="{{ $subcategoria->id }}" class="form-checkbox h-4 w-4 text-[#5e0490] rounded focus:ring-[#5e0490] border-gray-300">
-                                                        <span class="ml-2 text-sm text-gray-700">{{ $subcategoria->nombre_subcategoria }}</span>
+                                                        <span class="ml-2 text-sm text-gray-600">{{ $subcategoria->nombre_subcategoria }}</span>
                                                     </label>
                                                 @endforeach
                                             </div>
@@ -70,20 +79,32 @@
                             </div>
 
                             <!-- Filtro de Fecha de Publicación -->
-                            <div>
-                                <h3 class="text-sm font-medium text-gray-600 mb-2">Fecha de Publicación</h3>
-                                <div class="flex space-x-4">
-                                    <input type="date" name="fecha_inicio" id="fechaInicio" class="w-1/2 border-gray-300 rounded-lg shadow-sm focus:ring-[#5e0490] focus:border-[#5e0490]">
-                                    <input type="date" name="fecha_fin" id="fechaFin" class="w-1/2 border-gray-300 rounded-lg shadow-sm focus:ring-[#5e0490] focus:border-[#5e0490]">
+                            <div class="border-b border-gray-100 pb-4">
+                                <h3 class="text-sm font-medium text-gray-600 mb-3 flex items-center">
+                                    <i class="far fa-calendar-alt mr-2 text-purple-500"></i>
+                                    Fecha de Publicación
+                                </h3>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="text-xs text-gray-500 mb-1 block">Desde</label>
+                                        <input type="date" name="fecha_inicio" id="fechaInicio" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-[#5e0490] focus:border-[#5e0490] text-sm">
+                                    </div>
+                                    <div>
+                                        <label class="text-xs text-gray-500 mb-1 block">Hasta</label>
+                                        <input type="date" name="fecha_fin" id="fechaFin" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-[#5e0490] focus:border-[#5e0490] text-sm">
+                                    </div>
                                 </div>
                             </div>
 
                             <!-- Filtro de Horario -->
-                            <div>
-                                <h3 class="text-sm font-medium text-gray-600 mb-2">Horario</h3>
-                                <div class="space-y-2">
+                            <div class="border-b border-gray-100 pb-4">
+                                <h3 class="text-sm font-medium text-gray-600 mb-3 flex items-center">
+                                    <i class="far fa-clock mr-2 text-purple-500"></i>
+                                    Horario
+                                </h3>
+                                <div class="grid grid-cols-2 gap-2">
                                     @foreach($horarios as $horario)
-                                        <label class="flex items-center">
+                                        <label class="flex items-center p-2 bg-gray-50 hover:bg-purple-50 rounded-lg transition-colors duration-200 cursor-pointer">
                                             <input type="checkbox" name="horario[]" value="{{ $horario }}" class="form-checkbox h-4 w-4 text-[#5e0490] rounded focus:ring-[#5e0490] border-gray-300">
                                             <span class="ml-2 text-sm text-gray-700">{{ ucfirst($horario) }}</span>
                                         </label>
@@ -93,11 +114,14 @@
 
                             <!-- Filtro de Horas Totales -->
                             <div>
-                                <h3 class="text-sm font-medium text-gray-600 mb-2">Horas Totales</h3>
-                                <div class="mb-6">
+                                <h3 class="text-sm font-medium text-gray-600 mb-3 flex items-center">
+                                    <i class="fas fa-hourglass-half mr-2 text-purple-500"></i>
+                                    Horas Totales
+                                </h3>
+                                <div class="mb-4">
                                     <div class="flex justify-between text-sm text-gray-600 mb-2">
-                                        <span id="horasTotalesMinValue">{{ $horasTotalesMin }}</span>
-                                        <span id="horasTotalesMaxValue">{{ $horasTotalesMax }}</span>
+                                        <span id="horasTotalesMinValue" class="font-medium">{{ $horasTotalesMin }}</span>
+                                        <span id="horasTotalesMaxValue" class="font-medium">{{ $horasTotalesMax }}</span>
                                     </div>
                                     <!-- Contenedor para noUiSlider -->
                                     <div id="horasTotalesSlider" class="mt-4"></div>
@@ -106,6 +130,15 @@
                                     <input type="hidden" id="horasTotalesMax" name="horas_totales_max" value="{{ $horasTotalesMax }}">
                                 </div>
                             </div>
+                            
+                            <!-- Botón para limpiar todos los filtros -->
+                            <div class="pt-2">
+                                <button type="button" id="clearFiltersButton" 
+                                    class="w-full flex items-center justify-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition duration-200">
+                                    <i class="fas fa-undo-alt mr-2"></i>
+                                    Restablecer filtros
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -113,82 +146,108 @@
                 {{-- CONTENIDO PRINCIPAL --}}
                 <div class="w-full md:w-3/4">
                     {{-- BARRA DE BÚSQUEDA Y ORDENAMIENTO --}}
-                    <div class="flex flex-col md:flex-row gap-4 mb-6">
-                        <div class="flex-1">
-                            <form id="searchForm" class="flex gap-4 items-center" 
-                                data-route="{{ isset($is_demo) && $is_demo ? route('demo.student') : route('student.dashboard') }}">
-                                <div class="relative flex-1">
-                                    <input type="text" name="search" id="searchInput" value="{{ request('search') }}" 
-                                    placeholder="Buscar publicaciones..."
-                                        class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-primary focus:border-primary focus:outline-none transition duration-200">
-                                    <svg class="absolute left-3 top-2.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                                    </svg>
-                                </div>
-                                <input type="hidden" name="order_by" id="orderBy" value="{{ request('order_by', 'fecha_publicacion') }}">
-                                <input type="hidden" name="order_direction" id="orderDirection" value="{{ request('order_direction', 'desc') }}">
-                                <button type="button" id="clearButton" class="flex items-center justify-center px-4 py-2 bg-[#5e0490] text-white rounded-lg hover:bg-[#4a0370] transition duration-200">
-                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                    </svg>
-                                </button>
-                            </form>
-                        </div>
-                        <div class="w-full md:w-48">
-                            <div class="relative">
-                                <select id="orderSelect" class="w-full pl-3 pr-10 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-primary focus:border-primary focus:outline-none appearance-none transition duration-200">
-                                <option value="{{ isset($is_demo) && $is_demo ? 
-                                    route('demo.student', ['order_by' => 'fecha_publicacion', 'order_direction' => 'desc']) : 
-                                    route('student.dashboard', ['order_by' => 'fecha_publicacion', 'order_direction' => 'desc']) }}"
-                                    {{ request('order_by') == 'fecha_publicacion' && request('order_direction') == 'desc' ? 'selected' : '' }}>
-                                    Más recientes
-                                </option>
-                                <option value="{{ isset($is_demo) && $is_demo ? 
-                                    route('demo.student', ['order_by' => 'fecha_publicacion', 'order_direction' => 'asc']) : 
-                                    route('student.dashboard', ['order_by' => 'fecha_publicacion', 'order_direction' => 'asc']) }}"
-                                    {{ request('order_by') == 'fecha_publicacion' && request('order_direction') == 'asc' ? 'selected' : '' }}>
-                                    Más antiguos
-                                </option>
-                                <option value="{{ isset($is_demo) && $is_demo ? 
-                                    route('demo.student', ['order_by' => 'horas_totales', 'order_direction' => 'desc']) : 
-                                    route('student.dashboard', ['order_by' => 'horas_totales', 'order_direction' => 'desc']) }}"
-                                    {{ request('order_by') == 'horas_totales' && request('order_direction') == 'desc' ? 'selected' : '' }}>
-                                    Mayor duración
-                                </option>
-                                <option value="{{ isset($is_demo) && $is_demo ? 
-                                    route('demo.student', ['order_by' => 'horas_totales', 'order_direction' => 'asc']) : 
-                                    route('student.dashboard', ['order_by' => 'horas_totales', 'order_direction' => 'asc']) }}"
-                                    {{ request('order_by') == 'horas_totales' && request('order_direction') == 'asc' ? 'selected' : '' }}>
-                                    Menor duración
-                                </option>
-                            </select>
-                                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    <div class="bg-white rounded-xl shadow-md p-4 mb-6">
+                        <form id="searchForm" class="flex flex-col md:flex-row gap-4 items-center" 
+                            data-route="{{ isset($is_demo) && $is_demo ? route('demo.student') : route('student.dashboard') }}">
+                            
+                            <div class="relative flex-1">
+                                <input type="text" name="search" id="searchInput" value="{{ request('search') }}" 
+                                placeholder="Buscar por título, descripción, empresa..."
+                                    class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-[#5e0490] focus:border-[#5e0490] focus:outline-none transition duration-200">
+                                <svg class="absolute left-3 top-3.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                </svg>
+                                <div id="searchSpinner" class="absolute right-4 top-3.5 hidden">
+                                    <svg class="animate-spin h-5 w-5 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                     </svg>
                                 </div>
                             </div>
+                            
+                            <div class="flex gap-3">
+                                <div class="relative w-48">
+                                    <select id="orderSelect" class="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-[#5e0490] focus:border-[#5e0490] focus:outline-none appearance-none transition duration-200">
+                                        <option value="{{ isset($is_demo) && $is_demo ? 
+                                            route('demo.student', ['order_by' => 'fecha_publicacion', 'order_direction' => 'desc']) : 
+                                            route('student.dashboard', ['order_by' => 'fecha_publicacion', 'order_direction' => 'desc']) }}"
+                                            {{ request('order_by') == 'fecha_publicacion' && request('order_direction') == 'desc' ? 'selected' : '' }}>
+                                            Más recientes
+                                        </option>
+                                        <option value="{{ isset($is_demo) && $is_demo ? 
+                                            route('demo.student', ['order_by' => 'fecha_publicacion', 'order_direction' => 'asc']) : 
+                                            route('student.dashboard', ['order_by' => 'fecha_publicacion', 'order_direction' => 'asc']) }}"
+                                            {{ request('order_by') == 'fecha_publicacion' && request('order_direction') == 'asc' ? 'selected' : '' }}>
+                                            Más antiguos
+                                        </option>
+                                        <option value="{{ isset($is_demo) && $is_demo ? 
+                                            route('demo.student', ['order_by' => 'horas_totales', 'order_direction' => 'desc']) : 
+                                            route('student.dashboard', ['order_by' => 'horas_totales', 'order_direction' => 'desc']) }}"
+                                            {{ request('order_by') == 'horas_totales' && request('order_direction') == 'desc' ? 'selected' : '' }}>
+                                            Mayor duración
+                                        </option>
+                                        <option value="{{ isset($is_demo) && $is_demo ? 
+                                            route('demo.student', ['order_by' => 'horas_totales', 'order_direction' => 'asc']) : 
+                                            route('student.dashboard', ['order_by' => 'horas_totales', 'order_direction' => 'asc']) }}"
+                                            {{ request('order_by') == 'horas_totales' && request('order_direction') == 'asc' ? 'selected' : '' }}>
+                                            Menor duración
+                                        </option>
+                                    </select>
+                                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                        <i class="fas fa-sort text-gray-400"></i>
+                                    </div>
+                                    <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
+                                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                                
+                                <button type="button" id="clearButton" class="flex items-center justify-center px-4 py-3 bg-[#5e0490] text-white rounded-xl hover:bg-[#4a0370] transition duration-200">
+                                    <i class="fas fa-eraser mr-2"></i>
+                                    Limpiar
+                                </button>
+                            </div>
+                            
+                            <input type="hidden" name="order_by" id="orderBy" value="{{ request('order_by', 'fecha_publicacion') }}">
+                            <input type="hidden" name="order_direction" id="orderDirection" value="{{ request('order_direction', 'desc') }}">
+                        </form>
+                    </div>
+
+                    {{-- CONTADOR DE RESULTADOS --}}
+                    <div class="flex justify-between items-center mb-4">
+                        <p class="text-gray-600"><span class="font-semibold text-purple-800">{{ $publications->total() }}</span> resultados encontrados</p>
+                        <div class="flex gap-2">
+                            <button id="gridViewButton" class="p-2 bg-purple-600 text-white rounded-l-lg">
+                                <i class="fas fa-th-large"></i>
+                            </button>
+                            <button id="listViewButton" class="p-2 bg-gray-200 text-gray-600 rounded-r-lg">
+                                <i class="fas fa-list"></i>
+                            </button>
                         </div>
                     </div>
 
                     {{-- GRID DE PUBLICACIONES --}}
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div id="publicationsGrid" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         @foreach($publications as $publication)
-                            <div class="bg-white rounded-lg shadow overflow-hidden relative">
+                            <div class="bg-white rounded-xl shadow-md overflow-hidden relative hover:shadow-lg">
                                 <div class="flex">
                                     {{-- IMAGEN DE LA EMPRESA --}}
-                                    <div class="w-1/3 relative overflow-hidden flex flex-col items-center justify-center" style="aspect-ratio: 1/1;">
-                                        <img src="{{ asset('public/profile_images/' . ($publication->empresa->user->imagen ?? 'company-default.png')) }}" 
-                                            alt="{{ $publication->empresa->user->nombre }}"
-                                            class="max-w-full max-h-full object-contain p-2 transition-all duration-300 hover:scale-105 m-auto">
-                                        <div class="bg-gray-50 text-center w-full py-1 absolute bottom-0">
+                                    <div class="w-1/3 bg-gray-50 flex items-center justify-center border-r border-gray-100" style="min-height: 160px;">
+                                        <a href="{{ route('profile.show', $publication->empresa->user->id) }}" class="p-3 flex justify-center items-center h-full w-full">
+                                            <img src="{{ asset('public/profile_images/' . ($publication->empresa->user->imagen ?? 'company-default.png')) }}" 
+                                                alt="{{ $publication->empresa->user->nombre }}"
+                                                class="max-w-[90%] max-h-[90px] object-contain hover:scale-105 m-auto">
+                                        </a>
+                                        <div class="absolute bottom-0 left-0 w-1/3 bg-gray-50 text-center py-1.5 px-2 border-t border-gray-100">
                                             <a href="{{ route('profile.show', $publication->empresa->user->id) }}" class="group">
-                                                <p class="text-xs font-medium text-gray-700 hover:text-[#5e0490] truncate px-1 transition-colors duration-200">
+                                                <p class="text-xs font-medium text-gray-700 hover:text-[#5e0490] truncate">
                                                     {{ $publication->empresa->user->nombre }}
                                                 </p>
                                             </a>
                                         </div>
                                     </div>
+                                    
                                     {{-- INFORMACIÓN DE LA PUBLICACIÓN --}}
                                     <div class="w-2/3 p-4">
                                         <div class="flex justify-between items-start">
@@ -202,23 +261,138 @@
                                                     <h3 class="text-lg font-semibold text-gray-900">{{ $publication->titulo }}</h3>
                                                 </a>
                                                 @endif
+                                                
+                                                <div class="flex flex-wrap gap-2 mt-1">
+                                                    @if($publication->categoria)
+                                                        <span class="inline-block bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">
+                                                            {{ $publication->categoria->nombre_categoria }}
+                                                        </span>
+                                                    @endif
+                                                    @if($publication->subcategoria)
+                                                        <span class="inline-block bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full">
+                                                            {{ $publication->subcategoria->nombre_subcategoria }}
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                            
+                                            @if(!isset($is_demo) || !$is_demo)
+                                            <!-- Botón de favoritos eliminado -->
+                                            @endif
+                                        </div>
+                                        
+                                        <div class="flex items-center mt-3 text-sm text-gray-600">
+                                            <div class="flex items-center mr-4">
+                                                <i class="far fa-clock mr-1 text-purple-500"></i>
+                                                {{ ucfirst($publication->horario) }}
+                                            </div>
+                                            <div class="flex items-center">
+                                                <i class="fas fa-hourglass-half mr-1 text-purple-500"></i>
+                                                {{ $publication->horas_totales }} horas
                                             </div>
                                         </div>
-                                        <div class="flex items-center text-sm text-gray-600 mb-2">
-                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                            </svg>
-                                            {{ ucfirst($publication->horario) }}
+                                        
+                                        <div class="flex items-center mt-2 text-sm text-gray-600">
+                                            <i class="far fa-calendar-alt mr-1 text-purple-500"></i>
+                                            Publicado: {{ \Carbon\Carbon::parse($publication->fecha_publicacion)->format('d/m/Y') }}
                                         </div>
-                                        <div class="flex items-center text-sm text-gray-600 mb-3">
-                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                            </svg>
-                                            {{ $publication->horas_totales }} horas totales
+                                        
+                                        <p class="text-sm text-gray-600 mt-3 line-clamp-2">{{ $publication->descripcion }}</p>
+                                        
+                                        @if(!isset($is_demo) || !$is_demo)
+                                        <div class="mt-3">
+                                            <a href="{{ route('publication.show', $publication->id) }}" 
+                                               class="inline-flex items-center text-sm text-purple-600 hover:text-purple-800 transition-colors duration-200">
+                                                Ver detalles
+                                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                                                </svg>
+                                            </a>
                                         </div>
-                                        <p class="text-sm text-gray-600 line-clamp-2">{{ $publication->descripcion }}</p>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+
+                    {{-- VISTA LISTA (OCULTA POR DEFECTO) --}}
+                    <div id="publicationsList" class="hidden space-y-4">
+                        @foreach($publications as $publication)
+                            <div class="bg-white rounded-xl shadow-md overflow-hidden relative hover:shadow-lg">
+                                <div class="flex flex-col md:flex-row">
+                                    {{-- IMAGEN DE LA EMPRESA --}}
+                                    <div class="w-full md:w-1/6 bg-gray-50 flex items-center justify-center p-4 md:border-r border-gray-100" style="min-height: 120px;">
+                                        <a href="{{ route('profile.show', $publication->empresa->user->id) }}" class="block w-full h-full flex items-center justify-center">
+                                            <img src="{{ asset('public/profile_images/' . ($publication->empresa->user->imagen ?? 'company-default.png')) }}" 
+                                                alt="{{ $publication->empresa->user->nombre }}"
+                                                class="max-h-[80px] object-contain hover:scale-105 m-auto">
+                                        </a>
+                                    </div>
+                                    
+                                    {{-- INFORMACIÓN DE LA PUBLICACIÓN --}}
+                                    <div class="w-full md:w-5/6 p-4">
+                                        <div class="flex justify-between items-start">
+                                            <div>
+                                                @if(isset($is_demo) && $is_demo)
+                                                <a href="{{ route('register') }}" class="hover:text-[#5e0490] transition-colors">
+                                                    <h3 class="text-lg font-semibold text-gray-900">{{ $publication->titulo }}</h3>
+                                                </a>
+                                                @else
+                                                <a href="{{ route('publication.show', $publication->id) }}" class="hover:text-[#5e0490] transition-colors">
+                                                    <h3 class="text-lg font-semibold text-gray-900">{{ $publication->titulo }}</h3>
+                                                </a>
+                                                @endif
+                                                
+                                                <p class="text-sm text-purple-600">{{ $publication->empresa->user->nombre }}</p>
+                                            </div>
+                                            
+                                            @if(!isset($is_demo) || !$is_demo)
+                                            <!-- Botón de favoritos eliminado -->
+                                            @endif
+                                        </div>
+                                        
+                                        <div class="flex flex-wrap gap-2 my-2">
+                                            @if($publication->categoria)
+                                                <span class="inline-block bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">
+                                                    {{ $publication->categoria->nombre_categoria }}
+                                                </span>
+                                            @endif
+                                            @if($publication->subcategoria)
+                                                <span class="inline-block bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full">
+                                                    {{ $publication->subcategoria->nombre_subcategoria }}
+                                                </span>
+                                            @endif
+                                        </div>
+                                        
+                                        <p class="text-sm text-gray-600 my-2">{{ $publication->descripcion }}</p>
+                                        
+                                        <div class="flex flex-wrap items-center gap-4 mt-3 text-sm text-gray-600">
+                                            <div class="flex items-center">
+                                                <i class="far fa-clock mr-1 text-purple-500"></i>
+                                                {{ ucfirst($publication->horario) }}
+                                            </div>
+                                            <div class="flex items-center">
+                                                <i class="fas fa-hourglass-half mr-1 text-purple-500"></i>
+                                                {{ $publication->horas_totales }} horas
+                                            </div>
+                                            <div class="flex items-center">
+                                                <i class="far fa-calendar-alt mr-1 text-purple-500"></i>
+                                                Publicado: {{ \Carbon\Carbon::parse($publication->fecha_publicacion)->format('d/m/Y') }}
+                                            </div>
+                                            
+                                            @if(!isset($is_demo) || !$is_demo)
+                                            <div class="ml-auto">
+                                                <a href="{{ route('publication.show', $publication->id) }}" 
+                                                   class="inline-flex items-center text-sm text-white bg-purple-600 hover:bg-purple-700 px-3 py-1 rounded-lg transition-colors duration-200">
+                                                    Ver detalles
+                                                    <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                                                    </svg>
+                                                </a>
+                                            </div>
+                                            @endif
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -237,50 +411,31 @@
     </div>
 
     <style>
+        /* Estilos mejorados para la UI */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 10px;
+        }
+        
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #5e0490;
+        }
+        
         /* Estilos para noUiSlider */
         .noUi-connect {
             background: #5e0490 !important;
         }
         
-        /* Estilos para las imágenes de empresas */
-        .w-1/3.relative.overflow-hidden {
-            min-height: 100px;
-            max-height: 140px;
-            border-right: 1px solid #f3f4f6;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 8px;
-            padding-bottom: 25px; /* Espacio para el nombre de la empresa */
-        }
-        
-        .w-1/3.relative.overflow-hidden img {
-            object-position: center;
-            object-fit: contain;
-            max-width: 85%;
-            max-height: 85%;
-            width: auto;
-            height: auto;
-            position: relative;
-            box-shadow: none;
-            margin: 0 auto;
-        }
-        
-        .bg-gray-50.text-center {
-            box-shadow: 0 -2px 5px rgba(0,0,0,0.05);
-        }
-        
-        .bg-gray-50.text-center p {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        
-        @media (max-width: 640px) {
-            .w-1/3.relative.overflow-hidden {
-                min-height: 80px;
-            }
-        }
+        /* Estilos para las imágenes de empresas (eliminamos los anteriores) */
         
         .noUi-handle {
             border-radius: 50% !important;
@@ -292,7 +447,6 @@
             right: -10px !important;
             top: -7px !important;
             cursor: pointer !important;
-            transition: transform 0.2s ease, box-shadow 0.2s ease !important;
         }
         
         .noUi-handle:hover {
@@ -371,6 +525,56 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Toggle para los filtros en móvil
+            const toggleFilters = document.getElementById('toggleFilters');
+            const filterContent = document.getElementById('filterContent');
+            
+            if (toggleFilters && filterContent) {
+                toggleFilters.addEventListener('click', function() {
+                    filterContent.classList.toggle('hidden');
+                    const icon = toggleFilters.querySelector('i');
+                    if (icon.classList.contains('fa-chevron-down')) {
+                        icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
+                    } else {
+                        icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
+                    }
+                });
+            }
+            
+            // Cambio entre vista grid y lista
+            const gridViewButton = document.getElementById('gridViewButton');
+            const listViewButton = document.getElementById('listViewButton');
+            const publicationsGrid = document.getElementById('publicationsGrid');
+            const publicationsList = document.getElementById('publicationsList');
+            
+            if (gridViewButton && listViewButton) {
+                gridViewButton.addEventListener('click', function() {
+                    publicationsGrid.classList.remove('hidden');
+                    publicationsList.classList.add('hidden');
+                    gridViewButton.classList.replace('bg-gray-200', 'bg-purple-600');
+                    gridViewButton.classList.replace('text-gray-600', 'text-white');
+                    listViewButton.classList.replace('bg-purple-600', 'bg-gray-200');
+                    listViewButton.classList.replace('text-white', 'text-gray-600');
+                    localStorage.setItem('preferredView', 'grid');
+                });
+                
+                listViewButton.addEventListener('click', function() {
+                    publicationsGrid.classList.add('hidden');
+                    publicationsList.classList.remove('hidden');
+                    listViewButton.classList.replace('bg-gray-200', 'bg-purple-600');
+                    listViewButton.classList.replace('text-gray-600', 'text-white');
+                    gridViewButton.classList.replace('bg-purple-600', 'bg-gray-200');
+                    gridViewButton.classList.replace('text-white', 'text-gray-600');
+                    localStorage.setItem('preferredView', 'list');
+                });
+                
+                // Restaurar vista preferida del usuario
+                const preferredView = localStorage.getItem('preferredView');
+                if (preferredView === 'list') {
+                    listViewButton.click();
+                }
+            }
+            
             // Inicializar el slider de rango para horas totales
             const horasTotalesSlider = document.getElementById('horasTotalesSlider');
             const horasTotalesMin = document.getElementById('horasTotalesMin');
@@ -418,14 +622,16 @@
             const orderDirection = document.getElementById('orderDirection');
             const orderSelect = document.getElementById('orderSelect');
             const clearButton = document.getElementById('clearButton');
+            const clearFiltersButton = document.getElementById('clearFiltersButton');
             const horarioCheckboxes = document.querySelectorAll('input[name="horario[]"]');
             const categoriaCheckboxes = document.querySelectorAll('.categoria-checkbox');
             const subcategoriaCheckboxes = document.querySelectorAll('input[name="subcategoria[]"]');
             const fechaInicio = document.getElementById('fechaInicio');
             const fechaFin = document.getElementById('fechaFin');
             const route = searchForm ? searchForm.getAttribute('data-route') : '';
-            const favoriteButtons = document.querySelectorAll('.favorite-button');
+            const searchSpinner = document.getElementById('searchSpinner');
             const favoritosCheckbox = document.getElementById('favoritosCheckbox');
+            const paginationContainer = document.querySelector('.pagination-container');
 
             // Mostrar/ocultar subcategorías al seleccionar una categoría
             categoriaCheckboxes.forEach(checkbox => {
@@ -436,14 +642,61 @@
                             subcategoriasDiv.classList.remove('hidden');
                         } else {
                             subcategoriasDiv.classList.add('hidden');
+                            // Desmarcar todas las subcategorías
+                            const subcheckboxes = subcategoriasDiv.querySelectorAll('input[type="checkbox"]');
+                            subcheckboxes.forEach(subcheck => {
+                                subcheck.checked = false;
+                            });
                         }
                     }
                     fetchPublications();
                 });
             });
 
+            // Manejar la paginación con AJAX
+            if (paginationContainer) {
+                paginationContainer.addEventListener('click', function(e) {
+                    // Prevenir solo si es un enlace de paginación
+                    const target = e.target.closest('a[href]');
+                    if (target) {
+                        e.preventDefault();
+                        const pageUrl = target.getAttribute('href');
+                        
+                        // Mostrar spinner
+                        if (searchSpinner) searchSpinner.classList.remove('hidden');
+                        
+                        // Hacer la petición AJAX
+                        fetch(pageUrl, {
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        })
+                        .then(response => response.text())
+                        .then(html => {
+                            updatePageContent(html);
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                        })
+                        .finally(() => {
+                            // Ocultar spinner
+                            if (searchSpinner) searchSpinner.classList.add('hidden');
+                            
+                            // Hacer scroll hacia arriba suavemente
+                            window.scrollTo({
+                                top: 0,
+                                behavior: 'smooth'
+                            });
+                        });
+                    }
+                });
+            }
+
             const fetchPublications = () => {
                 if (!searchForm) return;
+                
+                // Mostrar spinner
+                if (searchSpinner) searchSpinner.classList.remove('hidden');
                 
                 const searchTerm = searchInput.value;
                 const orderByValue = orderBy.value;
@@ -483,16 +736,57 @@
                 })
                 .then(response => response.text())
                 .then(html => {
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(html, 'text/html');
-                    const newContent = doc.querySelector('.grid');
-                    if (newContent) {
-                        document.querySelector('.grid').innerHTML = newContent.innerHTML;
-                    }
-                    
-                    // Reinicializar los botones de favoritos después de actualizar el contenido
-                    initFavoriteButtons();
+                    updatePageContent(html);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                })
+                .finally(() => {
+                    // Ocultar spinner
+                    if (searchSpinner) searchSpinner.classList.add('hidden');
                 });
+            };
+            
+            // Función para actualizar el contenido de la página
+            const updatePageContent = (html) => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                // Actualizar ambas vistas
+                const newGridContent = doc.querySelector('#publicationsGrid');
+                const newListContent = doc.querySelector('#publicationsList');
+                
+                if (newGridContent) {
+                    document.querySelector('#publicationsGrid').innerHTML = newGridContent.innerHTML;
+                }
+                
+                if (newListContent) {
+                    document.querySelector('#publicationsList').innerHTML = newListContent.innerHTML;
+                } else {
+                    // Si no existe el elemento en la respuesta, actualizar con la estructura grid
+                    document.querySelector('#publicationsList').innerHTML = document.querySelector('#publicationsGrid').innerHTML;
+                }
+                
+                // Actualizar contador de resultados
+                const resultCountElement = document.querySelector('.text-gray-600 span.font-semibold');
+                if (resultCountElement) {
+                    const newResultCount = doc.querySelector('.text-gray-600 span.font-semibold');
+                    if (newResultCount) {
+                        resultCountElement.textContent = newResultCount.textContent;
+                    }
+                }
+                
+                // Actualizar paginación
+                const paginationContainer = document.querySelector('.pagination-container');
+                if (paginationContainer) {
+                    const newPagination = doc.querySelector('.pagination-container');
+                    if (newPagination) {
+                        paginationContainer.innerHTML = newPagination.innerHTML;
+                    }
+                }
+                
+                // Reinicializar los botones de favoritos después de actualizar el contenido
+                initFavoriteButtons();
             };
 
             searchInput && searchInput.addEventListener('input', function() {
@@ -508,6 +802,16 @@
             });
 
             clearButton && clearButton.addEventListener('click', function() {
+                resetAllFilters();
+                fetchPublications();
+            });
+            
+            clearFiltersButton && clearFiltersButton.addEventListener('click', function() {
+                resetAllFilters();
+                fetchPublications();
+            });
+            
+            function resetAllFilters() {
                 searchInput.value = '';
                 orderBy.value = 'fecha_publicacion';
                 orderDirection.value = 'desc';
@@ -534,8 +838,9 @@
                     horasTotalesSlider.noUiSlider.set([minValue, maxValue]);
                 }
                 
-                fetchPublications();
-            });
+                // Resetear favoritos
+                if (favoritosCheckbox) favoritosCheckbox.checked = false;
+            }
 
             horarioCheckboxes.forEach(checkbox => {
                 checkbox.addEventListener('change', fetchPublications);
@@ -557,43 +862,45 @@
                     // Eliminar eventos anteriores para evitar duplicados
                     const newButton = button.cloneNode(true);
                     button.parentNode.replaceChild(newButton, button);
-                    
-                    newButton.addEventListener('click', function() {
-                        const publicationId = this.dataset.publicationId;
-                        const icon = this.querySelector('i');
-                        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-
-                        fetch(`/toggle-favorite/${publicationId}`, {
-                            method: 'POST',
-                            headers: {
-                                'X-CSRF-TOKEN': csrfToken,
-                                'Content-Type': 'application/json'
-                            }
-                        })
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error('Network response was not ok');
-                            }
-                            return response.json();
-                        })
-                        .then(data => {
-                            if (data.status === 'added') {
-                                icon.classList.remove('far');
-                                icon.classList.add('fas', 'text-yellow-500');
-                            } else {
-                                icon.classList.remove('fas', 'text-yellow-500');
-                                icon.classList.add('far');
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                        });
-                    });
                 });
             }
-
-            // Inicializar los botones de favoritos al cargar la página
-            initFavoriteButtons();
+            
+            // Función para mostrar toast de notificaciones
+            function showToast(message, type = 'info') {
+                // Verificar si ya existe un toast para no duplicar
+                const existingToast = document.querySelector('.toast-notification');
+                if (existingToast) {
+                    existingToast.remove();
+                }
+                
+                // Crear el toast
+                const toast = document.createElement('div');
+                toast.className = 'toast-notification fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 flex items-center';
+                
+                // Aplicar estilos según el tipo
+                switch(type) {
+                    case 'success':
+                        toast.classList.add('bg-green-500', 'text-white');
+                        toast.innerHTML = `<i class="fas fa-check-circle mr-2"></i> ${message}`;
+                        break;
+                    case 'error':
+                        toast.classList.add('bg-red-500', 'text-white');
+                        toast.innerHTML = `<i class="fas fa-exclamation-circle mr-2"></i> ${message}`;
+                        break;
+                    case 'info':
+                    default:
+                        toast.classList.add('bg-blue-500', 'text-white');
+                        toast.innerHTML = `<i class="fas fa-info-circle mr-2"></i> ${message}`;
+                        break;
+                }
+                
+                document.body.appendChild(toast);
+                
+                // Autocierre
+                setTimeout(() => {
+                    toast.remove();
+                }, 3000);
+            }
         });
     </script>
 @endsection
