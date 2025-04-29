@@ -1310,49 +1310,51 @@
                                 </div>
                             </div>
 
-                            {{-- Sección del Mapa --}}
-                            <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
-                                <div class="flex items-center justify-between mb-6">
-                                    <h3 class="text-xl font-semibold text-gray-900 flex items-center">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                        </svg>
-                                        Ubicación
-                                    </h3>
-                                    <button onclick="saveLocation()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                                        </svg>
-                                        Guardar ubicación
-                                    </button>
-                                </div>
-
-                                {{-- Contenedor del mapa --}}
-                                <div class="w-full h-[400px] rounded-xl overflow-hidden shadow-md mb-4">
-                                    <div id="locationMap" class="w-full h-full"></div>
-                                </div>
-
-                                {{-- Campos de ubicación --}}
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                                    <div>
-                                        <label for="direccion" class="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
-                                        <input type="text" name="direccion" id="direccion" value="{{ $user->direccion }}"
-                                               class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
-                                               readonly>
+                            {{-- Sección del Mapa (solo para empresas) --}}
+                            @if(auth()->user()->role_id == 2)
+                                <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+                                    <div class="flex items-center justify-between mb-6">
+                                        <h3 class="text-xl font-semibold text-gray-900 flex items-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                            </svg>
+                                            Ubicación
+                                        </h3>
+                                        <button onclick="saveLocation()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                            </svg>
+                                            Guardar ubicación
+                                        </button>
                                     </div>
-                                    <div>
-                                        <label for="ciudad" class="block text-sm font-medium text-gray-700 mb-1">Ciudad</label>
-                                        <input type="text" name="ciudad" id="ciudad" value="{{ $user->ciudad }}"
-                                               class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
-                                               readonly>
-                                    </div>
-                                </div>
 
-                                {{-- Campos ocultos para las coordenadas --}}
-                                <input type="hidden" id="lat" name="lat" value="{{ $user->lat ?? '41.390205' }}">
-                                <input type="hidden" id="lng" name="lng" value="{{ $user->lng ?? '2.154007' }}">
-                            </div>
+                                    {{-- Contenedor del mapa --}}
+                                    <div class="w-full h-[400px] rounded-xl overflow-hidden shadow-md mb-4">
+                                        <div id="locationMap" class="w-full h-full"></div>
+                                    </div>
+
+                                    {{-- Campos de ubicación --}}
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                        <div>
+                                            <label for="direccion" class="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
+                                            <input type="text" name="direccion" id="direccion" value="{{ $user->direccion }}"
+                                                   class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                                                   readonly>
+                                        </div>
+                                        <div>
+                                            <label for="ciudad" class="block text-sm font-medium text-gray-700 mb-1">Ciudad</label>
+                                            <input type="text" name="ciudad" id="ciudad" value="{{ $user->ciudad }}"
+                                                   class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                                                   readonly>
+                                        </div>
+                                    </div>
+
+                                    {{-- Campos ocultos para las coordenadas --}}
+                                    <input type="hidden" id="lat" name="lat" value="{{ $user->lat ?? '41.390205' }}">
+                                    <input type="hidden" id="lng" name="lng" value="{{ $user->lng ?? '2.154007' }}">
+                                </div>
+                            @endif
 
                             {{-- Botones --}}
                             <div class="flex justify-end space-x-4 pt-4 border-t">
@@ -1794,4 +1796,8 @@
                 }
             }
         </script>
+
+        @if(auth()->user()->role_id == 2)
+            <script src="{{ asset('js/profile-map.js') }}"></script>
+        @endif
     @endsection
