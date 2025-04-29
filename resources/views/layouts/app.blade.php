@@ -28,6 +28,20 @@
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
     <!-- SCRIPT PRINCIPAL DE SWIPER.JS -->
         <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
+    {{-- Leaflet CSS --}}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin=""/>
+    
+    {{-- Estilos personalizados para el mapa --}}
+    <style>
+        #locationMap {
+            z-index: 1;
+        }
+        .leaflet-container {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
 </head>
 <body>
     {{-- INCLUSIÓN DEL COMPONENTE DE CABECERA DE LA APLICACIÓN --}}
@@ -59,5 +73,12 @@
             <script src="{{ asset('js/auth/register-student-validation.js') }}"></script>
         <!-- SCRIPT PARA VALIDACIÓN DEL FORMULARIO DE REGISTRO DE EMPRESAS -->
             <script src="{{ asset('js/auth/register-company-validation.js') }}"></script>
+    {{-- Leaflet JS --}}
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
+    
+    {{-- Mapa personalizado --}}
+    <script src="{{ asset('js/profile-map.js') }}"></script>
 </body>
 </html>

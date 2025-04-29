@@ -16,14 +16,14 @@
                                 <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
                                 </svg>
-                                Inicio
+                                {{ __('messages.home') }}
                             </a>
                             <span class="mx-2 text-gray-400">/</span>
                             <a href="{{ route('empresa.dashboard') }}" class="text-gray-500 hover:text-[#5e0490]">
                                 Dashboard
                             </a>
                             <span class="mx-2 text-gray-400">/</span>
-                            <span class="text-[#5e0490] font-medium">Perfil de {{ $user->role_id == 3 ? 'Estudiante' : 'Empresa' }}</span>
+                            <span class="text-[#5e0490] font-medium">{{ __('messages.profile_of') }} {{ $user->role_id == 3 ? __('messages.student') : __('messages.company') }}</span>
                         </div>
                     </div>
                 </div>
@@ -94,8 +94,8 @@
                                     </svg>
                                 </div>
                                 <div>
-                                    <h3 class="text-lg font-semibold text-gray-900">Progreso del Perfil</h3>
-                                    <p class="text-sm text-gray-500">Completa tu perfil para mejorar tu visibilidad</p>
+                                    <h3 class="text-lg font-semibold text-gray-900">{{ __('messages.profile_progress') }}</h3>
+                                    <p class="text-sm text-gray-500">{{ __('messages.complete_your_profile') }}</p>
                                 </div>
                             </div>
                             <button id="toggleButton" class="text-gray-500 hover:text-[#5e0490] transition-colors">
@@ -144,11 +144,11 @@
                                     <div id="progressPercentage" class="text-3xl font-bold text-[#5e0490] mb-1">{{ $porcentaje }}%</div>
                                     <div id="progressMessage" class="text-sm text-gray-500 text-center">
                                         @if($porcentaje < 50)
-                                            ¡Sigue completando tu perfil!
+                                            {{ __('messages.keep_completing_your_profile') }}
                                         @elseif($porcentaje < 80)
-                                            ¡Vas por buen camino!
+                                            {{ __('messages.you_are_on_the_right_track') }}
                                         @else
-                                            ¡Casi lo tienes!
+                                            {{ __('messages.almost_there') }}
                                         @endif
                                     </div>
                                 </div>
@@ -227,7 +227,7 @@
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                         </svg>
-                                        <span>Editar Perfil</span>
+                                        <span>{{ __('messages.edit_profile') }}</span>
                         </button>
 
                                     <a href="{{ route('chat.index') }}"
@@ -235,7 +235,7 @@
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
                                         </svg>
-                                        <span>Ir al Chat</span>
+                                        <span>{{ __('messages.go_to_chat') }}</span>
                                     </a>
                                 </div>
                             @endif
@@ -258,7 +258,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
                                         </svg>
                                     </div>
-                                    <h2 class="text-2xl font-bold text-gray-900">Información Académica</h2>
+                                    <h2 class="text-2xl font-bold text-gray-900">{{ __('messages.academic_information') }}</h2>
                                 </div>
                                 <div class="space-y-4">
                                     @if($user->estudiante)
@@ -266,7 +266,7 @@
                                             <svg class="w-5 h-5 text-purple-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                             </svg>
-                                            <span class="text-gray-700">Ciclo: {{ $user->estudiante->ciclo }}</span>
+                                            <span class="text-gray-700">{{ __('messages.cycle') }}: {{ $user->estudiante->ciclo }}</span>
                                         </div>
                                         @if($user->estudiante->cv_pdf)
                                             <div class="flex items-center">
@@ -276,7 +276,7 @@
                                                 <a href="{{ asset('public/cv_pdfs/' . $user->estudiante->cv_pdf) }}"
                                                    class="text-purple-600 hover:text-purple-800"
                                                    target="_blank">
-                                                    Ver CV
+                                                    {{ __('messages.view_cv') }}
                                                 </a>
                                             </div>
                                         @endif
@@ -293,17 +293,17 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                                             </svg>
                                         </div>
-                                        <h2 class="text-2xl font-bold text-gray-900">Experiencias de Estudiantes</h2>
+                                        <h2 class="text-2xl font-bold text-gray-900">{{ __('messages.student_experiences') }}</h2>
                                     </div>
                                     <div class="overflow-x-auto">
                                         <table class="min-w-full divide-y divide-gray-200">
                                             <thead class="bg-gray-50">
                                                 <tr>
-                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estudiante</th>
-                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Puesto</th>
-                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Inicio</th>
-                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Fin</th>
-                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descripción</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('messages.student') }}</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('messages.position') }}</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('messages.start_date') }}</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('messages.end_date') }}</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('messages.description') }}</th>
                                                 </tr>
                                             </thead>
                                             <tbody class="bg-white divide-y divide-gray-200">
@@ -357,7 +357,7 @@
                                             </svg>
                                         </div>
                                         <div class="ml-4">
-                                            <p class="text-sm text-gray-500">Ciudad</p>
+                                            <p class="text-sm text-gray-500">{{ __('messages.city_profile') }}</p>
                                             <p class="font-medium text-gray-900" data-valor="ciudad">{{ $user->ciudad ?? 'No especificada' }}</p>
                                         </div>
                                     </div>
@@ -369,7 +369,7 @@
                                             </svg>
                                         </div>
                                         <div class="ml-4">
-                                            <p class="text-sm text-gray-500">Teléfono</p>
+                                            <p class="text-sm text-gray-500">{{ __('messages.phone') }}</p>
                                             <p class="font-medium text-gray-900" data-valor="telefono">{{ $user->telefono ?? 'No especificado' }}</p>
                                         </div>
                                     </div>
@@ -381,7 +381,7 @@
                                             </svg>
                                         </div>
                                         <div class="ml-4">
-                                            <p class="text-sm text-gray-500">DNI</p>
+                                            <p class="text-sm text-gray-500">{{ __('messages.dni') }}</p>
                                             <p class="font-medium text-gray-900" data-valor="dni">{{ $user->dni ?? 'No especificado' }}</p>
                                         </div>
                                     </div>
@@ -393,7 +393,7 @@
                                             </svg>
                                         </div>
                                         <div class="ml-4">
-                                            <p class="text-sm text-gray-500">Dirección</p>
+                                            <p class="text-sm text-gray-500">{{ __('messages.address_profile') }}</p>
                                             <p class="font-medium text-gray-900" data-valor="direccion">{{ $user->direccion ?? 'No especificada' }}</p>
                                         </div>
                                     </div>
@@ -405,7 +405,7 @@
                                             </svg>
                                         </div>
                                         <div class="ml-4">
-                                            <p class="text-sm text-gray-500">Sitio Web</p>
+                                            <p class="text-sm text-gray-500">{{ __('messages.website') }}</p>
                                             <p class="font-medium text-gray-900" data-valor="web">{{ $user->web ?? 'No especificado' }}</p>
                                         </div>
                                     </div>
@@ -1310,6 +1310,50 @@
                                 </div>
                             </div>
 
+                            {{-- Sección del Mapa --}}
+                            <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+                                <div class="flex items-center justify-between mb-6">
+                                    <h3 class="text-xl font-semibold text-gray-900 flex items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                        </svg>
+                                        Ubicación
+                                    </h3>
+                                    <button onclick="saveLocation()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                        </svg>
+                                        Guardar ubicación
+                                    </button>
+                                </div>
+
+                                {{-- Contenedor del mapa --}}
+                                <div class="w-full h-[400px] rounded-xl overflow-hidden shadow-md mb-4">
+                                    <div id="locationMap" class="w-full h-full"></div>
+                                </div>
+
+                                {{-- Campos de ubicación --}}
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                    <div>
+                                        <label for="direccion" class="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
+                                        <input type="text" name="direccion" id="direccion" value="{{ $user->direccion }}"
+                                               class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                                               readonly>
+                                    </div>
+                                    <div>
+                                        <label for="ciudad" class="block text-sm font-medium text-gray-700 mb-1">Ciudad</label>
+                                        <input type="text" name="ciudad" id="ciudad" value="{{ $user->ciudad }}"
+                                               class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                                               readonly>
+                                    </div>
+                                </div>
+
+                                {{-- Campos ocultos para las coordenadas --}}
+                                <input type="hidden" id="lat" name="lat" value="{{ $user->lat ?? '41.390205' }}">
+                                <input type="hidden" id="lng" name="lng" value="{{ $user->lng ?? '2.154007' }}">
+                            </div>
+
                             {{-- Botones --}}
                             <div class="flex justify-end space-x-4 pt-4 border-t">
                                 <button type="button" onclick="closeEditModal()"
@@ -1384,7 +1428,7 @@
                 const telefonoInput = document.getElementById('telefono');
                 const dniInput = document.getElementById('dni');
                 const ciudadInput = document.getElementById('ciudad');
-                
+
                 if (nombreInput) nombreInput.addEventListener('blur', function() { validarNombre(this); });
                 if (descripcionInput) descripcionInput.addEventListener('blur', function() { validarDescripcion(this); });
                 if (telefonoInput) telefonoInput.addEventListener('blur', function() { validarTelefono(this); });
@@ -1432,7 +1476,7 @@
                 if (field.value.trim()) {
                     const dniRegex = /^[0-9]{8}[A-Za-z]$/;
                     const nieRegex = /^[XYZxyz][0-9]{7}[A-Za-z]$/;
-                    
+
                     if (!dniRegex.test(field.value.trim()) && !nieRegex.test(field.value.trim())) {
                         showError(field, "Formato de DNI/NIE no válido");
                         return false;
@@ -1464,7 +1508,7 @@
                     const file = field.files[0];
                     const fileType = file.type;
                     const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-                    
+
                     if (!validImageTypes.includes(fileType)) {
                         showError(field, "El archivo debe ser una imagen (JPG, PNG, GIF o WEBP)");
                         return false;
@@ -1484,7 +1528,7 @@
             function validarCV(field) {
                 if (field.files.length > 0) {
                     const file = field.files[0];
-                    
+
                     if (file.type !== 'application/pdf') {
                         showError(field, "El archivo debe ser un PDF");
                         return false;
@@ -1505,23 +1549,23 @@
             document.getElementById('profileForm').addEventListener('submit', function(e) {
                 // Primero validar todos los campos
                 let isValid = true;
-                
+
                 if (!validarNombre(document.getElementById('nombre'))) isValid = false;
                 if (!validarDescripcion(document.getElementById('descripcion'))) isValid = false;
                 if (!validarTelefono(document.getElementById('telefono'))) isValid = false;
                 if (!validarDNI(document.getElementById('dni'))) isValid = false;
                 if (!validarCiudad(document.getElementById('ciudad'))) isValid = false;
-                
+
                 const imagenInput = document.getElementById('imagen');
                 if (imagenInput && imagenInput.files.length > 0) {
                     if (!validarImagen(imagenInput)) isValid = false;
                 }
-                
+
                 const cvInput = document.getElementById('cv_pdf');
                 if (cvInput && cvInput.files.length > 0) {
                     if (!validarCV(cvInput)) isValid = false;
                 }
-                
+
                 if (!isValid) {
                     e.preventDefault();
                     return false;
@@ -1692,7 +1736,7 @@
             // Función para manejar errores de la API
             function handleApiError(errorData) {
                 const errorMsg = errorData.message || "Ha ocurrido un error al procesar la solicitud";
-                
+
                 // Detectar tipos específicos de errores
                 if (errorMsg.includes('Duplicate entry') && errorMsg.includes('user_telefono_unique')) {
                     // Error de teléfono duplicado
@@ -1716,7 +1760,7 @@
                         return;
                     }
                 }
-                
+
                 // Para otros errores, mostrar un mensaje dentro del modal
                 const errorDiv = document.createElement('div');
                 errorDiv.className = 'mt-4 p-4 bg-red-50 text-red-700 rounded-lg';
@@ -1735,15 +1779,15 @@
                         </div>
                     </div>
                 `;
-                
+
                 // Insertar el error en el formulario
                 const form = document.getElementById('profileForm');
                 const submitBtn = document.getElementById('submitBtn');
-                
+
                 // Remover cualquier mensaje de error anterior
                 const prevError = document.querySelector('.bg-red-50.text-red-700');
                 if (prevError) prevError.remove();
-                
+
                 // Insertar antes del botón de envío
                 if (form && submitBtn) {
                     form.insertBefore(errorDiv, submitBtn.parentNode);
