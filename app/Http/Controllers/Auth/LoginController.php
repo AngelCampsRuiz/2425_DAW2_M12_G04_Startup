@@ -25,19 +25,26 @@ class LoginController extends Controller
             $request->session()->regenerate();
 
             $user = Auth::user();
-            $role = $user->role->id;
+            
+            // Comprobamos el nombre del rol en lugar del ID para mayor seguridad
+            $roleName = $user->role ? $user->role->nombre_rol : null;
 
             // REDIRIGIMOS SEGUN EL ROL DEL USUARIO
-                if ($role == 3) {
+            switch($roleName) {
+                case 'Estudiante':
                     return redirect()->intended(route('student.dashboard'));
-                } elseif($role == 1) {
+                case 'Administrador':
                     return redirect()->intended(route('admin.dashboard'));
-
-                } elseif ($role == 2) {
+                case 'Empresa':
                     return redirect()->intended(route('empresa.dashboard'));
-                } else {
+                case 'Institución':
+                    return redirect()->intended(route('institucion.dashboard'));
+                case 'Docente':
+                    // Implementar ruta para docentes cuando sea necesario
                     return redirect()->intended('/');
-                }
+                default:
+                    return redirect()->intended('/');
+            }
         }
 
         return back()->withErrors([

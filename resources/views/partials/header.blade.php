@@ -24,6 +24,14 @@
                                 <a href="{{ route('empresa.dashboard') }}" class="bg-[#7705B6] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#5E0490] transition">
                                     Panel Empresa
                                 </a>
+                            @elseif(auth()->user()->role->nombre_rol == 'Institución')
+                                <a href="{{ route('institucion.dashboard') }}" class="bg-[#7705B6] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#5E0490] transition">
+                                    Panel Institución
+                                </a>
+                            @elseif(auth()->user()->role->nombre_rol == 'Docente')
+                                <a href="{{ route('docente.dashboard') }}" class="bg-[#7705B6] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#5E0490] transition">
+                                    Panel Docente
+                                </a>
                             @endif
 
                             <!-- Dropdown -->

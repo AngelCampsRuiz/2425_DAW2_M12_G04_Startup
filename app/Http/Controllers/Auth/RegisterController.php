@@ -8,6 +8,7 @@ use App\Models\Estudiante;
 use App\Models\Empresa;
 use App\Models\Titulo;
 use App\Models\Rol;
+use App\Models\Institucion;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -60,6 +61,25 @@ class RegisterController extends Controller
         }
         
         return view('auth.register-company');
+    }
+
+    // Vista de registro de institución
+    public function showInstitutionRegistrationForm(Request $request)
+    {
+        $registrationData = $request->session()->get('registration_data');
+        
+        if (!$registrationData) {
+            return redirect()->route('register')
+                ->withErrors(['error' => 'Por favor complete el primer paso del registro']);
+        }
+        
+        // Verificar que el rol sea institución
+        if ($registrationData['role'] !== 'institucion') {
+            return redirect()->route('register')
+                ->withErrors(['error' => 'Esta página es solo para instituciones']);
+        }
+        
+        return view('auth.register-institution');
     }
 
     // Registro de estudiante (tercer paso)
@@ -202,13 +222,106 @@ class RegisterController extends Controller
         return redirect()->route('empresa.dashboard');
     }
 
+    // Registro de institución
+    public function registerInstitution(Request $request)
+    {
+        // Recuperar datos de los pasos anteriores
+        $registrationData = $request->session()->get('registration_data');
+        
+        if (!$registrationData) {
+            return redirect()->route('register')
+                ->withErrors(['error' => 'Por favor complete el primer paso del registro']);
+        }
+        
+        $validator = Validator::make($request->all(), [
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'codigo_centro' => ['required', 'string', 'max:8', 'unique:instituciones,codigo_centro'],
+            'tipo_institucion' => ['required', 'string', 'max:255'],
+            'direccion' => ['required', 'string', 'max:255'],
+            'provincia' => ['required', 'string', 'max:100'],
+            'codigo_postal' => ['required', 'string', 'max:5'],
+            'representante_legal' => ['required', 'string', 'max:255'],
+            'cargo_representante' => ['required', 'string', 'max:255'],
+        ], [
+            'codigo_centro.unique' => 'Este código de centro ya está registrado',
+            'password.required' => 'La contraseña es obligatoria',
+            'password.min' => 'La contraseña debe tener al menos 8 caracteres',
+            'password.confirmed' => 'Las contraseñas no coinciden',
+            'tipo_institucion.required' => 'El tipo de institución es obligatorio',
+            'direccion.required' => 'La dirección es obligatoria',
+            'provincia.required' => 'La provincia es obligatoria',
+            'codigo_postal.required' => 'El código postal es obligatorio',
+            'representante_legal.required' => 'El nombre del representante legal es obligatorio',
+            'cargo_representante.required' => 'El cargo del representante es obligatorio',
+        ]);
+
+        // Validar email único
+        $emailValidator = Validator::make(['email' => $registrationData['email']], [
+            'email' => 'unique:user,email'
+        ], [
+            'email.unique' => 'Este correo electrónico ya está registrado'
+        ]);
+
+        if ($validator->fails() || $emailValidator->fails()) {
+            return redirect()->back()
+                ->withErrors(array_merge(
+                    $validator->errors()->toArray(),
+                    $emailValidator->errors()->toArray()
+                ))
+                ->withInput();
+        }
+        
+        // Crear usuario
+        $user = User::create([
+            'nombre' => $registrationData['name'],
+            'email' => $registrationData['email'],
+            'password' => Hash::make($request->password),
+            'role_id' => Rol::where('nombre_rol', 'Institución')->first()->id,
+            'fecha_nacimiento' => now()->subYears(rand(25, 65)),
+            'ciudad' => $request->provincia,
+            'dni' => 'DNI' . rand(10000000, 99999999),
+            'activo' => true,
+            'telefono' => '6' . rand(100000000, 999999999),
+            'descripcion' => 'Institución Educativa',
+            'imagen' => null
+        ]);
+
+        // Crear el perfil de institución
+        Institucion::create([
+            'user_id' => $user->id,
+            'codigo_centro' => $request->codigo_centro,
+            'tipo_institucion' => $request->tipo_institucion,
+            'direccion' => $request->direccion,
+            'provincia' => $request->provincia,
+            'codigo_postal' => $request->codigo_postal,
+            'representante_legal' => $request->representante_legal,
+            'cargo_representante' => $request->cargo_representante,
+        ]);
+
+        // Limpiar los datos de sesión
+        $request->session()->forget('registration_data');
+        
+        event(new Registered($user));
+        Auth::login($user);
+        return redirect()->route('institucion.dashboard');
+    }
+
     // Registro general - Primer paso (nombre, email, rol)
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:user',
-            'role' => 'required|in:alumno,empresa'
+            'role' => 'required|in:alumno,empresa,institucion'
+        ], [
+            'name.required' => 'El nombre es obligatorio',
+            'name.max' => 'El nombre no puede tener más de 255 caracteres',
+            'email.required' => 'El correo electrónico es obligatorio',
+            'email.email' => 'El formato del correo electrónico no es válido',
+            'email.max' => 'El correo electrónico no puede tener más de 255 caracteres',
+            'email.unique' => 'Este correo electrónico ya está registrado',
+            'role.required' => 'Debes seleccionar un tipo de usuario',
+            'role.in' => 'El tipo de usuario seleccionado no es válido'
         ]);
 
         if ($validator->fails()) {
@@ -228,8 +341,10 @@ class RegisterController extends Controller
         // Redirigir según el rol
         if ($request->role === 'alumno') {
             return redirect()->route('register.alumno');
-        } else {
+        } elseif ($request->role === 'empresa') {
             return redirect()->route('register.empresa');
+        } else {
+            return redirect()->route('register.institucion');
         }
     }
     
