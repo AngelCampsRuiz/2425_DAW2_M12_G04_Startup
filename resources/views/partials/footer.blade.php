@@ -268,7 +268,7 @@
         <!-- Línea divisoria -->
         <div class="mt-14 pt-8 border-t border-primary/20">
             <div class="flex flex-col md:flex-row justify-between items-center">
-                <p class="text-sm text-gray-600">© {{ date('Y') }} <span class="text-primary font-semibold">NextGen</span>. Todos los derechos reservados.</p>
+                <p class="text-sm text-gray-600">© {{ date('Y') }} <span class="text-primary font-semibold">NextGen</span>. {{ __('footer.all_rights_reserved') }}.</p>
                 <div class="mt-4 md:mt-0 flex items-center">
                     <p class="text-sm text-gray-600">{{ __('footer.designed_developed') }}</p>
                     <span class="mx-1 text-red-500 animate-pulse text-lg">❤</span>

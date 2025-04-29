@@ -18,11 +18,11 @@
                             <!-- Botón de panel según rol -->
                             @if(auth()->user()->role->nombre_rol == 'Estudiante')
                                 <a href="{{ route('student.dashboard') }}" class="bg-[#7705B6] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#5E0490] transition">
-                                    Panel Alumno
+                                    {{ __('footer.panel_student') }}
                                 </a>
                             @elseif(auth()->user()->role->nombre_rol == 'Empresa')
                                 <a href="{{ route('empresa.dashboard') }}" class="bg-[#7705B6] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#5E0490] transition">
-                                    Panel Empresa
+                                    {{ __('footer.panel_company') }}
                                 </a>
                             @endif
 
@@ -42,7 +42,7 @@
                                     <form method="POST" action="{{ route('logout') }}">
                                         @csrf
                                         <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                            Cerrar sesión
+                                            {{ __('header.logout') }}
                                         </button>
                                     </form>
                                 </div>
@@ -51,11 +51,11 @@
                     @else
                         {{-- INICIAR SESIÓN --}}
                             <a href="{{ route('login') }}" class="bg-[#7705B6] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#5E0490] transition">
-                                Iniciar sesión
+                                {{ __('footer.login') }}
                             </a>
                         {{-- REGISTRARSE --}}
                             <a href="{{ route('register') }}" class="bg-white text-[#7705B6] px-4 py-2 rounded-lg font-medium border border-[#7705B6] hover:bg-gray-50 transition">
-                                Registrarte
+                                {{ __('footer.register') }}
                             </a>
                     @endauth
                 </div>
