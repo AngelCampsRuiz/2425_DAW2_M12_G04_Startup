@@ -278,6 +278,14 @@ class EmpresaController extends Controller
                 throw new \Exception('No se puede eliminar la empresa porque tiene publicaciones asociadas');
             }
             
+            // Eliminar la imagen si existe
+            if ($empresa->user->imagen) {
+                $imagenPath = public_path('public/profile_images/' . $empresa->user->imagen);
+                if (file_exists($imagenPath)) {
+                    unlink($imagenPath);
+                }
+            }
+            
             // Eliminar primero la empresa y luego el usuario
             $empresa->delete();
             $empresa->user->delete();
@@ -321,6 +329,17 @@ class EmpresaController extends Controller
             
             // Iniciar transacción
             DB::beginTransaction();
+            
+            // Buscar la empresa para obtener la imagen antes de eliminarla
+            $empresa = Empresa::with('user')->find($id);
+            
+            // Eliminar la imagen si existe
+            if ($empresa && $empresa->user && $empresa->user->imagen) {
+                $imagenPath = public_path('public/profile_images/' . $empresa->user->imagen);
+                if (file_exists($imagenPath)) {
+                    unlink($imagenPath);
+                }
+            }
             
             // Primero eliminar registros relacionados en empresa
             $affectedEmpresa = DB::delete('DELETE FROM empresas WHERE id = ?', [$id]);

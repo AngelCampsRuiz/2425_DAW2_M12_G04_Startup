@@ -314,7 +314,7 @@
             if (e.target.closest('.pagination-link')) {
                 e.preventDefault();
                 const link = e.target.closest('.pagination-link');
-                actualizarTabla(link.getAttribute('href'));
+                actualizarTablaEmpresas(link.getAttribute('href'));
             }
         });
         
@@ -377,7 +377,7 @@
                 if (data.success) {
                     document.getElementById('modal-empresa').classList.add('hidden');
                     mostrarMensajeExito(data.message);
-                    actualizarTabla();
+                    actualizarTablaEmpresas();
                 } else if (data.errors) {
                     mostrarErrores(data.errors);
                 }
@@ -414,7 +414,7 @@
                 if (data.success) {
                     document.getElementById('modal-eliminar').classList.add('hidden');
                     mostrarMensajeExito(data.message);
-                    actualizarTabla();
+                    actualizarTablaEmpresas();
                 } else {
                     alert(data.message || 'Error al eliminar la empresa');
                 }
@@ -580,7 +580,7 @@
             
             if (data.success) {
                 mostrarMensajeExito(data.message);
-                actualizarTabla();
+                actualizarTablaEmpresas();
             } else {
                 alert(data.message || 'Error al eliminar la empresa mediante SQL');
             }
@@ -631,7 +631,7 @@
     }
     
     // Función de actualización de tabla
-    function actualizarTabla(url = '{{ route("admin.empresas.index") }}') {
+    function actualizarTablaEmpresas(url = '{{ route("admin.empresas.index") }}') {
         fetch(url, {
             headers: {
                 'X-Requested-With': 'XMLHttpRequest'
