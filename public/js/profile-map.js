@@ -46,6 +46,12 @@ function initializeMap() {
     // Invalidar el tamaño del mapa después de que sea visible
     setTimeout(() => {
         map.invalidateSize();
+        setTimeout(() => {
+            map.invalidateSize();
+            setTimeout(() => {
+                map.invalidateSize();
+            }, 500);
+        }, 300);
     }, 100);
 }
 
