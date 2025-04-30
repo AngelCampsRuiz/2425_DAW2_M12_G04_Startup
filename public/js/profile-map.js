@@ -1,6 +1,9 @@
 let map = null;
 let marker = null;
 
+// Mapa de solo lectura
+let viewMap = null;
+
 // Función para inicializar el mapa
 function initializeMap() {
     // Obtener las coordenadas guardadas o usar coordenadas por defecto (Barcelona)
@@ -125,5 +128,49 @@ async function saveLocation() {
     }
 }
 
-// Inicializar el mapa cuando se carga la página
-document.addEventListener('DOMContentLoaded', initializeMap);
+// Función para inicializar el mapa de solo lectura
+function initializeViewMap() {
+    const viewMapContainer = document.getElementById('viewLocationMap');
+    if (!viewMapContainer) return;
+
+    // Obtener las coordenadas guardadas
+    const lat = document.getElementById('lat')?.value;
+    const lng = document.getElementById('lng')?.value;
+
+    if (!lat || !lng) return;
+
+    // Si el mapa ya existe, lo destruimos
+    if (viewMap) {
+        viewMap.remove();
+        viewMap = null;
+    }
+
+    // Crear el mapa
+    viewMap = L.map('viewLocationMap', {
+        center: [lat, lng],
+        zoom: 15,
+        zoomControl: true,
+        dragging: true,
+        scrollWheelZoom: false
+    });
+
+    // Añadir capa de OpenStreetMap
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19
+    }).addTo(viewMap);
+
+    // Añadir marcador
+    L.marker([lat, lng]).addTo(viewMap);
+
+    // Invalidar el tamaño del mapa después de que sea visible
+    setTimeout(() => {
+        viewMap.invalidateSize();
+    }, 100);
+}
+
+// Modificar el evento DOMContentLoaded existente
+document.addEventListener('DOMContentLoaded', function() {
+    initializeMap();
+    initializeViewMap();
+});
