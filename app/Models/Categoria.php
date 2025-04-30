@@ -25,6 +25,11 @@ class Categoria extends Model
 
     public function nivelEducativo()
     {
-        return $this->belongsTo(NivelEducativo::class);
+        return $this->belongsTo(NivelEducativo::class, 'nivel_educativo_id');
+    }
+
+    public function publicaciones()
+    {
+        return $this->hasMany(Publicacion::class);
     }
 }
