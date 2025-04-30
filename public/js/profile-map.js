@@ -4,8 +4,11 @@ let marker = null;
 // Mapa de solo lectura
 let viewMap = null;
 
-// Función para inicializar el mapa
+// Función para inicializar el mapa de edición
 function initializeMap() {
+    const mapContainer = document.getElementById('locationMap');
+    if (!mapContainer) return; // Si no existe el contenedor, no inicializar
+
     // Obtener las coordenadas guardadas o usar coordenadas por defecto (Barcelona)
     const lat = document.getElementById('lat')?.value || 41.390205;
     const lng = document.getElementById('lng')?.value || 2.154007;
@@ -133,9 +136,9 @@ function initializeViewMap() {
     const viewMapContainer = document.getElementById('viewLocationMap');
     if (!viewMapContainer) return;
 
-    // Obtener las coordenadas guardadas
-    const lat = document.getElementById('lat')?.value;
-    const lng = document.getElementById('lng')?.value;
+    // Obtener las coordenadas del contenedor del mapa
+    const lat = parseFloat(viewMapContainer.dataset.lat);
+    const lng = parseFloat(viewMapContainer.dataset.lng);
 
     if (!lat || !lng) return;
 
@@ -169,8 +172,17 @@ function initializeViewMap() {
     }, 100);
 }
 
-// Modificar el evento DOMContentLoaded existente
+// Inicializar los mapas cuando se carga la página
 document.addEventListener('DOMContentLoaded', function() {
-    initializeMap();
-    initializeViewMap();
+    // Intentar inicializar el mapa de edición
+    const editMapContainer = document.getElementById('locationMap');
+    if (editMapContainer) {
+        initializeMap();
+    }
+
+    // Intentar inicializar el mapa de visualización
+    const viewMapContainer = document.getElementById('viewLocationMap');
+    if (viewMapContainer) {
+        initializeViewMap();
+    }
 });
