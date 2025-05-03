@@ -48,7 +48,7 @@ class PublicacionSeeder extends Seeder
             $numPublicaciones = rand(1, 3);
             
             for ($i = 0; $i < $numPublicaciones; $i++) {
-                $empresa = $empresas->random();
+            $empresa = $empresas->random();
                 $titulo = $this->generarTitulo($categoria);
                 $descripcion = $this->generarDescripcion($categoria);
                 
@@ -56,16 +56,16 @@ class PublicacionSeeder extends Seeder
                 $publicacion = Publicacion::create([
                     'titulo' => $titulo,
                     'descripcion' => $descripcion,
-                    'horario' => $horarios[array_rand($horarios)],
-                    'horas_totales' => rand(100, 500),
-                    'fecha_publicacion' => fake()->dateTimeBetween('-1 month', 'now'),
-                    'activa' => true,
-                    'empresa_id' => $empresa->id,
-                    'categoria_id' => $categoria->id,
+                'horario' => $horarios[array_rand($horarios)],
+                'horas_totales' => rand(100, 500),
+                'fecha_publicacion' => fake()->dateTimeBetween('-1 month', 'now'),
+                'activa' => true,
+                'empresa_id' => $empresa->id,
+                'categoria_id' => $categoria->id,
                     'subcategoria_id' => $categoria->subcategorias->first()->id, // Para mantener compatibilidad
-                    'created_at' => now(),
-                    'updated_at' => now()
-                ]);
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
                 
                 // Asignamos múltiples subcategorías (entre 2 y 4)
                 $subcategoriasCategoria = $categoria->subcategorias;

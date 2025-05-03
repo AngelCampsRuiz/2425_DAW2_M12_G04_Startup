@@ -15,6 +15,19 @@ class NivelEducativo extends Model
 
     public function categorias()
     {
-        return $this->hasMany(Categoria::class);
+        return $this->hasMany(Categoria::class, 'nivel_educativo_id');
+    }
+
+    // Relación a través de categorías para obtener publicaciones
+    public function publicaciones()
+    {
+        return $this->hasManyThrough(
+            Publicacion::class,
+            Categoria::class,
+            'nivel_educativo_id', // Clave externa en categorias
+            'categoria_id', // Clave externa en publicaciones
+            'id', // Clave local en niveles_educativos
+            'id' // Clave local en categorias
+        );
     }
 } 
