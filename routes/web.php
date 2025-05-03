@@ -173,6 +173,14 @@
 
         Route::post('/set-locale', [App\Http\Controllers\LocaleController::class, 'setLocale'])->name('set-locale');
 
+        // Footer resource pages
+        Route::get('/help-center', [App\Http\Controllers\ResourceController::class, 'helpCenter'])->name('help.center');
+        Route::get('/student-guides', [App\Http\Controllers\ResourceController::class, 'studentGuides'])->name('student.guides');
+        Route::get('/company-resources', [App\Http\Controllers\ResourceController::class, 'companyResources'])->name('company.resources');
+        Route::get('/terms-conditions', [App\Http\Controllers\ResourceController::class, 'termsConditions'])->name('terms.conditions');
+        Route::get('/privacy-policy', [App\Http\Controllers\ResourceController::class, 'privacyPolicy'])->name('privacy.policy');
+        Route::get('/blog', [App\Http\Controllers\ResourceController::class, 'blog'])->name('blog');
+
     // RUTAS PARA INSTITUCIONES
     Route::prefix('institucion')->middleware(['auth', \App\Http\Middleware\CheckRole::class.':institucion'])->name('institucion.')->group(function () {
         // Dashboard
