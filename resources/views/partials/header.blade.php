@@ -1,37 +1,59 @@
 {{-- HEADER --}}
-<header class="bg-gradient-to-r from-[#D0AAFE] to-[#E5D0FF] py-4 px-6 shadow-lg sticky top-0 z-50">
+<header class="bg-gradient-to-r from-[#D0AAFE] to-[#E5D0FF] py-4 px-6 shadow-lg">
     <div class="container mx-auto flex justify-between items-center">
-        <!-- LOGO & BRAND -->
+        <!-- LOGO & BRAND - Redirige al panel según el rol -->
         <div class="flex items-center">
-            <a href="{{ url('/') }}" class="flex items-center transition-transform hover:scale-105">
-                <img src="{{ asset('assets/images/logo.svg') }}" alt="NextGen Logo" class="h-12">
-                <span class="ml-3 text-2xl font-bold text-[#7705B6]">NextGen</span>
-            </a>
+            @auth
+                @php
+                    $dashboardRoute = '';
+                    switch(auth()->user()->role->nombre_rol) {
+                        case 'Estudiante':
+                            $dashboardRoute = route('student.dashboard');
+                            break;
+                        case 'Empresa':
+                            $dashboardRoute = route('empresa.dashboard');
+                            break;
+                        case 'Institución':
+                            $dashboardRoute = route('institucion.dashboard');
+                            break;
+                        case 'Docente':
+                            $dashboardRoute = route('docente.dashboard');
+                            break;
+                        default:
+                            $dashboardRoute = url('/');
+                    }
+                @endphp
+                <a href="{{ $dashboardRoute }}" class="group flex items-center transition-all duration-300">
+                    <div class="relative overflow-hidden">
+                        <img src="{{ asset('assets/images/logo.svg') }}" alt="NextGen Logo" class="h-12 transition-transform duration-300 group-hover:scale-110">
+                        @if($dashboardRoute != url('/'))
+                            <div class="absolute -bottom-6 left-0 right-0 h-1 bg-[#7705B6] transform translate-y-1 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100"></div>
+                        @endif
+                    </div>
+                    <div class="ml-3 flex flex-col">
+                        <span class="text-2xl font-bold text-[#7705B6] transition-all duration-300 group-hover:text-[#5E0490]">NextGen</span>
+                        @if($dashboardRoute != url('/'))
+                            <span class="text-xs text-[#7705B6]/70 transition-all duration-300 group-hover:text-[#5E0490]">
+                                Ir a mi panel
+                                <svg class="w-3 h-3 inline-block ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                                </svg>
+                            </span>
+                        @endif
+                    </div>
+                </a>
+            @else
+                <a href="{{ url('/') }}" class="flex items-center transition-transform hover:scale-105">
+                    <img src="{{ asset('assets/images/logo.svg') }}" alt="NextGen Logo" class="h-12">
+                    <span class="ml-3 text-2xl font-bold text-[#7705B6]">NextGen</span>
+                </a>
+            @endauth
         </div>
 
         {{-- NAVIGATION BUTTONS --}}
         <div class="hidden md:flex items-center space-x-6">
             @auth
                 <div class="flex items-center space-x-5">
-                    <!-- Panel button based on role -->
-                    @if(auth()->user()->role->nombre_rol == 'Estudiante')
-                        <a href="{{ route('student.dashboard') }}" class="bg-[#7705B6] text-white px-5 py-2.5 rounded-lg font-medium hover:bg-[#5E0490] transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
-                            Panel Alumno
-                        </a>
-                    @elseif(auth()->user()->role->nombre_rol == 'Empresa')
-                        <a href="{{ route('empresa.dashboard') }}" class="bg-[#7705B6] text-white px-5 py-2.5 rounded-lg font-medium hover:bg-[#5E0490] transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
-                            Panel Empresa
-                        </a>
-                    @elseif(auth()->user()->role->nombre_rol == 'Institución')
-                        <a href="{{ route('institucion.dashboard') }}" class="bg-[#7705B6] text-white px-5 py-2.5 rounded-lg font-medium hover:bg-[#5E0490] transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
-                            Panel Institución
-                        </a>
-                    @elseif(auth()->user()->role->nombre_rol == 'Docente')
-                        <a href="{{ route('docente.dashboard') }}" class="bg-[#7705B6] text-white px-5 py-2.5 rounded-lg font-medium hover:bg-[#5E0490] transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
-                            Panel Docente
-                        </a>
-                    @endif
-
                     <!-- User Dropdown -->
                     <div class="relative group">
                         <button id="userMenuButton" class="flex items-center space-x-2 focus:outline-none bg-white/30 px-4 py-2 rounded-lg hover:bg-white/50 transition-all">
@@ -47,6 +69,37 @@
                                 <p class="text-sm text-gray-500">Conectado como</p>
                                 <p class="text-sm font-medium text-[#7705B6] truncate">{{ auth()->user()->email }}</p>
                             </div>
+                            @php
+                                $roleName = '';
+                                switch(auth()->user()->role->nombre_rol) {
+                                    case 'Estudiante':
+                                        $roleName = 'Panel Alumno';
+                                        $dashboardRoute = route('student.dashboard');
+                                        $dashboardIcon = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>';
+                                        break;
+                                    case 'Empresa':
+                                        $roleName = 'Panel Empresa';
+                                        $dashboardRoute = route('empresa.dashboard');
+                                        $dashboardIcon = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>';
+                                        break;
+                                    case 'Institución':
+                                        $roleName = 'Panel Institución';
+                                        $dashboardRoute = route('institucion.dashboard');
+                                        $dashboardIcon = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"></path>';
+                                        break;
+                                    case 'Docente':
+                                        $roleName = 'Panel Docente';
+                                        $dashboardRoute = route('docente.dashboard');
+                                        $dashboardIcon = '<path d="M12 14l9-5-9-5-9 5 9 5z"></path><path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998a12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"></path>';
+                                        break;
+                                }
+                            @endphp
+                            <a href="{{ $dashboardRoute }}" class="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-purple-50 hover:text-[#7705B6]">
+                                <svg class="w-5 h-5 mr-2 text-[#9333EA]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    {!! $dashboardIcon !!}
+                                </svg>
+                                {{ $roleName }}
+                            </a>
                             <a href="{{ route('profile') }}" class="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-purple-50 hover:text-[#7705B6]">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
@@ -98,23 +151,38 @@
                     <span class="text-[#7705B6] font-medium">{{ auth()->user()->nombre }}</span>
                 </div>
                 <!-- Panel button based on role -->
-                @if(auth()->user()->role->nombre_rol == 'Estudiante')
-                    <a href="{{ route('student.dashboard') }}" class="bg-[#7705B6] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#5E0490] transition text-center">
-                        Panel Alumno
-                    </a>
-                @elseif(auth()->user()->role->nombre_rol == 'Empresa')
-                    <a href="{{ route('empresa.dashboard') }}" class="bg-[#7705B6] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#5E0490] transition text-center">
-                        Panel Empresa
-                    </a>
-                @elseif(auth()->user()->role->nombre_rol == 'Institución')
-                    <a href="{{ route('institucion.dashboard') }}" class="bg-[#7705B6] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#5E0490] transition text-center">
-                        Panel Institución
-                    </a>
-                @elseif(auth()->user()->role->nombre_rol == 'Docente')
-                    <a href="{{ route('docente.dashboard') }}" class="bg-[#7705B6] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#5E0490] transition text-center">
-                        Panel Docente
-                    </a>
-                @endif
+                @php
+                    $roleName = '';
+                    $dashboardIcon = '';
+                    switch(auth()->user()->role->nombre_rol) {
+                        case 'Estudiante':
+                            $roleName = 'Panel Alumno';
+                            $dashboardRoute = route('student.dashboard');
+                            $dashboardIcon = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>';
+                            break;
+                        case 'Empresa':
+                            $roleName = 'Panel Empresa';
+                            $dashboardRoute = route('empresa.dashboard');
+                            $dashboardIcon = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>';
+                            break;
+                        case 'Institución':
+                            $roleName = 'Panel Institución';
+                            $dashboardRoute = route('institucion.dashboard');
+                            $dashboardIcon = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"></path>';
+                            break;
+                        case 'Docente':
+                            $roleName = 'Panel Docente';
+                            $dashboardRoute = route('docente.dashboard');
+                            $dashboardIcon = '<path d="M12 14l9-5-9-5-9 5 9 5z"></path><path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998a12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"></path>';
+                            break;
+                    }
+                @endphp
+                <a href="{{ $dashboardRoute }}" class="bg-[#7705B6] text-white px-4 py-2.5 rounded-lg font-medium hover:bg-[#5E0490] transition-all flex items-center justify-center">
+                    <svg class="w-5 h-5 mr-2 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        {!! $dashboardIcon !!}
+                    </svg>
+                    {{ $roleName }}
+                </a>
                 <a href="{{ route('profile') }}" class="text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-100 flex items-center">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
