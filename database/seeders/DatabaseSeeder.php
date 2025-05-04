@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RolSeeder::class,
             TituloSeeder::class,
+            NivelEducativoSeeder::class,
             CategoriaSeeder::class,
             UserSeeder::class,
             EmpresaSeeder::class,
@@ -30,6 +31,8 @@ class DatabaseSeeder extends Seeder
             ValoracionSeeder::class,
             FavoritoSeeder::class,
             SolicitudSeeder::class,
+            InstitucionSeeder::class,
+            DocenteSeeder::class,
         ]);
     }
 }

@@ -2,101 +2,62 @@ document.addEventListener('DOMContentLoaded', function() {
     const registerForm = document.getElementById('registerForm');
     
     if (registerForm) {
-        registerForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // LIMPIAMOS LOS ERRORES ANTERIORES SI HAY
-                clearErrors();
-            
-            // VALIDAMOS LOS CAMPOS DEL FORMULARIO
-                const name = document.getElementById('name');
-                const email = document.getElementById('email');
-                // Password fields are not in the first step anymore
-                const role = document.querySelector('input[name="role"]:checked');
-                let isValid = true;
-            
-            // VALIDAMOS EL NOMBRE
-                if (!name.value.trim()) {
-                    showError(name, 'El nombre completo es requerido');
-                    isValid = false;
-                } else if (name.value.trim().length < 3) {
-                    showError(name, 'El nombre debe tener al menos 3 caracteres');
-                    isValid = false;
-                }
-            
-            // VALIDAMOS EL EMAIL
-                if (!email.value.trim()) {
-                    showError(email, 'El correo electrónico es requerido');
-                    isValid = false;
-                } else if (!isValidEmail(email.value.trim())) {
-                    showError(email, 'Ingrese un correo electrónico válido');
-                    isValid = false;
-                }
-            
-            // Password validation removed for first step
-            
-            // VALIDAMOS EL ROL DEL USUARIO
-                if (!role) {
-                    const roleContainer = document.querySelector('.mb-6');
-                    showError(roleContainer, 'Por favor seleccione un tipo de usuario');
-                    isValid = false;
-                }
-            
-            // SI TODO LO ANTERIOR ES VALIDO, ENVIAMOS EL FORMULARIO
-                if (isValid) {
-                    this.submit();
-                }
-        });
-    }
-    
-    function showError(input, message) {
-        let formGroup;
+        // Campos a validar
+        const name = document.getElementById('name');
+        const email = document.getElementById('email');
         
-        // PARA LOS RADIOS, USAMOS EL CONTENEDOR
-            if (input.classList && input.classList.contains('mb-6')) {
-                formGroup = input;
+        // Elementos de error
+        const nameError = document.getElementById('name-error');
+        const emailError = document.getElementById('email-error');
+        
+        // Función para validar nombre
+        window.validateName = function() {
+            if (!name.value.trim()) {
+                nameError.textContent = 'El nombre es obligatorio';
+                name.classList.add('border-red-500');
+                return false;
+            } else if (name.value.trim().length < 3) {
+                nameError.textContent = 'El nombre debe tener al menos 3 caracteres';
+                name.classList.add('border-red-500');
+                return false;
             } else {
-                formGroup = input.closest('.mb-4') || input.closest('.mb-6');
+                nameError.textContent = '';
+                name.classList.remove('border-red-500');
+                return true;
             }
+        };
         
-        if (!formGroup) return;
-        
-        // AÑADIMOS LA CLASE DE ERROR AL INPUT
-            if (input.tagName === 'INPUT') {
-                input.classList.add('border-red-500');
+        // Función para validar email
+        window.validateEmail = function() {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            
+            if (!email.value.trim()) {
+                emailError.textContent = 'El correo electrónico es obligatorio';
+                email.classList.add('border-red-500');
+                return false;
+            } else if (!emailRegex.test(email.value)) {
+                emailError.textContent = 'Introduce un correo electrónico válido';
+                email.classList.add('border-red-500');
+                return false;
+            } else {
+                emailError.textContent = '';
+                email.classList.remove('border-red-500');
+                return true;
             }
+        };
         
-        // CREAR EL ELEMENTO DE ERROR SI NO EXISTE
-            let errorElement = formGroup.querySelector('.text-red-500');
-            if (!errorElement) {
-                errorElement = document.createElement('span');
-                errorElement.className = 'text-red-500 text-xs mt-1 block';
-                formGroup.appendChild(errorElement);
+        // Eventos onblur
+        if (name) name.addEventListener('blur', window.validateName);
+        if (email) email.addEventListener('blur', window.validateEmail);
+        
+        // Validación al enviar el formulario
+        registerForm.addEventListener('submit', function(event) {
+            const isNameValid = window.validateName();
+            const isEmailValid = window.validateEmail();
+            
+            if (!isNameValid || !isEmailValid) {
+                event.preventDefault();
             }
-        
-        errorElement.textContent = message;
-    }
-    
-    function clearErrors() {
-        // LIMPIAMOS LOS ESTILOS DEL ERROR
-            document.querySelectorAll('.border-red-500').forEach(el => {
-                el.classList.remove('border-red-500');
-            });
-        
-        // ELIMINAMOS EL MENSAJE DE ERROR
-            document.querySelectorAll('.text-red-500').forEach(el => {
-                if (el.tagName === 'SPAN') {
-                    el.remove();
-                }
-            });
-    }
-    
-    function isValidEmail(email) {
-        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return re.test(email);
-    }
-    
-    function hasNumber(password) {
-        return /\d/.test(password);
+        });
     }
 });

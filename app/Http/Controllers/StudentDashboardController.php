@@ -75,6 +75,19 @@ class StudentDashboardController extends Controller
         $horasTotalesMin = Publication::min('horas_totales');
         $horasTotalesMax = Publication::max('horas_totales');
 
+        // Verificar si es una solicitud AJAX
+        if ($request->ajax()) {
+            $view = view('student.dashboard', [
+                'publications' => $publications,
+                'horarios' => $horarios,
+                'categorias' => $categorias,
+                'horasTotalesMin' => $horasTotalesMin,
+                'horasTotalesMax' => $horasTotalesMax
+            ])->render();
+            
+            return $view;
+        }
+
         return view('student.dashboard', [
             'publications' => $publications,
             'horarios' => $horarios,

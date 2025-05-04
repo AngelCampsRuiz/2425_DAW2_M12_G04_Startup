@@ -8,6 +8,7 @@ use App\Models\Publicacion;
 use App\Models\Empresa;
 use App\Models\Categoria;
 use App\Models\Subcategoria;
+use App\Models\NivelEducativo;
 
 class PublicacionSeeder extends Seeder
 {
@@ -19,78 +20,137 @@ class PublicacionSeeder extends Seeder
         $empresas = Empresa::all();
         $categorias = Categoria::all();
         $subcategorias = Subcategoria::all();
-        $horarios = ['mañana', 'tarde'];
+        $niveles = NivelEducativo::all();
+        $horarios = ['mañana', 'tarde', 'flexible'];
         
-        // Títulos realistas para publicaciones
-        $titulos = [
-            'Desarrollador Frontend con React',
-            'Desarrollador Backend con PHP y Laravel',
-            'Desarrollador Full Stack Junior',
-            'Desarrollador Móvil con Flutter',
-            'Desarrollador iOS con Swift',
-            'Desarrollador Android con Kotlin',
-            'Administrador de Sistemas Linux',
-            'Especialista en Ciberseguridad',
-            'Analista de Datos y Business Intelligence',
-            'Especialista en Marketing Digital',
-            'Diseñador UI/UX para Aplicaciones Web',
-            'Técnico en Gestión Administrativa',
-            'Técnico en Logística y Transporte',
-            'Técnico en Atención a Clientes',
-            'Técnico en Comercio Internacional',
-            'Técnico en Turismo y Hostelería',
-            'Técnico en Sanidad y Enfermería',
-            'Técnico en Servicios Sociales',
-            'Técnico en Administración de Bases de Datos',
-            'Técnico en DevOps y CI/CD'
-        ];
+        // Publicaciones para Ciclos de Grado Medio
+        $this->crearPublicacionesParaNivel($niveles->where('nombre_nivel', 'Ciclos de Grado Medio')->first()->id, $empresas, $horarios);
         
-        // Descripciones realistas para publicaciones
-        $descripciones = [
-            'Buscamos un desarrollador frontend con experiencia en React para unirse a nuestro equipo de desarrollo. El candidato ideal tendrá conocimientos en JavaScript, HTML, CSS y experiencia con frameworks modernos.',
-            'Necesitamos un desarrollador backend con experiencia en PHP y Laravel para trabajar en proyectos web de mediana y gran escala. Se valorará experiencia en APIs RESTful y bases de datos SQL.',
-            'Buscamos un desarrollador full stack junior con ganas de aprender y crecer profesionalmente. El candidato ideal tendrá conocimientos básicos en desarrollo web y estará dispuesto a formarse en nuevas tecnologías.',
-            'Necesitamos un desarrollador móvil con experiencia en Flutter para crear aplicaciones multiplataforma. Se valorará experiencia en desarrollo de aplicaciones nativas para iOS y Android.',
-            'Buscamos un desarrollador iOS con experiencia en Swift para crear aplicaciones nativas para iPhone y iPad. Se valorará experiencia en SwiftUI y arquitecturas MVVM.',
-            'Necesitamos un desarrollador Android con experiencia en Kotlin para crear aplicaciones nativas para dispositivos Android. Se valorará experiencia en Jetpack Compose y arquitecturas limpias.',
-            'Buscamos un administrador de sistemas Linux con experiencia en configuración y mantenimiento de servidores. Se valorará experiencia en virtualización, contenedores y automatización.',
-            'Necesitamos un especialista en ciberseguridad para proteger nuestros sistemas y datos. Se valorará experiencia en análisis de vulnerabilidades, seguridad de redes y cumplimiento normativo.',
-            'Buscamos un analista de datos con experiencia en business intelligence para ayudar a tomar decisiones basadas en datos. Se valorará experiencia en SQL, visualización de datos y herramientas de BI.',
-            'Necesitamos un especialista en marketing digital para gestionar nuestras campañas online. Se valorará experiencia en SEO, SEM, redes sociales y análisis de métricas.',
-            'Buscamos un diseñador UI/UX para crear interfaces intuitivas y atractivas. Se valorará experiencia en diseño de interfaces, prototipado y herramientas como Figma o Adobe XD.',
-            'Necesitamos un técnico en gestión administrativa para apoyar en tareas de administración y contabilidad. Se valorará experiencia en gestión de documentación, facturación y atención al cliente.',
-            'Buscamos un técnico en logística y transporte para gestionar el flujo de mercancías. Se valorará experiencia en planificación de rutas, gestión de almacenes y optimización de procesos logísticos.',
-            'Necesitamos un técnico en atención a clientes para proporcionar un servicio de calidad. Se valorará experiencia en resolución de incidencias, comunicación efectiva y trabajo en equipo.',
-            'Buscamos un técnico en comercio internacional para gestionar operaciones de importación y exportación. Se valorará experiencia en documentación aduanera, logística internacional y gestión de proveedores.',
-            'Necesitamos un técnico en turismo y hostelería para gestionar servicios turísticos. Se valorará experiencia en atención al cliente, gestión de reservas y conocimiento de destinos turísticos.',
-            'Buscamos un técnico en sanidad y enfermería para apoyar en tareas de atención sanitaria. Se valorará experiencia en primeros auxilios, cuidados básicos y trabajo en equipo en entornos sanitarios.',
-            'Necesitamos un técnico en servicios sociales para apoyar a personas en situación de vulnerabilidad. Se valorará experiencia en intervención social, trabajo en equipo y empatía.',
-            'Buscamos un técnico en administración de bases de datos para gestionar y optimizar nuestros sistemas de datos. Se valorará experiencia en SQL, administración de servidores y optimización de consultas.',
-            'Necesitamos un técnico en DevOps y CI/CD para automatizar nuestros procesos de desarrollo y despliegue. Se valorará experiencia en Docker, Kubernetes, Jenkins y herramientas de automatización.'
-        ];
-
-        // Crear 30 publicaciones de prueba
-        for ($i = 0; $i < 30; $i++) {
-            $categoria = $categorias->random();
-            // Obtener una subcategoría que pertenezca a la categoría seleccionada
-            $subcategoria = $subcategorias->where('categoria_id', $categoria->id)->random();
+        // Publicaciones para Ciclos de Grado Superior
+        $this->crearPublicacionesParaNivel($niveles->where('nombre_nivel', 'Ciclos de Grado Superior')->first()->id, $empresas, $horarios);
+        
+        // Publicaciones para Universidades
+        $this->crearPublicacionesParaNivel($niveles->where('nombre_nivel', 'Universidades')->first()->id, $empresas, $horarios);
+        
+        // Publicaciones para Máster
+        $this->crearPublicacionesParaNivel($niveles->where('nombre_nivel', 'Máster')->first()->id, $empresas, $horarios);
+    }
+    
+    /**
+     * Crea publicaciones específicas para un nivel educativo
+     */
+    private function crearPublicacionesParaNivel($nivelId, $empresas, $horarios)
+    {
+        $categoriasNivel = Categoria::where('nivel_educativo_id', $nivelId)->get();
+        
+        foreach ($categoriasNivel as $categoria) {
+            // Para cada categoría, creamos entre 1 y 3 publicaciones
+            $numPublicaciones = rand(1, 3);
+            
+            for ($i = 0; $i < $numPublicaciones; $i++) {
             $empresa = $empresas->random();
-            $tituloIndex = $i % count($titulos);
-            $descripcionIndex = $i % count($descripciones);
-
-            Publicacion::create([
-                'titulo' => $titulos[$tituloIndex],
-                'descripcion' => $descripciones[$descripcionIndex],
+                $titulo = $this->generarTitulo($categoria);
+                $descripcion = $this->generarDescripcion($categoria);
+                
+                // Creamos la publicación
+                $publicacion = Publicacion::create([
+                    'titulo' => $titulo,
+                    'descripcion' => $descripcion,
                 'horario' => $horarios[array_rand($horarios)],
                 'horas_totales' => rand(100, 500),
                 'fecha_publicacion' => fake()->dateTimeBetween('-1 month', 'now'),
                 'activa' => true,
                 'empresa_id' => $empresa->id,
                 'categoria_id' => $categoria->id,
-                'subcategoria_id' => $subcategoria->id,
+                    'subcategoria_id' => $categoria->subcategorias->first()->id, // Para mantener compatibilidad
                 'created_at' => now(),
                 'updated_at' => now()
             ]);
+                
+                // Asignamos múltiples subcategorías (entre 2 y 4)
+                $subcategoriasCategoria = $categoria->subcategorias;
+                $numSubcategorias = min(rand(2, 4), count($subcategoriasCategoria));
+                $subcategoriasSeleccionadas = $subcategoriasCategoria->random($numSubcategorias);
+                
+                foreach ($subcategoriasSeleccionadas as $subcategoria) {
+                    $publicacion->subcategorias()->attach($subcategoria->id);
+                }
+            }
         }
+    }
+    
+    /**
+     * Genera un título relevante para la categoría
+     */
+    private function generarTitulo($categoria)
+    {
+        $prefijos = [
+            'Prácticas en', 'Colaboración con', 'Formación en', 'Becario/a de', 
+            'Estudiante en', 'Aprendiz de', 'Ayudante de', 'Asistente de'
+        ];
+        
+        $prefijo = $prefijos[array_rand($prefijos)];
+        return "$prefijo {$categoria->nombre_categoria}";
+    }
+    
+    /**
+     * Genera una descripción relevante para la categoría
+     */
+    private function generarDescripcion($categoria)
+    {
+        $nivel = $categoria->nivelEducativo->nombre_nivel;
+        
+        $introduccion = [
+            "Buscamos un estudiante de {$nivel} especializado en {$categoria->nombre_categoria} para incorporarse a nuestro equipo.",
+            "Empresa líder en el sector busca incorporar un estudiante de {$categoria->nombre_categoria} para realizar prácticas.",
+            "¿Estás estudiando {$categoria->nombre_categoria}? Tenemos una oportunidad para ti.",
+            "Se ofrece puesto de prácticas para estudiante de {$categoria->nombre_categoria}.",
+            "Interesante oportunidad para estudiantes de {$categoria->nombre_categoria} que quieran completar su formación con nosotros."
+        ];
+        
+        $requisitos = [
+            "Requisitos: Conocimientos en {$this->getRandomSubcategorias($categoria, 2)}.",
+            "Se valorarán competencias en {$this->getRandomSubcategorias($categoria, 3)}.",
+            "Imprescindible interés por {$this->getRandomSubcategorias($categoria, 2)}.",
+            "Valoramos positivamente conocimientos de {$this->getRandomSubcategorias($categoria, 2)}.",
+            "Se requiere capacidad de aprendizaje en {$this->getRandomSubcategorias($categoria, 2)}."
+        ];
+        
+        $beneficios = [
+            "Ofrecemos: formación continua, buen ambiente laboral y posibilidad de incorporación.",
+            "Te ofrecemos un ambiente dinámico donde podrás aplicar tus conocimientos y seguir aprendiendo.",
+            "Tendrás la oportunidad de trabajar en proyectos reales y aprender de profesionales experimentados.",
+            "Posibilidad de contratación al finalizar las prácticas para los perfiles que mejor encajen.",
+            "Gran oportunidad para iniciar tu carrera profesional en un entorno colaborativo y de aprendizaje."
+        ];
+        
+        return $introduccion[array_rand($introduccion)] . "\n\n" . 
+               $requisitos[array_rand($requisitos)] . "\n\n" . 
+               $beneficios[array_rand($beneficios)];
+    }
+    
+    /**
+     * Obtiene subcategorías aleatorias para la descripción
+     */
+    private function getRandomSubcategorias($categoria, $num)
+    {
+        $subcategorias = $categoria->subcategorias->pluck('nombre_subcategoria')->toArray();
+        $selected = array_rand($subcategorias, min($num, count($subcategorias)));
+        
+        if (!is_array($selected)) {
+            $selected = [$selected];
+        }
+        
+        $result = [];
+        foreach ($selected as $index) {
+            $result[] = $subcategorias[$index];
+        }
+        
+        if (count($result) > 1) {
+            $last = array_pop($result);
+            return implode(', ', $result) . ' y ' . $last;
+        }
+        
+        return implode(', ', $result);
     }
 }

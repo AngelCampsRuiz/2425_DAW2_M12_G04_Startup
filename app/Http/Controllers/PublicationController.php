@@ -11,7 +11,7 @@ class PublicationController extends Controller
 {
     public function show($id)
     {
-        $publication = Publication::with(['empresa', 'categoria', 'subcategoria'])
+        $publication = Publication::with(['empresa', 'categoria', 'subcategoria', 'subcategorias'])
             ->withCount('solicitudes')
             ->findOrFail($id);
         
@@ -24,5 +24,35 @@ class PublicationController extends Controller
         }
         
         return view('publication.show', compact('publication', 'solicitudExistente'));
+    }
+    
+    public function index(Request $request)
+    {
+        $query = Publication::with(['empresa', 'categoria', 'subcategorias'])
+            ->where('activa', true)
+            ->orderBy('fecha_publicacion', 'desc');
+            
+        // Aplicar filtros si existen
+        if ($request->has('categoria_id') && $request->categoria_id) {
+            $query->where('categoria_id', $request->categoria_id);
+        }
+        
+        if ($request->has('subcategoria_id') && $request->subcategoria_id) {
+            $query->whereHas('subcategorias', function($q) use ($request) {
+                $q->where('subcategorias.id', $request->subcategoria_id);
+            });
+        }
+        
+        if ($request->has('horario') && $request->horario) {
+            $query->where('horario', $request->horario);
+        }
+        
+        if ($request->has('empresa_id') && $request->empresa_id) {
+            $query->where('empresa_id', $request->empresa_id);
+        }
+        
+        $publications = $query->paginate(10);
+        
+        return view('publication.index', compact('publications'));
     }
 } 

@@ -37,6 +37,12 @@ class Publication extends Model
     {
         return $this->belongsTo(Subcategoria::class, 'subcategoria_id');
     }
+    
+    public function subcategorias()
+    {
+        return $this->belongsToMany(Subcategoria::class, 'publicacion_subcategoria', 'publicacion_id', 'subcategoria_id')
+                    ->withTimestamps();
+    }
 
     public function applications()
     {

@@ -227,20 +227,6 @@
 <!-- Añadir Font Awesome -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-<!-- Scripts para animaciones suaves -->
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Añadir animaciones suaves a los elementos
-    const items = document.querySelectorAll('.divide-y > div');
-    items.forEach((item, index) => {
-        item.style.opacity = '0';
-        item.style.transform = 'translateY(20px)';
-        setTimeout(() => {
-            item.style.transition = 'all 0.3s ease-out';
-            item.style.opacity = '1';
-            item.style.transform = 'translateY(0)';
-        }, index * 100);
-    });
-});
-</script>
+<!-- Script de animaciones -->
+<script src="{{ asset('js/applications-animations.js') }}"></script>
 @endsection 

@@ -45,7 +45,7 @@
                         {{-- AÑADIR ROL --}}
                             <div class="mb-6">
                                 <label class="block text-gray-700 text-sm font-medium mb-2">Registrarme como:</label>
-                                <div class="flex space-x-4">
+                                <div class="grid grid-cols-3 gap-4">
                                     <div class="flex items-center">
                                         <input type="radio" id="alumno" name="role" value="alumno" checked
                                             class="h-4 w-4 text-primary focus:ring-primary">
@@ -55,6 +55,11 @@
                                         <input type="radio" id="empresa" name="role" value="empresa"
                                             class="h-4 w-4 text-primary focus:ring-primary">
                                         <label for="empresa" class="ml-2 block text-sm text-gray-700">Empresa</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="radio" id="institucion" name="role" value="institucion"
+                                            class="h-4 w-4 text-primary focus:ring-primary">
+                                        <label for="institucion" class="ml-2 block text-sm text-gray-700">Institución</label>
                                     </div>
                                 </div>
                             </div>

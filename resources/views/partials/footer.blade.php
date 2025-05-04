@@ -110,10 +110,10 @@
                     <h4 class="font-semibold text-primary text-sm mb-2">{{ __('messages.download_app') }}</h4>
                     <div class="flex space-x-2">
                         <a href="#" class="block">
-                            <img src="https://placehold.co/90x30/7705B6/FFFFFF?text=App+Store" alt="App Store" class="h-8 rounded-md hover:opacity-90 transition">
+                            <!-- <img src="https://placehold.co/90x30/7705B6/FFFFFF?text=App+Store" alt="App Store" class="h-8 rounded-md hover:opacity-90 transition"> -->
                         </a>
                         <a href="#" class="block">
-                            <img src="https://placehold.co/90x30/7705B6/FFFFFF?text=Google+Play" alt="Google Play" class="h-8 rounded-md hover:opacity-90 transition">
+                            <!-- <img src="https://placehold.co/90x30/7705B6/FFFFFF?text=Google+Play" alt="Google Play" class="h-8 rounded-md hover:opacity-90 transition"> -->
                         </a>
                     </div>
                 </div>
@@ -177,37 +177,6 @@
                         </select>
                     </form>
                 </div>
-
-                <script>
-                    document.querySelector('select[name="locale"]').addEventListener('change', function() {
-                        const form = document.getElementById('localeForm');
-                        const formData = new FormData(form);
-                        const select = this;
-
-                        // Deshabilitar el select mientras se procesa
-                        select.disabled = true;
-
-                        fetch(form.action, {
-                            method: 'POST',
-                            body: formData,
-                            headers: {
-                                'X-Requested-With': 'XMLHttpRequest',
-                                'Accept': 'application/json'
-                            },
-                            credentials: 'same-origin'
-                        }).then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                console.log('Idioma cambiado a:', data.locale);
-                                window.location.reload(true);
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error al cambiar el idioma:', error);
-                            select.disabled = false;
-                        });
-                    });
-                </script>
             </div>
 
             <!-- Contacto -->
@@ -288,45 +257,6 @@
     </div>
 </footer>
 
-<!-- Script para animar el botón volver arriba -->
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const backToTopButton = document.getElementById('back-to-top');
-
-        // Función para controlar la visibilidad del botón
-        function toggleBackToTopButton() {
-            if (window.scrollY > 300) {
-                backToTopButton.classList.remove('opacity-0', 'invisible');
-                backToTopButton.classList.add('opacity-100', 'visible');
-            } else {
-                backToTopButton.classList.add('opacity-0');
-                backToTopButton.classList.remove('opacity-100');
-
-                // Usar un timeout para asegurar que la transición de opacidad termine antes de ocultar el elemento
-                setTimeout(() => {
-                    if (window.scrollY <= 300) {
-                        backToTopButton.classList.add('invisible');
-                        backToTopButton.classList.remove('visible');
-                    }
-                }, 300);
-            }
-        }
-
-        // Escuchar el evento de scroll para mostrar/ocultar el botón
-        window.addEventListener('scroll', toggleBackToTopButton);
-
-        // Aplicar el estado inicial
-        toggleBackToTopButton();
-
-        // Manejar el click en el botón
-        backToTopButton.addEventListener('click', function(e) {
-            e.preventDefault();
-
-            // Aplicar desplazamiento suave al top
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
-        });
-    });
-</script>
+<!-- Scripts del footer -->
+<script src="{{ asset('js/footer.js') }}"></script>
+<script src="{{ asset('js/language-selector.js') }}"></script>

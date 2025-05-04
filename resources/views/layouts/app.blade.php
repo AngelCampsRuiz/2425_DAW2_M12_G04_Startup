@@ -1,63 +1,62 @@
 <!DOCTYPE html>
-<html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- TOKEN CSRF PARA PROTECCIÓN CONTRA ATAQUES DE FALSIFICACIÓN DE PETICIONES -->
-        <meta name="csrf-token" content="{{ csrf_token() }}">
-    <!-- TÍTULO DE LA PÁGINA MOSTRADO EN LA PESTAÑA DEL NAVEGADOR -->
-        <title>NextGen</title>
-    <!-- IMPORTACIÓN DE TAILWIND CSS DESDE CDN PARA LOS ESTILOS DE LA APLICACIÓN -->
-        <script src="https://cdn.tailwindcss.com"></script>
-    <!-- CONFIGURACIÓN PERSONALIZADA DE TAILWIND CON COLORES CORPORATIVOS -->
-        <script>
-            tailwind.config = {
-                theme: {
-                    extend: {
-                        colors: {
-                            <!-- COLOR PRIMARIO DE LA APLICACIÓN -->
-                            primary: '#7705B6',
-                            <!-- VARIANTE OSCURA DEL COLOR PRIMARIO -->
-                            'primary-dark': '#5E0490'
-                        }
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    
+    <title>NextGen</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#7705B6',
+                        'primary-dark': '#5E0490'
                     }
                 }
             }
-        </script>
-    {{-- LIBRERÍA SWIPER.JS PARA IMPLEMENTAR CARRUSELES Y SLIDERS EN LA APLICACIÓN --}}
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
-    <!-- SCRIPT PRINCIPAL DE SWIPER.JS -->
-        <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
+        }
+    </script>
+    
+    <!-- Swiper.js para sliders -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
+    
+    @stack('scripts')
 </head>
-<body>
-    {{-- INCLUSIÓN DEL COMPONENTE DE CABECERA DE LA APLICACIÓN --}}
+<body class="font-sans antialiased">
+    <div class="min-h-screen bg-gray-100">
+        <!-- Header -->
         @include('partials.header')
 
-    {{-- SECCIÓN PRINCIPAL DONDE SE INSERTARÁ EL CONTENIDO ESPECÍFICO DE CADA PÁGINA --}}
+        <!-- Page Content -->
         <main>
             <!-- YIELD PERMITE QUE LAS VISTAS QUE EXTIENDEN ESTA PLANTILLA INSERTEN SU CONTENIDO AQUÍ -->
             @yield('content')
         </main>
-    <!-- INCLUYE EL ARCHIVO DE PIE DE PÁGINA DESDE LA CARPETA PARTIALS -->
-        @include('partials.footer')
-        <!-- SCRIPT PARA VALIDACIÓN DEL FORMULARIO DE LOGIN -->
-            <script src="{{ asset('js/auth/login-validation.js') }}"></script>
-        <!-- SCRIPT PARA VALIDACIÓN DEL FORMULARIO DE REGISTRO GENERAL -->
-            <script src="{{ asset('js/auth/register-validation.js') }}"></script>
-        <!-- SCRIPT PARA VALIDACIÓN DEL FORMULARIO DE INFORMACIÓN PERSONAL -->
-            <script src="{{ asset('js/auth/register-personal-validation.js') }}"></script>
-        <!-- SCRIPT PARA VALIDACIÓN DEL PASO 2 DEL REGISTRO -->
-            <script src="{{ asset('js/auth/register-step2-validation.js') }}"></script>
-        <!-- SCRIPT PARA EL SELECTOR DE UBICACIÓN/LOCALIZACIÓN -->
-            <script src="{{ asset('js/location-selector.js') }}"></script>
-        <!-- SCRIPT PARA RESTRICCIONES DE FECHAS EN INPUTS -->
-            <script src="{{ asset('js/date-restriction.js') }}"></script>
         
-        <!-- FUNCIÓN STACK PERMITE QUE LAS VISTAS HIJAS AÑADAN SUS PROPIOS SCRIPTS -->
-            @stack('scripts')
-        <!-- SCRIPT PARA VALIDACIÓN DEL FORMULARIO DE REGISTRO DE ESTUDIANTES -->
-            <script src="{{ asset('js/auth/register-student-validation.js') }}"></script>
-        <!-- SCRIPT PARA VALIDACIÓN DEL FORMULARIO DE REGISTRO DE EMPRESAS -->
-            <script src="{{ asset('js/auth/register-company-validation.js') }}"></script>
+        <!-- Footer -->
+        @include('partials.footer')
+    </div>
+    
+    <!-- Scripts de validación -->
+    <script src="{{ asset('js/auth/login-validation.js') }}"></script>
+    <script src="{{ asset('js/auth/register-validation.js') }}"></script>
+    <script src="{{ asset('js/auth/register-personal-validation.js') }}"></script>
+    <script src="{{ asset('js/auth/register-step2-validation.js') }}"></script>
+    <script src="{{ asset('js/location-selector.js') }}"></script>
+    <script src="{{ asset('js/date-restriction.js') }}"></script>
+    
+    <!-- Scripts específicos de cada página -->
+    <script src="{{ asset('js/auth/register-student-validation.js') }}"></script>
+    <script src="{{ asset('js/auth/register-company-validation.js') }}"></script>
 </body>
 </html>

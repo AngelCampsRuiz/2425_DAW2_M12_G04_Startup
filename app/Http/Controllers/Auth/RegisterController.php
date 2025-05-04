@@ -8,6 +8,7 @@ use App\Models\Estudiante;
 use App\Models\Empresa;
 use App\Models\Titulo;
 use App\Models\Rol;
+use App\Models\Institucion;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -24,8 +25,21 @@ class RegisterController extends Controller
     }
 
     // Vista de registro de estudiante
-    public function showStudentRegistrationForm()
+    public function showStudentRegistrationForm(Request $request)
     {
+        $registrationData = $request->session()->get('registration_data');
+        
+        if (!$registrationData) {
+            return redirect()->route('register')
+                ->withErrors(['error' => 'Por favor complete el primer paso del registro']);
+        }
+        
+        // Verificar que el rol sea alumno
+        if ($registrationData['role'] !== 'alumno') {
+            return redirect()->route('register')
+                ->withErrors(['error' => 'Esta página es solo para estudiantes']);
+        }
+
         $titulos = Titulo::all();
         return view('auth.register-student', compact('titulos'));
     }
@@ -49,25 +63,59 @@ class RegisterController extends Controller
         return view('auth.register-company');
     }
 
+    // Vista de registro de institución
+    public function showInstitutionRegistrationForm(Request $request)
+    {
+        $registrationData = $request->session()->get('registration_data');
+        
+        if (!$registrationData) {
+            return redirect()->route('register')
+                ->withErrors(['error' => 'Por favor complete el primer paso del registro']);
+        }
+        
+        // Verificar que el rol sea institución
+        if ($registrationData['role'] !== 'institucion') {
+            return redirect()->route('register')
+                ->withErrors(['error' => 'Esta página es solo para instituciones']);
+        }
+        
+        return view('auth.register-institution');
+    }
+
     // Registro de estudiante (tercer paso)
     public function registerStudent(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        // Obtener datos de registro de la sesión
+        $registrationData = $request->session()->get('registration_data');
+        
+        if (!$registrationData) {
+            return redirect()->route('register')
+                ->withErrors(['error' => 'Por favor complete el primer paso del registro']);
+        }
+        
+        // Combinar datos de la sesión con los datos del formulario
+        $data = array_merge($request->all(), [
+            'name' => $registrationData['name'],
+            'email' => $registrationData['email'],
+        ]);
+
+        $validator = Validator::make($data, [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:user',
             'password' => 'required|string|min:8|confirmed',
-            'dni' => 'required|string|max:20|unique:user',
+            'dni' => ['required', 'string', 'max:20', 'unique:user', 'regex:/^[0-9]{8}[A-Za-z]$|^[XYZxyz][0-9]{7}[A-Za-z]$/'],
             'telefono' => 'required|string|max:20|unique:user',
             'ciudad' => 'required|string|max:100',
             'centro_estudios' => 'required|string|max:255',
             'titulo_id' => 'required|exists:titulos,id',
             'cv_pdf' => 'required|file|mimes:pdf|max:5120', // 5MB máximo
-            'numero_seguridad_social' => 'required|string|max:50|regex:/^SS[0-9]{8}$/'
+            'numero_seguridad_social' => ['required', 'string', 'max:50', 'regex:/^SS[0-9]{8}$/']
         ], [
             'numero_seguridad_social.regex' => 'El número de seguridad social debe tener el formato SS seguido de 8 dígitos',
             'cv_pdf.mimes' => 'El archivo debe ser un PDF',
             'cv_pdf.max' => 'El archivo no puede ser mayor a 5MB',
-            'dni.unique' => 'Este DNI ya está registrado',
+            'dni.unique' => 'Este DNI/NIE ya está registrado',
+            'dni.regex' => 'El formato del DNI/NIE no es válido. Debe ser un DNI (8 números y 1 letra) o un NIE (X/Y/Z seguido de 7 números y 1 letra)',
             'telefono.unique' => 'Este teléfono ya está registrado'
         ]);
 
@@ -79,8 +127,8 @@ class RegisterController extends Controller
 
         // Crear usuario
         $user = User::create([
-            'nombre' => $request->name,
-            'email' => $request->email,
+            'nombre' => $data['name'],
+            'email' => $data['email'],
             'password' => Hash::make($request->password),
             'role_id' => Rol::where('nombre_rol', 'Estudiante')->first()->id,
             'fecha_nacimiento' => now()->subYears(rand(18, 25)),
@@ -174,13 +222,106 @@ class RegisterController extends Controller
         return redirect()->route('empresa.dashboard');
     }
 
+    // Registro de institución
+    public function registerInstitution(Request $request)
+    {
+        // Recuperar datos de los pasos anteriores
+        $registrationData = $request->session()->get('registration_data');
+        
+        if (!$registrationData) {
+            return redirect()->route('register')
+                ->withErrors(['error' => 'Por favor complete el primer paso del registro']);
+        }
+        
+        $validator = Validator::make($request->all(), [
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'codigo_centro' => ['required', 'string', 'max:8', 'unique:instituciones,codigo_centro'],
+            'tipo_institucion' => ['required', 'string', 'max:255'],
+            'direccion' => ['required', 'string', 'max:255'],
+            'provincia' => ['required', 'string', 'max:100'],
+            'codigo_postal' => ['required', 'string', 'max:5'],
+            'representante_legal' => ['required', 'string', 'max:255'],
+            'cargo_representante' => ['required', 'string', 'max:255'],
+        ], [
+            'codigo_centro.unique' => 'Este código de centro ya está registrado',
+            'password.required' => 'La contraseña es obligatoria',
+            'password.min' => 'La contraseña debe tener al menos 8 caracteres',
+            'password.confirmed' => 'Las contraseñas no coinciden',
+            'tipo_institucion.required' => 'El tipo de institución es obligatorio',
+            'direccion.required' => 'La dirección es obligatoria',
+            'provincia.required' => 'La provincia es obligatoria',
+            'codigo_postal.required' => 'El código postal es obligatorio',
+            'representante_legal.required' => 'El nombre del representante legal es obligatorio',
+            'cargo_representante.required' => 'El cargo del representante es obligatorio',
+        ]);
+
+        // Validar email único
+        $emailValidator = Validator::make(['email' => $registrationData['email']], [
+            'email' => 'unique:user,email'
+        ], [
+            'email.unique' => 'Este correo electrónico ya está registrado'
+        ]);
+
+        if ($validator->fails() || $emailValidator->fails()) {
+            return redirect()->back()
+                ->withErrors(array_merge(
+                    $validator->errors()->toArray(),
+                    $emailValidator->errors()->toArray()
+                ))
+                ->withInput();
+        }
+        
+        // Crear usuario
+        $user = User::create([
+            'nombre' => $registrationData['name'],
+            'email' => $registrationData['email'],
+            'password' => Hash::make($request->password),
+            'role_id' => Rol::where('nombre_rol', 'Institución')->first()->id,
+            'fecha_nacimiento' => now()->subYears(rand(25, 65)),
+            'ciudad' => $request->provincia,
+            'dni' => 'DNI' . rand(10000000, 99999999),
+            'activo' => true,
+            'telefono' => '6' . rand(100000000, 999999999),
+            'descripcion' => 'Institución Educativa',
+            'imagen' => null
+        ]);
+
+        // Crear el perfil de institución
+        Institucion::create([
+            'user_id' => $user->id,
+            'codigo_centro' => $request->codigo_centro,
+            'tipo_institucion' => $request->tipo_institucion,
+            'direccion' => $request->direccion,
+            'provincia' => $request->provincia,
+            'codigo_postal' => $request->codigo_postal,
+            'representante_legal' => $request->representante_legal,
+            'cargo_representante' => $request->cargo_representante,
+        ]);
+
+        // Limpiar los datos de sesión
+        $request->session()->forget('registration_data');
+        
+        event(new Registered($user));
+        Auth::login($user);
+        return redirect()->route('institucion.dashboard');
+    }
+
     // Registro general - Primer paso (nombre, email, rol)
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:user',
-            'role' => 'required|in:alumno,empresa'
+            'role' => 'required|in:alumno,empresa,institucion'
+        ], [
+            'name.required' => 'El nombre es obligatorio',
+            'name.max' => 'El nombre no puede tener más de 255 caracteres',
+            'email.required' => 'El correo electrónico es obligatorio',
+            'email.email' => 'El formato del correo electrónico no es válido',
+            'email.max' => 'El correo electrónico no puede tener más de 255 caracteres',
+            'email.unique' => 'Este correo electrónico ya está registrado',
+            'role.required' => 'Debes seleccionar un tipo de usuario',
+            'role.in' => 'El tipo de usuario seleccionado no es válido'
         ]);
 
         if ($validator->fails()) {
@@ -190,18 +331,20 @@ class RegisterController extends Controller
         }
 
         // Guardar datos en la sesión
-        session(['registration_data' => [
+        $request->session()->put('registration_data', [
             'name' => $request->name,
             'email' => $request->email,
             'role' => $request->role,
             'step' => 1
-        ]]);
+        ]);
 
         // Redirigir según el rol
         if ($request->role === 'alumno') {
             return redirect()->route('register.alumno');
-        } else {
+        } elseif ($request->role === 'empresa') {
             return redirect()->route('register.empresa');
+        } else {
+            return redirect()->route('register.institucion');
         }
     }
     
