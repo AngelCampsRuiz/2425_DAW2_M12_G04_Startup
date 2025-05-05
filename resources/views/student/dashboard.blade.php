@@ -8,6 +8,8 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.0/nouislider.min.css" />
         <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.0/nouislider.min.js"></script>
         <meta name="csrf-token" content="{{ csrf_token() }}">
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+        <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     </head>
     <div class="min-h-screen bg-gray-100">
         @if(isset($is_demo) && $is_demo)
@@ -111,18 +113,22 @@
                             <div>
                                 <h3 class="text-sm font-medium text-gray-600 mb-2">Radio de Distancia</h3>
                                 <div class="mb-6">
+                                    <!-- Mapa para mostrar el radio -->
+                                    <div id="radiusMap" class="w-full h-48 rounded-lg mb-4"></div>
+                                    
                                     <div class="flex justify-between text-sm text-gray-600 mb-2">
                                         <span>0 km</span>
                                         <span id="radioValue">50 km</span>
                                     </div>
                                     <!-- Contenedor para noUiSlider del radio -->
-                                    <div id="radioSlider" class="mt-4"></div>
+                                    <div id="radioSlider" class="mt-2"></div>
                                     <!-- Campo oculto para el radio -->
                                     <input type="hidden" id="radioDistancia" name="radio_distancia" value="50">
-                                    <!-- Añadir estos dos campos ocultos -->
+                                    <!-- Campos ocultos para la ubicación -->
                                     <input type="hidden" id="userLat" name="user_lat" value="">
                                     <input type="hidden" id="userLng" name="user_lng" value="">
-                                    <!-- Ubicación del usuario -->
+                                    
+                                    <!-- Botón de ubicación -->
                                     <div class="mt-4">
                                         <button type="button" id="obtenerUbicacion" 
                                                 class="w-full px-4 py-2 bg-[#5e0490] text-white rounded-lg hover:bg-[#4a0370] transition-colors flex items-center justify-center gap-2">

@@ -7,9 +7,50 @@ class DistanceFilter {
         this.ubicacionStatus = document.getElementById('ubicacionStatus');
         this.userLat = document.getElementById('userLat');
         this.userLng = document.getElementById('userLng');
+        this.map = null;
+        this.circle = null;
+        this.marker = null;
 
+        this.initializeMap();
         this.initializeSlider();
         this.initializeLocationButton();
+    }
+
+    initializeMap() {
+        // Crear el mapa centrado en España
+        this.map = L.map('radiusMap').setView([40.4167, -3.7037], 6);
+
+        // Añadir capa de OpenStreetMap
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(this.map);
+
+        // Deshabilitar zoom con rueda del ratón para evitar conflictos con el scroll
+        this.map.scrollWheelZoom.disable();
+    }
+
+    updateMapRadius(lat, lng, radius) {
+        // Si ya existe un círculo, eliminarlo
+        if (this.circle) {
+            this.map.removeLayer(this.circle);
+        }
+        if (this.marker) {
+            this.map.removeLayer(this.marker);
+        }
+
+        // Crear nuevo marcador
+        this.marker = L.marker([lat, lng]).addTo(this.map);
+
+        // Crear nuevo círculo
+        this.circle = L.circle([lat, lng], {
+            radius: radius * 1000, // Convertir km a metros
+            color: '#5e0490',
+            fillColor: '#5e0490',
+            fillOpacity: 0.2
+        }).addTo(this.map);
+
+        // Ajustar la vista para mostrar todo el círculo
+        this.map.fitBounds(this.circle.getBounds());
     }
 
     initializeSlider() {
@@ -29,23 +70,35 @@ class DistanceFilter {
                 const value = Math.round(values[handle]);
                 this.radioValue.textContent = value + ' km';
                 this.radioDistancia.value = value;
+
+                // Actualizar el radio en el mapa si hay una ubicación seleccionada
+                if (this.userLat.value && this.userLng.value) {
+                    this.updateMapRadius(
+                        parseFloat(this.userLat.value),
+                        parseFloat(this.userLng.value),
+                        value
+                    );
+                }
             });
 
             // Ejecutar la búsqueda cuando el usuario suelta el control deslizante
             this.radioSlider.noUiSlider.on('change', () => {
                 if (this.userLat.value && this.userLng.value) {
-                    // Disparar un evento personalizado
-                    const event = new CustomEvent('distanceFilterChanged', {
-                        detail: {
-                            lat: this.userLat.value,
-                            lng: this.userLng.value,
-                            radio: this.radioDistancia.value
-                        }
-                    });
-                    document.dispatchEvent(event);
+                    this.dispatchFilterEvent();
                 }
             });
         }
+    }
+
+    dispatchFilterEvent() {
+        const event = new CustomEvent('distanceFilterChanged', {
+            detail: {
+                lat: this.userLat.value,
+                lng: this.userLng.value,
+                radio: this.radioDistancia.value
+            }
+        });
+        document.dispatchEvent(event);
     }
 
     initializeLocationButton() {
@@ -74,15 +127,14 @@ class DistanceFilter {
         this.userLng.value = position.coords.longitude;
         this.showStatus('Ubicación obtenida correctamente', 'text-green-600');
 
-        // Disparar evento personalizado
-        const event = new CustomEvent('distanceFilterChanged', {
-            detail: {
-                lat: this.userLat.value,
-                lng: this.userLng.value,
-                radio: this.radioDistancia.value
-            }
-        });
-        document.dispatchEvent(event);
+        // Actualizar el mapa con la nueva ubicación y radio
+        this.updateMapRadius(
+            position.coords.latitude,
+            position.coords.longitude,
+            parseFloat(this.radioDistancia.value)
+        );
+
+        this.dispatchFilterEvent();
 
         setTimeout(() => {
             this.hideStatus();
