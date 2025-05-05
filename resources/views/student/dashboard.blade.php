@@ -7,11 +7,9 @@
         <!-- Incluye noUiSlider desde un CDN -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.0/nouislider.min.css" />
         <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.0/nouislider.min.js"></script>
-        <!-- Incluye los estilos personalizados -->
-        <link rel="stylesheet" href="{{ asset('css/student-dashboard.css') }}" />
         <meta name="csrf-token" content="{{ csrf_token() }}">
     </head>
-    <div class="min-h-screen bg-gray-50">
+    <div class="min-h-screen bg-gray-100">
         @if(isset($is_demo) && $is_demo)
         <!-- Banner de demostración -->
         <div class="bg-yellow-100 border-b border-yellow-200 p-4 text-center">
@@ -43,34 +41,25 @@
             <div class="flex flex-col md:flex-row gap-6">
                 {{-- SIDEBAR DE FILTROS --}}
                 <div class="w-full md:w-1/4">
-                    <div class="bg-white rounded-xl shadow-md p-6 sticky top-4">
-                        <div class="flex items-center justify-between mb-4">
-                            <h2 class="text-lg font-semibold text-gray-800">Filtros</h2>
-                            <button id="toggleFilters" class="md:hidden text-purple-600 hover:text-purple-800">
-                                <i class="fas fa-chevron-down"></i>
-                            </button>
-                        </div>
-
-                        <div id="filterContent" class="space-y-6">
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h2 class="text-lg font-semibold text-gray-800 mb-4">Filtros</h2>
+                        <div class="space-y-4">
                             <!-- Filtro de Categoría y Subcategoría -->
-                            <div class="border-b border-gray-100 pb-4">
-                                <h3 class="text-sm font-medium text-gray-600 mb-3 flex items-center">
-                                    <i class="fas fa-tag mr-2 text-purple-500"></i>
-                                    Categoría
-                                </h3>
-                                <div class="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                            <div>
+                                <h3 class="text-sm font-medium text-gray-600 mb-2">Categoría</h3>
+                                <div class="space-y-2">
                                     @foreach($categorias as $categoria)
-                                        <div class="transition-all duration-200 hover:bg-purple-50 rounded-lg p-1 -mx-1">
-                                            <label class="flex items-center cursor-pointer">
+                                        <div>
+                                            <label class="flex items-center">
                                                 <input type="checkbox" name="categoria[]" value="{{ $categoria->id }}" class="categoria-checkbox form-checkbox h-4 w-4 text-[#5e0490] rounded focus:ring-[#5e0490] border-gray-300">
                                                 <span class="ml-2 text-sm text-gray-700">{{ $categoria->nombre_categoria }}</span>
                                             </label>
                                             @if($categoria->subcategorias->count() > 0)
                                             <div id="subcategorias-{{ $categoria->id }}" class="pl-6 mt-2 hidden">
                                                 @foreach($categoria->subcategorias as $subcategoria)
-                                                    <label class="flex items-center my-1 cursor-pointer">
+                                                    <label class="flex items-center">
                                                         <input type="checkbox" name="subcategoria[]" value="{{ $subcategoria->id }}" class="form-checkbox h-4 w-4 text-[#5e0490] rounded focus:ring-[#5e0490] border-gray-300">
-                                                        <span class="ml-2 text-sm text-gray-600">{{ $subcategoria->nombre_subcategoria }}</span>
+                                                        <span class="ml-2 text-sm text-gray-700">{{ $subcategoria->nombre_subcategoria }}</span>
                                                     </label>
                                                 @endforeach
                                             </div>
@@ -81,32 +70,20 @@
                             </div>
 
                             <!-- Filtro de Fecha de Publicación -->
-                            <div class="border-b border-gray-100 pb-4">
-                                <h3 class="text-sm font-medium text-gray-600 mb-3 flex items-center">
-                                    <i class="far fa-calendar-alt mr-2 text-purple-500"></i>
-                                    Fecha de Publicación
-                                </h3>
-                                <div class="grid grid-cols-2 gap-3">
-                                    <div>
-                                        <label class="text-xs text-gray-500 mb-1 block">Desde</label>
-                                        <input type="date" name="fecha_inicio" id="fechaInicio" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-[#5e0490] focus:border-[#5e0490] text-sm">
-                                    </div>
-                                    <div>
-                                        <label class="text-xs text-gray-500 mb-1 block">Hasta</label>
-                                        <input type="date" name="fecha_fin" id="fechaFin" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-[#5e0490] focus:border-[#5e0490] text-sm">
-                                    </div>
+                            <div>
+                                <h3 class="text-sm font-medium text-gray-600 mb-2">Fecha de Publicación</h3>
+                                <div class="flex space-x-4">
+                                    <input type="date" name="fecha_inicio" id="fechaInicio" class="w-1/2 border-gray-300 rounded-lg shadow-sm focus:ring-[#5e0490] focus:border-[#5e0490]">
+                                    <input type="date" name="fecha_fin" id="fechaFin" class="w-1/2 border-gray-300 rounded-lg shadow-sm focus:ring-[#5e0490] focus:border-[#5e0490]">
                                 </div>
                             </div>
 
                             <!-- Filtro de Horario -->
-                            <div class="border-b border-gray-100 pb-4">
-                                <h3 class="text-sm font-medium text-gray-600 mb-3 flex items-center">
-                                    <i class="far fa-clock mr-2 text-purple-500"></i>
-                                    Horario
-                                </h3>
-                                <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <h3 class="text-sm font-medium text-gray-600 mb-2">Horario</h3>
+                                <div class="space-y-2">
                                     @foreach($horarios as $horario)
-                                        <label class="flex items-center p-2 bg-gray-50 hover:bg-purple-50 rounded-lg transition-colors duration-200 cursor-pointer">
+                                        <label class="flex items-center">
                                             <input type="checkbox" name="horario[]" value="{{ $horario }}" class="form-checkbox h-4 w-4 text-[#5e0490] rounded focus:ring-[#5e0490] border-gray-300">
                                             <span class="ml-2 text-sm text-gray-700">{{ ucfirst($horario) }}</span>
                                         </label>
@@ -116,14 +93,11 @@
 
                             <!-- Filtro de Horas Totales -->
                             <div>
-                                <h3 class="text-sm font-medium text-gray-600 mb-3 flex items-center">
-                                    <i class="fas fa-hourglass-half mr-2 text-purple-500"></i>
-                                    Horas Totales
-                                </h3>
-                                <div class="mb-4">
+                                <h3 class="text-sm font-medium text-gray-600 mb-2">Horas Totales</h3>
+                                <div class="mb-6">
                                     <div class="flex justify-between text-sm text-gray-600 mb-2">
-                                        <span id="horasTotalesMinValue" class="font-medium">{{ $horasTotalesMin }}</span>
-                                        <span id="horasTotalesMaxValue" class="font-medium">{{ $horasTotalesMax }}</span>
+                                        <span id="horasTotalesMinValue">{{ $horasTotalesMin }}</span>
+                                        <span id="horasTotalesMaxValue">{{ $horasTotalesMax }}</span>
                                     </div>
                                     <!-- Contenedor para noUiSlider -->
                                     <div id="horasTotalesSlider" class="mt-4"></div>
@@ -131,15 +105,6 @@
                                     <input type="hidden" id="horasTotalesMin" name="horas_totales_min" value="{{ $horasTotalesMin }}">
                                     <input type="hidden" id="horasTotalesMax" name="horas_totales_max" value="{{ $horasTotalesMax }}">
                                 </div>
-                            </div>
-
-                            <!-- Botón para limpiar todos los filtros -->
-                            <div class="pt-2">
-                                <button type="button" id="clearFiltersButton"
-                                    class="w-full flex items-center justify-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition duration-200">
-                                    <i class="fas fa-undo-alt mr-2"></i>
-                                    Restablecer filtros
-                                </button>
                             </div>
                         </div>
                     </div>
@@ -202,35 +167,14 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                                     </svg>
                                 </div>
-
-                                <button type="button" id="clearButton" class="flex items-center justify-center px-4 py-3 bg-[#5e0490] text-white rounded-xl hover:bg-[#4a0370] transition duration-200">
-                                    <i class="fas fa-eraser mr-2"></i>
-                                    Limpiar
-                                </button>
                             </div>
-
-                            <input type="hidden" name="order_by" id="orderBy" value="{{ request('order_by', 'fecha_publicacion') }}">
-                            <input type="hidden" name="order_direction" id="orderDirection" value="{{ request('order_direction', 'desc') }}">
-                        </form>
-                    </div>
-
-                    {{-- CONTADOR DE RESULTADOS --}}
-                    <div class="flex justify-between items-center mb-4">
-                        <p class="text-gray-600"><span class="font-semibold text-purple-800">{{ $publications->total() }}</span> resultados encontrados</p>
-                        <div class="flex gap-2">
-                            <button id="gridViewButton" class="p-2 bg-purple-600 text-white rounded-l-lg">
-                                <i class="fas fa-th-large"></i>
-                            </button>
-                            <button id="listViewButton" class="p-2 bg-gray-200 text-gray-600 rounded-r-lg">
-                                <i class="fas fa-list"></i>
-                            </button>
                         </div>
                     </div>
 
                     {{-- GRID DE PUBLICACIONES --}}
-                    <div id="publicationsGrid" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         @foreach($publications as $publication)
-                            <div class="bg-white rounded-xl shadow-md overflow-hidden relative hover:shadow-lg">
+                            <div class="bg-white rounded-lg shadow overflow-hidden relative">
                                 <div class="flex">
                                     {{-- IMAGEN DE LA EMPRESA --}}
                                     <div class="w-1/3 relative overflow-hidden flex flex-col items-center justify-center" style="aspect-ratio: 1/1;">
@@ -239,13 +183,12 @@
                                             class="max-w-full max-h-full object-contain p-2 transition-all duration-300 hover:scale-105 m-auto">
                                         <div class="bg-gray-50 text-center w-full py-1 absolute bottom-0">
                                             <a href="{{ route('profile.show', $publication->empresa->user->id) }}" class="group">
-                                                <p class="text-xs font-medium text-gray-700 hover:text-[#5e0490] truncate">
+                                                <p class="text-xs font-medium text-gray-700 hover:text-[#5e0490] truncate px-1 transition-colors duration-200">
                                                     {{ $publication->empresa->user->nombre }}
                                                 </p>
                                             </a>
                                         </div>
                                     </div>
-
                                     {{-- INFORMACIÓN DE LA PUBLICACIÓN --}}
                                     <div class="w-2/3 p-4">
                                         <div class="flex justify-between items-start">
@@ -259,34 +202,6 @@
                                                     <h3 class="text-lg font-semibold text-gray-900">{{ $publication->titulo }}</h3>
                                                 </a>
                                                 @endif
-
-                                                <div class="flex flex-wrap gap-2 mt-1">
-                                                    @if($publication->categoria)
-                                                        <span class="inline-block bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">
-                                                            {{ $publication->categoria->nombre_categoria }}
-                                                        </span>
-                                                    @endif
-                                                    @if($publication->subcategoria)
-                                                        <span class="inline-block bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full">
-                                                            {{ $publication->subcategoria->nombre_subcategoria }}
-                                                        </span>
-                                                    @endif
-                                                </div>
-                                            </div>
-
-                                            @if(!isset($is_demo) || !$is_demo)
-                                            <!-- Botón de favoritos eliminado -->
-                                            @endif
-                                        </div>
-
-                                        <div class="flex items-center mt-3 text-sm text-gray-600">
-                                            <div class="flex items-center mr-4">
-                                                <i class="far fa-clock mr-1 text-purple-500"></i>
-                                                {{ ucfirst($publication->horario) }}
-                                            </div>
-                                            <div class="flex items-center">
-                                                <i class="fas fa-hourglass-half mr-1 text-purple-500"></i>
-                                                {{ $publication->horas_totales }} horas
                                             </div>
                                         </div>
                                         <div class="flex items-center text-sm text-gray-600 mb-2">
@@ -303,6 +218,7 @@
                                             </svg>
                                             {{ $publication->horas_totales }} horas totales
                                         </div>
+                                        <p class="text-sm text-gray-600 line-clamp-2">{{ $publication->descripcion }}</p>
                                     </div>
                                 </div>
                             </div>
