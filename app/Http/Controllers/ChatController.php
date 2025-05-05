@@ -7,6 +7,8 @@ use App\Models\Mensaje;
 use App\Models\Solicitud;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Notifications\MensajeNoLeidoNotification;
+use App\Events\NotificacionPusher;
 
 class ChatController extends Controller
 {
@@ -50,19 +52,19 @@ class ChatController extends Controller
         // Verificar que el usuario tiene acceso al chat
         $user = Auth::user();
         $solicitud = $chat->solicitud;
-        
+
         $hasAccess = false;
-        
+
         // Si es empresa
         if ($user->empresa && $user->empresa->id == $chat->empresa_id) {
             $hasAccess = true;
         }
-        
+
         // Si es estudiante
         if ($user->estudiante && $user->estudiante->id == $solicitud->estudiante_id) {
             $hasAccess = true;
         }
-        
+
         if (!$hasAccess) {
             return response()->json([
                 'error' => true,
@@ -89,18 +91,18 @@ class ChatController extends Controller
             $file = $request->file('archivo');
             $fileName = time() . '_' . $file->getClientOriginalName();
             $fileType = $file->getClientMimeType();
-            
+
             // Determinar la carpeta según el tipo de archivo
             $folder = 'chat_files';
-            
+
             // Si es imagen, guardar en una carpeta específica
             if (strpos($fileType, 'image/') === 0) {
                 $folder = 'chat_images';
             }
-            
+
             // Mover el archivo a la carpeta pública
             $file->move(public_path($folder), $fileName);
-            
+
             // Añadir información del archivo al mensaje
             $mensajeData['archivo_adjunto'] = $folder . '/' . $fileName;
             $mensajeData['tipo_archivo'] = $fileType;
@@ -109,6 +111,21 @@ class ChatController extends Controller
 
         // Crear el mensaje
         $mensaje = Mensaje::create($mensajeData);
+
+        // Determinar destinatario según el usuario autenticado
+        if (auth()->user()->empresa) {
+            // Si el que envía es empresa, destinatario es el estudiante
+            $destinatario = $chat->solicitud->estudiante->user ?? null;
+        } else {
+            // Si el que envía es estudiante, destinatario es la empresa
+            $destinatario = $chat->solicitud->publicacion->empresa->user ?? null;
+        }
+
+        if ($destinatario) {
+            $remitente = Auth::user();
+            $destinatario->notify(new MensajeNoLeidoNotification($chat, $remitente));
+            event(new NotificacionPusher($destinatario->id));
+        }
 
         // Si tiene archivo adjunto, generar la URL completa para la respuesta
         if (!empty($mensaje->archivo_adjunto)) {
@@ -130,19 +147,19 @@ class ChatController extends Controller
         // Verificar que el usuario tiene acceso al chat
         $user = Auth::user();
         $solicitud = $chat->solicitud;
-        
+
         $hasAccess = false;
-        
+
         // Si es empresa
         if ($user->empresa && $user->empresa->id == $chat->empresa_id) {
             $hasAccess = true;
         }
-        
+
         // Si es estudiante
         if ($user->estudiante && $user->estudiante->id == $solicitud->estudiante_id) {
             $hasAccess = true;
         }
-        
+
         if (!$hasAccess) {
             return response()->json([
                 'error' => true,
@@ -183,19 +200,19 @@ class ChatController extends Controller
         // Verificar que el usuario tiene acceso al chat
         $user = Auth::user();
         $solicitud = $chat->solicitud;
-        
+
         $hasAccess = false;
-        
+
         // Si es empresa
         if ($user->empresa && $user->empresa->id == $chat->empresa_id) {
             $hasAccess = true;
         }
-        
+
         // Si es estudiante
         if ($user->estudiante && $user->estudiante->id == $solicitud->estudiante_id) {
             $hasAccess = true;
         }
-        
+
         if (!$hasAccess) {
             return redirect()->back()->with('error', 'No tienes permiso para ver este chat');
         }
@@ -237,14 +254,14 @@ class ChatController extends Controller
     {
         $user = Auth::user();
         $chats = [];
-        
+
         // Si es empresa
         if ($user->empresa) {
             $chats = Chat::where('empresa_id', $user->empresa->id)
                 ->with(['solicitud.estudiante.user', 'solicitud.publicacion'])
                 ->get();
         }
-        
+
         // Si es estudiante
         if ($user->estudiante) {
             $chats = Chat::whereHas('solicitud', function ($query) use ($user) {
@@ -252,7 +269,7 @@ class ChatController extends Controller
             })->with(['solicitud.publicacion.empresa.user', 'solicitud.publicacion'])
               ->get();
         }
-        
+
         return view('chat.index', compact('chats'));
     }
 }

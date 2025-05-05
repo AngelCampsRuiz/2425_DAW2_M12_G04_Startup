@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\NotificationService;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
 class NotificationController extends Controller
@@ -16,10 +17,23 @@ class NotificationController extends Controller
 
     public function getUnreadNotifications()
     {
-        if (!auth()->check()) {
-            return response()->json([], 401); // No autorizado
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json([], 401);
         }
-        $notifications = $this->notificationService->getUnreadNotifications(auth()->id());
+
+        // Obtén las notificaciones no leídas
+        $notifications = $user->unreadNotifications->map(function ($notification) {
+            $data = $notification->data;
+            return [
+                'id' => $notification->id,
+                'title' => $data['title'] ?? '',
+                'message' => $data['message'] ?? '',
+                'created_at' => $notification->created_at->toDateTimeString(),
+                // Puedes agregar más campos si lo necesitas
+            ];
+        });
+
         return response()->json($notifications);
     }
 

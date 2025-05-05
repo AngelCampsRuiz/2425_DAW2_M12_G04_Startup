@@ -79,4 +79,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Opcional: recargar cada cierto tiempo o con Pusher
     // setInterval(loadNotifications, 60000);
+
+    loadNotifications();
 });
