@@ -1,4 +1,7 @@
 {{-- HEADER --}}
+@auth
+    <meta name="user-id" content="{{ auth()->id() }}">
+@endauth
 <header class="bg-gradient-to-r from-[#D0AAFE] to-[#E5D0FF] py-4 px-6 shadow-lg">
     <div class="container mx-auto flex justify-between items-center">
         <!-- LOGO & BRAND - Redirige al panel según el rol -->
@@ -48,6 +51,26 @@
                     <span class="ml-3 text-2xl font-bold text-[#7705B6]">NextGen</span>
                 </a>
             @endauth
+        </div>
+
+        {{-- Botón de notificaciones --}}
+        <button id="notificationButton" class="focus:outline-none bg-white/30 px-3 py-2 rounded-lg hover:bg-white/50 transition-all flex items-center">
+            <!-- Icono de campana -->
+            <svg class="w-6 h-6 text-[#7705B6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+            <!-- Contador de notificaciones -->
+            <span id="notificationCount" class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full" style="display:none;">
+                0
+            </span>
+        </button>
+        <!-- Dropdown de notificaciones -->
+        <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg z-50">
+            <div class="p-4 border-b font-bold text-[#7705B6]">Notificaciones</div>
+            <div id="notificationList" class="max-h-80 overflow-y-auto">
+                <!-- Aquí se cargarán las notificaciones -->
+            </div>
         </div>
 
         {{-- NAVIGATION BUTTONS --}}
@@ -240,3 +263,5 @@
         });
     }
 </script>
+<script src="https://js.pusher.com/7.2/pusher.min.js"></script>
+<script src="{{ asset('js/notificacion.js') }}"></script>

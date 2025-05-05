@@ -4,7 +4,7 @@
 {{-- CONTENIDO --}}
     @section('content')
         <section class="py-12 text-center bg-gradient-to-b from-purple-50 to-white">
-            <h1 class="text-4xl font-bold text-[#7705B6] mb-4 leading-tight max-w-5xl mx-auto">{{ __('messages.bridge_between_school_and_work') }}</h1>
+            <h1 class="text-4xl font-bold text-[#7705B6] mb-4 leading-tight max-w-5xl mx-auto">Somos la puente entre la escuela y el mundo laboral</h1>
             <p class="text-lg text-gray-600 max-w-4xl mx-auto mb-12">Conectamos estudiantes con las mejores empresas para crear oportunidades que transforman carreras</p>
 
             <!-- BLOQUE DE ESTUDIANTES -->
