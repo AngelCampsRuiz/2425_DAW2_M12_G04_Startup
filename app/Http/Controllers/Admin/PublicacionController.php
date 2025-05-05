@@ -8,7 +8,8 @@ use App\Models\Categoria;
 use App\Models\Subcategoria;
 use App\Models\Empresa;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\DB; // Importar DB para SQL directo
+use Illuminate\Support\Facades\Log; // Importar Log para registros
 
 class PublicacionController extends Controller
 {
@@ -17,7 +18,7 @@ class PublicacionController extends Controller
      */
     public function index()
     {
-        $publicaciones = Publication::with(['empresa', 'categoria', 'subcategoria', 'subcategorias'])
+        $publicaciones = Publication::with(['empresa.user', 'categoria', 'subcategoria'])
                         ->orderBy('id', 'asc')
                         ->paginate(10);
         $categorias = Categoria::all();
@@ -39,54 +40,67 @@ class PublicacionController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'titulo' => 'required|max:100',
-            'descripcion' => 'required',
-            'horario' => 'required|in:mañana,tarde,flexible',
-            'horas_totales' => 'required|integer|min:1',
-            'fecha_publicacion' => 'required|date',
-            'activa' => 'boolean',
+            'titulo' => 'required|string|max:255',
+            'descripcion' => 'required|string',
             'empresa_id' => 'required|exists:empresas,id',
             'categoria_id' => 'required|exists:categorias,id',
             'subcategoria_id' => 'required|exists:subcategorias,id',
-            'subcategorias' => 'required|array',
-            'subcategorias.*' => 'exists:subcategorias,id',
+            'horario' => 'required|in:mañana,tarde,flexible',
+            'horas_totales' => 'required|integer|min:1',
+            'fecha_publicacion' => 'required|date'
         ]);
-
-        // Ajuste para el checkbox
+        
         $validated['activa'] = $request->has('activa') ? 1 : 0;
+        
+        // Verificar que la empresa exista antes de crear
+        $empresa = Empresa::find($validated['empresa_id']);
+        if (!$empresa) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'La empresa seleccionada no existe',
+                    'errors' => ['empresa_id' => ['La empresa seleccionada no existe']]
+                ], 422);
+            }
+            
+            return redirect()->back()
+                ->withErrors(['empresa_id' => 'La empresa seleccionada no existe'])
+                ->withInput();
+        }
         
         try {
             DB::beginTransaction();
             
-            // Crear la publicación
-            $publicacion = Publication::create($validated);
-            
-            // Asociar subcategorías
-            $publicacion->subcategorias()->sync($request->subcategorias);
+            $publication = Publication::create($validated);
+            Log::info('Publicación creada:', $publication->toArray());
             
             DB::commit();
             
             if ($request->ajax()) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'Publicación creada correctamente'
+                    'message' => 'Publicación creada correctamente',
+                    'publication' => $publication
                 ]);
             }
             
             return redirect()->route('admin.publicaciones.index')
                 ->with('success', 'Publicación creada correctamente');
+                
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Error al crear publicación: ' . $e->getMessage());
             
             if ($request->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Error al crear la publicación: ' . $e->getMessage()
+                    'message' => 'Error al crear la publicación: ' . $e->getMessage(),
+                    'errors' => ['general' => ['Error al crear la publicación: ' . $e->getMessage()]]
                 ], 500);
             }
             
             return redirect()->back()
-                ->with('error', 'Error al crear la publicación: ' . $e->getMessage())
+                ->withErrors(['general' => 'Error al crear la publicación: ' . $e->getMessage()])
                 ->withInput();
         }
     }
@@ -96,18 +110,18 @@ class PublicacionController extends Controller
      */
     public function edit($id)
     {
-        $publicacion = Publication::with('subcategorias')->findOrFail($id);
+        $publicacion = Publication::with(['empresa.user', 'categoria', 'subcategoria'])->findOrFail($id);
         
         if (request()->ajax()) {
             return response()->json([
-                'publicacion' => $publicacion,
-                'subcategorias_seleccionadas' => $publicacion->subcategorias->pluck('id')->toArray()
+                'publicacion' => $publicacion
             ]);
         }
         
         $categorias = Categoria::all();
         $subcategorias = Subcategoria::all();
         $empresas = Empresa::all();
+        
         return view('admin.publicaciones.edit', compact('publicacion', 'categorias', 'subcategorias', 'empresas'));
     }
 
@@ -124,12 +138,9 @@ class PublicacionController extends Controller
             'horario' => 'required|in:mañana,tarde,flexible',
             'horas_totales' => 'required|integer|min:1',
             'fecha_publicacion' => 'required|date',
-            'activa' => 'boolean',
             'empresa_id' => 'required|exists:empresas,id',
             'categoria_id' => 'required|exists:categorias,id',
-            'subcategoria_id' => 'required|exists:subcategorias,id',
-            'subcategorias' => 'required|array',
-            'subcategorias.*' => 'exists:subcategorias,id',
+            'subcategoria_id' => 'required|exists:subcategorias,id'
         ]);
 
         // Ajuste para el checkbox
@@ -140,9 +151,6 @@ class PublicacionController extends Controller
             
             // Actualizar la publicación
             $publicacion->update($validated);
-            
-            // Actualizar subcategorías
-            $publicacion->subcategorias()->sync($request->subcategorias);
             
             DB::commit();
             
@@ -181,10 +189,7 @@ class PublicacionController extends Controller
         try {
             DB::beginTransaction();
             
-            // Eliminar relaciones con subcategorías
-            $publicacion->subcategorias()->detach();
-            
-            // Eliminar la publicación
+            // Eliminar la publicación directamente sin intentar desvincular subcategorías
             $publicacion->delete();
             
             DB::commit();
@@ -218,7 +223,62 @@ class PublicacionController extends Controller
      */
     public function getSubcategorias($categoriaId)
     {
-        $subcategorias = Subcategoria::where('categoria_id', $categoriaId)->get();
+        $subcategorias = Subcategoria::where('categoria_id', $categoriaId)
+            ->orderBy('nombre_subcategoria', 'asc')
+            ->get();
         return response()->json($subcategorias);
+    }
+
+    /**
+     * Elimina una publicación mediante SQL directo
+     */
+    public function destroySQL($id)
+    {
+        try {
+            // Registrar la solicitud para debug
+            Log::info('Intento de eliminación SQL para publicación ID: ' . $id);
+            
+            // Ejecutar SQL directo para eliminar
+            $affected = DB::delete('DELETE FROM publications WHERE id = ?', [$id]);
+            
+            // Comprobar si se eliminó algún registro
+            if ($affected > 0) {
+                Log::info('Publicación eliminada correctamente mediante SQL directo. ID: ' . $id);
+                
+                if (request()->ajax()) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'Publicación eliminada correctamente mediante SQL directo'
+                    ]);
+                }
+                
+                return redirect()->route('admin.publicaciones.index')
+                    ->with('success', 'Publicación eliminada correctamente mediante SQL directo');
+            } else {
+                Log::warning('No se encontró la publicación para eliminar. ID: ' . $id);
+                
+                if (request()->ajax()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'No se encontró la publicación para eliminar'
+                    ]);
+                }
+                
+                return redirect()->route('admin.publicaciones.index')
+                    ->with('error', 'No se encontró la publicación para eliminar');
+            }
+        } catch (\Exception $e) {
+            Log::error('Error al eliminar publicación mediante SQL: ' . $e->getMessage());
+            
+            if (request()->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error al eliminar: ' . $e->getMessage()
+                ]);
+            }
+            
+            return redirect()->route('admin.publicaciones.index')
+                ->with('error', 'Error al eliminar: ' . $e->getMessage());
+        }
     }
 } 

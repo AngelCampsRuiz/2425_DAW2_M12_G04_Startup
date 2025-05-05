@@ -64,7 +64,7 @@
                 <h3 class="text-lg font-semibold text-primary mb-5 border-b border-primary/20 pb-2">Enlaces rápidos</h3>
                 <ul class="space-y-3">
                     <li>
-                        <a href="#" class="group flex items-center text-gray-600 hover:text-primary transition">
+                        <a href="{{ route('home') }}" class="group flex items-center text-gray-600 hover:text-primary transition">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-primary/70 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                             </svg>
@@ -96,7 +96,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="group flex items-center text-gray-600 hover:text-primary transition">
+                        <a href="{{ route('blog') }}" class="group flex items-center text-gray-600 hover:text-primary transition">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-primary/70 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                             </svg>
@@ -124,7 +124,7 @@
                 <h3 class="text-lg font-semibold text-primary mb-5 border-b border-primary/20 pb-2">Recursos</h3>
                 <ul class="space-y-3">
                     <li>
-                        <a href="#" class="group flex items-center text-gray-600 hover:text-primary transition">
+                        <a href="{{ route('help.center') }}" class="group flex items-center text-gray-600 hover:text-primary transition">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-primary/70 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                             </svg>
@@ -132,7 +132,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="group flex items-center text-gray-600 hover:text-primary transition">
+                        <a href="{{ route('student.guides') }}" class="group flex items-center text-gray-600 hover:text-primary transition">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-primary/70 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                             </svg>
@@ -140,7 +140,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="group flex items-center text-gray-600 hover:text-primary transition">
+                        <a href="{{ route('company.resources') }}" class="group flex items-center text-gray-600 hover:text-primary transition">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-primary/70 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                             </svg>
@@ -148,7 +148,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="group flex items-center text-gray-600 hover:text-primary transition">
+                        <a href="{{ route('terms.conditions') }}" class="group flex items-center text-gray-600 hover:text-primary transition">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-primary/70 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                             </svg>
@@ -156,7 +156,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="group flex items-center text-gray-600 hover:text-primary transition">
+                        <a href="{{ route('privacy.policy') }}" class="group flex items-center text-gray-600 hover:text-primary transition">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-primary/70 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                             </svg>

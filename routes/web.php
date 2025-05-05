@@ -158,9 +158,34 @@
                         Route::delete('subcategorias/delete-directo/{id}', [SubcategoriaController::class, 'deleteDirecto'])->name('subcategorias.delete-directo');
                     // RUTA ELIMINAR SQL
                         Route::post('subcategorias/eliminar-sql/{id}', [SubcategoriaController::class, 'deleteDirecto'])->name('subcategorias.eliminar-sql');
+                    // RUTA OBTENER SUBCATEGORÍAS POR CATEGORÍA
+                        Route::get('subcategorias/por-categoria/{categoriaId}', [SubcategoriaController::class, 'getByCategoria'])->name('subcategorias.por-categoria');
                     // RUTA GESTIONAR SUBCATEGORÍAS
                         Route::resource('subcategorias', SubcategoriaController::class);
+
+                // RUTAS PARA GESTIONAR LAS EMPRESAS
+                    // RUTA ELIMINAR SQL
+                        Route::delete('empresas/eliminar-sql/{empresa}', [App\Http\Controllers\Admin\EmpresaController::class, 'destroySQL'])->name('empresas.destroySQL');
+                    // RUTA GESTIONAR EMPRESAS
+                        Route::resource('empresas', App\Http\Controllers\Admin\EmpresaController::class);
+
+                // Rutas de Publicaciones
+                Route::get('/publicaciones', [App\Http\Controllers\Admin\PublicacionController::class, 'index'])->name('publicaciones.index');
+                Route::post('/publicaciones', [App\Http\Controllers\Admin\PublicacionController::class, 'store'])->name('publicaciones.store');
+                Route::get('/publicaciones/{publicacion}/edit', [App\Http\Controllers\Admin\PublicacionController::class, 'edit'])->name('publicaciones.edit');
+                Route::put('/publicaciones/{publicacion}', [App\Http\Controllers\Admin\PublicacionController::class, 'update'])->name('publicaciones.update');
+                Route::delete('/publicaciones/{publicacion}', [App\Http\Controllers\Admin\PublicacionController::class, 'destroy'])->name('publicaciones.destroy');
+                Route::delete('/publicaciones/eliminar-sql/{publicacion}', [App\Http\Controllers\Admin\PublicacionController::class, 'destroySQL'])->name('publicaciones.destroySQL');
+                Route::get('publicaciones/subcategorias/{categoriaId}', [PublicacionController::class, 'getSubcategorias'])->name('publicaciones.subcategorias');
             });
+
+        // Footer resource pages
+        Route::get('/help-center', [App\Http\Controllers\ResourceController::class, 'helpCenter'])->name('help.center');
+        Route::get('/student-guides', [App\Http\Controllers\ResourceController::class, 'studentGuides'])->name('student.guides');
+        Route::get('/company-resources', [App\Http\Controllers\ResourceController::class, 'companyResources'])->name('company.resources');
+        Route::get('/terms-conditions', [App\Http\Controllers\ResourceController::class, 'termsConditions'])->name('terms.conditions');
+        Route::get('/privacy-policy', [App\Http\Controllers\ResourceController::class, 'privacyPolicy'])->name('privacy.policy');
+        Route::get('/blog', [App\Http\Controllers\ResourceController::class, 'blog'])->name('blog');
 
     // RUTAS PARA INSTITUCIONES
     Route::prefix('institucion')->middleware(['auth', \App\Http\Middleware\CheckRole::class.':institucion'])->name('institucion.')->group(function () {
