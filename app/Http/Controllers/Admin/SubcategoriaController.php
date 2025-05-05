@@ -295,4 +295,19 @@ class SubcategoriaController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Obtiene las subcategorías por categoría para los selects dinámicos
+     */
+    public function getByCategoria($categoriaId)
+    {
+        $subcategorias = Subcategoria::where('categoria_id', $categoriaId)
+            ->orderBy('nombre_subcategoria', 'asc')
+            ->get();
+            
+        return response()->json([
+            'success' => true,
+            'subcategorias' => $subcategorias
+        ]);
+    }
 }

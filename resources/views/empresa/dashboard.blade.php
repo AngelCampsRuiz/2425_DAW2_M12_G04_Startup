@@ -702,6 +702,7 @@
                     delete formNuevaOferta.dataset.processing;
                     }
                 }, 200);
+<<<<<<< HEAD
                 }
             };
             
@@ -713,12 +714,26 @@
                     }
                 });
             
+=======
+            }
+        };
+
+    // Cerrar modal al hacer clic fuera
+        if (modalNuevaOferta) {
+            modalNuevaOferta.addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeModal();
+        }
+    });
+
+>>>>>>> origin/angel_v2
             // Cerrar con tecla Escape
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape' && !modalNuevaOferta.classList.contains('hidden')) {
                     closeModal();
                 }
             });
+<<<<<<< HEAD
             }
             
             // Función para cargar subcategorías
@@ -801,6 +816,93 @@
         // Manejar envío del formulario
             if (formNuevaOferta) {
                 const requestsInProgress = new Set();
+=======
+        }
+        
+        // Función para cargar subcategorías
+        window.cargarSubcategorias = function() {
+            const categoriaId = document.getElementById('categoria_id');
+            if (!categoriaId) return;
+            
+            const subcategoriasSelect = document.getElementById('subcategoria_id');
+            if (!subcategoriasSelect) return;
+            
+            if (!categoriaId.value) {
+            subcategoriasSelect.innerHTML = '<option value="">Primero seleccione una categoría</option>';
+            return;
+        }
+
+        subcategoriasSelect.innerHTML = '<option value="">Cargando subcategorías...</option>';
+        subcategoriasSelect.disabled = true;
+
+        const baseUrl = '{{ url('/') }}';
+            const url = `${baseUrl}/empresa/get-subcategorias/${categoriaId.value}`;
+
+        fetch(url, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+                credentials: 'same-origin'
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(response => {
+            if (response.error) {
+                throw new Error(response.message);
+            }
+
+            subcategoriasSelect.innerHTML = '<option value="">Seleccionar subcategoría</option>';
+            
+            const subcategorias = response.data || [];
+            if (subcategorias.length === 0) {
+                subcategoriasSelect.innerHTML = '<option value="">No hay subcategorías disponibles</option>';
+                return;
+            }
+
+                // Usar un Set para evitar duplicados
+                const addedIds = new Set();
+
+            subcategorias.forEach(subcategoria => {
+                    if (!addedIds.has(subcategoria.id)) {
+                        addedIds.add(subcategoria.id);
+                subcategoriasSelect.innerHTML += `
+                    <option value="${subcategoria.id}">${subcategoria.nombre_subcategoria}</option>
+                `;
+                    }
+            });
+        })
+        .catch(error => {
+            console.error('Error al cargar subcategorías:', error);
+                if (window.Swal) {
+            Swal.fire({
+                title: '¡Error!',
+                text: 'No se pudieron cargar las subcategorías: ' + error.message,
+                icon: 'error',
+                confirmButtonText: 'Entendido',
+                        confirmButtonColor: '#7E22CE'
+            });
+                }
+            subcategoriasSelect.innerHTML = '<option value="">Error al cargar subcategorías</option>';
+        })
+        .finally(() => {
+            subcategoriasSelect.disabled = false;
+        });
+        };
+
+    // Manejar envío del formulario
+        if (formNuevaOferta) {
+            const requestsInProgress = new Set();
+            
+            formNuevaOferta.addEventListener('submit', function(e) {
+        e.preventDefault();
+>>>>>>> origin/angel_v2
                 
                 formNuevaOferta.addEventListener('submit', function(e) {
                     e.preventDefault();
@@ -855,7 +957,27 @@
                     if (submitButton) {
                         submitButton.disabled = true;
                     submitButton.innerHTML = '<div class="flex items-center"><svg class="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Publicando...</div>';
+<<<<<<< HEAD
                     }
+=======
+                }
+                
+                // Datos para el seguimiento de la petición
+                const uniqueId = Date.now().toString();
+                console.log(`[${uniqueId}] Iniciando envío del formulario`);
+        
+        fetch('{{ route('empresa.offers.store') }}', {
+            method: 'POST',
+                    body: formData,
+            headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'X-Request-ID': uniqueId,
+                        'X-Request-Unique': requestId
+            }
+        })
+        .then(response => {
+                    console.log(`[${uniqueId}] Respuesta recibida, status: ${response.status}`);
+>>>>>>> origin/angel_v2
                     
                     // Datos para el seguimiento de la petición
                     const uniqueId = Date.now().toString();
@@ -901,6 +1023,7 @@
                                 } else {
                                     throw new Error(data.message || 'Error al crear la oferta');
                                 }
+<<<<<<< HEAD
                             });
                         } else {
                             console.log(`[${uniqueId}] Respuesta no es JSON, recargando página`);
@@ -924,6 +1047,41 @@
                     })
                     .finally(() => {
                         console.log(`[${uniqueId}] Finalizada la petición`);
+=======
+                            } else {
+                                throw new Error(data.message || 'Error al crear la oferta');
+                            }
+                        });
+                    } else {
+                        console.log(`[${uniqueId}] Respuesta no es JSON, recargando página`);
+                        window.location.reload();
+                    }
+                })
+                .catch(error => {
+                    console.error(`[${uniqueId}] Error:`, error);
+                    
+                    if (window.Swal) {
+                Swal.fire({
+                    title: '¡Error!',
+                            text: error.message || 'Ha ocurrido un error al publicar la oferta',
+                    icon: 'error',
+                    confirmButtonText: 'Entendido',
+                            confirmButtonColor: '#7E22CE'
+                });
+            } else {
+                        alert(error.message || 'Ha ocurrido un error al publicar la oferta');
+                    }
+                })
+                .finally(() => {
+                    console.log(`[${uniqueId}] Finalizada la petición`);
+                    
+                    // Eliminar la solicitud del conjunto de solicitudes en progreso
+                    requestsInProgress.delete(requestId);
+                    
+                    // Restablecer el estado del botón y formulario después de 2 segundos
+                    setTimeout(() => {
+                        delete formNuevaOferta.dataset.processing;
+>>>>>>> origin/angel_v2
                         
                         // Eliminar la solicitud del conjunto de solicitudes en progreso
                         requestsInProgress.delete(requestId);
