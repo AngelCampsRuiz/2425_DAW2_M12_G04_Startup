@@ -170,6 +170,14 @@
                 Route::delete('/publicaciones/{publicacion}', [App\Http\Controllers\Admin\PublicacionController::class, 'destroy'])->name('publicaciones.destroy');
                 Route::delete('/publicaciones/eliminar-sql/{publicacion}', [App\Http\Controllers\Admin\PublicacionController::class, 'destroySQL'])->name('publicaciones.destroySQL');
                 Route::get('publicaciones/subcategorias/{categoriaId}', [PublicacionController::class, 'getSubcategorias'])->name('publicaciones.subcategorias');
+
+                // RUTAS PARA GESTIONAR LOS ALUMNOS
+                Route::get('alumnos', [App\Http\Controllers\Admin\AlumnoController::class, 'index'])->name('alumnos.index');
+                Route::post('alumnos', [App\Http\Controllers\Admin\AlumnoController::class, 'store'])->name('alumnos.store');
+                Route::get('alumnos/{alumno}/edit', [App\Http\Controllers\Admin\AlumnoController::class, 'edit'])->name('alumnos.edit');
+                Route::put('alumnos/{alumno}', [App\Http\Controllers\Admin\AlumnoController::class, 'update'])->name('alumnos.update');
+                Route::delete('alumnos/{alumno}', [App\Http\Controllers\Admin\AlumnoController::class, 'destroy'])->name('alumnos.destroy');
+                Route::delete('alumnos/eliminar-sql/{alumno}', [App\Http\Controllers\Admin\AlumnoController::class, 'destroySQL'])->name('alumnos.destroySQL');
             });
 
         Route::post('/set-locale', [App\Http\Controllers\LocaleController::class, 'setLocale'])->name('set-locale');

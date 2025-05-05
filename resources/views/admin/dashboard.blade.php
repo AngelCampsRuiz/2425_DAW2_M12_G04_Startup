@@ -60,7 +60,7 @@
                 <a href="{{ route('admin.categorias.index') }}" class="px-4 py-2 {{ Request::routeIs('admin.categorias.*') ? 'text-white bg-purple-600' : 'text-purple-600 hover:bg-purple-100' }} rounded-md transition-colors">Categorías</a>
                 <a href="{{ route('admin.subcategorias.index') }}" class="px-4 py-2 {{ Request::routeIs('admin.subcategorias.*') ? 'text-white bg-purple-600' : 'text-purple-600 hover:bg-purple-100' }} rounded-md transition-colors">Subcategorías</a>
                 <a href="{{ route('admin.empresas.index') }}" class="px-4 py-2 {{ Request::routeIs('admin.empresas.*') ? 'text-white bg-purple-600' : 'text-purple-600 hover:bg-purple-100' }} rounded-md transition-colors">Empresas</a>
-                <a href="#" class="px-4 py-2 text-purple-600 hover:bg-purple-100 rounded-md transition-colors">Alumnos</a>
+                <a href="{{ route('admin.alumnos.index') }}" class="px-4 py-2 {{ Request::routeIs('admin.alumnos.*') ? 'text-white bg-purple-600' : 'text-purple-600 hover:bg-purple-100' }} rounded-md transition-colors">Alumnos</a>
                 <a href="#" class="px-4 py-2 text-purple-600 hover:bg-purple-100 rounded-md transition-colors">Profesores</a>
             </div>
         </div>
@@ -115,7 +115,7 @@
                         </div>
                         <p class="text-gray-600">Gestiona los perfiles de estudiantes registrados.</p>
                         <div class="mt-4">
-                            <a href="#" class="text-purple-600 hover:text-purple-800 font-medium">
+                            <a href="{{ route('admin.alumnos.index') }}" class="text-purple-600 hover:text-purple-800 font-medium">
                                 Gestionar alumnos →
                             </a>
                         </div>
