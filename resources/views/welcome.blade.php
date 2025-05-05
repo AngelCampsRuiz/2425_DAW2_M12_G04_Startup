@@ -4,7 +4,7 @@
 {{-- CONTENIDO --}}
     @section('content')
         <section class="py-12 text-center bg-gradient-to-b from-purple-50 to-white">
-            <h1 class="text-4xl font-bold text-[#7705B6] mb-4 leading-tight max-w-5xl mx-auto">Tu puente entre el <span class="text-[#9B30D9]">aula</span> y el <span class="text-[#9B30D9]">mundo laboral</span></h1>
+            <h1 class="text-4xl font-bold text-[#7705B6] mb-4 leading-tight max-w-5xl mx-auto">{{ __('messages.bridge_between_school_and_work') }}</h1>
             <p class="text-lg text-gray-600 max-w-4xl mx-auto mb-12">Conectamos estudiantes con las mejores empresas para crear oportunidades que transforman carreras</p>
 
             <!-- BLOQUE DE ESTUDIANTES -->
@@ -15,7 +15,7 @@
                     <div class="md:w-1/2 space-y-6 md:pl-12 flex flex-col justify-center text-left">
                         <div class="text-2xl font-semibold text-[#7705B6]">🎓 {{ $totalAlumnos }} alumnos ya han encontrado prácticas</div>
                         <div class="text-lg">🧾 {{ $totalConvenios }} convenios gestionados</div>
-                        <div class="text-lg">📍 Estudiantes de {{ $totalCentros }} centros educativos</div>
+                        <div class="text-lg">📍 {{ $totalCentros }} estudiantes de centros educativos</div>
                         <div class="text-lg">📈 {{ $porcentajeExito }}% encuentran prácticas en su área</div>
                     </div>
                 </div>
@@ -69,7 +69,7 @@
                                                         <div>
                                                             <h3 class="font-bold text-lg">{{ $empresa->user->nombre }}</h3>
                                                             <p class="text-gray-600 font-medium">
-                                                                <span class="text-[#7705B6] font-bold">{{ $empresa->alumnos_contratados }}</span> 
+                                                                <span class="text-[#7705B6] font-bold">{{ $empresa->alumnos_contratados }}</span>
                                                                 {{ $empresa->alumnos_contratados == 1 ? 'alumno contratado' : 'alumnos contratados' }}
                                                             </p>
                                                         </div>
@@ -78,10 +78,10 @@
                                             @endforeach
                                         </div>
                                     </div>
-                                    
+
                                     <!-- Paginación -->
                                     <div class="swiper-pagination mt-4 text-center"></div>
-                                    
+
                                     <!-- Controles de navegación -->
                                     <div class="swiper-button-next text-[#7705B6] absolute top-1/2 -mt-6 right-0 z-10"></div>
                                     <div class="swiper-button-prev text-[#7705B6] absolute top-1/2 -mt-6 left-0 z-10"></div>
@@ -103,30 +103,30 @@
                         if (window.empresasSwiper) {
                             window.empresasSwiper.destroy(true, true);
                         }
-                        
+
                         // Usar la configuración más simple posible para garantizar funcionamiento
                         window.empresasSwiper = new Swiper('.empresas-slider', {
                             // Configuración básica
                             slidesPerView: 1,
                             spaceBetween: 20,
                             speed: 300,
-                            
+
                             // Navegación
                             navigation: {
                                 nextEl: '.swiper-button-next',
                                 prevEl: '.swiper-button-prev',
                             },
-                            
+
                             // Paginación simple
                             pagination: {
                                 el: '.swiper-pagination',
                                 clickable: true,
                                 type: 'bullets'
                             },
-                            
+
                             // Sin bucle infinito
                             loop: false,
-                            
+
                             // Puntos de ruptura para diseño responsive
                             breakpoints: {
                                 640: {
@@ -153,10 +153,10 @@
                     <p class="text-xl text-gray-700 max-w-3xl mx-auto mb-10">Únete a nuestra plataforma y descubre todas las oportunidades que tenemos para ti</p>
                     <div class="container mx-auto max-w-5xl flex flex-col md:flex-row justify-center space-y-4 md:space-y-0 md:space-x-8">
                         <a href="{{ route('demo.student') }}" class="bg-[#7705B6] text-white px-10 py-4 rounded-lg font-bold text-lg hover:bg-[#5E0490] transition mx-auto md:mx-0 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
-                            SOY ALUMNO
+                            Soy alumno
                         </a>
                         <a href="{{ route('demo.company') }}" class="bg-[#7705B6] text-white px-10 py-4 rounded-lg font-bold text-lg hover:bg-[#5E0490] transition mx-auto md:mx-0 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
-                            SOY EMPRESA
+                            Soy empresa
                         </a>
                     </div>
                 </section>
