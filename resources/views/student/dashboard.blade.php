@@ -106,6 +106,36 @@
                                     <input type="hidden" id="horasTotalesMax" name="horas_totales_max" value="{{ $horasTotalesMax }}">
                                 </div>
                             </div>
+
+                            <!-- Filtro de Radio de Distancia -->
+                            <div>
+                                <h3 class="text-sm font-medium text-gray-600 mb-2">Radio de Distancia</h3>
+                                <div class="mb-6">
+                                    <div class="flex justify-between text-sm text-gray-600 mb-2">
+                                        <span>0 km</span>
+                                        <span id="radioValue">50 km</span>
+                                    </div>
+                                    <!-- Contenedor para noUiSlider del radio -->
+                                    <div id="radioSlider" class="mt-4"></div>
+                                    <!-- Campo oculto para el radio -->
+                                    <input type="hidden" id="radioDistancia" name="radio_distancia" value="50">
+                                    <!-- Añadir estos dos campos ocultos -->
+                                    <input type="hidden" id="userLat" name="user_lat" value="">
+                                    <input type="hidden" id="userLng" name="user_lng" value="">
+                                    <!-- Ubicación del usuario -->
+                                    <div class="mt-4">
+                                        <button type="button" id="obtenerUbicacion" 
+                                                class="w-full px-4 py-2 bg-[#5e0490] text-white rounded-lg hover:bg-[#4a0370] transition-colors flex items-center justify-center gap-2">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                            </svg>
+                                            Usar mi ubicación
+                                        </button>
+                                        <p id="ubicacionStatus" class="mt-2 text-sm text-center hidden"></p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -367,6 +397,40 @@
             color: white;
             border-color: #5e0490;
         }
+
+        /* Estilos para el botón de ubicación */
+        #obtenerUbicacion:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        #ubicacionStatus {
+            transition: all 0.3s ease;
+        }
+
+        #ubicacionStatus.text-green-600 {
+            color: #059669;
+        }
+
+        #ubicacionStatus.text-red-600 {
+            color: #dc2626;
+        }
+
+        /* Estilos adicionales para el slider de distancia */
+        #radioSlider .noUi-connect {
+            background: #5e0490;
+        }
+
+        #radioSlider .noUi-handle {
+            background: #5e0490;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            cursor: pointer;
+        }
+
+        #radioSlider .noUi-handle:hover {
+            transform: scale(1.1);
+        }
     </style>
 
     <script>
@@ -596,4 +660,5 @@
             initFavoriteButtons();
         });
     </script>
+    <script src="{{ asset('js/distance-filter.js') }}"></script>
 @endsection

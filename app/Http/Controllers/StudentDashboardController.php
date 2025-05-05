@@ -44,6 +44,26 @@ class StudentDashboardController extends Controller
             $query->whereBetween('horas_totales', [$request->get('horas_totales_min'), $request->get('horas_totales_max')]);
         }
 
+        // Aplicar filtro de distancia
+        if ($request->has('user_lat') && $request->has('user_lng') && $request->has('radio_distancia')) {
+            $lat = $request->get('user_lat');
+            $lng = $request->get('user_lng');
+            $radio = $request->get('radio_distancia');
+
+            // Fórmula Haversine para calcular distancia
+            $query->whereHas('empresa', function($q) use ($lat, $lng, $radio) {
+                $q->whereRaw('(
+                    6371 * acos(
+                        cos(radians(?)) * 
+                        cos(radians(latitud)) * 
+                        cos(radians(longitud) - radians(?)) + 
+                        sin(radians(?)) * 
+                        sin(radians(latitud))
+                    )
+                ) <= ?', [$lat, $lng, $lat, $radio]);
+            });
+        }
+
         // Aplicar ordenamiento
         $orderBy = $request->get('order_by', 'fecha_publicacion');
         $orderDirection = $request->get('order_direction', 'desc');
