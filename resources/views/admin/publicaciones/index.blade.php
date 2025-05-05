@@ -192,173 +192,37 @@
 <script>
     // Variable de control para evitar duplicación
     let isSubmitting = false;
-    let initialized = false;
-    let publicacionId = null;
     
     document.addEventListener('DOMContentLoaded', function() {
-        console.log('DOMContentLoaded evento disparado');
-        
-        // Esperar un poco para que todo se cargue completamente
-        setTimeout(() => {
-            console.log('Iniciando configuración de elementos');
-            
-            // Inicialización de botones solo una vez
-            if (!initialized) {
-                try {
-                    setupEventListeners();
-                    setupSubcategorias();
-                    
-                    // Dar tiempo adicional para que los selects estén completamente cargados
-                    setTimeout(() => {
-                        fixSelectStyles();
-                        console.log('Estilos de selects aplicados');
-                        
-                        // Verificación de empresa después de establecer estilos
-                        const empresaSelect = document.getElementById('empresa_id');
-                        if (empresaSelect) {
-                            console.log('Estado de empresa_id después de inicialización:', 
-                                'valor:', empresaSelect.value, 
-                                'opciones:', empresaSelect.options.length);
-                        }
-                    }, 200);
-                    
-                    initialized = true;
-                } catch (error) {
-                    console.error('Error durante la inicialización:', error);
-                }
-            }
-        }, 100);
+        setupEventListeners();
+        setupSubcategorias();
     });
     
-    // Configura todos los listeners una sola vez
     function setupEventListeners() {
-        // Cerrar modales
-        document.getElementById('modal-close').addEventListener('click', function() {
-            document.getElementById('modal-publicacion').classList.add('hidden');
-        });
-        
-        document.getElementById('btn-cancelar').addEventListener('click', function() {
-            document.getElementById('modal-publicacion').classList.add('hidden');
-        });
-        
-        document.getElementById('modal-eliminar-close').addEventListener('click', function() {
-            document.getElementById('modal-eliminar').classList.add('hidden');
-        });
-        
-        document.getElementById('btn-cancelar-eliminar').addEventListener('click', function() {
-            document.getElementById('modal-eliminar').classList.add('hidden');
-        });
-        
         // Delegación de eventos para los botones dinámicos
         document.addEventListener('click', function(e) {
-            // Botón Crear
-            if (e.target.closest('.btn-crear')) {
-                mostrarFormularioCrear();
-            }
-            
-            // Botones Editar
-            if (e.target.closest('.btn-editar')) {
-                const btn = e.target.closest('.btn-editar');
-                const id = btn.getAttribute('data-id');
-                mostrarFormularioEditar(id);
-            }
-            
             // Botones Eliminar
             if (e.target.closest('.btn-eliminar')) {
                 const btn = e.target.closest('.btn-eliminar');
                 const id = btn.getAttribute('data-id');
                 mostrarModalEliminar(id);
             }
-            
-            // Enlaces de paginación
-            if (e.target.closest('.pagination-link')) {
-                e.preventDefault();
-                const link = e.target.closest('.pagination-link');
-                actualizarTabla(link.getAttribute('href'));
-            }
         });
         
-        // Envío del formulario de crear/editar - Una sola vez
-        document.getElementById('form-publicacion').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // Verificar que haya una empresa seleccionada
-            const empresaSelect = document.getElementById('empresa_id');
-            if (empresaSelect && (!empresaSelect.value || empresaSelect.value === "")) {
-                // Mostrar error específico para empresa
-                const displayElement = document.getElementById('selected-empresa-display');
-                if (displayElement) {
-                    displayElement.textContent = "ERROR: Debes seleccionar una empresa";
-                    displayElement.style.color = 'red';
-                    displayElement.style.fontWeight = 'bold';
-                }
-                
-                empresaSelect.style.borderColor = 'red';
-                empresaSelect.style.borderWidth = '2px';
-                
-                // Mostrar mensaje de error general
-                mostrarErrores({
-                    'empresa_id': ['Debes seleccionar una empresa válida']
-                });
-                
-                console.error('Error de validación: Empresa no seleccionada');
-                return false;
-            }
-            
-            // Evitar envíos duplicados
-            if (isSubmitting) return;
-            isSubmitting = true;
-            
-            // Registrar lo que se va a enviar
-            console.log('Enviando formulario con empresa_id:', empresaSelect.value);
-            
-            const formData = new FormData(this);
-            const url = this.getAttribute('action');
-            const method = document.getElementById('form_method').value;
-            
-            // Deshabilitar botones durante la petición
-            document.getElementById('btn-guardar').disabled = true;
-            
-            fetch(url, {
-                method: method === 'PUT' ? 'POST' : 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    document.getElementById('modal-publicacion').classList.add('hidden');
-                    mostrarMensajeExito(data.message);
-                    actualizarTabla();
-                } else if (data.errors) {
-                    mostrarErrores(data.errors);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            })
-            .finally(() => {
-                isSubmitting = false;
-                document.getElementById('btn-guardar').disabled = false;
-            });
-        });
-        
-        // Envío del formulario de eliminar - Una sola vez
+        // Configurar el formulario de eliminación
         document.getElementById('form-eliminar').addEventListener('submit', function(e) {
             e.preventDefault();
             
-            // Evitar envíos duplicados
             if (isSubmitting) return;
             isSubmitting = true;
             
-            const url = this.getAttribute('action');
+            const id = document.getElementById('eliminar_id').value;
+            const url = `/admin/publicaciones/${id}`;
             
             fetch(url, {
                 method: 'DELETE',
                 headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                     'X-Requested-With': 'XMLHttpRequest',
                     'Content-Type': 'application/json'
                 }
@@ -367,77 +231,106 @@
             .then(data => {
                 if (data.success) {
                     document.getElementById('modal-eliminar').classList.add('hidden');
-                    mostrarMensajeExito(data.message);
-                    actualizarTabla();
+                    mostrarMensajeExito(data.message || 'Publicación eliminada correctamente');
+                    window.location.reload(); // Recargar la página después de eliminar
+                } else {
+                    alert(data.message || 'Error al eliminar la publicación');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
+                alert('Error al eliminar la publicación');
             })
             .finally(() => {
                 isSubmitting = false;
             });
         });
+        
+        // Configurar botones de cerrar modal
+        document.getElementById('modal-eliminar-close').addEventListener('click', function() {
+            document.getElementById('modal-eliminar').classList.add('hidden');
+        });
+        
+        document.getElementById('btn-cancelar-eliminar').addEventListener('click', function() {
+            document.getElementById('modal-eliminar').classList.add('hidden');
+        });
+
+        // Botones para crear y editar
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.btn-crear')) {
+                mostrarFormularioCrear();
+            }
+            
+            if (e.target.closest('.btn-editar')) {
+                const btn = e.target.closest('.btn-editar');
+                const id = btn.getAttribute('data-id');
+                mostrarFormularioEditar(id);
+            }
+        });
+
+        // Evento change para el select de categoría
+        const categoriaSelect = document.getElementById('categoria_id');
+        if (categoriaSelect) {
+            categoriaSelect.addEventListener('change', function() {
+                cargarSubcategorias();
+            });
+        }
     }
     
-    // Funciones principales
+    function cargarSubcategorias() {
+        const categoriaId = document.getElementById('categoria_id');
+        if (!categoriaId) return;
+        
+        const subcategoriasSelect = document.getElementById('subcategoria_id');
+        if (!subcategoriasSelect) return;
+        
+        if (!categoriaId.value) {
+            subcategoriasSelect.innerHTML = '<option value="">Selecciona primero una categoría</option>';
+            return;
+        }
+        
+        subcategoriasSelect.innerHTML = '<option value="">Cargando subcategorías...</option>';
+        subcategoriasSelect.disabled = true;
+        
+        fetch(`/admin/publicaciones/subcategorias/${categoriaId.value}`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            subcategoriasSelect.innerHTML = '<option value="">Selecciona una subcategoría</option>';
+            data.forEach(subcategoria => {
+                const option = document.createElement('option');
+                option.value = subcategoria.id;
+                option.textContent = subcategoria.nombre_subcategoria;
+                subcategoriasSelect.appendChild(option);
+            });
+            subcategoriasSelect.disabled = false;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            subcategoriasSelect.innerHTML = '<option value="">Error al cargar subcategorías</option>';
+            subcategoriasSelect.disabled = false;
+        });
+    }
+    
     function mostrarFormularioCrear() {
-        // Resetear el formulario
+        document.getElementById('modal-titulo').textContent = 'Crear Nueva Publicación';
         document.getElementById('form-publicacion').reset();
         document.getElementById('form-errors').classList.add('hidden');
         document.getElementById('publicacion_id').value = '';
         document.getElementById('form_method').value = 'POST';
-        
-        // Configurar la acción del formulario
         document.getElementById('form-publicacion').setAttribute('action', '{{ route("admin.publicaciones.store") }}');
-        
-        // Cambiar el título del modal
-        document.getElementById('modal-titulo').textContent = 'Crear Nueva Publicación';
-        
-        // Mostrar el modal
         document.getElementById('modal-publicacion').classList.remove('hidden');
-        
-        // Forzar estilos después de que el modal es visible
-        setTimeout(() => {
-            fixSelectStyles();
-            
-            // Verificar valores de selects
-            const empresaSelect = document.getElementById('empresa_id');
-            if (empresaSelect) {
-                console.log('Estado antes de modificación:', 
-                    'valor:', empresaSelect.value, 
-                    'opciones:', empresaSelect.options.length);
-                
-                // Limpiar selección actual
-                empresaSelect.selectedIndex = 0;
-                
-                // Forzar un evento change para actualizar el indicador
-                const changeEvent = new Event('change');
-                empresaSelect.dispatchEvent(changeEvent);
-                
-                console.log('Estado después de reset:', 
-                    'valor:', empresaSelect.value, 
-                    'selectedIndex:', empresaSelect.selectedIndex);
-            }
-            
-            // Resetear el campo de subcategoría
-            const categoriaSelect = document.getElementById('categoria_id');
-            if (categoriaSelect) {
-                categoriaSelect.selectedIndex = 0;
-                const changeEvent = new Event('change');
-                categoriaSelect.dispatchEvent(changeEvent);
-            }
-        }, 300);
     }
     
-    /**
-     * Obtiene los datos de una publicación para editar
-     */
     function mostrarFormularioEditar(id) {
         document.getElementById('modal-titulo').textContent = 'Editar Publicación';
         document.getElementById('publicacion_id').value = id;
         document.getElementById('form_method').value = 'PUT';
-        document.getElementById('form-publicacion').action = `/admin/publicaciones/${id}`;
+        document.getElementById('form-publicacion').setAttribute('action', `/admin/publicaciones/${id}`);
         
         fetch(`/admin/publicaciones/${id}/edit`, {
             headers: {
@@ -447,23 +340,23 @@
         .then(response => response.json())
         .then(data => {
             const publicacion = data.publicacion;
+            
             document.getElementById('titulo').value = publicacion.titulo;
             document.getElementById('empresa_id').value = publicacion.empresa_id;
             document.getElementById('categoria_id').value = publicacion.categoria_id;
-            // La subcategoría se cargará por el evento
             document.getElementById('horario').value = publicacion.horario;
             document.getElementById('horas_totales').value = publicacion.horas_totales;
             document.getElementById('fecha_publicacion').value = publicacion.fecha_publicacion ? publicacion.fecha_publicacion.split('T')[0] : '';
             document.getElementById('descripcion').value = publicacion.descripcion;
-            document.getElementById('activa').checked = publicacion.activa ? true : false;
+            document.getElementById('activa').checked = publicacion.activa;
             
-            // Disparar evento para cargar subcategorías
-            document.dispatchEvent(new CustomEvent('editPublicacion', { 
-                detail: {
-                    categoria_id: publicacion.categoria_id,
-                    subcategoria_id: publicacion.subcategoria_id
-                }
-            }));
+            // Disparar el evento change para cargar las subcategorías
+            cargarSubcategorias();
+            
+            // Esperar a que se carguen las subcategorías y luego seleccionar la correcta
+            setTimeout(() => {
+                document.getElementById('subcategoria_id').value = publicacion.subcategoria_id;
+            }, 500);
             
             document.getElementById('modal-publicacion').classList.remove('hidden');
         })
@@ -474,16 +367,11 @@
     }
     
     function mostrarModalEliminar(id) {
-        // Configurar el formulario
         document.getElementById('eliminar_id').value = id;
-        document.getElementById('form-eliminar').setAttribute('action', `/admin/publicaciones/${id}`);
-        
-        // Mostrar el modal
         document.getElementById('modal-eliminar').classList.remove('hidden');
     }
     
-    // Funciones auxiliares para mostrar mensajes y errores
-    window.mostrarMensajeExito = function(mensaje) {
+    function mostrarMensajeExito(mensaje) {
         const messageElement = document.getElementById('success-message');
         const messageText = document.getElementById('success-message-text');
         
@@ -493,523 +381,7 @@
         setTimeout(function() {
             messageElement.style.display = 'none';
         }, 5000);
-    };
-    
-    // Mostrar errores específicos en los campos correspondientes
-    function mostrarErroresEnCampos(errores) {
-        // Restablecer todos los bordes y mensajes de error
-        const campos = ['titulo', 'descripcion', 'empresa_id', 'categoria_id', 'subcategoria_id', 'horario', 'horas_totales', 'fecha_publicacion'];
-        campos.forEach(campo => {
-            const elemento = document.getElementById(campo);
-            if (elemento) {
-                elemento.classList.remove('border-red-500');
-                
-                // Eliminar mensaje de error anterior si existe
-                const mensajeAnterior = document.querySelector(`#error-${campo}`);
-                if (mensajeAnterior) mensajeAnterior.remove();
-            }
-        });
-        
-        // Mostrar errores específicos
-        for (const campo in errores) {
-            const elemento = document.getElementById(campo);
-            if (elemento) {
-                elemento.classList.add('border-red-500');
-                
-                // Crear mensaje de error debajo del campo
-                const mensajeError = document.createElement('p');
-                mensajeError.id = `error-${campo}`;
-                mensajeError.className = 'mt-1 text-sm text-red-600';
-                mensajeError.textContent = errores[campo][0];
-                
-                // Insertar después del elemento o su padre
-                if (elemento.parentNode) {
-                    elemento.parentNode.appendChild(mensajeError);
-                }
-                
-                // Resaltar visualmente el select de empresa si hay error
-                if (campo === 'empresa_id') {
-                    console.error('Error en empresa_id:', errores[campo]);
-                    elemento.style.borderColor = 'red';
-                    elemento.style.borderWidth = '2px';
-                }
-            }
-        }
     }
-    
-    // Funciones de actualización de tabla
-    window.actualizarTabla = function(url = '{{ route('admin.publicaciones.index') }}') {
-        fetch(url, {
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('tabla-container').innerHTML = data.tabla;
-        })
-        .catch(error => {
-            console.error('Error:', error);
-        });
-    };
-
-    // Función para cargar subcategorías basadas en la categoría seleccionada
-    function setupSubcategorias() {
-        const categoriaSelect = document.getElementById('categoria_id');
-        const subcategoriaSelect = document.getElementById('subcategoria_id');
-        
-        if (categoriaSelect && subcategoriaSelect) {
-            // Función para resetear el select de subcategorías
-            function resetSubcategoriaSelect(text = 'Selecciona primero una categoría') {
-                subcategoriaSelect.innerHTML = '';
-                const defaultOption = document.createElement('option');
-                defaultOption.value = '';
-                defaultOption.textContent = text;
-                defaultOption.style.color = 'black';
-                defaultOption.style.backgroundColor = 'white';
-                defaultOption.setAttribute('style', 'color: black !important; background-color: white !important;');
-                subcategoriaSelect.appendChild(defaultOption);
-            }
-            
-            // Función para cargar subcategorías por AJAX
-            async function cargarSubcategorias(categoriaId) {
-                if (!categoriaId) {
-                    resetSubcategoriaSelect();
-                    return;
-                }
-                
-                resetSubcategoriaSelect('Cargando subcategorías...');
-                
-                try {
-                    const response = await fetch(`/admin/subcategorias/por-categoria/${categoriaId}`, {
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest'
-                        }
-                    });
-                    
-                    if (!response.ok) {
-                        throw new Error(`Error ${response.status}: ${response.statusText}`);
-                    }
-                    
-                    const data = await response.json();
-                    
-                    resetSubcategoriaSelect('Selecciona una subcategoría');
-                    
-                    if (data.subcategorias && data.subcategorias.length > 0) {
-                        data.subcategorias.forEach(subcategoria => {
-                            const option = document.createElement('option');
-                            option.value = subcategoria.id;
-                            option.textContent = subcategoria.nombre_subcategoria;
-                            option.style.color = 'black';
-                            option.style.backgroundColor = 'white';
-                            option.setAttribute('style', 'color: black !important; background-color: white !important;');
-                            subcategoriaSelect.appendChild(option);
-                        });
-                    } else {
-                        resetSubcategoriaSelect('No hay subcategorías disponibles');
-                    }
-                } catch (error) {
-                    console.error('Error al cargar subcategorías:', error);
-                    resetSubcategoriaSelect('Error al cargar subcategorías');
-                }
-            }
-            
-            // Evento al cambiar la categoría
-            categoriaSelect.addEventListener('change', function() {
-                cargarSubcategorias(this.value);
-            });
-            
-            // Si ya hay una categoría seleccionada, cargar sus subcategorías
-            if (categoriaSelect.value) {
-                cargarSubcategorias(categoriaSelect.value);
-            }
-            
-            // Cuando se abre el modal para editar, cargar las subcategorías
-            document.addEventListener('editPublicacion', function(e) {
-                if (e.detail && e.detail.categoria_id) {
-                    setTimeout(() => {
-                        cargarSubcategorias(e.detail.categoria_id);
-                        // Seleccionar la subcategoría después de cargar las opciones
-                        setTimeout(() => {
-                            if (e.detail.subcategoria_id) {
-                                subcategoriaSelect.value = e.detail.subcategoria_id;
-                            }
-                        }, 500);
-                    }, 100);
-                }
-            });
-        }
-    }
-
-    // Función para aplicar estilos a los select
-    function fixSelectStyles() {
-        try {
-            // Verificar que los elementos existan antes de intentar acceder
-            const selects = document.querySelectorAll('#modal-publicacion select');
-            if (!selects || selects.length === 0) {
-                console.log("No se encontraron selects o el modal no está visible");
-                return;
-            }
-            
-            // Aplicar estilos a todos los select
-            selects.forEach(select => {
-                // Aplicar estilo al select
-                select.style.backgroundColor = 'white';
-                select.style.webkitAppearance = 'menulist';
-                select.style.appearance = 'menulist';
-                
-                // Aplicar estilos a las opciones
-                if (select.options && select.options.length > 0) {
-                    Array.from(select.options).forEach(option => {
-                        option.style.backgroundColor = 'white';
-                        option.style.padding = '8px';
-                    });
-                }
-            });
-            
-            // Verificación específica para empresa_id
-            const empresaSelect = document.getElementById('empresa_id');
-            if (empresaSelect) {
-                // Asegurar que el estilo del select de empresa sea visible
-                empresaSelect.style.backgroundColor = 'white';
-                empresaSelect.style.webkitAppearance = 'menulist';
-                empresaSelect.style.appearance = 'menulist';
-                console.log("Empresa select encontrado y estilos aplicados");
-                
-                // Revisar el valor seleccionado
-                logEmpresaSelection();
-            } else {
-                console.log("Empresa select no encontrado");
-            }
-        } catch (error) {
-            console.error("Error en fixSelectStyles:", error);
-        }
-    }
-    
-    // Función para registrar la selección de empresa
-    function logEmpresaSelection() {
-        try {
-            const empresaSelect = document.getElementById('empresa_id');
-            if (empresaSelect) {
-                console.log("Empresa seleccionada:", empresaSelect.value);
-                console.log("Texto de la opción:", empresaSelect.options[empresaSelect.selectedIndex]?.text || "No hay opción seleccionada");
-            }
-        } catch (error) {
-            console.error("Error al registrar selección de empresa:", error);
-        }
-    }
-
-    window.mostrarErrores = function(errores) {
-        // Llamar a la nueva función para mantener compatibilidad
-        mostrarErroresEnCampos(errores);
-        
-        // También mostrar errores en el contenedor general
-        const errorsDiv = document.getElementById('form-errors');
-        const errorsList = document.getElementById('error-list');
-        
-        errorsList.innerHTML = '';
-        
-        for (const key in errores) {
-            errores[key].forEach(error => {
-                const li = document.createElement('li');
-                li.textContent = error;
-                errorsList.appendChild(li);
-            });
-        }
-        
-        errorsDiv.classList.remove('hidden');
-    };
-
-    // Cerrar modales al hacer clic fuera de ellos
-    document.querySelectorAll('#formModal, #eliminarModal, #eliminarSqlModal').forEach(modal => {
-        modal.addEventListener('click', function(e) {
-            if (e.target === this) {
-                this.classList.add('hidden');
-                this.classList.remove('flex');
-            }
-        });
-    });
-
-    // Cuando se abre el modal para crear o editar, aplicar los estilos a los select
-    document.addEventListener('DOMContentLoaded', function() {
-        // Aplicar estilos a los select cuando se carga la página
-        document.querySelectorAll('.btn-crear, .btn-editar').forEach(btn => {
-            btn.addEventListener('click', function() {
-                // Esperar a que el modal se abra
-                setTimeout(function() {
-                    fixSelectStyles();
-                }, 200);
-            });
-        });
-        
-        // Cuando cambia el valor de empresa_id, registrar la selección
-        document.body.addEventListener('change', function(event) {
-            if (event.target && event.target.id === 'empresa_id') {
-                logEmpresaSelection();
-            }
-        });
-        
-        // Agregar un observer para detectar cambios en el formulario
-        const modalContent = document.querySelector('#modal-publicacion .modal-content');
-        if (modalContent) {
-            const observer = new MutationObserver(function() {
-                fixSelectStyles();
-            });
-            observer.observe(modalContent, { childList: true, subtree: true });
-        }
-    });
-
-    // Función para preparar el formulario antes de enviarlo
-    function prepareFormSubmit(e) {
-        e.preventDefault();
-        
-        // Verificar que la empresa esté seleccionada
-        const empresaSelect = document.getElementById('empresa_id');
-        if (!empresaSelect.value) {
-            // Resaltar error
-            empresaSelect.classList.add('border-red-500');
-            const feedbackEl = document.getElementById('empresa-feedback');
-            if (feedbackEl) {
-                feedbackEl.textContent = 'Debes seleccionar una empresa';
-                feedbackEl.classList.add('text-red-500');
-            }
-            
-            // Forzar la selección de la primera empresa si hay opciones disponibles
-            if (empresaSelect.options.length > 1) {
-                empresaSelect.selectedIndex = 1;
-                console.log("Seleccionando automáticamente la primera empresa:", empresaSelect.value);
-            } else {
-                console.error("No hay empresas disponibles para seleccionar");
-                return false;
-            }
-        }
-        
-        // Continuar con el envío normal
-        submitForm(e.target);
-        return false;
-    }
-
-    // Al abrir el modal para crear
-    document.querySelector('.btn-crear').addEventListener('click', function() {
-        resetForm();
-        document.getElementById('modal-title').textContent = 'Crear Publicación';
-        document.getElementById('form-publicacion').dataset.action = 'create';
-        document.getElementById('modal-publicacion').classList.remove('hidden');
-        document.getElementById('modal-publicacion').classList.add('block');
-        
-        // Asegurarse de que los selects sean visibles
-        setTimeout(function() {
-            fixSelectStyles();
-            
-            // Asegurar que haya una empresa seleccionada por defecto
-            const empresaSelect = document.getElementById('empresa_id');
-            if (empresaSelect && empresaSelect.options.length > 1 && !empresaSelect.value) {
-                empresaSelect.selectedIndex = 1; // Seleccionar la primera empresa real
-                console.log("Empresa seleccionada por defecto:", empresaSelect.value);
-            }
-        }, 200);
-    });
-
-    // Asociar el evento submit al formulario directamente con la nueva función
-    document.getElementById('form-publicacion').addEventListener('submit', prepareFormSubmit);
-
-    // Función para cargar los datos de una publicación en el formulario para editar
-    function editPublication(id) {
-        resetForm();
-        document.getElementById('modal-titulo').textContent = 'Editar Publicación';
-        document.getElementById('form-publicacion').dataset.action = 'edit';
-        document.getElementById('form-publicacion').dataset.publicacionId = id;
-        
-        // Aplicar estilos directamente antes de mostrar el modal
-        const empresaSelect = document.getElementById('empresa_id');
-        if (empresaSelect) {
-            // Aplicar estilos directamente
-            empresaSelect.style.backgroundColor = 'white';
-            empresaSelect.style.webkitAppearance = 'menulist';
-            empresaSelect.style.appearance = 'menulist';
-            
-            // Aplicar estilos a las opciones
-            Array.from(empresaSelect.options).forEach(option => {
-                option.style.backgroundColor = 'white';
-                option.style.padding = '8px';
-            });
-        }
-        
-        // Mostrar el modal
-        const modal = document.getElementById('modal-publicacion');
-        modal.classList.remove('hidden');
-        modal.classList.add('block');
-        
-        // Aplicar estilos inmediatamente después de mostrar el modal
-        fixSelectStyles();
-        
-        fetch(`/admin/publicaciones/${id}/edit`, {
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            const publicacion = data.publicacion;
-            
-            console.log('Datos de publicación recibidos:', publicacion);
-            
-            document.getElementById('titulo').value = publicacion.titulo;
-            
-            // Cargar la empresa_id si existe
-            if (publicacion.empresa_id && empresaSelect) {
-                console.log('Empresa ID a seleccionar:', publicacion.empresa_id);
-                console.log('Nombre empresa:', publicacion.empresa?.user?.nombre || 'No disponible');
-                
-                // Asegurarse de que la opción existe en el select antes de seleccionarla
-                const empresaOption = Array.from(empresaSelect.options).find(option => option.value == publicacion.empresa_id);
-                
-                if (empresaOption) {
-                    empresaSelect.value = publicacion.empresa_id;
-                    console.log(`Empresa seleccionada correctamente: ${publicacion.empresa_id}`);
-                } else {
-                    console.warn(`La empresa con ID ${publicacion.empresa_id} no existe en el select.`);
-                    // Seleccionar la primera opción disponible como fallback
-                    if (empresaSelect.options.length > 1) {
-                        empresaSelect.selectedIndex = 1;
-                        console.log("Seleccionando la primera empresa disponible:", empresaSelect.value);
-                    }
-                }
-            }
-            
-            // Resto del código
-            document.getElementById('categoria_id').value = publicacion.categoria_id;
-            document.getElementById('horario').value = publicacion.horario || 'mañana';
-            document.getElementById('horas_totales').value = publicacion.horas_totales;
-            document.getElementById('fecha_publicacion').value = publicacion.fecha_publicacion ? publicacion.fecha_publicacion.split('T')[0] : '';
-            document.getElementById('descripcion').value = publicacion.descripcion;
-            document.getElementById('activa').checked = publicacion.activa ? true : false;
-            
-            // Disparar evento para cargar subcategorías
-            document.dispatchEvent(new CustomEvent('editPublicacion', { 
-                detail: {
-                    categoria_id: publicacion.categoria_id,
-                    subcategoria_id: publicacion.subcategoria_id
-                }
-            }));
-            
-            // Aplicar estilos nuevamente después de cargar los datos
-            setTimeout(() => {
-                fixSelectStyles();
-                
-                // Forzar estilos a empresa_id nuevamente
-                if (empresaSelect) {
-                    // Si hay un id de empresa pero no se seleccionó correctamente
-                    if (publicacion.empresa_id && empresaSelect.value !== publicacion.empresa_id.toString()) {
-                        console.log("Corrigiendo selección de empresa:", publicacion.empresa_id);
-                        empresaSelect.value = publicacion.empresa_id;
-                    }
-                    
-                    // Aplicar estilos directamente
-                    empresaSelect.style.backgroundColor = 'white';
-                    empresaSelect.style.webkitAppearance = 'menulist';
-                    empresaSelect.style.appearance = 'menulist';
-                    
-                    // Aplicar estilos a las opciones
-                    Array.from(empresaSelect.options).forEach(option => {
-                        option.style.backgroundColor = 'white';
-                        option.style.padding = '8px';
-                    });
-                    
-                    // Imprimir la opción seleccionada para depuración
-                    const selectedOption = empresaSelect.options[empresaSelect.selectedIndex];
-                    console.log("Empresa seleccionada:", 
-                        "ID:", empresaSelect.value, 
-                        "Texto:", selectedOption ? selectedOption.text : "No seleccionada");
-                }
-            }, 300);
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Error al obtener los datos de la publicación');
-        });
-    }
-
-    // Función para resetear el formulario
-    function resetForm() {
-        document.getElementById('form-publicacion').reset();
-        document.getElementById('form-errors').classList.add('hidden');
-        document.getElementById('error-list').innerHTML = '';
-        
-        // Limpiar mensajes de error específicos
-        const campos = ['titulo', 'descripcion', 'empresa_id', 'categoria_id', 'subcategoria_id', 'horario', 'horas_totales', 'fecha_publicacion'];
-        campos.forEach(campo => {
-            const elemento = document.getElementById(campo);
-            if (elemento) {
-                elemento.classList.remove('border-red-500');
-                
-                // Eliminar mensaje de error anterior si existe
-                const mensajeAnterior = document.querySelector(`#error-${campo}`);
-                if (mensajeAnterior) mensajeAnterior.remove();
-            }
-        });
-        
-        // Establecer fecha actual
-        document.getElementById('fecha_publicacion').value = new Date().toISOString().split('T')[0];
-        
-        // Resetear el select de subcategoría
-        const subcategoriaSelect = document.getElementById('subcategoria_id');
-        if (subcategoriaSelect) {
-            subcategoriaSelect.innerHTML = '';
-            const defaultOption = document.createElement('option');
-            defaultOption.value = '';
-            defaultOption.textContent = 'Selecciona primero una categoría';
-            defaultOption.style.backgroundColor = 'white';
-            defaultOption.style.color = 'black';
-            defaultOption.style.padding = '8px';
-            subcategoriaSelect.appendChild(defaultOption);
-        }
-    }
-
-    // Asegurar que las empresas son visibles en el modal
-    document.addEventListener('DOMContentLoaded', function() {
-        // Escuchar cambios en cualquier modal que pueda abrirse
-        const observer = new MutationObserver(function(mutations) {
-            mutations.forEach(function(mutation) {
-                if (mutation.attributeName === 'class') {
-                    const node = mutation.target;
-                    if (node.classList.contains('block') && !node.classList.contains('hidden')) {
-                        console.log('Modal abierto detectado, aplicando estilos...');
-                        // Aplicar estilos a selects inmediatamente
-                        setTimeout(function() {
-                            const selects = node.querySelectorAll('select');
-                            selects.forEach(function(select) {
-                                // Forzar estilos en el select
-                                select.style.backgroundColor = 'white';
-                                select.style.webkitAppearance = 'menulist';
-                                select.style.appearance = 'menulist';
-                                
-                                // Forzar estilos en cada opción
-                                Array.from(select.options).forEach(option => {
-                                    option.style.backgroundColor = 'white';
-                                    option.style.padding = '8px';
-                                });
-                            });
-                        }, 100);
-                    }
-                }
-            });
-        });
-        
-        // Observar cambios en modales
-        const modales = document.querySelectorAll('.fixed.inset-0');
-        modales.forEach(function(modal) {
-            observer.observe(modal, { attributes: true });
-        });
-        
-        // Agregar listener para botón de crear
-        document.querySelectorAll('.btn-crear').forEach(function(btn) {
-            btn.addEventListener('click', function() {
-                console.log('Botón crear clickeado');
-                mostrarFormularioCrear();
-            });
-        });
-    });
 </script>
 
 <style>
