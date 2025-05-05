@@ -14,6 +14,7 @@ class DistanceFilter {
         this.initializeMap();
         this.initializeSlider();
         this.initializeLocationButton();
+        this.initializePublicationFiltering();
     }
 
     initializeMap() {
@@ -173,6 +174,57 @@ class DistanceFilter {
             lng: this.userLng.value,
             radio: this.radioDistancia.value
         };
+    }
+
+    initializePublicationFiltering() {
+        document.addEventListener('distanceFilterChanged', () => {
+            this.filterPublicationsByDistance();
+        });
+    }
+
+    filterPublicationsByDistance() {
+        const userLat = parseFloat(this.userLat.value);
+        const userLng = parseFloat(this.userLng.value);
+        const radius = parseFloat(this.radioDistancia.value);
+
+        if (!userLat || !userLng) return;
+
+        const publications = document.querySelectorAll('.grid > div');
+        
+        publications.forEach(pub => {
+            const empresaLat = parseFloat(pub.dataset.lat);
+            const empresaLng = parseFloat(pub.dataset.lng);
+
+            if (empresaLat && empresaLng) {
+                const distance = this.calculateDistance(userLat, userLng, empresaLat, empresaLng);
+                
+                if (distance <= radius) {
+                    pub.style.display = '';
+                    const distanceElement = pub.querySelector('.distance-info');
+                    if (distanceElement) {
+                        distanceElement.textContent = `A ${Math.round(distance)} km`;
+                    }
+                } else {
+                    pub.style.display = 'none';
+                }
+            }
+        });
+    }
+
+    calculateDistance(lat1, lon1, lat2, lon2) {
+        const R = 6371;
+        const dLat = this.toRad(lat2 - lat1);
+        const dLon = this.toRad(lon2 - lon1);
+        const a = 
+            Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(this.toRad(lat1)) * Math.cos(this.toRad(lat2)) * 
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return R * c;
+    }
+
+    toRad(value) {
+        return value * Math.PI / 180;
     }
 }
 

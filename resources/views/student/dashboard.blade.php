@@ -210,7 +210,9 @@
                     {{-- GRID DE PUBLICACIONES --}}
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         @foreach($publications as $publication)
-                            <div class="bg-white rounded-lg shadow overflow-hidden relative">
+                            <div class="bg-white rounded-lg shadow overflow-hidden relative"
+                                 data-lat="{{ $publication->empresa->user->lat ?? '' }}"
+                                 data-lng="{{ $publication->empresa->user->lng ?? '' }}">
                                 <div class="flex">
                                     {{-- IMAGEN DE LA EMPRESA --}}
                                     <div class="w-1/3 relative overflow-hidden flex flex-col items-center justify-center" style="aspect-ratio: 1/1;">
@@ -257,6 +259,8 @@
                                         <p class="text-sm text-gray-600 line-clamp-2">{{ $publication->descripcion }}</p>
                                     </div>
                                 </div>
+                                {{-- Añadir un elemento para mostrar la distancia --}}
+                                <div class="distance-info text-sm text-gray-600 px-4 pb-2"></div>
                             </div>
                         @endforeach
                     </div>

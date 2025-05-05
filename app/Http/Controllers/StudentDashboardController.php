@@ -7,11 +7,15 @@ use App\Models\Categoria;
 use App\Models\Subcategoria;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class StudentDashboardController extends Controller
 {
     public function index(Request $request)
     {
+        DB::enableQueryLog();
+
         $query = Publication::with(['empresa', 'categoria', 'subcategoria'])->where('activa', true);
 
         // Aplicar búsqueda por título
@@ -50,9 +54,12 @@ class StudentDashboardController extends Controller
             $lng = $request->get('user_lng');
             $radio = $request->get('radio_distancia');
 
-            // Fórmula Haversine para calcular distancia
             $query->whereHas('empresa', function($q) use ($lat, $lng, $radio) {
-                $q->whereRaw('(
+                // Asegurarse de que la empresa tiene coordenadas
+                $q->whereNotNull('latitud')
+                  ->whereNotNull('longitud')
+                  // Fórmula Haversine para calcular distancia en kilómetros
+                  ->whereRaw('(
                     6371 * acos(
                         cos(radians(?)) * 
                         cos(radians(latitud)) * 
@@ -60,7 +67,7 @@ class StudentDashboardController extends Controller
                         sin(radians(?)) * 
                         sin(radians(latitud))
                     )
-                ) <= ?', [$lat, $lng, $lat, $radio]);
+                  ) <= ?', [$lat, $lng, $lat, $radio]);
             });
         }
 
@@ -94,6 +101,8 @@ class StudentDashboardController extends Controller
         // Obtener valores mínimos y máximos de horas totales
         $horasTotalesMin = Publication::min('horas_totales');
         $horasTotalesMax = Publication::max('horas_totales');
+
+        Log::info('SQL Queries:', DB::getQueryLog());
 
         return view('student.dashboard', [
             'publications' => $publications,
