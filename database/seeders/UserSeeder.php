@@ -115,7 +115,7 @@ class UserSeeder extends Seeder
                 'telefono' => '6' . str_pad(rand(10000000, 99999999), 8, '0', STR_PAD_LEFT),
                 'descripcion' => 'Estudiante de ' . fake()->randomElement(['Desarrollo Web', 'Desarrollo Móvil', 'Administración de Sistemas', 'Marketing Digital', 'Diseño Gráfico']) . 
                                 ' con interés en ' . fake()->randomElement(['desarrollo frontend', 'desarrollo backend', 'ciberseguridad', 'inteligencia artificial', 'marketing digital', 'diseño UI/UX']) . '.',
-                'imagen' => 'estudiantes/perfil_' . $i . '.jpg'
+                'imagen' => '' . str_replace(' ', '_', strtolower($nombre)) . '.jpg'
             ]);
         }
     }
