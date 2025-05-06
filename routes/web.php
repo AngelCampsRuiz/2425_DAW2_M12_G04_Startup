@@ -32,6 +32,8 @@
                 use App\Http\Controllers\ProfileController;
             // CONTROLADOR VALORACIONES
                 use App\Http\Controllers\ValoracionController;
+            // CONTROLADOR JOTFORM
+                use App\Http\Controllers\JotformController;
 
     // RUTAS DE LA APLICACIÓN
         // RUTA PRINCIPAL HOME
@@ -152,3 +154,4 @@
                     // RUTA GESTIONAR SUBCATEGORÍAS
                         Route::resource('subcategorias', SubcategoriaController::class);
             });
+
