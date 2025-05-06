@@ -79,7 +79,7 @@
             Route::middleware(['auth'])->group(function () {
                 // RUTA ACTUALIZAR VISIBILIDAD
                     Route::post('/update-visibility', [HomeController::class, 'updateVisibility']);
-                
+
                 // RUTAS DE PERFIL
                     Route::get('/profile', [HomeController::class, 'profile'])->name('profile');
                     Route::get('/profile/{id}', [HomeController::class, 'profile'])->name('profile.view');
@@ -90,25 +90,25 @@
                 
                 // PUBLICACIONES VISIBLES PARA TODOS LOS USUARIOS
                     Route::get('/publication/{id}', [PublicationController::class, 'show'])->name('publication.show');
-                
+
                 // RUTAS PARA EL CHAT
                     Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
                     Route::get('/chat/{chat}', [ChatController::class, 'showChat'])->name('chat.show');
                     Route::post('/chat/{chat}/message', [ChatController::class, 'sendMessage'])->name('chat.message');
                     Route::get('/chat/{chat}/messages', [ChatController::class, 'getMessages'])->name('chat.messages');
                     Route::post('/chat/create/{solicitud}', [ChatController::class, 'createChat'])->name('chat.create');
-                
+
                 // RUTAS PARA VALORACIONES
                     Route::post('/valoraciones', [ValoracionController::class, 'store'])->name('valoraciones.store');
                     Route::get('/valoraciones/convenios/{receptorId}', [ValoracionController::class, 'getConvenios'])->name('valoraciones.getConvenios');
                     Route::put('/valoraciones/{id}', [ValoracionController::class, 'update'])->name('valoraciones.update');
                     Route::delete('/valoraciones/{id}', [ValoracionController::class, 'destroy'])->name('valoraciones.destroy');
-                
+
                 // RUTAS PARA SOLICITUDES
                     Route::post('/solicitudes/{publication}', [SolicitudController::class, 'store'])->name('solicitudes.store');
             });
 
-        // RUTAS PROTEGIDAS PARA ESTUDIANTES    
+        // RUTAS PROTEGIDAS PARA ESTUDIANTES
                 Route::middleware(['auth', \App\Http\Middleware\CheckRole::class.':student'])->group(function () {
                     Route::get('/student/dashboard', [StudentDashboardController::class, 'index'])->name('student.dashboard');
                 });
