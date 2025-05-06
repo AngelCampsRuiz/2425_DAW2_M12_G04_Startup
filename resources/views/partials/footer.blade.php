@@ -168,46 +168,15 @@
                 <!-- Idiomas -->
                 <div class="mt-8 bg-white/80 rounded-lg p-4 shadow-sm backdrop-blur-sm">
                     <h4 class="font-semibold text-primary text-sm mb-2">{{ __('footer.select_language') }}</h4>
-                    <form id="localeForm" action="{{ route('set-locale') }}" method="POST">
-                        @csrf
+                        
                         <select name="locale" class="w-full p-2 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-primary text-sm">
-                            <option value="es" {{ app()->getLocale() == 'es' ? 'selected' : '' }}>Español</option>
-                            <option value="en" {{ app()->getLocale() == 'en' ? 'selected' : '' }}>English</option>
-                            <option value="ca" {{ app()->getLocale() == 'ca' ? 'selected' : '' }}>Català</option>
+                            <option >Español</option>
+                            <option >English</option>
+                            <option >Català</option>
                         </select>
-                    </form>
                 </div>
 
-                <script>
-                    document.querySelector('select[name="locale"]').addEventListener('change', function() {
-                        const form = document.getElementById('localeForm');
-                        const formData = new FormData(form);
-                        const select = this;
-
-                        // Deshabilitar el select mientras se procesa
-                        select.disabled = true;
-
-                        fetch(form.action, {
-                            method: 'POST',
-                            body: formData,
-                            headers: {
-                                'X-Requested-With': 'XMLHttpRequest',
-                                'Accept': 'application/json'
-                            },
-                            credentials: 'same-origin'
-                        }).then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                console.log('Idioma cambiado a:', data.locale);
-                                window.location.reload(true);
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error al cambiar el idioma:', error);
-                            select.disabled = false;
-                        });
-                    });
-                </script>
+                
             </div>
 
             <!-- Contacto -->
