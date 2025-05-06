@@ -249,3 +249,16 @@
         Route::get('/solicitudes/{solicitud}/asignar-clase', [App\Http\Controllers\Institucion\SolicitudClaseController::class, 'asignar'])->name('solicitudes.asignar-clase');
         Route::post('/solicitudes/{solicitud}/asignar-clase', [App\Http\Controllers\Institucion\SolicitudClaseController::class, 'store'])->name('solicitudes.asignar-clase.store');
     });
+
+    // Rutas para estudiantes
+    Route::middleware(['auth', \App\Http\Middleware\CheckRole::class.':student'])->prefix('estudiante')->name('estudiante.')->group(function () {
+        // Solicitudes del estudiante
+        Route::get('/solicitudes', [App\Http\Controllers\Estudiante\SolicitudController::class, 'index'])->name('solicitudes.index');
+        Route::get('/solicitudes/{id}', [App\Http\Controllers\Estudiante\SolicitudController::class, 'show'])->name('solicitudes.show');
+        Route::post('/solicitudes/{id}/cancelar', [App\Http\Controllers\Estudiante\SolicitudController::class, 'cancelar'])->name('solicitudes.cancelar');
+        
+        // Rutas AJAX para solicitudes
+        Route::get('/api/solicitudes', [App\Http\Controllers\Estudiante\SolicitudAjaxController::class, 'getSolicitudes'])->name('api.solicitudes');
+        Route::get('/api/solicitudes/{id}', [App\Http\Controllers\Estudiante\SolicitudAjaxController::class, 'getSolicitud'])->name('api.solicitudes.show');
+        Route::post('/api/solicitudes/{id}/cancelar', [App\Http\Controllers\Estudiante\SolicitudAjaxController::class, 'cancelarSolicitud'])->name('api.solicitudes.cancelar');
+    });

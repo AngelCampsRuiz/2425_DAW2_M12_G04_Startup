@@ -40,7 +40,8 @@
 
         {{-- CONTENIDO PRINCIPAL --}}
         <div class="container mx-auto px-4 py-8">
-            <div class="flex flex-col md:flex-row gap-6">
+            {{-- CONTENEDOR DE OFERTAS --}}
+            <div id="ofertas-container" class="flex flex-col md:flex-row gap-6">
                 {{-- SIDEBAR DE FILTROS --}}
                 <div class="w-full md:w-1/4">
                     <div class="bg-white rounded-lg shadow p-6">
@@ -271,6 +272,137 @@
                             {{ $publications->onEachSide(1)->links() }}
                         </div>
                     </div>
+                </div>
+            </div>
+
+            {{-- CONTENEDOR DE SOLICITUDES (inicialmente oculto) --}}
+            <div id="solicitudes-container" class="hidden container mx-auto px-4 py-8">
+                <meta name="csrf-token" content="{{ csrf_token() }}">
+                <h1 class="text-2xl font-bold text-gray-800 mb-6">Mis Solicitudes</h1>
+                
+                {{-- ESTADÍSTICAS --}}
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-white rounded-lg shadow p-4">
+                        <div class="flex items-center">
+                            <div class="rounded-full bg-purple-100 p-3 mr-4">
+                                <svg class="w-6 h-6 text-[#5e0490]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Total</p>
+                                <p class="text-xl font-bold text-gray-800" id="stats-total">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow p-4">
+                        <div class="flex items-center">
+                            <div class="rounded-full bg-yellow-100 p-3 mr-4">
+                                <svg class="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Pendientes</p>
+                                <p class="text-xl font-bold text-gray-800" id="stats-pendientes">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow p-4">
+                        <div class="flex items-center">
+                            <div class="rounded-full bg-green-100 p-3 mr-4">
+                                <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Aprobadas</p>
+                                <p class="text-xl font-bold text-gray-800" id="stats-aprobadas">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow p-4">
+                        <div class="flex items-center">
+                            <div class="rounded-full bg-red-100 p-3 mr-4">
+                                <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Rechazadas</p>
+                                <p class="text-xl font-bold text-gray-800" id="stats-rechazadas">0</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                {{-- FILTROS --}}
+                <div class="bg-white rounded-lg shadow p-4 mb-6">
+                    <div class="flex flex-col md:flex-row justify-between items-center mb-4">
+                        <h2 class="text-lg font-semibold text-gray-800">Filtrar por estado</h2>
+                        <div class="flex mt-2 md:mt-0">
+                            <a href="#" data-estado="todos" class="estado-link px-4 py-2 rounded-lg bg-purple-100 text-[#5e0490] mr-2">
+                                Todas
+                            </a>
+                            <a href="#" data-estado="pendiente" class="estado-link px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 mr-2">
+                                Pendientes
+                            </a>
+                            <a href="#" data-estado="aprobada" class="estado-link px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 mr-2">
+                                Aprobadas
+                            </a>
+                            <a href="#" data-estado="rechazada" class="estado-link px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200">
+                                Rechazadas
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                {{-- TABLA DE SOLICITUDES CON AJAX --}}
+                <div class="bg-white rounded-lg shadow overflow-hidden">
+                    {{-- INDICADOR DE CARGA --}}
+                    <div id="loading-indicator" class="p-8 flex justify-center items-center">
+                        <svg class="animate-spin h-10 w-10 text-[#5e0490]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </div>
+                    
+                    {{-- CONTENEDOR PARA LA TABLA --}}
+                    <div id="solicitudes-table" class="overflow-x-auto">
+                        <div id="solicitudes-data-container">
+                            {{-- Aquí se cargará la tabla mediante AJAX --}}
+                        </div>
+                    </div>
+                    
+                    {{-- MENSAJE DE NO SOLICITUDES --}}
+                    <div id="no-solicitudes" class="text-center py-10 hidden">
+                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                        <h3 class="mt-2 text-sm font-medium text-gray-900">No hay solicitudes</h3>
+                        <p class="mt-1 text-sm text-gray-500">
+                            No se encontraron solicitudes con los filtros seleccionados.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            {{-- CONTENEDOR DE DETALLES DE SOLICITUD (inicialmente oculto) --}}
+            <div id="solicitud-detalle-container" class="hidden container mx-auto px-4 py-8">
+                {{-- INDICADOR DE CARGA --}}
+                <div id="loading-indicator-detalle" class="p-8 flex justify-center items-center">
+                    <svg class="animate-spin h-10 w-10 text-[#5e0490]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </div>
+                
+                {{-- CONTENIDO DE DETALLES --}}
+                <div id="solicitud-detalle-content">
+                    {{-- Aquí se cargará el detalle de la solicitud mediante AJAX --}}
                 </div>
             </div>
         </div>
@@ -668,7 +800,388 @@
 
             // Inicializar los botones de favoritos al cargar la página
             initFavoriteButtons();
+
+            // Nuevas funciones para gestionar la navegación por pestañas
+            const ofertasBtn = document.getElementById('ofertas-btn');
+            const solicitudesBtn = document.getElementById('solicitudes-btn');
+            const ofertasContainer = document.getElementById('ofertas-container');
+            const solicitudesContainer = document.getElementById('solicitudes-container');
+
+            // Al hacer clic en el botón de ofertas
+            ofertasBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Cambiar clases de botones
+                ofertasBtn.classList.add('text-[#5e0490]', 'border-b-2', 'border-[#5e0490]');
+                ofertasBtn.classList.remove('text-gray-600', 'hover:text-[#5e0490]');
+                
+                solicitudesBtn.classList.remove('text-[#5e0490]', 'border-b-2', 'border-[#5e0490]');
+                solicitudesBtn.classList.add('text-gray-600', 'hover:text-[#5e0490]');
+                
+                // Mostrar/ocultar contenido
+                ofertasContainer.classList.remove('hidden');
+                solicitudesContainer.classList.add('hidden');
+                
+                // Cambiar la URL sin recargar la página
+                window.history.pushState({}, 'Ofertas Laborales', '{{ route("student.dashboard") }}');
+            });
+
+            // Al hacer clic en el botón de solicitudes
+            solicitudesBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Cambiar clases de botones
+                solicitudesBtn.classList.add('text-[#5e0490]', 'border-b-2', 'border-[#5e0490]');
+                solicitudesBtn.classList.remove('text-gray-600', 'hover:text-[#5e0490]');
+                
+                ofertasBtn.classList.remove('text-[#5e0490]', 'border-b-2', 'border-[#5e0490]');
+                ofertasBtn.classList.add('text-gray-600', 'hover:text-[#5e0490]');
+                
+                // Mostrar/ocultar contenido
+                ofertasContainer.classList.add('hidden');
+                solicitudesContainer.classList.remove('hidden');
+                
+                // Cargar solicitudes si es la primera vez
+                if (!solicitudesContainer.dataset.loaded) {
+                    cargarSolicitudes();
+                    solicitudesContainer.dataset.loaded = 'true';
+                }
+                
+                // Cambiar la URL sin recargar la página
+                window.history.pushState({}, 'Mis Solicitudes', '{{ route("student.dashboard") }}?tab=solicitudes');
+            });
+
+            // Funciones para gestionar las solicitudes
+            const solicitudesTable = document.getElementById('solicitudes-table');
+            const solicitudesDataContainer = document.getElementById('solicitudes-data-container');
+            const statsTotal = document.getElementById('stats-total');
+            const statsPendientes = document.getElementById('stats-pendientes');
+            const statsAprobadas = document.getElementById('stats-aprobadas');
+            const statsRechazadas = document.getElementById('stats-rechazadas');
+            const estadoLinks = document.querySelectorAll('.estado-link');
+            const loadingIndicator = document.getElementById('loading-indicator');
+            const noSolicitudesMessage = document.getElementById('no-solicitudes');
+            
+            // Estado actual del filtro
+            let currentFilter = 'todos';
+
+            // Función para cargar las solicitudes
+            function cargarSolicitudes(estado = 'todos') {
+                // Mostrar indicador de carga
+                if (loadingIndicator) loadingIndicator.classList.remove('hidden');
+                
+                // Ocultar mensaje de no solicitudes
+                if (noSolicitudesMessage) noSolicitudesMessage.classList.add('hidden');
+                
+                // Actualizar links de filtro
+                estadoLinks.forEach(link => {
+                    const linkEstado = link.dataset.estado || 'todos';
+                    if (linkEstado === estado) {
+                        link.classList.add('bg-purple-100', 'text-[#5e0490]');
+                        link.classList.remove('bg-gray-100', 'text-gray-700', 'hover:bg-gray-200');
+                    } else {
+                        link.classList.remove('bg-purple-100', 'text-[#5e0490]');
+                        link.classList.add('bg-gray-100', 'text-gray-700', 'hover:bg-gray-200');
+                    }
+                });
+                
+                // Actualizar estado actual
+                currentFilter = estado;
+                
+                // Construir URL con parámetros de filtro
+                const url = new URL(`${window.location.origin}/estudiante/api/solicitudes`);
+                if (estado !== 'todos') {
+                    url.searchParams.append('estado', estado);
+                }
+                
+                // Realizar petición AJAX
+                fetch(url)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Error en la petición');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        // Actualizar estadísticas
+                        if (statsTotal) statsTotal.textContent = data.stats.total;
+                        if (statsPendientes) statsPendientes.textContent = data.stats.pendientes;
+                        if (statsAprobadas) statsAprobadas.textContent = data.stats.aprobadas;
+                        if (statsRechazadas) statsRechazadas.textContent = data.stats.rechazadas;
+                        
+                        // Actualizar tabla de solicitudes
+                        if (solicitudesDataContainer) {
+                            if (data.solicitudes.length > 0) {
+                                solicitudesDataContainer.innerHTML = generarTabla(data.solicitudes);
+                                initButtons();
+                            } else {
+                                // Mostrar mensaje de no solicitudes
+                                if (noSolicitudesMessage) noSolicitudesMessage.classList.remove('hidden');
+                                if (solicitudesTable) solicitudesTable.classList.add('hidden');
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        // Mostrar mensaje de error
+                        if (solicitudesDataContainer) {
+                            solicitudesDataContainer.innerHTML = `
+                                <div class="text-center py-8">
+                                    <p class="text-red-500">Error al cargar las solicitudes. Inténtalo de nuevo más tarde.</p>
+                                </div>
+                            `;
+                        }
+                    })
+                    .finally(() => {
+                        // Ocultar indicador de carga
+                        if (loadingIndicator) loadingIndicator.classList.add('hidden');
+                    });
+            }
+            
+            // Función para generar el HTML de la tabla con los datos
+            function generarTabla(solicitudes) {
+                if (solicitudes.length === 0) {
+                    return '';
+                }
+                
+                if (solicitudesTable) solicitudesTable.classList.remove('hidden');
+                
+                let html = `
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Institución
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Clase
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Fecha solicitud
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Estado
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Acciones
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                `;
+                
+                solicitudes.forEach(solicitud => {
+                    html += `
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 h-10 w-10">
+                                        <img class="h-10 w-10 rounded-full object-cover" 
+                                            src="${window.location.origin}/public/profile_images/${solicitud.institucion.imagen}" 
+                                            alt="${solicitud.institucion.nombre}">
+                                    </div>
+                                    <div class="ml-4">
+                                        <div class="text-sm font-medium text-gray-900">
+                                            ${solicitud.institucion.nombre}
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">
+                                    ${solicitud.clase ? solicitud.clase.nombre : 'No asignada'}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">
+                                    ${solicitud.fecha_solicitud}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                    `;
+                    
+                    if (solicitud.estado === 'pendiente') {
+                        html += `
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                Pendiente
+                            </span>
+                        `;
+                    } else if (solicitud.estado === 'aprobada') {
+                        html += `
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                Aprobada
+                            </span>
+                        `;
+                    } else if (solicitud.estado === 'rechazada') {
+                        html += `
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                Rechazada
+                            </span>
+                        `;
+                    }
+                    
+                    html += `
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <a href="#" data-solicitud-id="${solicitud.id}" class="ver-solicitud-btn text-[#5e0490] hover:text-[#4a0370] mr-3">
+                                    Ver detalles
+                                </a>
+                    `;
+                    
+                    if (solicitud.estado === 'pendiente') {
+                        html += `
+                            <button data-solicitud-id="${solicitud.id}" class="cancel-btn text-red-600 hover:text-red-900">
+                                Cancelar
+                            </button>
+                        `;
+                    }
+                    
+                    html += `
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                html += `
+                        </tbody>
+                    </table>
+                `;
+                
+                return html;
+            }
+            
+            // Función para inicializar los botones de cancelar
+            function initCancelButtons() {
+                const cancelButtons = document.querySelectorAll('.cancel-btn');
+                
+                cancelButtons.forEach(button => {
+                    button.addEventListener('click', function() {
+                        const solicitudId = this.dataset.solicitudId;
+                        
+                        if (confirm('¿Estás seguro de que deseas cancelar esta solicitud?')) {
+                            // Obtener el token CSRF
+                            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                            
+                            // Realizar petición AJAX
+                            fetch(`${window.location.origin}/estudiante/api/solicitudes/${solicitudId}/cancelar`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': csrfToken
+                                }
+                            })
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error('Error en la petición');
+                                }
+                                return response.json();
+                            })
+                            .then(data => {
+                                if (data.success) {
+                                    // Recargar las solicitudes
+                                    cargarSolicitudes(currentFilter);
+                                    
+                                    // Mostrar mensaje de éxito
+                                    mostrarMensaje('Solicitud cancelada correctamente', 'success');
+                                } else {
+                                    throw new Error(data.message || 'Error al cancelar la solicitud');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                // Mostrar mensaje de error
+                                mostrarMensaje(error.message || 'Error al cancelar la solicitud', 'error');
+                            });
+                        }
+                    });
+                });
+            }
+            
+            // Función para inicializar todos los botones
+            function initButtons() {
+                // Inicializar botones de cancelar
+                initCancelButtons();
+                
+                // Inicializar botones de ver detalles
+                const verButtons = document.querySelectorAll('.ver-solicitud-btn');
+                verButtons.forEach(button => {
+                    button.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const solicitudId = this.dataset.solicitudId;
+                        
+                        // Cargar detalle de solicitud
+                        if (typeof cargarDetalleSolicitud === 'function') {
+                            cargarDetalleSolicitud(solicitudId);
+                        } else {
+                            // Si la función no está disponible, redirigir a la página de detalles
+                            window.location.href = `${window.location.origin}/estudiante/solicitudes/${solicitudId}`;
+                        }
+                    });
+                });
+            }
+            
+            // Función para mostrar mensajes
+            function mostrarMensaje(mensaje, tipo) {
+                // Crear elemento de mensaje
+                const mensajeElement = document.createElement('div');
+                mensajeElement.className = `fixed bottom-5 right-5 px-6 py-3 rounded shadow-lg z-50 ${tipo === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`;
+                mensajeElement.innerHTML = mensaje;
+                
+                // Agregar elemento al DOM
+                document.body.appendChild(mensajeElement);
+                
+                // Eliminar mensaje después de 3 segundos
+                setTimeout(() => {
+                    mensajeElement.remove();
+                }, 3000);
+            }
+            
+            // Inicializar filtros de estado
+            estadoLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const estado = this.dataset.estado || 'todos';
+                    cargarSolicitudes(estado);
+                });
+            });
+
+            // Verificar si debemos cargar las solicitudes al iniciar (basado en la URL)
+            const urlParams = new URLSearchParams(window.location.search);
+            const solicitudId = urlParams.get('solicitud_id');
+            
+            if (window.location.search.includes('tab=solicitudes')) {
+                solicitudesBtn.click();
+                
+                if (solicitudId) {
+                    // Cargar detalle de solicitud después de cargar el listado
+                    setTimeout(() => {
+                        cargarDetalleSolicitud(solicitudId);
+                    }, 500);
+                }
+            }
+
+            // Exponer la función de cargar detalle para que esté disponible globalmente
+            window.cargarDetalleSolicitud = function(id) {
+                // Mostrar contenedor de detalles
+                const detalleContainer = document.getElementById('solicitud-detalle-container');
+                if (detalleContainer) detalleContainer.classList.remove('hidden');
+                
+                // Ocultar contenedor de listado
+                const solicitudesContainer = document.getElementById('solicitudes-container');
+                if (solicitudesContainer) solicitudesContainer.classList.add('hidden');
+                
+                // Cambiar la URL para permitir compartir el enlace
+                window.history.pushState({}, 'Detalle de Solicitud', `${window.location.pathname}?tab=solicitudes&solicitud_id=${id}`);
+                
+                // Si el script de detalles de solicitud está cargado, usará esta URL para cargar los datos
+            };
         });
     </script>
+<<<<<<< HEAD
     <script src="{{ asset('js/distance-filter.js') }}"></script>
+=======
+    
+    {{-- CARGAR SCRIPT PARA DETALLES DE SOLICITUD --}}
+    <script src="{{ asset('js/estudiante-solicitud-detalle.js') }}"></script>
+>>>>>>> aina
 @endsection
