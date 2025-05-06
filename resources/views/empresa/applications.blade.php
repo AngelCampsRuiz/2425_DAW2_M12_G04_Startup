@@ -83,7 +83,7 @@
                                     <div class="flex-shrink-0">
                                         <div class="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center">
                                             <span class="text-xl font-bold text-purple-700">
-                                                {{ strtoupper(substr($solicitud->estudiante->user->name, 0, 2)) }}
+                                                {{ strtoupper(substr(optional(optional($solicitud->estudiante)->user)->nombre ?? '--', 0, 2)) }}
                                             </span>
                                         </div>
                                     </div>
@@ -92,15 +92,15 @@
                                     <div class="flex-1 min-w-0">
                                         <div class="flex items-center justify-between">
                                             <div class="flex items-center space-x-4">
-                                                <a href="{{ route('profile.show', $solicitud->estudiante->user->id) }}" 
+                                                <a href="{{ route('profile.show', optional(optional($solicitud->estudiante)->user)->id ?? '#') }}"
                                                    class="group flex items-center space-x-3 hover:text-purple-600 transition-colors duration-200">
                                                     <h3 class="text-lg font-semibold text-gray-900 group-hover:text-purple-600">
-                                                        {{ $solicitud->estudiante->user->nombre }}
+                                                        {{ optional(optional($solicitud->estudiante)->user)->nombre ?? 'Sin nombre' }}
                                                     </h3>
                                                     <i class="fas fa-external-link-alt text-sm opacity-0 group-hover:opacity-100 transition-opacity"></i>
                                                 </a>
                                                 @if($solicitud->estudiante->cv_pdf)
-                                                    <a href="{{ asset('cv/' . $solicitud->estudiante->cv_pdf) }}" 
+                                                    <a href="{{ asset('cv/' . $solicitud->estudiante->cv_pdf) }}"
                                                        target="_blank"
                                                        class="inline-flex items-center px-3 py-1 rounded-md text-sm font-medium bg-purple-50 text-purple-700 hover:bg-purple-100 transition-colors duration-200">
                                                         <i class="fas fa-file-pdf mr-2"></i>
@@ -159,34 +159,34 @@
                                         @endif
 
                                         @if($solicitud->estado === 'pendiente')
-                                            <form action="{{ route('empresa.applications.update', ['publication' => $publication->id, 'application' => $solicitud->id]) }}" 
-                                                  method="POST" 
+                                            <form action="{{ route('empresa.applications.update', ['publication' => $publication->id, 'application' => $solicitud->id]) }}"
+                                                  method="POST"
                                                   class="mt-6">
                                                 @csrf
                                                 @method('PUT')
-                                                
+
                                                 <div class="mb-4">
                                                     <label class="block text-sm font-medium text-gray-700 mb-2">
                                                         <i class="fas fa-pen mr-2"></i>
                                                         Escribe una respuesta
                                                     </label>
-                                                    <textarea name="respuesta_empresa" 
-                                                              rows="3" 
+                                                    <textarea name="respuesta_empresa"
+                                                              rows="3"
                                                               class="w-full rounded-lg border-gray-300 focus:border-purple-500 focus:ring-purple-500"
                                                               placeholder="Escribe un mensaje para el estudiante..."></textarea>
                                                 </div>
 
                                                 <div class="flex justify-end space-x-3">
-                                                    <button type="submit" 
-                                                            name="estado" 
-                                                            value="rechazada" 
+                                                    <button type="submit"
+                                                            name="estado"
+                                                            value="rechazada"
                                                             class="inline-flex items-center px-4 py-2 border border-red-500 text-red-500 rounded-md hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200">
                                                         <i class="fas fa-times mr-2"></i>
                                                         Rechazar
                                                     </button>
-                                                    <button type="submit" 
-                                                            name="estado" 
-                                                            value="aceptada" 
+                                                    <button type="submit"
+                                                            name="estado"
+                                                            value="aceptada"
                                                             class="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors duration-200">
                                                         <i class="fas fa-check mr-2"></i>
                                                         Aceptar
@@ -196,7 +196,7 @@
                                         @elseif($solicitud->estado === 'aceptada')
                                             <div class="mt-6">
                                                 @if($solicitud->chat)
-                                                    <a href="{{ route('chat.show', $solicitud->chat->id) }}" 
+                                                    <a href="{{ route('chat.show', $solicitud->chat->id) }}"
                                                        class="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors duration-200">
                                                         <i class="fas fa-comments mr-2"></i>
                                                         Ir al chat
@@ -204,7 +204,7 @@
                                                 @else
                                                     <form action="{{ route('chat.create', $solicitud->id) }}" method="POST" class="inline">
                                                         @csrf
-                                                        <button type="submit" 
+                                                        <button type="submit"
                                                                 class="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors duration-200">
                                                             <i class="fas fa-plus-circle mr-2"></i>
                                                             Crear chat
@@ -229,4 +229,4 @@
 
 <!-- Script de animaciones -->
 <script src="{{ asset('js/applications-animations.js') }}"></script>
-@endsection 
+@endsection
