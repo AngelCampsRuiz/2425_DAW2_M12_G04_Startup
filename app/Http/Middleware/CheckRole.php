@@ -30,7 +30,9 @@ class CheckRole
                 'student' => 'Estudiante',
                 'admin' => 'Administrador',
                 'empresa' => 'Empresa',
-                'tutor' => 'Tutor'
+                'tutor' => 'Tutor',
+                'institucion' => 'Institución',
+                'docente' => 'Docente'
             ];
 
             $requiredRole = $roleMap[$role] ?? $role;

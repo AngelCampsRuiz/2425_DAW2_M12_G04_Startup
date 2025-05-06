@@ -1,73 +1,108 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Objeto global para almacenar el estado de validación de cada campo
+    window.validationErrors = {};
+    
     const loginForm = document.getElementById('loginForm');
     
     if (loginForm) {
         loginForm.addEventListener('submit', function(e) {
             e.preventDefault();
             
-            // LIMPIAR ERRORES ANTERIORES SI HAY
-                clearErrors();
+            // Obtenemos los elementos del formulario
+            const email = document.getElementById('email');
+            const password = document.getElementById('password');
             
-            // VALIDAMOS LOS CAMPOS
-                const email = document.getElementById('email');
-                const password = document.getElementById('password');
-                let isValid = true;
+            // Limpiamos el objeto de errores antes de validar
+            window.validationErrors = {};
             
-            // VALIDAMOS EL EMAIL
-                if (!email.value.trim()) {
-                    showError(email, 'El correo electrónico es requerido');
-                    isValid = false;
-                } else if (!isValidEmail(email.value.trim())) {
-                    showError(email, 'Ingrese un correo electrónico válido');
-                    isValid = false;
-                }
+            // Validamos el email
+            validateEmail(email);
             
-            // VALIDAR LA CONTRASEÑA
-                if (!password.value.trim()) {
-                    showError(password, 'La contraseña es requerida');
-                    isValid = false;
-                } else if (password.value.trim().length < 8) {
-                    showError(password, 'La contraseña debe tener al menos 8 caracteres');
-                    isValid = false;
-                }
+            // Validamos la contraseña
+            validatePassword(password);
             
-            // SI TODO LO ANTERIOR ES VALIDO, ENVIAMOS EL FORMULARIO
-                if (isValid) {
-                    this.submit();
-                }
+            // Si no hay errores, enviamos el formulario
+            if (Object.keys(window.validationErrors).length === 0) {
+                this.submit();
+            }
+        });
+        
+        // Validación en tiempo real al perder el foco
+        const inputs = [
+            { element: document.getElementById('email'), validate: validateEmail },
+            { element: document.getElementById('password'), validate: validatePassword }
+        ];
+        
+        inputs.forEach(input => {
+            if (input.element) {
+                input.element.addEventListener('blur', function() {
+                    input.validate(this);
+                });
+            }
         });
     }
     
-    function showError(input, message) {
+    // Función centralizada para actualizar el estado visual de los campos
+    window.updateFieldStatus = function(input, isValid, errorMessage = '') {
         const formGroup = input.closest('.mb-4') || input.closest('.mb-6');
         if (!formGroup) return;
         
-        // AÑADIR CLASE AL ERROR (BORDE ROJO)
-            input.classList.add('border-red-500');
+        const fieldId = input.id;
         
-        // CREAMOS ELEMENTO DE ERROR SI NO EXISTE
+        if (!isValid) {
+            // Guardamos el error en el objeto global
+            window.validationErrors[fieldId] = errorMessage;
+            
+            // Añadimos la clase de error al input
+            input.classList.add('border-red-500');
+            
+            // Creamos el elemento de error si no existe
             let errorElement = formGroup.querySelector('.text-red-500');
             if (!errorElement) {
                 errorElement = document.createElement('span');
                 errorElement.className = 'text-red-500 text-xs mt-1 block';
+                errorElement.setAttribute('data-field', fieldId);
                 formGroup.appendChild(errorElement);
             }
-        
-        errorElement.textContent = message;
+            
+            errorElement.textContent = errorMessage;
+        } else {
+            // Eliminamos el error del objeto global
+            delete window.validationErrors[fieldId];
+            
+            // Quitamos la clase de error
+            input.classList.remove('border-red-500');
+            
+            // Eliminamos el mensaje de error si existe
+            const errorElement = formGroup.querySelector('.text-red-500[data-field="' + fieldId + '"]');
+            if (errorElement) {
+                errorElement.remove();
+            }
+        }
     }
     
-    function clearErrors() {
-        // LIMPIAMOS LOS ESTILOS
-            document.querySelectorAll('.border-red-500').forEach(el => {
-                el.classList.remove('border-red-500');
-            });
+    // Funciones de validación individuales
+    function validateEmail(input) {
+        if (!input.value.trim()) {
+            window.updateFieldStatus(input, false, 'El correo electrónico es requerido');
+            return false;
+        } else if (!isValidEmail(input.value.trim())) {
+            window.updateFieldStatus(input, false, 'Ingrese un correo electrónico válido');
+            return false;
+        }
         
-        // ELIMINAMOS EL MENSAJE DE ERROR
-            document.querySelectorAll('.text-red-500').forEach(el => {
-                if (el.tagName === 'SPAN') {
-                    el.remove();
-                }
-            });
+        window.updateFieldStatus(input, true);
+        return true;
+    }
+    
+    function validatePassword(input) {
+        if (!input.value) {
+            window.updateFieldStatus(input, false, 'La contraseña es requerida');
+            return false;
+        }
+        
+        window.updateFieldStatus(input, true);
+        return true;
     }
     
     function isValidEmail(email) {
