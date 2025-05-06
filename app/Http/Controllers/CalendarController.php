@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Event;
 use Illuminate\Http\Request;
+use Closure;
 
 class CalendarController extends Controller
 {
@@ -14,8 +15,15 @@ class CalendarController extends Controller
 
     public function getEvents()
     {
-        $events = Event::where('empresa_id', auth()->user()->empresa->id)->get();
-        return response()->json($events);
+        try {
+            $events = Event::where('empresa_id', auth()->user()->empresa->id)->get();
+            return response()->json($events);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => true,
+                'message' => 'Error al cargar los eventos: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function store(Request $request)
@@ -68,5 +76,17 @@ class CalendarController extends Controller
             'success' => true,
             'message' => 'Evento eliminado correctamente'
         ]);
+    }
+
+    public function handle($request, Closure $next)
+    {
+        if (!auth()->user() || !auth()->user()->empresa) {
+            return response()->json([
+                'error' => true,
+                'message' => 'Usuario no autorizado o empresa no encontrada'
+            ], 403);
+        }
+
+        return $next($request);
     }
 }
