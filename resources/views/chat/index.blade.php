@@ -60,7 +60,7 @@
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <i class="fas fa-search text-gray-400"></i>
                 </div>
-                <input type="text" id="search-chats" placeholder="Buscar conversaciones..." 
+                <input type="text" id="search-chats" placeholder="Buscar conversaciones..."
                     class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all">
             </div>
             <div class="flex items-center gap-2 self-end sm:self-auto">
@@ -83,7 +83,7 @@
                     </div>
                     <h3 class="text-xl font-semibold text-gray-900 mb-2">No tienes conversaciones</h3>
                     <p class="mt-2 text-gray-500 max-w-md mx-auto">Cuando inicies una conversación con {{ auth()->user()->role_id == 2 ? 'estudiantes' : 'empresas' }}, aparecerán aquí.</p>
-                    
+
                     <div class="mt-8">
                         @if(auth()->user()->role_id == 2)
                             <a href="{{ route('empresa.dashboard') }}" class="inline-flex items-center px-5 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg shadow-md hover:from-purple-700 hover:to-indigo-700 transition-all duration-200">
@@ -101,7 +101,7 @@
             @else
                 <div id="chat-list" class="divide-y divide-gray-200">
                     @foreach($chats as $chat)
-                        <a href="{{ route('chat.show', $chat->id) }}" 
+                        <a href="{{ route('chat.show', $chat->id) }}"
                            class="chat-item block p-6 hover:bg-purple-50 transition-all duration-300 transform hover:scale-[1.01] relative">
                             <div class="flex items-start space-x-4">
                                 <!-- Avatar -->
@@ -109,8 +109,8 @@
                                     <div class="w-16 h-16 rounded-full bg-gradient-to-br from-purple-100 to-indigo-100 flex items-center justify-center overflow-hidden ring-4 ring-white shadow-md transition-transform duration-300 hover:scale-105">
                                         @if(auth()->user()->empresa)
                                             @if($chat->solicitud->estudiante->user->imagen)
-                                                <img src="{{ asset('public/profile_images/' . $chat->solicitud->estudiante->user->imagen) }}" 
-                                                     alt="Foto de perfil" 
+                                                <img src="{{ asset('public/profile_images/' . $chat->solicitud->estudiante->user->imagen) }}"
+                                                     alt="Foto de perfil"
                                                      class="w-full h-full object-cover">
                                             @else
                                                 <span class="text-2xl font-bold text-purple-600">
@@ -119,8 +119,8 @@
                                             @endif
                                         @else
                                             @if($chat->solicitud->publicacion->empresa->user->imagen)
-                                                <img src="{{ asset('public/profile_images/' . $chat->solicitud->publicacion->empresa->user->imagen) }}" 
-                                                     alt="Foto de perfil" 
+                                                <img src="{{ asset('public/profile_images/' . $chat->solicitud->publicacion->empresa->user->imagen) }}"
+                                                     alt="Foto de perfil"
                                                      class="w-full h-full object-cover">
                                             @else
                                                 <span class="text-2xl font-bold text-purple-600">
@@ -140,10 +140,12 @@
                                             @else
                                                 {{ $chat->solicitud->publicacion->empresa->user->nombre }}
                                             @endif
-                                            @if($chat->mensajes->count() > 0 && $chat->mensajes->last()->created_at->diffInDays() < 1)
-                                                <span class="ml-2 inline-flex items-center justify-center px-2 py-1 text-xs font-medium leading-none text-green-800 bg-green-100 rounded-full animate-pulse">
-                                                    Reciente
-                                                </span>
+                                            @if($chat->solicitud && $chat->solicitud->fecha)
+                                                @if(optional($chat->solicitud->fecha)->diffInDays(now()) < 1)
+                                                    <span class="ml-2 inline-flex items-center justify-center px-2 py-1 text-xs font-medium leading-none text-green-800 bg-green-100 rounded-full animate-pulse">
+                                                        Reciente
+                                                    </span>
+                                                @endif
                                             @endif
                                         </h3>
                                         <span class="text-sm text-gray-500 flex items-center">
@@ -151,7 +153,7 @@
                                             {{ $chat->updated_at->diffForHumans() }}
                                         </span>
                                     </div>
-                                    
+
                                     <div class="mt-1 flex items-center">
                                         <span class="inline-flex items-center justify-center px-2 py-1 mr-2 text-xs font-medium bg-purple-100 text-purple-800 rounded-lg">
                                             <i class="fas fa-briefcase mr-1 text-purple-600"></i>
@@ -161,22 +163,22 @@
                                             {{ $chat->solicitud->publicacion->titulo }}
                                         </p>
                                     </div>
-                                    
+
                                     <div class="mt-2 flex items-center justify-between">
                                         <div class="flex items-center text-sm text-gray-500">
                                             <i class="fas fa-comment-alt mr-1.5 text-purple-600"></i>
-                                            <span class="font-medium">{{ $chat->mensajes->count() }}</span> 
+                                            <span class="font-medium">{{ $chat->mensajes->count() }}</span>
                                             <span class="ml-1">{{ $chat->mensajes->count() === 1 ? 'mensaje' : 'mensajes' }}</span>
                                         </div>
-                                        
+
                                         <div class="flex space-x-2">
                                             @if($chat->mensajes->isNotEmpty())
                                                 @php
                                                     $ultimoMensaje = $chat->mensajes->last();
-                                                    $esNuevo = $ultimoMensaje->sender_id !== auth()->id() && 
+                                                    $esNuevo = $ultimoMensaje->sender_id !== auth()->id() &&
                                                               ($ultimoMensaje->read_at === null);
                                                 @endphp
-                                                
+
                                                 @if($esNuevo)
                                                     <span class="inline-flex items-center justify-center w-3 h-3 bg-red-500 rounded-full"></span>
                                                 @endif
@@ -200,4 +202,4 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <link rel="stylesheet" href="{{ asset('css/chat.css') }}">
 <script src="{{ asset('js/chat.js') }}"></script>
-@endsection 
+@endsection

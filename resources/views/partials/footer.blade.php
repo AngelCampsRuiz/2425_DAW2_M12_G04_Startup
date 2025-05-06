@@ -16,7 +16,7 @@
                     </a>
                     <span class="ml-3 font-bold text-primary text-xl">NextGen</span>
                 </div>
-                <p class="mt-5 text-gray-600 leading-relaxed">{{ __('footer.description') }}</p>
+                <p class="mt-5 text-gray-600 leading-relaxed">Plataforma innovadora que conecta el talento estudiantil con oportunidades profesionales en empresas de vanguardia. Transformando el futuro laboral desde las aulas.</p>
 
                 <!-- Redes sociales -->
                 <div class="mt-6 flex space-x-4">
@@ -61,14 +61,14 @@
 
             <!-- Enlaces rápidos -->
             <div class="col-span-1">
-                <h3 class="text-lg font-semibold text-primary mb-5 border-b border-primary/20 pb-2">{{ __('footer.quick_links') }}</h3>
+                <h3 class="text-lg font-semibold text-primary mb-5 border-b border-primary/20 pb-2">Enlaces rápidos</h3>
                 <ul class="space-y-3">
                     <li>
-                        <a href="#" class="group flex items-center text-gray-600 hover:text-primary transition">
+                        <a href="{{ route('home') }}" class="group flex items-center text-gray-600 hover:text-primary transition">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-primary/70 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                             </svg>
-                            {{ __('footer.home') }}
+                            Inicio
                         </a>
                     </li>
                     <li>
@@ -76,7 +76,7 @@
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-primary/70 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                             </svg>
-                            {{ __('footer.job_offers') }}
+                            Ofertas de empleo
                         </a>
                     </li>
                     <li>
@@ -84,7 +84,7 @@
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-primary/70 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                             </svg>
-                            {{ __('footer.student_profiles') }}
+                            Perfiles de estudiantes
                         </a>
                     </li>
                     <li>
@@ -92,22 +92,22 @@
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-primary/70 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                             </svg>
-                            {{ __('footer.partner_companies') }}
+                            Empresas colaboradoras
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="group flex items-center text-gray-600 hover:text-primary transition">
+                        <a href="{{ route('blog') }}" class="group flex items-center text-gray-600 hover:text-primary transition">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-primary/70 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                             </svg>
-                            {{ __('footer.blog') }}
+                            Blog
                         </a>
                     </li>
                 </ul>
 
                 <!-- Aplicación móvil -->
                 <div class="mt-8 bg-white/80 rounded-lg p-4 shadow-sm backdrop-blur-sm">
-                    <h4 class="font-semibold text-primary text-sm mb-2">{{ __('footer.download_app') }}</h4>
+                    <h4 class="font-semibold text-primary text-sm mb-2">Descarga nuestra app</h4>
                     <div class="flex space-x-2">
                         <a href="#" class="block">
                             <!-- <img src="https://placehold.co/90x30/7705B6/FFFFFF?text=App+Store" alt="App Store" class="h-8 rounded-md hover:opacity-90 transition"> -->
@@ -121,67 +121,64 @@
 
             <!-- Recursos -->
             <div class="col-span-1">
-                <h3 class="text-lg font-semibold text-primary mb-5 border-b border-primary/20 pb-2">{{ __('footer.resources') }}</h3>
+                <h3 class="text-lg font-semibold text-primary mb-5 border-b border-primary/20 pb-2">Recursos</h3>
                 <ul class="space-y-3">
                     <li>
-                        <a href="#" class="group flex items-center text-gray-600 hover:text-primary transition">
+                        <a href="{{ route('help.center') }}" class="group flex items-center text-gray-600 hover:text-primary transition">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-primary/70 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                             </svg>
-                            {{ __('footer.help_center') }}
+                            Centro de ayuda
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="group flex items-center text-gray-600 hover:text-primary transition">
+                        <a href="{{ route('student.guides') }}" class="group flex items-center text-gray-600 hover:text-primary transition">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-primary/70 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                             </svg>
-                            {{ __('footer.student_guides') }}
+                            Guías para estudiantes
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="group flex items-center text-gray-600 hover:text-primary transition">
+                        <a href="{{ route('company.resources') }}" class="group flex items-center text-gray-600 hover:text-primary transition">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-primary/70 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                             </svg>
-                            {{ __('footer.company_resources') }}
+                            Recursos para empresas
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="group flex items-center text-gray-600 hover:text-primary transition">
+                        <a href="{{ route('terms.conditions') }}" class="group flex items-center text-gray-600 hover:text-primary transition">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-primary/70 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                             </svg>
-                            {{ __('footer.terms_conditions') }}
+                            Términos y condiciones
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="group flex items-center text-gray-600 hover:text-primary transition">
+                        <a href="{{ route('privacy.policy') }}" class="group flex items-center text-gray-600 hover:text-primary transition">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-primary/70 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                             </svg>
-                            {{ __('footer.privacy_policy') }}
+                            Política de privacidad
                         </a>
                     </li>
                 </ul>
 
                 <!-- Idiomas -->
                 <div class="mt-8 bg-white/80 rounded-lg p-4 shadow-sm backdrop-blur-sm">
-                    <h4 class="font-semibold text-primary text-sm mb-2">{{ __('footer.select_language') }}</h4>
-                    <form id="localeForm" action="{{ route('set-locale') }}" method="POST">
-                        @csrf
-                        <select name="locale" class="w-full p-2 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-primary text-sm">
-                            <option value="es" {{ app()->getLocale() == 'es' ? 'selected' : '' }}>Español</option>
-                            <option value="en" {{ app()->getLocale() == 'en' ? 'selected' : '' }}>English</option>
-                            <option value="ca" {{ app()->getLocale() == 'ca' ? 'selected' : '' }}>Català</option>
-                        </select>
-                    </form>
+                    <h4 class="font-semibold text-primary text-sm mb-2">Selecciona tu idioma</h4>
+                    <select name="locale" class="w-full p-2 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-primary text-sm">
+                        <option value="es" {{ app()->getLocale() == 'es' ? 'selected' : '' }}>Español</option>
+                        <option value="en" {{ app()->getLocale() == 'en' ? 'selected' : '' }}>English</option>
+                        <option value="ca" {{ app()->getLocale() == 'ca' ? 'selected' : '' }}>Català</option>
+                    </select>
                 </div>
             </div>
 
             <!-- Contacto -->
             <div class="col-span-1">
-                <h3 class="text-lg font-semibold text-primary mb-5 border-b border-primary/20 pb-2">{{ __('footer.contact') }}</h3>
+                <h3 class="text-lg font-semibold text-primary mb-5 border-b border-primary/20 pb-2">Contacto</h3>
                 <ul class="space-y-4">
                     <li class="flex items-start group">
                         <div class="bg-white p-2 rounded-full shadow-sm mr-3 text-primary group-hover:bg-primary group-hover:text-white transition-colors duration-300">
@@ -191,8 +188,8 @@
                             </svg>
                         </div>
                         <div>
-                            <p class="text-gray-600 group-hover:text-primary transition-colors duration-300">{{ __('footer.address') }}</p>
-                            <p class="text-gray-600 group-hover:text-primary transition-colors duration-300">{{ __('footer.city') }}</p>
+                            <p class="text-gray-600 group-hover:text-primary transition-colors duration-300">Calle Principal 123</p>
+                            <p class="text-gray-600 group-hover:text-primary transition-colors duration-300">08001 Barcelona, España</p>
                         </div>
                     </li>
                     <li class="flex items-center group">
@@ -215,19 +212,19 @@
 
                 <!-- Horario de atención -->
                 <div class="mt-8 bg-white/80 rounded-lg p-4 shadow-sm backdrop-blur-sm">
-                    <h4 class="font-semibold text-primary text-sm mb-2">{{ __('footer.office_hours') }}</h4>
+                    <h4 class="font-semibold text-primary text-sm mb-2">Horario de atención</h4>
                     <div class="space-y-1 text-sm text-gray-600">
                         <p class="flex justify-between">
-                            <span>{{ __('footer.weekdays') }}:</span>
+                            <span>Lunes - Viernes:</span>
                             <span>9:00 - 18:00</span>
                         </p>
                         <p class="flex justify-between">
-                            <span>{{ __('footer.saturday') }}:</span>
+                            <span>Sábado:</span>
                             <span>10:00 - 14:00</span>
                         </p>
                         <p class="flex justify-between">
-                            <span>{{ __('footer.sunday') }}:</span>
-                            <span>{{ __('footer.closed') }}</span>
+                            <span>Domingo:</span>
+                            <span>Cerrado</span>
                         </p>
                     </div>
                 </div>
@@ -239,9 +236,9 @@
             <div class="flex flex-col md:flex-row justify-between items-center">
                 <p class="text-sm text-gray-600">© {{ date('Y') }} <span class="text-primary font-semibold">NextGen</span>. Todos los derechos reservados.</p>
                 <div class="mt-4 md:mt-0 flex items-center">
-                    <p class="text-sm text-gray-600">{{ __('footer.designed_developed') }}</p>
+                    <p class="text-sm text-gray-600">Diseñado y desarrollado con</p>
                     <span class="mx-1 text-red-500 animate-pulse text-lg">❤</span>
-                    <p class="text-sm text-gray-600">{{ __('footer.by') }} <span class="text-primary hover:underline">Grupo 04</span></p>
+                    <p class="text-sm text-gray-600">por <span class="text-primary hover:underline">Grupo 04</span></p>
                 </div>
             </div>
 

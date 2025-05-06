@@ -124,6 +124,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const clearFiltersButton = document.getElementById('clearFiltersButton');
     const horarioCheckboxes = document.querySelectorAll('input[name="horario[]"]');
     const categoriaCheckboxes = document.querySelectorAll('.categoria-checkbox');
+    const nivelCheckboxes = document.querySelectorAll('.nivel-checkbox');
     const subcategoriaCheckboxes = document.querySelectorAll('input[name="subcategoria[]"]');
     const fechaInicio = document.getElementById('fechaInicio');
     const fechaFin = document.getElementById('fechaFin');
@@ -150,6 +151,59 @@ document.addEventListener('DOMContentLoaded', function() {
             fetchPublications();
         });
     });
+
+    // Filtrar categorías cuando se selecciona un nivel educativo
+    nivelCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const nivelId = this.value;
+            const checked = this.checked;
+            
+            // Mostrar u ocultar categorías según el nivel seleccionado
+            updateCategoriesVisibility();
+            
+            fetchPublications();
+        });
+    });
+    
+    // Función para actualizar la visibilidad de las categorías según los niveles seleccionados
+    function updateCategoriesVisibility() {
+        const selectedNiveles = Array.from(nivelCheckboxes)
+            .filter(checkbox => checkbox.checked)
+            .map(checkbox => checkbox.value);
+            
+        const categoriaElements = document.querySelectorAll('[data-nivel-id]');
+        
+        if (selectedNiveles.length === 0) {
+            // Si no hay niveles seleccionados, mostrar todas las categorías
+            categoriaElements.forEach(el => {
+                el.style.display = '';
+            });
+        } else {
+            // Si hay niveles seleccionados, mostrar solo las categorías de esos niveles
+            categoriaElements.forEach(el => {
+                const nivelId = el.getAttribute('data-nivel-id');
+                if (selectedNiveles.includes(nivelId)) {
+                    el.style.display = '';
+                } else {
+                    el.style.display = 'none';
+                    // Desmarcar las categorías que no se muestran
+                    const checkbox = el.querySelector('input[type="checkbox"]');
+                    if (checkbox && checkbox.checked) {
+                        checkbox.checked = false;
+                        // También ocultar y desmarcar subcategorías
+                        const subcategoriasDiv = document.getElementById(`subcategorias-${checkbox.value}`);
+                        if (subcategoriasDiv) {
+                            subcategoriasDiv.classList.add('hidden');
+                            const subcheckboxes = subcategoriasDiv.querySelectorAll('input[type="checkbox"]');
+                            subcheckboxes.forEach(subcheck => {
+                                subcheck.checked = false;
+                            });
+                        }
+                    }
+                }
+            });
+        }
+    }
 
     // Manejar la paginación con AJAX
     if (paginationContainer) {
@@ -204,6 +258,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const selectedHorarios = Array.from(horarioCheckboxes)
             .filter(checkbox => checkbox.checked)
             .map(checkbox => checkbox.value);
+        const selectedNiveles = Array.from(nivelCheckboxes)
+            .filter(checkbox => checkbox.checked)
+            .map(checkbox => checkbox.value);
         const selectedCategorias = Array.from(categoriaCheckboxes)
             .filter(checkbox => checkbox.checked)
             .map(checkbox => checkbox.value);
@@ -220,6 +277,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (orderByValue) params.append('order_by', orderByValue);
         if (orderDirectionValue) params.append('order_direction', orderDirectionValue);
         selectedHorarios.forEach(horario => params.append('horario[]', horario));
+        selectedNiveles.forEach(nivel => params.append('nivel_educativo[]', nivel));
         selectedCategorias.forEach(categoria => params.append('categoria[]', categoria));
         selectedSubcategorias.forEach(subcategoria => params.append('subcategoria[]', subcategoria));
         if (fechaInicioValue) params.append('fecha_inicio', fechaInicioValue);
@@ -314,6 +372,7 @@ document.addEventListener('DOMContentLoaded', function() {
         orderDirection.value = 'desc';
         orderSelect.value = `${route}?order_by=fecha_publicacion&order_direction=desc`;
         horarioCheckboxes.forEach(checkbox => checkbox.checked = false);
+        nivelCheckboxes.forEach(checkbox => checkbox.checked = false);
         categoriaCheckboxes.forEach(checkbox => {
             checkbox.checked = false;
             const categoriaId = checkbox.value;
@@ -334,6 +393,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const maxValue = parseInt(horasTotalesSlider.noUiSlider.options.range.max);
             horasTotalesSlider.noUiSlider.set([minValue, maxValue]);
         }
+        
+        // Mostrar todas las categorías
+        updateCategoriesVisibility();
     }
 
     horarioCheckboxes.forEach(checkbox => {

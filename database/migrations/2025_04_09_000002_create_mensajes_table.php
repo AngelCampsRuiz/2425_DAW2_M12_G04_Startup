@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('archivo_adjunto')->nullable();
             $table->string('tipo_archivo')->nullable();
             $table->string('nombre_archivo')->nullable();
+            $table->boolean('leido')->default(false);
             $table->timestamps();
         });
     }

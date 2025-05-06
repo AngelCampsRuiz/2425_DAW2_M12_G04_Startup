@@ -32,6 +32,8 @@
                 use App\Http\Controllers\ProfileController;
             // CONTROLADOR VALORACIONES
                 use App\Http\Controllers\ValoracionController;
+            // CONTROLADOR NOTIFICACIONES
+                use App\Http\Controllers\NotificationController;
             // CONTROLADOR DOCENTES
                 use App\Http\Controllers\DocenteController;
             // CONTROLADOR DEPARTAMENTOS
@@ -110,6 +112,11 @@
 
                 // RUTAS PARA SOLICITUDES
                     Route::post('/solicitudes/{publication}', [SolicitudController::class, 'store'])->name('solicitudes.store');
+
+                // RUTAS PARA NOTIFICACIONES
+                    Route::get('/notifications/unread', [NotificationController::class, 'getUnreadNotifications']);
+                    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+                    Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
             });
 
         // RUTAS PROTEGIDAS PARA ESTUDIANTES
@@ -155,22 +162,45 @@
                         Route::delete('subcategorias/delete-directo/{id}', [SubcategoriaController::class, 'deleteDirecto'])->name('subcategorias.delete-directo');
                     // RUTA ELIMINAR SQL
                         Route::post('subcategorias/eliminar-sql/{id}', [SubcategoriaController::class, 'deleteDirecto'])->name('subcategorias.eliminar-sql');
+                    // RUTA OBTENER SUBCATEGORÍAS POR CATEGORÍA
+                        Route::get('subcategorias/por-categoria/{categoriaId}', [SubcategoriaController::class, 'getByCategoria'])->name('subcategorias.por-categoria');
                     // RUTA GESTIONAR SUBCATEGORÍAS
                         Route::resource('subcategorias', SubcategoriaController::class);
+
+                // RUTAS PARA GESTIONAR LAS EMPRESAS
+                    // RUTA ELIMINAR SQL
+                        Route::delete('empresas/eliminar-sql/{empresa}', [App\Http\Controllers\Admin\EmpresaController::class, 'destroySQL'])->name('empresas.destroySQL');
+                    // RUTA GESTIONAR EMPRESAS
+                        Route::resource('empresas', App\Http\Controllers\Admin\EmpresaController::class);
+
+                // Rutas de Publicaciones
+                Route::get('/publicaciones', [App\Http\Controllers\Admin\PublicacionController::class, 'index'])->name('publicaciones.index');
+                Route::post('/publicaciones', [App\Http\Controllers\Admin\PublicacionController::class, 'store'])->name('publicaciones.store');
+                Route::get('/publicaciones/{publicacion}/edit', [App\Http\Controllers\Admin\PublicacionController::class, 'edit'])->name('publicaciones.edit');
+                Route::put('/publicaciones/{publicacion}', [App\Http\Controllers\Admin\PublicacionController::class, 'update'])->name('publicaciones.update');
+                Route::delete('/publicaciones/{publicacion}', [App\Http\Controllers\Admin\PublicacionController::class, 'destroy'])->name('publicaciones.destroy');
+                Route::delete('/publicaciones/eliminar-sql/{publicacion}', [App\Http\Controllers\Admin\PublicacionController::class, 'destroySQL'])->name('publicaciones.destroySQL');
+                Route::get('publicaciones/subcategorias/{categoriaId}', [PublicacionController::class, 'getSubcategorias'])->name('publicaciones.subcategorias');
             });
 
-        Route::post('/set-locale', [App\Http\Controllers\LocaleController::class, 'setLocale'])->name('set-locale');
+        // Footer resource pages
+        Route::get('/help-center', [App\Http\Controllers\ResourceController::class, 'helpCenter'])->name('help.center');
+        Route::get('/student-guides', [App\Http\Controllers\ResourceController::class, 'studentGuides'])->name('student.guides');
+        Route::get('/company-resources', [App\Http\Controllers\ResourceController::class, 'companyResources'])->name('company.resources');
+        Route::get('/terms-conditions', [App\Http\Controllers\ResourceController::class, 'termsConditions'])->name('terms.conditions');
+        Route::get('/privacy-policy', [App\Http\Controllers\ResourceController::class, 'privacyPolicy'])->name('privacy.policy');
+        Route::get('/blog', [App\Http\Controllers\ResourceController::class, 'blog'])->name('blog');
 
     // RUTAS PARA INSTITUCIONES
     Route::prefix('institucion')->middleware(['auth', \App\Http\Middleware\CheckRole::class.':institucion'])->name('institucion.')->group(function () {
         // Dashboard
         Route::get('/dashboard', [App\Http\Controllers\InstitucionController::class, 'dashboard'])->name('dashboard');
-        
+
         // Perfil
         Route::get('/perfil', [App\Http\Controllers\InstitucionController::class, 'perfil'])->name('perfil');
         Route::put('/perfil', [App\Http\Controllers\InstitucionController::class, 'actualizarPerfil'])->name('perfil.update');
         Route::put('/perfil/password', [App\Http\Controllers\InstitucionController::class, 'cambiarPassword'])->name('perfil.password');
-        
+
         // Docentes
         Route::get('/docentes', [App\Http\Controllers\DocenteController::class, 'index'])->name('docentes.index');
         Route::get('/docentes/create', [App\Http\Controllers\DocenteController::class, 'create'])->name('docentes.create');
@@ -182,7 +212,7 @@
         Route::post('/docentes/{id}/toggle-active', [App\Http\Controllers\DocenteController::class, 'toggleActive'])->name('docentes.toggle-active');
         Route::post('/docentes/{id}/reset-password', [App\Http\Controllers\DocenteController::class, 'resetPassword'])->name('docentes.reset-password');
         Route::get('/docentes/{id}/get-data', [App\Http\Controllers\DocenteController::class, 'getData'])->name('docentes.get-data');
-        
+
         // Departamentos
         Route::get('/departamentos', [App\Http\Controllers\DepartamentoController::class, 'index'])->name('departamentos.index');
         Route::get('/departamentos/create', [App\Http\Controllers\DepartamentoController::class, 'create'])->name('departamentos.create');
@@ -194,7 +224,7 @@
         Route::get('/departamentos/{id}/asignar-docentes', [App\Http\Controllers\DepartamentoController::class, 'asignarDocentes'])->name('departamentos.asignar-docentes');
         Route::post('/departamentos/{id}/asignar-docentes', [App\Http\Controllers\DepartamentoController::class, 'guardarAsignacionDocentes'])->name('departamentos.guardar-asignacion-docentes');
         Route::get('/departamentos/{id}/get-data', [App\Http\Controllers\DepartamentoController::class, 'getData'])->name('departamentos.get-data');
-        
+
         // Clases
         Route::get('/clases', [App\Http\Controllers\ClaseController::class, 'index'])->name('clases.index');
         Route::get('/clases/create', [App\Http\Controllers\ClaseController::class, 'create'])->name('clases.create');
@@ -206,13 +236,13 @@
         Route::post('/clases/{id}/toggle-active', [App\Http\Controllers\ClaseController::class, 'toggleActive'])->name('clases.toggle-active');
         Route::get('/clases/{id}/asignar-estudiantes', [App\Http\Controllers\ClaseController::class, 'asignarEstudiantes'])->name('clases.asignar-estudiantes');
         Route::post('/clases/{id}/asignar-estudiantes', [App\Http\Controllers\ClaseController::class, 'guardarAsignacionEstudiantes'])->name('clases.guardar-asignacion-estudiantes');
-        
+
         // Solicitudes de estudiantes
         Route::get('/solicitudes', [App\Http\Controllers\SolicitudEstudianteController::class, 'index'])->name('solicitudes.index');
         Route::get('/solicitudes/{id}', [App\Http\Controllers\SolicitudEstudianteController::class, 'show'])->name('solicitudes.show');
         Route::post('/solicitudes/{id}/aprobar', [App\Http\Controllers\SolicitudEstudianteController::class, 'aprobar'])->name('solicitudes.aprobar');
         Route::post('/solicitudes/{id}/rechazar', [App\Http\Controllers\SolicitudEstudianteController::class, 'rechazar'])->name('solicitudes.rechazar');
-        
+
         // Asignación de clases a estudiantes tras aprobar solicitudes
         Route::get('/solicitudes/{solicitud}/asignar-clase', [App\Http\Controllers\Institucion\SolicitudClaseController::class, 'asignar'])->name('solicitudes.asignar-clase');
         Route::post('/solicitudes/{solicitud}/asignar-clase', [App\Http\Controllers\Institucion\SolicitudClaseController::class, 'store'])->name('solicitudes.asignar-clase.store');

@@ -11,8 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('mensajes', function (Blueprint $table) {
-            $table->boolean('leido')->default(false)->after('nombre_archivo');
+        Schema::create('niveles_educativos', function (Blueprint $table) {
+            $table->id();
+            $table->string('nombre_nivel', 100);
+            $table->timestamps();
         });
     }
 
@@ -21,8 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('mensajes', function (Blueprint $table) {
-            $table->dropColumn('leido');
-        });
+        Schema::dropIfExists('niveles_educativos');
     }
 }; 

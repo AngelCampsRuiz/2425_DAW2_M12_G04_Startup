@@ -17,6 +17,47 @@
     background: #5e0490;
 }
 
+/* Estilos para niveles educativos y categorías */
+.nivel-checkbox:checked + span {
+    color: #5e0490;
+    font-weight: 600;
+}
+
+.nivel-checkbox:checked ~ span {
+    background-color: #5e0490;
+    color: white;
+}
+
+.categoria-item[data-nivel-id].highlighted {
+    border-left: 2px solid #5e0490;
+    background-color: #f9f5ff;
+}
+
+/* Transición suave para las categorías */
+.categoria-item {
+    transition: all 0.3s ease;
+}
+
+/* Animación de nivel seleccionado */
+@keyframes pulse-border {
+    0% {
+        border-color: #5e0490;
+        box-shadow: 0 0 0 0 rgba(94, 4, 144, 0.4);
+    }
+    70% {
+        border-color: #5e0490;
+        box-shadow: 0 0 0 4px rgba(94, 4, 144, 0);
+    }
+    100% {
+        border-color: #5e0490;
+        box-shadow: 0 0 0 0 rgba(94, 4, 144, 0);
+    }
+}
+
+.nivel-checkbox:checked + .pulse-animation {
+    animation: pulse-border 2s infinite;
+}
+
 /* Estilos para noUiSlider */
 .noUi-connect {
     background: #5e0490 !important;
