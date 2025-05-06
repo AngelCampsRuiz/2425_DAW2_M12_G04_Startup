@@ -29,6 +29,7 @@ class NotificationController extends Controller
                 'id' => $notification->id,
                 'title' => $data['title'] ?? '',
                 'message' => $data['message'] ?? '',
+                'type' => $data['type'] ?? null,
                 'created_at' => $notification->created_at->toDateTimeString(),
                 // Puedes agregar más campos si lo necesitas
             ];

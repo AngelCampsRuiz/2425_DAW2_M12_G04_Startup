@@ -53,7 +53,7 @@ class AlumnoSuscritoNotification extends Notification
             'title' => 'Nueva solicitud de alumno',
             'message' => 'Has recibido una solicitud de ' . $this->alumno->nombre . ' (' . $this->alumno->email . ')',
             'alumno_id' => $this->alumno->id,
-            'type' => 'alumno_suscrito'
+            'type' => 'nueva_solicitud'
         ];
     }
 }

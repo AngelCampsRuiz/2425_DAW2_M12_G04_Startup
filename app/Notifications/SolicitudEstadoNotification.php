@@ -59,7 +59,7 @@ class SolicitudEstadoNotification extends Notification
             'estado' => $this->estado,
             'empresa_id' => $this->empresa->id,
             'publicacion_id' => $this->publicacion->id,
-            'type' => 'solicitud_estado'
+            'type' => 'respuesta_publicacion'
         ];
     }
 }
