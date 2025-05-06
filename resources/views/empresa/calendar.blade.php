@@ -109,6 +109,124 @@
 <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
 <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales/es.js'></script>
 <script src="{{ asset('js/calendar.js') }}"></script>
+
+<script>
+    // Función para editar recordatorio
+    function editReminder(id) {
+        // Cargar datos del recordatorio en el formulario
+        fetch(`/empresa/calendar/reminders/${id}`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('edit_reminder_id').value = data.id;
+                document.getElementById('title').value = data.title;
+                document.getElementById('description').value = data.description || '';
+                document.getElementById('date').value = data.date;
+                
+                // Seleccionar el color correcto
+                const colorInput = document.querySelector(`input[name="color"][value="${data.color}"]`);
+                if (colorInput) {
+                    colorInput.checked = true;
+                    // Actualizar la visualización del color seleccionado
+                    document.querySelectorAll('.check-mark').forEach(mark => mark.classList.add('hidden'));
+                    colorInput.parentElement.querySelector('.check-mark').classList.remove('hidden');
+                }
+                
+                // Cambiar el título del modal
+                document.getElementById('modal-title').textContent = 'Editar Recordatorio';
+                
+                // Mostrar el modal
+                document.getElementById('newReminderModal').classList.remove('hidden');
+            });
+    }
+
+    // Función para filtrar recordatorios por fecha
+    function filterByDate(date) {
+        const items = document.querySelectorAll('.reminder-item');
+        items.forEach(item => {
+            if (item.dataset.date === date) {
+                item.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                item.classList.add('highlight');
+                setTimeout(() => item.classList.remove('highlight'), 2000);
+            }
+        });
+    }
+
+    // Cerrar modal con Escape
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            document.getElementById('newReminderModal').classList.add('hidden');
+        }
+    });
+
+    // Cerrar modal haciendo clic fuera
+    document.getElementById('newReminderModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            this.classList.add('hidden');
+        }
+    });
+
+    // Inicializar con el filtro "todos" activo
+    document.querySelector('.filter-btn[data-filter="all"]').click();
+});
+</script>
+
+<style>
+    /* Estilos para el calendario y recordatorios */
+    .fc-daygrid-day.fc-day-today {
+        background-color: rgba(124, 58, 237, 0.1) !important;
+    }
+
+    .fc-daygrid-day-frame {
+        cursor: pointer;
+    }
+
+    .fc-daygrid-day-frame:hover {
+        background-color: rgba(124, 58, 237, 0.05);
+    }
+
+    .reminder-item {
+        transition: all 0.3s ease;
+    }
+
+    .reminder-item.highlight {
+        background-color: rgba(124, 58, 237, 0.1);
+        transform: scale(1.02);
+    }
+
+    .filter-btn.active {
+        background-color: rgba(124, 58, 237, 0.1);
+        color: rgb(124, 58, 237);
+    }
+
+    /* Personalización del scrollbar */
+    .max-h-\[600px\]::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .max-h-\[600px\]::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+
+    .max-h-\[600px\]::-webkit-scrollbar-thumb {
+        background: #ddd;
+        border-radius: 4px;
+    }
+
+    .max-h-\[600px\]::-webkit-scrollbar-thumb:hover {
+        background: #ccc;
+    }
+
+    /* Animaciones */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .reminder-item {
+        animation: fadeIn 0.3s ease-out;
+    }
+</style>
 @endpush
 
 @endsection

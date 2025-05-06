@@ -6,28 +6,22 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::create('events', function (Blueprint $table) {
+        Schema::create('reminders', function (Blueprint $table) {
             $table->id();
             $table->foreignId('empresa_id')->constrained('empresas')->onDelete('cascade');
             $table->string('title');
             $table->text('description')->nullable();
-            $table->dateTime('start');
-            $table->dateTime('end')->nullable();
+            $table->date('date');
             $table->string('color')->default('#7C3AED');
+            $table->boolean('completed')->default(false);
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('events');
+        Schema::dropIfExists('reminders');
     }
-};
+}; 
