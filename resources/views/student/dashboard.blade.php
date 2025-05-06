@@ -8,6 +8,8 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.0/nouislider.min.css" />
         <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.0/nouislider.min.js"></script>
         <meta name="csrf-token" content="{{ csrf_token() }}">
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+        <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     </head>
     <div class="min-h-screen bg-gray-100">
         @if(isset($is_demo) && $is_demo)
@@ -106,6 +108,40 @@
                                     <input type="hidden" id="horasTotalesMax" name="horas_totales_max" value="{{ $horasTotalesMax }}">
                                 </div>
                             </div>
+
+                            <!-- Filtro de Radio de Distancia -->
+                            <div>
+                                <h3 class="text-sm font-medium text-gray-600 mb-2">Radio de Distancia</h3>
+                                <div class="mb-6">
+                                    <!-- Mapa para mostrar el radio -->
+                                    <div id="radiusMap" class="w-full h-48 rounded-lg mb-4"></div>
+                                    
+                                    <div class="flex justify-between text-sm text-gray-600 mb-2">
+                                        <span>0 km</span>
+                                        <span id="radioValue">50 km</span>
+                                    </div>
+                                    <!-- Contenedor para noUiSlider del radio -->
+                                    <div id="radioSlider" class="mt-2"></div>
+                                    <!-- Campo oculto para el radio -->
+                                    <input type="hidden" id="radioDistancia" name="radio_distancia" value="50">
+                                    <!-- Campos ocultos para la ubicación -->
+                                    <input type="hidden" id="userLat" name="user_lat" value="">
+                                    <input type="hidden" id="userLng" name="user_lng" value="">
+                                    
+                                    <!-- Botón de ubicación -->
+                                    <div class="mt-4">
+                                        <button type="button" id="obtenerUbicacion" 
+                                                class="w-full px-4 py-2 bg-[#5e0490] text-white rounded-lg hover:bg-[#4a0370] transition-colors flex items-center justify-center gap-2">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                            </svg>
+                                            Usar mi ubicación
+                                        </button>
+                                        <p id="ubicacionStatus" class="mt-2 text-sm text-center hidden"></p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -174,7 +210,9 @@
                     {{-- GRID DE PUBLICACIONES --}}
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         @foreach($publications as $publication)
-                            <div class="bg-white rounded-lg shadow overflow-hidden relative">
+                            <div class="bg-white rounded-lg shadow overflow-hidden relative"
+                                 data-lat="{{ $publication->empresa->user->lat ?? '' }}"
+                                 data-lng="{{ $publication->empresa->user->lng ?? '' }}">
                                 <div class="flex">
                                     {{-- IMAGEN DE LA EMPRESA --}}
                                     <div class="w-1/3 relative overflow-hidden flex flex-col items-center justify-center" style="aspect-ratio: 1/1;">
@@ -221,6 +259,8 @@
                                         <p class="text-sm text-gray-600 line-clamp-2">{{ $publication->descripcion }}</p>
                                     </div>
                                 </div>
+                                {{-- Añadir un elemento para mostrar la distancia --}}
+                                <div class="distance-info text-sm text-gray-600 px-4 pb-2"></div>
                             </div>
                         @endforeach
                     </div>
@@ -366,6 +406,40 @@
             background-color: #5e0490;
             color: white;
             border-color: #5e0490;
+        }
+
+        /* Estilos para el botón de ubicación */
+        #obtenerUbicacion:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        #ubicacionStatus {
+            transition: all 0.3s ease;
+        }
+
+        #ubicacionStatus.text-green-600 {
+            color: #059669;
+        }
+
+        #ubicacionStatus.text-red-600 {
+            color: #dc2626;
+        }
+
+        /* Estilos adicionales para el slider de distancia */
+        #radioSlider .noUi-connect {
+            background: #5e0490;
+        }
+
+        #radioSlider .noUi-handle {
+            background: #5e0490;
+            border: 2px solid #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            cursor: pointer;
+        }
+
+        #radioSlider .noUi-handle:hover {
+            transform: scale(1.1);
         }
     </style>
 
@@ -596,4 +670,5 @@
             initFavoriteButtons();
         });
     </script>
+    <script src="{{ asset('js/distance-filter.js') }}"></script>
 @endsection

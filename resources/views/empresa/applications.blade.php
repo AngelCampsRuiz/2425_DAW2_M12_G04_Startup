@@ -83,11 +83,7 @@
                                     <div class="flex-shrink-0">
                                         <div class="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center">
                                             <span class="text-xl font-bold text-purple-700">
-                                                @if($solicitud->estudiante && $solicitud->estudiante->user)
-                                                    {{ strtoupper(substr($solicitud->estudiante->user->name, 0, 2)) }}
-                                                @else
-                                                    ??
-                                                @endif
+                                                {{ strtoupper(substr(optional(optional($solicitud->estudiante)->user)->nombre ?? '--', 0, 2)) }}
                                             </span>
                                         </div>
                                     </div>
@@ -96,17 +92,13 @@
                                     <div class="flex-1 min-w-0">
                                         <div class="flex items-center justify-between">
                                             <div class="flex items-center space-x-4">
-                                                @if($solicitud->estudiante && $solicitud->estudiante->user)
-                                                    <a href="{{ route('profile.show', $solicitud->estudiante->user->id) }}"
-                                                       class="group flex items-center space-x-3 hover:text-purple-600 transition-colors duration-200">
-                                                        <h3 class="text-lg font-semibold text-gray-900 group-hover:text-purple-600">
-                                                            {{ $solicitud->estudiante->user->nombre }}
-                                                        </h3>
-                                                        <i class="fas fa-external-link-alt text-sm opacity-0 group-hover:opacity-100 transition-opacity"></i>
-                                                    </a>
-                                                @else
-                                                    <span class="text-red-500">Estudiante no disponible</span>
-                                                @endif
+                                                <a href="{{ route('profile.show', optional(optional($solicitud->estudiante)->user)->id ?? '#') }}"
+                                                   class="group flex items-center space-x-3 hover:text-purple-600 transition-colors duration-200">
+                                                    <h3 class="text-lg font-semibold text-gray-900 group-hover:text-purple-600">
+                                                        {{ optional(optional($solicitud->estudiante)->user)->nombre ?? 'Sin nombre' }}
+                                                    </h3>
+                                                    <i class="fas fa-external-link-alt text-sm opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                                                </a>
                                                 @if($solicitud->estudiante->cv_pdf)
                                                     <a href="{{ asset('cv/' . $solicitud->estudiante->cv_pdf) }}"
                                                        target="_blank"

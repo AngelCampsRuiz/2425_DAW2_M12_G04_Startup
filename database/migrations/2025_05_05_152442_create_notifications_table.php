@@ -15,10 +15,9 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->string('type');
-            $table->string('title');
-            $table->text('message');
-            $table->json('data')->nullable();
-            $table->boolean('is_read')->default(false);
+            $table->morphs('notifiable');
+            $table->text('data');
+            $table->timestamp('read_at')->nullable();
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('user');

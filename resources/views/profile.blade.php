@@ -4,7 +4,6 @@
 {{-- CONTENIDO --}}
     <link rel="stylesheet" href="{{ asset('css/profile.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="{{ asset('js/profile.js') }}"></script>
     <script src="{{ asset('js/profile-functions.js') }}"></script>
     <script src="{{ asset('js/profile-edit.js') }}"></script>
@@ -29,9 +28,23 @@
                         <a href="{{ route('student.dashboard') }}" class="text-gray-500 hover:text-purple-700 transition-colors duration-200">
                             Dashboard
                         </a>
+                        @elseif(auth()->user()->role_id == 4)
+                        <a href="{{ route('institucion.dashboard') }}" class="text-gray-500 hover:text-purple-700 transition-colors duration-200">
+                            Dashboard
+                        </a>
                         @endif
                         <span class="mx-2 text-gray-400">/</span>
-                        <span class="text-purple-700 font-medium">Perfil de {{ $user->role_id == 3 ? 'Estudiante' : 'Empresa' }}</span>
+                        <span class="text-purple-700 font-medium">
+                            @if($user->role_id == 3)
+                                Perfil de Estudiante
+                            @elseif($user->role_id == 2)
+                                Perfil de Empresa
+                            @elseif($user->role_id == 4)
+                                Perfil de Institución
+                            @else
+                                Perfil
+                            @endif
+                        </span>
                     </div>
                 </div>
             </div>
@@ -103,8 +116,8 @@
                                     </svg>
                                 </div>
                                 <div>
-                                    <h3 class="text-xl font-bold text-gray-900">Progreso del Perfil</h3>
-                                    <p class="text-sm text-gray-500">Completa tu perfil para mejorar tu visibilidad</p>
+                                    <h3 class="text-xl font-bold text-gray-900">{{ __('messages.profile_progress') }}</h3>
+                                    <p class="text-sm text-gray-500">{{ __('messages.complete_your_profile') }}</p>
                                 </div>
                             </div>
                             <button id="toggleButton" class="text-gray-500 hover:text-purple-700 transition-colors">
@@ -160,11 +173,11 @@
                                     <div id="progressPercentage" class="text-4xl font-bold text-purple-700 mb-2">{{ $porcentaje }}%</div>
                                     <div id="progressMessage" class="text-sm text-gray-600 text-center">
                                         @if($porcentaje < 50)
-                                            ¡Sigue completando tu perfil!
+                                            {{ __('messages.keep_completing_your_profile') }}
                                         @elseif($porcentaje < 80)
-                                            ¡Vas por buen camino!
+                                            {{ __('messages.you_are_on_the_right_track') }}
                                         @else
-                                            ¡Casi lo tienes!
+                                            {{ __('messages.almost_there') }}
                                         @endif
                                     </div>
                                 </div>
@@ -215,7 +228,7 @@
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                         </svg>
-                                        <span>Editar Perfil</span>
+                                        <span>{{ __('messages.edit_profile') }}</span>
                         </button>
 
                                     <a href="{{ route('chat.index') }}"
@@ -223,7 +236,7 @@
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
                                         </svg>
-                                        <span>Ir al Chat</span>
+                                        <span>{{ __('messages.go_to_chat') }}</span>
                                     </a>
                                 </div>
                             @endif
@@ -246,7 +259,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
                                         </svg>
                                     </div>
-                                    <h2 class="text-2xl font-bold text-gray-900">Información Académica</h2>
+                                    <h2 class="text-2xl font-bold text-gray-900">{{ __('messages.academic_information') }}</h2>
                                 </div>
                                 <div class="space-y-4">
                                     @if($user->estudiante)
@@ -254,7 +267,7 @@
                                             <svg class="w-5 h-5 text-purple-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                             </svg>
-                                            <span class="text-gray-700">Ciclo: {{ $user->estudiante->ciclo }}</span>
+                                            <span class="text-gray-700">{{ __('messages.cycle') }}: {{ $user->estudiante->ciclo }}</span>
                                         </div>
                                         @if($user->estudiante->cv_pdf)
                                             <div class="flex items-center">
@@ -264,7 +277,7 @@
                                                 <a href="{{ asset('public/cv_pdfs/' . $user->estudiante->cv_pdf) }}"
                                                    class="text-purple-600 hover:text-purple-800"
                                                    target="_blank">
-                                                    Ver CV
+                                                    {{ __('messages.view_cv') }}
                                                 </a>
                                             </div>
                                         @endif
@@ -281,17 +294,17 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                                             </svg>
                                         </div>
-                                        <h2 class="text-2xl font-bold text-gray-900">Experiencias de Estudiantes</h2>
+                                        <h2 class="text-2xl font-bold text-gray-900">{{ __('messages.student_experiences') }}</h2>
                                     </div>
                                     <div class="overflow-x-auto">
                                         <table class="min-w-full divide-y divide-gray-200">
                                             <thead class="bg-gray-50">
                                                 <tr>
-                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estudiante</th>
-                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Puesto</th>
-                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Inicio</th>
-                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Fin</th>
-                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descripción</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('messages.student') }}</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('messages.position') }}</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('messages.start_date') }}</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('messages.end_date') }}</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('messages.description') }}</th>
                                                 </tr>
                                             </thead>
                                             <tbody class="bg-white divide-y divide-gray-200">
@@ -348,7 +361,7 @@
                                                 </div>
                                             </div>
                                             <div class="ml-4">
-                                                <p class="text-sm font-medium text-gray-500">Ciudad</p>
+                                                <p class="text-sm font-medium text-gray-500">{{ __('messages.city_profile') }}</p>
                                                 <p class="text-lg font-semibold text-gray-900" data-valor="ciudad">{{ $user->ciudad ?? 'No especificada' }}</p>
                                             </div>
                                         </div>
@@ -362,7 +375,7 @@
                                                 </div>
                                             </div>
                                             <div class="ml-4">
-                                                <p class="text-sm font-medium text-gray-500">Teléfono</p>
+                                                <p class="text-sm font-medium text-gray-500">{{ __('messages.phone') }}</p>
                                                 <p class="text-lg font-semibold text-gray-900" data-valor="telefono">{{ $user->telefono ?? 'No especificado' }}</p>
                                             </div>
                                         </div>
@@ -376,7 +389,7 @@
                                                 </div>
                                             </div>
                                             <div class="ml-4">
-                                                <p class="text-sm font-medium text-gray-500">DNI</p>
+                                                <p class="text-sm font-medium text-gray-500">{{ __('messages.dni') }}</p>
                                                 <p class="text-lg font-semibold text-gray-900" data-valor="dni">{{ $user->dni ?? 'No especificado' }}</p>
                                             </div>
                                         </div>
@@ -392,7 +405,7 @@
                                                 </div>
                                             </div>
                                             <div class="ml-4">
-                                                <p class="text-sm font-medium text-gray-500">Dirección</p>
+                                                <p class="text-sm font-medium text-gray-500">{{ __('messages.address_profile') }}</p>
                                                 <p class="text-lg font-semibold text-gray-900" data-valor="direccion">{{ $user->direccion ?? 'No especificada' }}</p>
                                             </div>
                                         </div>
@@ -406,7 +419,7 @@
                                                 </div>
                                             </div>
                                             <div class="ml-4">
-                                                <p class="text-sm font-medium text-gray-500">Sitio Web</p>
+                                                <p class="text-sm font-medium text-gray-500">{{ __('messages.website') }}</p>
                                                 <p class="text-lg font-semibold text-gray-900" data-valor="web">{{ $user->web ?? 'No especificado' }}</p>
                                             </div>
                                         </div>
@@ -1119,7 +1132,9 @@
                                             <span class="error-message text-xs text-red-500 mt-1">{{ $message }}</span>
                                         @enderror
                                     </div>
+                                {{-- iffjujf --}}
 
+                                    
                                     {{-- CV --}}
                                     @if($user->role_id == 3)
                                         <div>
@@ -1150,6 +1165,52 @@
                                 </div>
                             </div>
 
+                            {{-- Sección del Mapa (solo para empresas) --}}
+                            @if(auth()->user()->role_id == 2)
+                                <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+                                    <div class="flex items-center justify-between mb-6">
+                                        <h3 class="text-xl font-semibold text-gray-900 flex items-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                            </svg>
+                                            Ubicación
+                                        </h3>
+                                        <button onclick="saveLocation()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                            </svg>
+                                            Guardar ubicación
+                                        </button>
+                                    </div>
+
+                                    {{-- Contenedor del mapa --}}
+                                    <div class="w-full h-[400px] rounded-xl overflow-hidden shadow-md mb-4">
+                                        <div id="locationMap" class="w-full h-full"></div>
+                                    </div>
+
+                                    {{-- Campos de ubicación --}}
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                        <div>
+                                            <label for="direccion" class="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
+                                            <input type="text" name="direccion" id="direccion" value="{{ $user->direccion }}"
+                                                   class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                                                   readonly>
+                                        </div>
+                                        <div>
+                                            <label for="ciudad" class="block text-sm font-medium text-gray-700 mb-1">Ciudad</label>
+                                            <input type="text" name="ciudad" id="ciudad" value="{{ $user->ciudad }}"
+                                                   class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                                                   readonly>
+                                        </div>
+                                    </div>
+
+                                    {{-- Campos ocultos para las coordenadas --}}
+                                    <input type="hidden" id="lat" name="lat" value="{{ $user->lat ?? '41.390205' }}">
+                                    <input type="hidden" id="lng" name="lng" value="{{ $user->lng ?? '2.154007' }}">
+                                </div>
+                            @endif
+
                             {{-- Botones --}}
                             <div class="flex justify-end space-x-4 pt-6 border-t">
                                 <button type="button" onclick="closeEditModal()"
@@ -1166,4 +1227,457 @@
                 </div>
             </div>
         </div>
+
+        {{-- Scripts para el modal --}}
+        <script>
+            function openEditModal() {
+                document.getElementById('editModal').classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+                // Resetear errores al abrir modal
+                resetAllErrors();
+            }
+
+            function closeEditModal() {
+                document.getElementById('editModal').classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }
+
+            // Cerrar modal al hacer clic fuera
+            window.onclick = function(event) {
+                const modal = document.getElementById('editModal');
+                if (event.target == modal) {
+                    closeEditModal();
+                }
+            }
+
+            // Manejar envío del formulario
+            // Funciones de validación
+            function showError(field, message) {
+                const errorElement = document.getElementById('error-' + field.id);
+                if (errorElement) {
+                    errorElement.textContent = message;
+                    errorElement.classList.remove('hidden');
+                    field.classList.add('border-red-500');
+                }
+            }
+
+            function hideError(field) {
+                const errorElement = document.getElementById('error-' + field.id);
+                if (errorElement) {
+                    errorElement.classList.add('hidden');
+                    field.classList.remove('border-red-500');
+                }
+            }
+
+            function resetAllErrors() {
+                document.querySelectorAll('.error-message').forEach(el => {
+                    el.classList.add('hidden');
+                });
+                document.querySelectorAll('input, textarea').forEach(el => {
+                    el.classList.remove('border-red-500');
+                });
+            }
+
+            // Añadir onblur a todos los campos cuando se carga la página
+            document.addEventListener('DOMContentLoaded', function() {
+                const nombreInput = document.getElementById('nombre');
+                const descripcionInput = document.getElementById('descripcion');
+                const telefonoInput = document.getElementById('telefono');
+                const dniInput = document.getElementById('dni');
+                const ciudadInput = document.getElementById('ciudad');
+
+                if (nombreInput) nombreInput.addEventListener('blur', function() { validarNombre(this); });
+                if (descripcionInput) descripcionInput.addEventListener('blur', function() { validarDescripcion(this); });
+                if (telefonoInput) telefonoInput.addEventListener('blur', function() { validarTelefono(this); });
+                if (dniInput) dniInput.addEventListener('blur', function() { validarDNI(this); });
+                if (ciudadInput) ciudadInput.addEventListener('blur', function() { validarCiudad(this); });
+            });
+
+            function validarNombre(field) {
+                if (!field.value.trim()) {
+                    showError(field, "El nombre es obligatorio");
+                    return false;
+                } else if (field.value.trim().length < 2) {
+                    showError(field, "El nombre debe tener al menos 2 caracteres");
+                    return false;
+                } else if (field.value.trim().length > 100) {
+                    showError(field, "El nombre no puede exceder los 100 caracteres");
+                    return false;
+                } else {
+                    hideError(field);
+                    return true;
+                }
+            }
+
+            function validarDescripcion(field) {
+                if (field.value.trim().length > 500) {
+                    showError(field, "La descripción no puede exceder los 500 caracteres");
+                    return false;
+                } else {
+                    hideError(field);
+                    return true;
+                }
+            }
+
+            function validarTelefono(field) {
+                if (field.value.trim() && !/^[0-9]{9}$/.test(field.value.trim())) {
+                    showError(field, "El teléfono debe contener 9 dígitos");
+                    return false;
+                } else {
+                    hideError(field);
+                    return true;
+                }
+            }
+
+            function validarDNI(field) {
+                if (field.value.trim()) {
+                    const dniRegex = /^[0-9]{8}[A-Za-z]$/;
+                    const nieRegex = /^[XYZxyz][0-9]{7}[A-Za-z]$/;
+
+                    if (!dniRegex.test(field.value.trim()) && !nieRegex.test(field.value.trim())) {
+                        showError(field, "Formato de DNI/NIE no válido");
+                        return false;
+                    } else {
+                        hideError(field);
+                        return true;
+                    }
+                } else {
+                    hideError(field);
+                    return true;
+                }
+            }
+
+            function validarCiudad(field) {
+                if (field.value.trim() && field.value.trim().length < 2) {
+                    showError(field, "La ciudad debe tener al menos 2 caracteres");
+                    return false;
+                } else if (field.value.trim().length > 100) {
+                    showError(field, "La ciudad no puede exceder los 100 caracteres");
+                    return false;
+                } else {
+                    hideError(field);
+                    return true;
+                }
+            }
+
+            function validarImagen(field) {
+                if (field.files.length > 0) {
+                    const file = field.files[0];
+                    const fileType = file.type;
+                    const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+
+                    if (!validImageTypes.includes(fileType)) {
+                        showError(field, "El archivo debe ser una imagen (JPG, PNG, GIF o WEBP)");
+                        return false;
+                    } else if (file.size > 2 * 1024 * 1024) { // 2MB
+                        showError(field, "La imagen no puede exceder los 2MB");
+                        return false;
+                    } else {
+                        hideError(field);
+                        return true;
+                    }
+                } else {
+                    hideError(field);
+                    return true;
+                }
+            }
+
+            function validarCV(field) {
+                if (field.files.length > 0) {
+                    const file = field.files[0];
+
+                    if (file.type !== 'application/pdf') {
+                        showError(field, "El archivo debe ser un PDF");
+                        return false;
+                    } else if (file.size > 5 * 1024 * 1024) { // 5MB
+                        showError(field, "El CV no puede exceder los 5MB");
+                        return false;
+                    } else {
+                        hideError(field);
+                        return true;
+                    }
+                } else {
+                    hideError(field);
+                    return true;
+                }
+            }
+
+            // Validar todo el formulario antes de enviar
+            document.getElementById('profileForm').addEventListener('submit', function(e) {
+                // Primero validar todos los campos
+                let isValid = true;
+
+                if (!validarNombre(document.getElementById('nombre'))) isValid = false;
+                if (!validarDescripcion(document.getElementById('descripcion'))) isValid = false;
+                if (!validarTelefono(document.getElementById('telefono'))) isValid = false;
+                if (!validarDNI(document.getElementById('dni'))) isValid = false;
+                if (!validarCiudad(document.getElementById('ciudad'))) isValid = false;
+
+                const imagenInput = document.getElementById('imagen');
+                if (imagenInput && imagenInput.files.length > 0) {
+                    if (!validarImagen(imagenInput)) isValid = false;
+                }
+
+                const cvInput = document.getElementById('cv_pdf');
+                if (cvInput && cvInput.files.length > 0) {
+                    if (!validarCV(cvInput)) isValid = false;
+                }
+
+                if (!isValid) {
+                    e.preventDefault();
+                    return false;
+                }
+
+                e.preventDefault();
+
+                const formData = new FormData(this);
+                const submitButton = this.querySelector('button[type="submit"]');
+                const originalButtonText = submitButton.innerHTML;
+
+                // Mostrar indicador de carga
+                submitButton.disabled = true;
+                submitButton.innerHTML = `
+                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                Guardando...
+            `;
+
+                fetch(this.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Actualizar la barra de progreso
+                        const progressBar = document.getElementById('progressBar');
+                        const progressText = document.getElementById('progressText');
+                        const progressPercentage = document.getElementById('progressPercentage');
+                        const progressMessage = document.getElementById('progressMessage');
+
+                        if (progressBar && progressText && progressPercentage && progressMessage) {
+                            progressBar.style.width = data.porcentaje + '%';
+                            progressText.textContent = data.porcentaje + '%';
+                            progressPercentage.textContent = data.porcentaje + '%';
+
+                            // Actualizar mensaje según el porcentaje
+                            if (data.porcentaje < 50) {
+                                progressMessage.textContent = '¡Sigue completando tu perfil!';
+                            } else if (data.porcentaje < 80) {
+                                progressMessage.textContent = '¡Vas por buen camino!';
+                            } else {
+                                progressMessage.textContent = '¡Casi lo tienes!';
+                            }
+                        }
+
+                        // Actualizar la información del perfil
+                        const user = data.user;
+
+                        // Actualizar nombre
+                        const nombreElement = document.querySelector('h1.text-4xl');
+                        if (nombreElement) nombreElement.textContent = user.nombre;
+
+                        // Actualizar descripción
+                        const descripcionElement = document.querySelector('.text-gray-700.leading-relaxed');
+                        if (descripcionElement) descripcionElement.textContent = user.descripcion || '';
+
+                        // Actualizar campos de visibilidad
+                        const camposVisibles = {
+                            'telefono': user.show_telefono,
+                            'dni': user.show_dni,
+                            'ciudad': user.show_ciudad,
+                            'direccion': user.show_direccion,
+                            'web': user.show_web
+                        };
+
+                        // Actualizar la visibilidad de cada campo
+                        Object.entries(camposVisibles).forEach(([campo, visible]) => {
+                            const elemento = document.querySelector(`[data-campo="${campo}"]`);
+                            if (elemento) {
+                                elemento.style.display = visible ? 'flex' : 'none';
+                            }
+                        });
+
+                        // Actualizar valores de los campos
+                        const camposValores = {
+                            'telefono': user.telefono,
+                            'dni': user.dni,
+                            'ciudad': user.ciudad,
+                            'direccion': user.direccion,
+                            'web': user.web
+                        };
+
+                        Object.entries(camposValores).forEach(([campo, valor]) => {
+                            const elemento = document.querySelector(`[data-valor="${campo}"]`);
+                            if (elemento) {
+                                elemento.textContent = valor || 'No especificado';
+                            }
+                        });
+
+                        // Actualizar imagen de perfil si se cambió
+                        if (user.imagen) {
+                            const imagenPerfil = document.querySelector('.w-40.h-40.rounded-full img');
+                            if (imagenPerfil) {
+                                imagenPerfil.src = `{{ asset('public/profile_images/') }}/${user.imagen}`;
+                            }
+                        }
+
+                        // Actualizar CV si se cambió
+                        if (user.estudiante && user.estudiante.cv_pdf) {
+                            const cvLink = document.querySelector('a[href*="cv/"]');
+                            if (cvLink) {
+                                cvLink.href = `/cv/${user.estudiante.cv_pdf}`;
+                            }
+                        }
+
+                        // Mostrar mensaje de éxito
+                        const successMessage = document.createElement('div');
+                        successMessage.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+                        successMessage.textContent = data.message;
+                        document.body.appendChild(successMessage);
+
+                        // Cerrar el modal y recargar la página después de 2 segundos
+                        setTimeout(() => {
+                            closeEditModal();
+                            location.reload();
+                        }, 2000);
+                    } else if (data.errors) {
+                        // Mostrar errores de validación
+                        resetAllErrors();
+                        Object.entries(data.errors).forEach(([field, messages]) => {
+                            const inputField = document.querySelector(`[name="${field}"]`);
+                            if (inputField) {
+                                const errorMessage = Array.isArray(messages) ? messages[0] : messages;
+                                showError(inputField, errorMessage);
+                            }
+                        });
+                    } else {
+                        throw new Error(data.message || "Ha ocurrido un error al guardar los cambios");
+                    }
+                })
+                .catch(error => {
+                    // Primero intentar parsear el error como JSON en caso de que sea una respuesta del servidor
+                    let parsedError;
+                    try {
+                        // Si la respuesta es un objeto Response, intentamos obtener el JSON
+                        if (error instanceof Response) {
+                            return error.json().then(data => {
+                                handleApiError(data);
+                            });
+                        }
+                        // Si ya tenemos un objeto, lo usamos directamente
+                        else if (error.message) {
+                            handleApiError({ message: error.message });
+                        }
+                        // Último caso, error sin formato claro
+                        else {
+                            handleApiError({ message: "Ha ocurrido un error desconocido" });
+                        }
+                    } catch (e) {
+                        // Si falla el parsing, usamos el error como string
+                        handleApiError({ message: error.toString() });
+                    }
+                })
+                .finally(() => {
+                    // Restaurar el botón
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = originalButtonText;
+                });
+            });
+
+            // Función para manejar errores de la API
+            function handleApiError(errorData) {
+                const errorMsg = errorData.message || "Ha ocurrido un error al procesar la solicitud";
+
+                // Detectar tipos específicos de errores
+                if (errorMsg.includes('Duplicate entry') && errorMsg.includes('user_telefono_unique')) {
+                    // Error de teléfono duplicado
+                    const telefonoInput = document.getElementById('telefono');
+                    if (telefonoInput) {
+                        showError(telefonoInput, "Este número de teléfono ya está registrado");
+                        return;
+                    }
+                } else if (errorMsg.includes('Duplicate entry') && errorMsg.includes('user_dni_unique')) {
+                    // Error de DNI duplicado
+                    const dniInput = document.getElementById('dni');
+                    if (dniInput) {
+                        showError(dniInput, "Este DNI/NIE ya está registrado");
+                        return;
+                    }
+                } else if (errorMsg.includes('Duplicate entry') && errorMsg.includes('user_email_unique')) {
+                    // Error de email duplicado
+                    const emailInput = document.getElementById('email');
+                    if (emailInput) {
+                        showError(emailInput, "Este email ya está registrado");
+                        return;
+                    }
+                }
+
+                // Para otros errores, mostrar un mensaje dentro del modal
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'mt-4 p-4 bg-red-50 text-red-700 rounded-lg';
+                errorDiv.innerHTML = `
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-red-800">Ha ocurrido un error</h3>
+                            <div class="mt-1 text-sm text-red-700">
+                                ${errorMsg}
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // Insertar el error en el formulario
+                const form = document.getElementById('profileForm');
+                const submitBtn = document.getElementById('submitBtn');
+
+                // Remover cualquier mensaje de error anterior
+                const prevError = document.querySelector('.bg-red-50.text-red-700');
+                if (prevError) prevError.remove();
+
+                // Insertar antes del botón de envío
+                if (form && submitBtn) {
+                    form.insertBefore(errorDiv, submitBtn.parentNode);
+                }
+            }
+        </script>
+
+        @if(auth()->user()->role_id == 2)
+            <script src="{{ asset('js/profile-map.js') }}"></script>
+        @endif
+
+        <!-- Sección del Mapa de Solo Lectura -->
+        @if($user->role_id == 2 && !is_null($user->lat) && !is_null($user->lng))
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Ubicación</h2>
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <div class="w-full h-[300px] rounded-xl overflow-hidden shadow-md">
+                        <div id="viewLocationMap" 
+                             class="w-full h-full" 
+                             data-lat="{{ number_format($user->lat, 8, '.', '') }}" 
+                             data-lng="{{ number_format($user->lng, 8, '.', '') }}">
+                        </div>
+                    </div>
+                    @if($user->direccion)
+                        <div class="mt-4 flex items-center text-gray-700">
+                            <svg class="w-5 h-5 text-purple-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                            <span>{{ $user->direccion }}</span>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        @endif
     @endsection

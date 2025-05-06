@@ -24,6 +24,8 @@ class InstitucionController extends Controller
         $totalDepartamentos = $institucion->departamentos()->count();
         $totalClases = $institucion->clases()->count();
         $solicitudesPendientes = $institucion->solicitudesPendientes()->count();
+        $departamentos = $institucion->departamentos()->get();
+        $docentes = $institucion->docentes()->with('user')->get();
 
         return view('institucion.dashboard', compact(
             'institucion',
@@ -31,7 +33,9 @@ class InstitucionController extends Controller
             'totalEstudiantes',
             'totalDepartamentos',
             'totalClases',
-            'solicitudesPendientes'
+            'solicitudesPendientes',
+            'departamentos',
+            'docentes'
         ));
     }
 

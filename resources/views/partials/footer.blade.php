@@ -167,13 +167,16 @@
 
                 <!-- Idiomas -->
                 <div class="mt-8 bg-white/80 rounded-lg p-4 shadow-sm backdrop-blur-sm">
-                    <h4 class="font-semibold text-primary text-sm mb-2">Selecciona tu idioma</h4>
-                    <select name="locale" class="w-full p-2 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-primary text-sm">
-                        <option value="es" {{ app()->getLocale() == 'es' ? 'selected' : '' }}>Español</option>
-                        <option value="en" {{ app()->getLocale() == 'en' ? 'selected' : '' }}>English</option>
-                        <option value="ca" {{ app()->getLocale() == 'ca' ? 'selected' : '' }}>Català</option>
-                    </select>
+                    <h4 class="font-semibold text-primary text-sm mb-2">{{ __('footer.select_language') }}</h4>
+                        
+                        <select name="locale" class="w-full p-2 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-primary text-sm">
+                            <option >Español</option>
+                            <option >English</option>
+                            <option >Català</option>
+                        </select>
                 </div>
+
+                
             </div>
 
             <!-- Contacto -->
@@ -238,7 +241,7 @@
                 <div class="mt-4 md:mt-0 flex items-center">
                     <p class="text-sm text-gray-600">Diseñado y desarrollado con</p>
                     <span class="mx-1 text-red-500 animate-pulse text-lg">❤</span>
-                    <p class="text-sm text-gray-600">por <span class="text-primary hover:underline">Grupo 04</span></p>
+                    <p class="text-sm text-gray-600">por <span class="text-primary hover:underline">Grupo 03</span></p>
                 </div>
             </div>
 
