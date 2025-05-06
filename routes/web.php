@@ -34,6 +34,8 @@
                 use App\Http\Controllers\ValoracionController;
             // CONTROLADOR JOTFORM
                 use App\Http\Controllers\JotformController;
+            // CONTROLADOR CALENDARIO
+                use App\Http\Controllers\CalendarController;
 
     // RUTAS DE LA APLICACIÓN
         // RUTA PRINCIPAL HOME
@@ -130,6 +132,12 @@
                 // RUTA OBTENER SUBCATEGORÍAS
                     Route::get('/empresa/get-subcategorias/{categoria}', [CompanyDashboardController::class, 'getSubcategorias'])
                         ->name('empresa.subcategorias');
+                // RUTA CALENDARIO
+                    Route::get('/empresa/calendar', [CalendarController::class, 'index'])->name('empresa.calendar');
+                    Route::get('/empresa/calendar/events', [CalendarController::class, 'getEvents'])->name('empresa.calendar.events');
+                    Route::post('/empresa/calendar/events', [CalendarController::class, 'store'])->name('empresa.calendar.store');
+                    Route::put('/empresa/calendar/events/{event}', [CalendarController::class, 'update'])->name('empresa.calendar.update');
+                    Route::delete('/empresa/calendar/events/{event}', [CalendarController::class, 'destroy'])->name('empresa.calendar.destroy');
             });
 
         // RUTAS PROTEGIDAS PARA ADMINISTRADORES
