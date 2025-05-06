@@ -6,6 +6,47 @@
         <span id="success-message-text" class="block sm:inline"></span>
     </div>
     
+    <!-- Filtros -->
+    <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-medium text-gray-900">Filtros de búsqueda</h3>
+            <button id="reset-filtros" class="inline-flex items-center px-4 py-2 bg-gray-100 border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-200 active:bg-gray-300 focus:outline-none focus:border-gray-900 focus:ring ring-gray-300 disabled:opacity-25 transition ease-in-out duration-150">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Reiniciar filtros
+            </button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div>
+                <label for="filtro_titulo" class="block text-sm font-medium text-gray-700 mb-1">Título de la oferta</label>
+                <input type="text" id="filtro_titulo" class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50" placeholder="Buscar por título...">
+            </div>
+            
+            <div>
+                <label for="filtro_empresa" class="block text-sm font-medium text-gray-700 mb-1">Nombre de la empresa</label>
+                <input type="text" id="filtro_empresa" class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50" placeholder="Buscar por empresa...">
+            </div>
+            
+            <div>
+                <label for="filtro_categoria" class="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
+                <select id="filtro_categoria" class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50">
+                    <option value="">Todas las categorías</option>
+                    @foreach($categorias as $categoria)
+                        <option value="{{ $categoria->id }}">{{ $categoria->nombre_categoria }}</option>
+                    @endforeach
+                </select>
+            </div>
+            
+            <div>
+                <label for="filtro_subcategoria" class="block text-sm font-medium text-gray-700 mb-1">Subcategoría</label>
+                <select id="filtro_subcategoria" class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50">
+                    <option value="">Todas las subcategorías</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    
     <!-- Contenedor de la tabla -->
     <div id="tabla-container" class="bg-white rounded-lg shadow overflow-hidden">
         @include('admin.publicaciones.tabla')
@@ -190,197 +231,164 @@
 
 @push('scripts')
 <script>
-    // Variable de control para evitar duplicación
-    let isSubmitting = false;
+    let filterTimeout = null;
     
     document.addEventListener('DOMContentLoaded', function() {
-        setupEventListeners();
-        setupSubcategorias();
+        console.log('Inicializando filtros...');
+        initializeFilters();
+        
+        // Añadir evento al botón de reinicio
+        document.getElementById('reset-filtros').addEventListener('click', resetFilters);
     });
-    
-    function setupEventListeners() {
-        // Delegación de eventos para los botones dinámicos
-        document.addEventListener('click', function(e) {
-            // Botones Eliminar
-            if (e.target.closest('.btn-eliminar')) {
-                const btn = e.target.closest('.btn-eliminar');
-                const id = btn.getAttribute('data-id');
-                mostrarModalEliminar(id);
-            }
-        });
-        
-        // Configurar el formulario de eliminación
-        document.getElementById('form-eliminar').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            if (isSubmitting) return;
-            isSubmitting = true;
-            
-            const id = document.getElementById('eliminar_id').value;
-            const url = `/admin/publicaciones/${id}`;
-            
-            fetch(url, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    document.getElementById('modal-eliminar').classList.add('hidden');
-                    mostrarMensajeExito(data.message || 'Publicación eliminada correctamente');
-                    window.location.reload(); // Recargar la página después de eliminar
-                } else {
-                    alert(data.message || 'Error al eliminar la publicación');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error al eliminar la publicación');
-            })
-            .finally(() => {
-                isSubmitting = false;
-            });
-        });
-        
-        // Configurar botones de cerrar modal
-        document.getElementById('modal-eliminar-close').addEventListener('click', function() {
-            document.getElementById('modal-eliminar').classList.add('hidden');
-        });
-        
-        document.getElementById('btn-cancelar-eliminar').addEventListener('click', function() {
-            document.getElementById('modal-eliminar').classList.add('hidden');
-        });
 
-        // Botones para crear y editar
-        document.addEventListener('click', function(e) {
-            if (e.target.closest('.btn-crear')) {
-                mostrarFormularioCrear();
-            }
-            
-            if (e.target.closest('.btn-editar')) {
-                const btn = e.target.closest('.btn-editar');
-                const id = btn.getAttribute('data-id');
-                mostrarFormularioEditar(id);
+    function resetFilters() {
+        console.log('Reiniciando filtros...');
+        
+        // Limpiar inputs de texto
+        document.getElementById('filtro_titulo').value = '';
+        document.getElementById('filtro_empresa').value = '';
+        
+        // Resetear selects
+        document.getElementById('filtro_categoria').value = '';
+        const subcategoriaSelect = document.getElementById('filtro_subcategoria');
+        subcategoriaSelect.innerHTML = '<option value="">Todas las subcategorías</option>';
+        
+        // Aplicar filtros para actualizar la tabla
+        aplicarFiltros();
+    }
+
+    function initializeFilters() {
+        // Inputs de texto
+        const textInputs = ['filtro_titulo', 'filtro_empresa'];
+        textInputs.forEach(id => {
+            const input = document.getElementById(id);
+            if (input) {
+                input.addEventListener('keyup', debounceFilter);
+                console.log(`Event listener añadido a ${id}`);
             }
         });
 
-        // Evento change para el select de categoría
-        const categoriaSelect = document.getElementById('categoria_id');
+        // Select de categoría
+        const categoriaSelect = document.getElementById('filtro_categoria');
         if (categoriaSelect) {
             categoriaSelect.addEventListener('change', function() {
-                cargarSubcategorias();
+                console.log('Categoría cambiada');
+                updateSubcategorias(this.value);
+            });
+        }
+
+        // Select de subcategoría
+        const subcategoriaSelect = document.getElementById('filtro_subcategoria');
+        if (subcategoriaSelect) {
+            subcategoriaSelect.addEventListener('change', function() {
+                console.log('Subcategoría cambiada');
+                aplicarFiltros();
             });
         }
     }
-    
-    function cargarSubcategorias() {
-        const categoriaId = document.getElementById('categoria_id');
-        if (!categoriaId) return;
-        
-        const subcategoriasSelect = document.getElementById('subcategoria_id');
-        if (!subcategoriasSelect) return;
-        
-        if (!categoriaId.value) {
-            subcategoriasSelect.innerHTML = '<option value="">Selecciona primero una categoría</option>';
-            return;
+
+    function debounceFilter() {
+        console.log('Debouncing filter...');
+        if (filterTimeout) {
+            clearTimeout(filterTimeout);
         }
+        filterTimeout = setTimeout(() => {
+            aplicarFiltros();
+        }, 300);
+    }
+
+    function updateSubcategorias(categoriaId) {
+        console.log('Actualizando subcategorías para categoría:', categoriaId);
+        const subcategoriaSelect = document.getElementById('filtro_subcategoria');
         
-        subcategoriasSelect.innerHTML = '<option value="">Cargando subcategorías...</option>';
-        subcategoriasSelect.disabled = true;
+        // Resetear subcategorías
+        subcategoriaSelect.innerHTML = '<option value="">Todas las subcategorías</option>';
         
-        fetch(`/admin/publicaciones/subcategorias/${categoriaId.value}`, {
+        if (categoriaId) {
+            fetch(`/admin/publicaciones/subcategorias/${categoriaId}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(response => {
+                if (response.error) {
+                    throw new Error(response.message);
+                }
+
+                const subcategorias = response.data || [];
+                if (subcategorias.length === 0) {
+                    const option = document.createElement('option');
+                    option.value = "";
+                    option.textContent = "No hay subcategorías disponibles";
+                    option.disabled = true;
+                    subcategoriaSelect.appendChild(option);
+                    return;
+                }
+
+                subcategorias.forEach(subcategoria => {
+                    const option = document.createElement('option');
+                    option.value = subcategoria.id;
+                    option.textContent = subcategoria.nombre_subcategoria;
+                    subcategoriaSelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                const option = document.createElement('option');
+                option.value = "";
+                option.textContent = "Error al cargar subcategorías: " + error.message;
+                option.disabled = true;
+                subcategoriaSelect.appendChild(option);
+            })
+            .finally(() => {
+                aplicarFiltros();
+            });
+        } else {
+            aplicarFiltros();
+        }
+    }
+
+    function aplicarFiltros() {
+        console.log('Aplicando filtros...');
+        const filtros = {
+            titulo: document.getElementById('filtro_titulo').value,
+            empresa: document.getElementById('filtro_empresa').value,
+            categoria: document.getElementById('filtro_categoria').value,
+            subcategoria: document.getElementById('filtro_subcategoria').value
+        };
+
+        console.log('Filtros actuales:', filtros);
+
+        const params = new URLSearchParams();
+        Object.entries(filtros).forEach(([key, value]) => {
+            if (value) {
+                params.append(key, value);
+            }
+        });
+
+        fetch(`/admin/publicaciones?${params.toString()}`, {
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
                 'Accept': 'application/json'
             }
         })
-        .then(response => response.json())
-        .then(data => {
-            subcategoriasSelect.innerHTML = '<option value="">Selecciona una subcategoría</option>';
-            data.forEach(subcategoria => {
-                const option = document.createElement('option');
-                option.value = subcategoria.id;
-                option.textContent = subcategoria.nombre_subcategoria;
-                subcategoriasSelect.appendChild(option);
-            });
-            subcategoriasSelect.disabled = false;
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
         })
-        .catch(error => {
-            console.error('Error:', error);
-            subcategoriasSelect.innerHTML = '<option value="">Error al cargar subcategorías</option>';
-            subcategoriasSelect.disabled = false;
-        });
-    }
-    
-    function mostrarFormularioCrear() {
-        document.getElementById('modal-titulo').textContent = 'Crear Nueva Publicación';
-        document.getElementById('form-publicacion').reset();
-        document.getElementById('form-errors').classList.add('hidden');
-        document.getElementById('publicacion_id').value = '';
-        document.getElementById('form_method').value = 'POST';
-        document.getElementById('form-publicacion').setAttribute('action', '{{ route("admin.publicaciones.store") }}');
-        document.getElementById('modal-publicacion').classList.remove('hidden');
-    }
-    
-    function mostrarFormularioEditar(id) {
-        document.getElementById('modal-titulo').textContent = 'Editar Publicación';
-        document.getElementById('publicacion_id').value = id;
-        document.getElementById('form_method').value = 'PUT';
-        document.getElementById('form-publicacion').setAttribute('action', `/admin/publicaciones/${id}`);
-        
-        fetch(`/admin/publicaciones/${id}/edit`, {
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
+        .then(data => {
+            if (data.tabla) {
+                document.getElementById('tabla-container').innerHTML = data.tabla;
+                console.log('Tabla actualizada');
             }
         })
-        .then(response => response.json())
-        .then(data => {
-            const publicacion = data.publicacion;
-            
-            document.getElementById('titulo').value = publicacion.titulo;
-            document.getElementById('empresa_id').value = publicacion.empresa_id;
-            document.getElementById('categoria_id').value = publicacion.categoria_id;
-            document.getElementById('horario').value = publicacion.horario;
-            document.getElementById('horas_totales').value = publicacion.horas_totales;
-            document.getElementById('fecha_publicacion').value = publicacion.fecha_publicacion ? publicacion.fecha_publicacion.split('T')[0] : '';
-            document.getElementById('descripcion').value = publicacion.descripcion;
-            document.getElementById('activa').checked = publicacion.activa;
-            
-            // Disparar el evento change para cargar las subcategorías
-            cargarSubcategorias();
-            
-            // Esperar a que se carguen las subcategorías y luego seleccionar la correcta
-            setTimeout(() => {
-                document.getElementById('subcategoria_id').value = publicacion.subcategoria_id;
-            }, 500);
-            
-            document.getElementById('modal-publicacion').classList.remove('hidden');
-        })
         .catch(error => {
-            console.error('Error:', error);
-            alert('Error al obtener los datos de la publicación');
+            console.error('Error al aplicar filtros:', error);
         });
-    }
-    
-    function mostrarModalEliminar(id) {
-        document.getElementById('eliminar_id').value = id;
-        document.getElementById('modal-eliminar').classList.remove('hidden');
-    }
-    
-    function mostrarMensajeExito(mensaje) {
-        const messageElement = document.getElementById('success-message');
-        const messageText = document.getElementById('success-message-text');
-        
-        messageText.textContent = mensaje;
-        messageElement.style.display = 'block';
-        
-        setTimeout(function() {
-            messageElement.style.display = 'none';
-        }, 5000);
     }
 </script>
 
