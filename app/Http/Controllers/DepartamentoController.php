@@ -14,8 +14,9 @@ class DepartamentoController extends Controller
     {
         $institucion = Auth::user()->institucion;
         $departamentos = $institucion->departamentos()->with('jefeDepartamento.user')->get();
+        $docentes = $institucion->docentes()->with('user')->where('activo', true)->get();
         
-        return view('institucion.departamentos.index', compact('departamentos'));
+        return view('institucion.departamentos.index', compact('departamentos', 'docentes'));
     }
 
     // Formulario crear departamento
@@ -34,6 +35,7 @@ class DepartamentoController extends Controller
         
         $request->validate([
             'nombre' => 'required|string|max:255',
+            'codigo' => 'required|string|max:50|unique:departamentos,codigo',
             'descripcion' => 'nullable|string',
             'jefe_departamento_id' => 'nullable|exists:docentes,id',
         ]);
@@ -42,6 +44,7 @@ class DepartamentoController extends Controller
         $departamento = Departamento::create([
             'institucion_id' => $institucion->id,
             'nombre' => $request->nombre,
+            'codigo' => $request->codigo,
             'descripcion' => $request->descripcion,
             'jefe_departamento_id' => $request->jefe_departamento_id,
         ]);
@@ -77,6 +80,7 @@ class DepartamentoController extends Controller
         
         $request->validate([
             'nombre' => 'required|string|max:255',
+            'codigo' => 'required|string|max:50|unique:departamentos,codigo,' . $departamento->id,
             'descripcion' => 'nullable|string',
             'jefe_departamento_id' => 'nullable|exists:docentes,id',
         ]);
@@ -84,6 +88,7 @@ class DepartamentoController extends Controller
         // Actualizar departamento
         $departamento->update([
             'nombre' => $request->nombre,
+            'codigo' => $request->codigo,
             'descripcion' => $request->descripcion,
             'jefe_departamento_id' => $request->jefe_departamento_id,
         ]);
@@ -154,5 +159,17 @@ class DepartamentoController extends Controller
         
         return redirect()->route('institucion.departamentos.show', $departamento->id)
             ->with('success', 'Docentes asignados correctamente');
+    }
+
+    // Obtener datos del departamento para edición AJAX
+    public function getData($id)
+    {
+        $institucion = Auth::user()->institucion;
+        $departamento = $institucion->departamentos()->with('jefeDepartamento.user')->findOrFail($id);
+        
+        return response()->json([
+            'success' => true,
+            'departamento' => $departamento
+        ]);
     }
 } 

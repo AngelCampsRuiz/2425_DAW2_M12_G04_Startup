@@ -187,4 +187,16 @@ class DocenteController extends Controller
         return redirect()->route('institucion.docentes.show', $docente->id)
             ->with('success', 'Contraseña reseteada correctamente. Nueva contraseña temporal: ' . $password);
     }
+
+    // Obtener datos de docente para edición por AJAX
+    public function getData($id)
+    {
+        $institucion = Auth::user()->institucion;
+        $docente = $institucion->docentes()->with('user')->findOrFail($id);
+        
+        return response()->json([
+            'success' => true,
+            'docente' => $docente
+        ]);
+    }
 } 

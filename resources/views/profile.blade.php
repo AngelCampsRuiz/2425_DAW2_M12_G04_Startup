@@ -29,9 +29,23 @@
                         <a href="{{ route('student.dashboard') }}" class="text-gray-500 hover:text-purple-700 transition-colors duration-200">
                             Dashboard
                         </a>
+                        @elseif(auth()->user()->role_id == 4)
+                        <a href="{{ route('institucion.dashboard') }}" class="text-gray-500 hover:text-purple-700 transition-colors duration-200">
+                            Dashboard
+                        </a>
                         @endif
                         <span class="mx-2 text-gray-400">/</span>
-                        <span class="text-purple-700 font-medium">Perfil de {{ $user->role_id == 3 ? 'Estudiante' : 'Empresa' }}</span>
+                        <span class="text-purple-700 font-medium">
+                            @if($user->role_id == 3)
+                                Perfil de Estudiante
+                            @elseif($user->role_id == 2)
+                                Perfil de Empresa
+                            @elseif($user->role_id == 4)
+                                Perfil de Institución
+                            @else
+                                Perfil
+                            @endif
+                        </span>
                     </div>
                 </div>
             </div>

@@ -32,6 +32,10 @@
                 use App\Http\Controllers\ProfileController;
             // CONTROLADOR VALORACIONES
                 use App\Http\Controllers\ValoracionController;
+            // CONTROLADOR DOCENTES
+                use App\Http\Controllers\DocenteController;
+            // CONTROLADOR DEPARTAMENTOS
+                use App\Http\Controllers\DepartamentoController;
 
     // RUTAS DE LA APLICACIÓN
         // RUTA PRINCIPAL HOME
@@ -177,6 +181,7 @@
         Route::delete('/docentes/{id}', [App\Http\Controllers\DocenteController::class, 'destroy'])->name('docentes.destroy');
         Route::post('/docentes/{id}/toggle-active', [App\Http\Controllers\DocenteController::class, 'toggleActive'])->name('docentes.toggle-active');
         Route::post('/docentes/{id}/reset-password', [App\Http\Controllers\DocenteController::class, 'resetPassword'])->name('docentes.reset-password');
+        Route::get('/docentes/{id}/get-data', [App\Http\Controllers\DocenteController::class, 'getData'])->name('docentes.get-data');
         
         // Departamentos
         Route::get('/departamentos', [App\Http\Controllers\DepartamentoController::class, 'index'])->name('departamentos.index');
@@ -188,6 +193,7 @@
         Route::delete('/departamentos/{id}', [App\Http\Controllers\DepartamentoController::class, 'destroy'])->name('departamentos.destroy');
         Route::get('/departamentos/{id}/asignar-docentes', [App\Http\Controllers\DepartamentoController::class, 'asignarDocentes'])->name('departamentos.asignar-docentes');
         Route::post('/departamentos/{id}/asignar-docentes', [App\Http\Controllers\DepartamentoController::class, 'guardarAsignacionDocentes'])->name('departamentos.guardar-asignacion-docentes');
+        Route::get('/departamentos/{id}/get-data', [App\Http\Controllers\DepartamentoController::class, 'getData'])->name('departamentos.get-data');
         
         // Clases
         Route::get('/clases', [App\Http\Controllers\ClaseController::class, 'index'])->name('clases.index');
