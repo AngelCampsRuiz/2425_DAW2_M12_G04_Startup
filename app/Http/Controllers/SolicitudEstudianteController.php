@@ -6,6 +6,9 @@ use App\Models\Clase;
 use App\Models\SolicitudEstudiante;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Notifications\SolicitudEstadoNotification;
+use App\Events\NotificacionPusher;
+use Illuminate\Support\Facades\Log;
 
 class SolicitudEstudianteController extends Controller
 {
@@ -13,16 +16,16 @@ class SolicitudEstudianteController extends Controller
     public function index(Request $request)
     {
         $institucion = Auth::user()->institucion;
-        
+
         // Aplicar filtros si existen
         $query = $institucion->solicitudesEstudiantes()->with(['estudiante.user', 'clase']);
-        
+
         // Filtrar por estado si se proporciona
         $filtro = $request->estado ?? 'todos';
         if ($filtro !== 'todos') {
             $query->where('estado', $filtro);
         }
-        
+
         // Búsqueda por nombre o email
         $busqueda = $request->buscar ?? '';
         if (!empty($busqueda)) {
@@ -31,11 +34,11 @@ class SolicitudEstudianteController extends Controller
                   ->orWhere('email', 'like', '%' . $busqueda . '%');
             });
         }
-        
+
         $solicitudes = $query->orderBy('estado')
             ->orderBy('created_at', 'desc')
             ->get();
-        
+
         // Estadísticas para el resumen
         $stats = [
             'total' => $institucion->solicitudesEstudiantes()->count(),
@@ -43,7 +46,7 @@ class SolicitudEstudianteController extends Controller
             'aprobadas' => $institucion->solicitudesEstudiantes()->where('estado', 'aprobada')->count(),
             'rechazadas' => $institucion->solicitudesEstudiantes()->where('estado', 'rechazada')->count(),
         ];
-        
+
         return view('institucion.solicitudes.index', compact('solicitudes', 'stats', 'filtro', 'busqueda'));
     }
 
@@ -54,9 +57,9 @@ class SolicitudEstudianteController extends Controller
         $solicitud = $institucion->solicitudesEstudiantes()
             ->with(['estudiante.user', 'clase'])
             ->findOrFail($id);
-        
+
         $clases = $institucion->clases()->where('activa', true)->get();
-        
+
         return view('institucion.solicitudes.show', compact('solicitud', 'clases'));
     }
 
@@ -65,7 +68,7 @@ class SolicitudEstudianteController extends Controller
     {
         $institucion = Auth::user()->institucion;
         $solicitud = $institucion->solicitudesEstudiantes()->findOrFail($id);
-        
+
         $request->validate([
             'respuesta' => 'nullable|string',
             'clase_id' => 'nullable|exists:clases,id',
@@ -79,7 +82,24 @@ class SolicitudEstudianteController extends Controller
 
         // Aprobar la solicitud
         $solicitud->aprobar($request->respuesta, $request->clase_id);
-        
+
+        // Notificar al estudiante
+        $estudiante = $solicitud->estudiante->user;
+        $empresa = $solicitud->clase->empresa ?? $solicitud->publicacion->empresa; // Ajusta según tu modelo
+        $publicacion = $solicitud->publicacion; // Ajusta según tu modelo
+
+        if ($estudiante && $empresa && $publicacion) {
+            $estudiante->notify(new SolicitudEstadoNotification('aceptada', $empresa, $publicacion));
+        }
+
+        event(new NotificacionPusher($estudiante->id));
+
+        Log::info('Notificación de solicitud', [
+            'estudiante' => $estudiante,
+            'empresa' => $empresa,
+            'publicacion' => $publicacion,
+        ]);
+
         return redirect()->route('institucion.solicitudes.index')
             ->with('success', 'Solicitud aprobada correctamente');
     }
@@ -89,7 +109,7 @@ class SolicitudEstudianteController extends Controller
     {
         $institucion = Auth::user()->institucion;
         $solicitud = $institucion->solicitudesEstudiantes()->findOrFail($id);
-        
+
         $request->validate([
             'respuesta' => 'nullable|string',
         ]);
@@ -102,7 +122,24 @@ class SolicitudEstudianteController extends Controller
 
         // Rechazar la solicitud
         $solicitud->rechazar($request->respuesta);
-        
+
+        // Notificar al estudiante
+        $estudiante = $solicitud->estudiante->user;
+        $empresa = $solicitud->clase->empresa ?? $solicitud->publicacion->empresa; // Ajusta según tu modelo
+        $publicacion = $solicitud->publicacion; // Ajusta según tu modelo
+
+        if ($estudiante && $empresa && $publicacion) {
+            $estudiante->notify(new SolicitudEstadoNotification('rechazada', $empresa, $publicacion));
+        }
+
+        event(new NotificacionPusher($estudiante->id));
+
+        Log::info('Notificación de solicitud', [
+            'estudiante' => $estudiante,
+            'empresa' => $empresa,
+            'publicacion' => $publicacion,
+        ]);
+
         return redirect()->route('institucion.solicitudes.index')
             ->with('success', 'Solicitud rechazada correctamente');
     }
@@ -121,4 +158,4 @@ class SolicitudEstudianteController extends Controller
         return redirect()->route('estudiante.solicitudes.index')
             ->with('success', 'Solicitud enviada correctamente');
     }
-} 
+}

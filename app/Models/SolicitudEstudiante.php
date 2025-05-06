@@ -29,7 +29,7 @@ class SolicitudEstudiante extends Model
 
     public function estudiante()
     {
-        return $this->belongsTo(Estudiante::class);
+        return $this->belongsTo(Estudiante::class, 'estudiante_id');
     }
 
     public function institucion()
@@ -39,7 +39,12 @@ class SolicitudEstudiante extends Model
 
     public function clase()
     {
-        return $this->belongsTo(Clase::class);
+        return $this->belongsTo(Clase::class, 'clase_id');
+    }
+
+    public function publicacion()
+    {
+        return $this->belongsTo(Publicacion::class, 'publicacion_id');
     }
 
     // Método para aprobar una solicitud
@@ -48,18 +53,18 @@ class SolicitudEstudiante extends Model
         $this->estado = 'aprobada';
         $this->respuesta = $respuesta;
         $this->fecha_respuesta = now();
-        
+
         if ($clase_id) {
             $this->clase_id = $clase_id;
             $this->clase_asignada = true;
         }
-        
+
         $this->save();
 
         // Actualizar estudiante con la institución
         $estudiante = $this->estudiante;
         $estudiante->institucion_id = $this->institucion_id;
-        
+
         if ($this->clase_id) {
             $estudiante->clase_id = $this->clase_id;
             $clase = Clase::find($this->clase_id);
@@ -67,7 +72,7 @@ class SolicitudEstudiante extends Model
                 $estudiante->docente_id = $clase->docente_id;
             }
         }
-        
+
         $estudiante->save();
 
         return $this;
@@ -83,4 +88,4 @@ class SolicitudEstudiante extends Model
 
         return $this;
     }
-} 
+}

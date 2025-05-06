@@ -49,94 +49,102 @@ class ChatController extends Controller
      */
     public function sendMessage(Request $request, Chat $chat)
     {
-        // Verificar que el usuario tiene acceso al chat
-        $user = Auth::user();
-        $solicitud = $chat->solicitud;
+        try {
+            // Verificar que el usuario tiene acceso al chat
+            $user = Auth::user();
+            $solicitud = $chat->solicitud;
 
-        $hasAccess = false;
+            $hasAccess = false;
 
-        // Si es empresa
-        if ($user->empresa && $user->empresa->id == $chat->empresa_id) {
-            $hasAccess = true;
-        }
-
-        // Si es estudiante
-        if ($user->estudiante && $user->estudiante->id == $solicitud->estudiante_id) {
-            $hasAccess = true;
-        }
-
-        if (!$hasAccess) {
-            return response()->json([
-                'error' => true,
-                'message' => 'No tienes permiso para enviar mensajes en este chat'
-            ], 403);
-        }
-
-        // Validar el mensaje
-        $request->validate([
-            'contenido' => 'required_without:archivo|string|max:1000',
-            'archivo' => 'required_without:contenido|file|max:10240', // 10MB máximo
-        ]);
-
-        // Crear datos base del mensaje
-        $mensajeData = [
-            'contenido' => $request->contenido ?? '',
-            'chat_id' => $chat->id,
-            'user_id' => $user->id,
-            'fecha_envio' => now()
-        ];
-
-        // Manejar archivo adjunto si existe
-        if ($request->hasFile('archivo')) {
-            $file = $request->file('archivo');
-            $fileName = time() . '_' . $file->getClientOriginalName();
-            $fileType = $file->getClientMimeType();
-
-            // Determinar la carpeta según el tipo de archivo
-            $folder = 'chat_files';
-
-            // Si es imagen, guardar en una carpeta específica
-            if (strpos($fileType, 'image/') === 0) {
-                $folder = 'chat_images';
+            // Si es empresa
+            if ($user->empresa && $user->empresa->id == $chat->empresa_id) {
+                $hasAccess = true;
             }
 
-            // Mover el archivo a la carpeta pública
-            $file->move(public_path($folder), $fileName);
+            // Si es estudiante
+            if ($user->estudiante && $user->estudiante->id == $solicitud->estudiante_id) {
+                $hasAccess = true;
+            }
 
-            // Añadir información del archivo al mensaje
-            $mensajeData['archivo_adjunto'] = $folder . '/' . $fileName;
-            $mensajeData['tipo_archivo'] = $fileType;
-            $mensajeData['nombre_archivo'] = $file->getClientOriginalName();
+            if (!$hasAccess) {
+                return response()->json([
+                    'error' => true,
+                    'message' => 'No tienes permiso para enviar mensajes en este chat'
+                ], 403);
+            }
+
+            // Validar el mensaje
+            $request->validate([
+                'contenido' => 'required_without:archivo|string|max:1000',
+                'archivo' => 'required_without:contenido|file|max:10240', // 10MB máximo
+            ]);
+
+            // Crear datos base del mensaje
+            $mensajeData = [
+                'contenido' => $request->contenido ?? '',
+                'chat_id' => $chat->id,
+                'user_id' => $user->id,
+                'fecha_envio' => now()
+            ];
+
+            // Manejar archivo adjunto si existe
+            if ($request->hasFile('archivo')) {
+                $file = $request->file('archivo');
+                $fileName = time() . '_' . $file->getClientOriginalName();
+                $fileType = $file->getClientMimeType();
+
+                // Determinar la carpeta según el tipo de archivo
+                $folder = 'chat_files';
+
+                // Si es imagen, guardar en una carpeta específica
+                if (strpos($fileType, 'image/') === 0) {
+                    $folder = 'chat_images';
+                }
+
+                // Mover el archivo a la carpeta pública
+                $file->move(public_path($folder), $fileName);
+
+                // Añadir información del archivo al mensaje
+                $mensajeData['archivo_adjunto'] = $folder . '/' . $fileName;
+                $mensajeData['tipo_archivo'] = $fileType;
+                $mensajeData['nombre_archivo'] = $file->getClientOriginalName();
+            }
+
+            // Crear el mensaje
+            $mensaje = Mensaje::create($mensajeData);
+
+            // Determinar destinatario según el usuario autenticado
+            if (auth()->user()->empresa) {
+                // Si el que envía es empresa, destinatario es el estudiante
+                $destinatario = $chat->solicitud->estudiante->user ?? null;
+            } else {
+                // Si el que envía es estudiante, destinatario es la empresa
+                $destinatario = $chat->solicitud->publicacion->empresa->user ?? null;
+            }
+
+            if ($destinatario) {
+                $remitente = Auth::user();
+                $destinatario->notify(new MensajeNoLeidoNotification($chat, $remitente));
+                event(new NotificacionPusher($destinatario->id));
+            }
+
+            // Si tiene archivo adjunto, generar la URL completa para la respuesta
+            if (!empty($mensaje->archivo_adjunto)) {
+                $mensaje->archivo_adjunto = url($mensaje->archivo_adjunto);
+            }
+
+            return response()->json([
+                'error' => false,
+                'message' => 'Mensaje enviado correctamente',
+                'mensaje' => $mensaje
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => true,
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ], 500);
         }
-
-        // Crear el mensaje
-        $mensaje = Mensaje::create($mensajeData);
-
-        // Determinar destinatario según el usuario autenticado
-        if (auth()->user()->empresa) {
-            // Si el que envía es empresa, destinatario es el estudiante
-            $destinatario = $chat->solicitud->estudiante->user ?? null;
-        } else {
-            // Si el que envía es estudiante, destinatario es la empresa
-            $destinatario = $chat->solicitud->publicacion->empresa->user ?? null;
-        }
-
-        if ($destinatario) {
-            $remitente = Auth::user();
-            $destinatario->notify(new MensajeNoLeidoNotification($chat, $remitente));
-            event(new NotificacionPusher($destinatario->id));
-        }
-
-        // Si tiene archivo adjunto, generar la URL completa para la respuesta
-        if (!empty($mensaje->archivo_adjunto)) {
-            $mensaje->archivo_adjunto = url($mensaje->archivo_adjunto);
-        }
-
-        return response()->json([
-            'error' => false,
-            'message' => 'Mensaje enviado correctamente',
-            'mensaje' => $mensaje
-        ]);
     }
 
     /**
