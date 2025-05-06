@@ -7,6 +7,12 @@
     </button>
 </div>
 
+<!-- Instrucciones de depuración -->
+<div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4 hidden" id="debug-instruction">
+  <p class="font-bold">Instrucciones para depuración</p>
+  <p>Si el botón de eliminar normal no funciona, utiliza el botón "Eliminar SQL" (icono de base de datos) para forzar la eliminación directa.</p>
+</div>
+
 <!-- Vista de tabla para pantallas medianas y grandes -->
 <div class="hidden md:block">
     <table class="min-w-full divide-y divide-gray-200">
@@ -26,7 +32,13 @@
                 <tr>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $publicacion->id }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $publicacion->titulo }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $publicacion->empresa->nombre ?? 'N/A' }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        @if($publicacion->empresa_id && $publicacion->empresa && $publicacion->empresa->user)
+                            <span class="font-medium">{{ $publicacion->empresa->user->nombre }}</span>
+                        @else
+                            <span class="text-red-500">Sin empresa</span>
+                        @endif
+                    </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $publicacion->categoria->nombre_categoria ?? 'N/A' }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $publicacion->subcategoria->nombre_subcategoria ?? 'N/A' }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $publicacion->horas_totales }}</td>
@@ -63,11 +75,17 @@
             <div class="p-4 border-b">
                 <div class="flex items-start">
                     <div class="flex-shrink-0 bg-blue-500 rounded-lg h-14 w-14 flex items-center justify-center text-white">
-                        {{ strtoupper(substr($publicacion->empresa->nombre ?? 'NA', 0, 2)) }}
+                        {{ strtoupper(substr($publicacion->empresa->user->nombre ?? 'NA', 0, 2)) }}
                     </div>
                     <div class="ml-4 flex-1">
                         <h3 class="text-lg font-bold text-gray-900">{{ $publicacion->titulo }}</h3>
-                        <p class="text-sm text-gray-700 uppercase">{{ $publicacion->empresa->nombre ?? 'N/A' }}</p>
+                        <p class="text-sm text-gray-700 uppercase">
+                            @if($publicacion->empresa_id && $publicacion->empresa && $publicacion->empresa->user)
+                                <span class="font-medium">{{ $publicacion->empresa->user->nombre }}</span>
+                            @else
+                                <span class="text-red-500">Sin empresa</span>
+                            @endif
+                        </p>
                         <div class="flex items-center mt-1">
                             <p class="text-sm text-gray-700">
                                 {{ strtoupper($publicacion->categoria->nombre_categoria ?? 'N/A') }} | {{ $publicacion->horario === 'mañana' ? 'PRESENCIAL' : 'HÍBRIDO' }} | HACE {{ rand(1, 60) }} MIN
@@ -85,7 +103,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>
                 </button>
-                <button type="button" class="btn-eliminar text-red-600 hover:text-red-900" data-id="{{ $publicacion->id }}">
+                <button type="button" class="btn-eliminar text-red-600 hover:text-red-900 mr-4" data-id="{{ $publicacion->id }}">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>

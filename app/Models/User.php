@@ -83,6 +83,16 @@ class User extends Authenticatable
         return $this->hasOne(Tutor::class, 'id', 'id');
     }
 
+    public function institucion()
+    {
+        return $this->hasOne(Institucion::class, 'user_id');
+    }
+
+    public function docente()
+    {
+        return $this->hasOne(Docente::class, 'user_id');
+    }
+
     public function categoria()
     {
         return $this->hasOneThrough(Categoria::class, Tutor::class, 'id', 'id', 'id', 'categoria_id');

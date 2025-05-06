@@ -110,7 +110,7 @@
                         </svg>
                         Panel de empresa
                     </h1>
-                    
+
                     <!-- Estadísticas -->
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                         <div class="bg-gradient-to-br from-purple-50 to-purple-100 p-5 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border border-purple-100 transform hover:-translate-y-1">
@@ -201,7 +201,7 @@
                             </svg>
                             Resumen de Actividad
                         </h2>
-                        
+
                         <div class="flex flex-col md:flex-row gap-6">
                             <!-- Gráfico de solicitudes por oferta -->
                             <div class="w-full md:w-1/2 bg-gradient-to-br from-white to-purple-50 p-5 rounded-xl border border-purple-100 shadow-sm transition-all duration-300 hover:shadow-md">
@@ -248,7 +248,7 @@
                                 </span>
                             </button>
                         </div>
-                        
+
                         @if($activePublications->isEmpty())
                             <div class="bg-white text-center py-16 rounded-xl shadow-md border border-gray-100">
                                 <div class="inline-flex items-center justify-center p-4 bg-purple-100 rounded-full mb-6">
@@ -353,7 +353,7 @@
                                 Ofertas Inactivas
                             </h2>
                         </div>
-                        
+
                         @if($inactivePublications->isEmpty())
                             <div class="bg-white text-center py-10 rounded-xl shadow-md border border-gray-100">
                                 <div class="inline-flex items-center justify-center p-3 bg-gray-100 rounded-full mb-4">
@@ -449,7 +449,7 @@
                             </svg>
                             Consejos para Maximizar sus Ofertas
                         </h2>
-                        
+
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="bg-white p-5 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border border-purple-100 transform hover:-translate-y-1">
                                 <div class="flex items-center mb-4">
@@ -462,7 +462,7 @@
                                 </div>
                                 <p class="text-gray-600 leading-relaxed">Las ofertas con descripciones detalladas (más de 200 palabras) reciben un 70% más de solicitudes. Incluya requisitos, beneficios y tareas específicas.</p>
                             </div>
-                            
+
                             <div class="bg-white p-5 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border border-purple-100 transform hover:-translate-y-1">
                                 <div class="flex items-center mb-4">
                                     <div class="bg-gradient-to-br from-purple-100 to-indigo-100 p-3 rounded-full mr-4 shadow-sm">
@@ -474,7 +474,7 @@
                                 </div>
                                 <p class="text-gray-600 leading-relaxed">Las empresas que responden a las solicitudes en menos de 48 horas tienen un 40% más de probabilidades de encontrar candidatos adecuados.</p>
                             </div>
-                            
+
                             <div class="bg-white p-5 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border border-purple-100 transform hover:-translate-y-1">
                                 <div class="flex items-center mb-4">
                                     <div class="bg-gradient-to-br from-purple-100 to-indigo-100 p-3 rounded-full mr-4 shadow-sm">
@@ -486,7 +486,7 @@
                                 </div>
                                 <p class="text-gray-600 leading-relaxed">Las empresas con perfiles completos reciben un 85% más de solicitudes. Asegúrese de añadir una imagen, descripción y datos completos de su empresa.</p>
                             </div>
-                            
+
                             <div class="bg-white p-5 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border border-purple-100 transform hover:-translate-y-1">
                                 <div class="flex items-center mb-4">
                                     <div class="bg-gradient-to-br from-purple-100 to-indigo-100 p-3 rounded-full mr-4 shadow-sm">
@@ -644,7 +644,7 @@
         // Configuración para el modal
         const modalNuevaOferta = document.getElementById('modalNuevaOferta');
         const formNuevaOferta = document.getElementById('formNuevaOferta');
-        
+
         // Configurar botones para abrir el modal
         document.querySelectorAll('#btnNuevaOferta, #btnPrimeraOferta').forEach(button => {
             if (button) {
@@ -653,13 +653,13 @@
                 });
             }
         });
-        
+
         // Función para abrir el modal
         window.openModal = function() {
             if (modalNuevaOferta) {
                 modalNuevaOferta.classList.remove('hidden');
                 document.body.classList.add('overflow-hidden');
-                
+
                 // Animación de entrada
                 setTimeout(() => {
                     const modalContent = modalNuevaOferta.querySelector('.relative');
@@ -667,7 +667,7 @@
                         modalContent.classList.add('animate-fadeIn');
                     }
                 }, 10);
-                
+
                 // Scroll al inicio del modal y focus primer input
                 setTimeout(() => {
                     const firstInput = modalNuevaOferta.querySelector('input, select, textarea');
@@ -675,7 +675,7 @@
                 }, 300);
             }
         };
-        
+
         // Función para cerrar el modal
         window.closeModal = function() {
             if (modalNuevaOferta) {
@@ -685,15 +685,15 @@
                     modalContent.classList.remove('animate-fadeIn');
                     modalContent.classList.add('animate-fadeOut');
                 }
-                
+
                 setTimeout(() => {
                     modalNuevaOferta.classList.add('hidden');
                     document.body.classList.remove('overflow-hidden');
-                    
+
                     if (modalContent) {
                         modalContent.classList.remove('animate-fadeOut');
                     }
-                    
+
                     if (formNuevaOferta) {
                         formNuevaOferta.reset();
                         delete formNuevaOferta.dataset.processing;
@@ -701,7 +701,7 @@
                 }, 200);
             }
         };
-        
+
         // Cerrar modal al hacer clic fuera
         if (modalNuevaOferta) {
             modalNuevaOferta.addEventListener('click', function(e) {
@@ -709,7 +709,7 @@
                     closeModal();
                 }
             });
-            
+
             // Cerrar con tecla Escape
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape' && !modalNuevaOferta.classList.contains('hidden')) {
@@ -717,26 +717,26 @@
                 }
             });
         }
-        
+
         // Función para cargar subcategorías
         window.cargarSubcategorias = function() {
             const categoriaId = document.getElementById('categoria_id');
             if (!categoriaId) return;
-            
+
             const subcategoriasSelect = document.getElementById('subcategoria_id');
             if (!subcategoriasSelect) return;
-            
+
             if (!categoriaId.value) {
                 subcategoriasSelect.innerHTML = '<option value="">Primero seleccione una categoría</option>';
                 return;
             }
-            
+
             subcategoriasSelect.innerHTML = '<option value="">Cargando subcategorías...</option>';
             subcategoriasSelect.disabled = true;
-            
+
             const baseUrl = '{{ url('/') }}';
             const url = `${baseUrl}/empresa/get-subcategorias/${categoriaId.value}`;
-            
+
             fetch(url, {
                 method: 'GET',
                 headers: {
@@ -758,7 +758,7 @@
                 }
 
                 subcategoriasSelect.innerHTML = '<option value="">Seleccionar subcategoría</option>';
-                
+
                 const subcategorias = response.data || [];
                 if (subcategorias.length === 0) {
                     subcategoriasSelect.innerHTML = '<option value="">No hay subcategorías disponibles</option>';
@@ -767,7 +767,7 @@
 
                 // Usar un Set para evitar duplicados
                 const addedIds = new Set();
-                
+
                 subcategorias.forEach(subcategoria => {
                     if (!addedIds.has(subcategoria.id)) {
                         addedIds.add(subcategoria.id);
@@ -794,24 +794,24 @@
                 subcategoriasSelect.disabled = false;
             });
         };
-        
+
         // Manejar envío del formulario
         if (formNuevaOferta) {
             const requestsInProgress = new Set();
-            
+
             formNuevaOferta.addEventListener('submit', function(e) {
                 e.preventDefault();
-                
+
                 // Verificar si el formulario ya está siendo procesado
                 if (this.dataset.processing === 'true') {
                     console.log('Formulario ya está siendo procesado, ignorando envío duplicado');
                     return false;
                 }
-                
+
                 // Validaciones adicionales en el cliente
                 const titulo = this.querySelector('#titulo').value.trim();
                 const descripcion = this.querySelector('#descripcion').value.trim();
-                
+
                 if (titulo.length < 5) {
                     Swal.fire({
                         title: 'Validación',
@@ -821,7 +821,7 @@
                     });
                     return false;
                 }
-                
+
                 if (descripcion.length < 50) {
                     Swal.fire({
                         title: 'Validación',
@@ -831,33 +831,33 @@
                     });
                     return false;
                 }
-                
+
                 // Verificar si hay una solicitud idéntica en progreso usando datos del formulario como identificador
                 const formData = new FormData(this);
                 const requestId = Array.from(formData.entries())
                     .map(([key, value]) => `${key}=${value}`)
                     .join('&');
-                    
+
                 if (requestsInProgress.has(requestId)) {
                     console.log('Solicitud idéntica ya en progreso, ignorando');
                     return false;
                 }
-                
+
                 // Marcar el formulario como en procesamiento
                 this.dataset.processing = 'true';
                 requestsInProgress.add(requestId);
-                
+
                 // Deshabilitar el botón de submit y mostrar estado de carga
                 const submitButton = document.getElementById('submitButton');
                 if (submitButton) {
                     submitButton.disabled = true;
                     submitButton.innerHTML = '<div class="flex items-center"><svg class="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Publicando...</div>';
                 }
-                
+
                 // Datos para el seguimiento de la petición
                 const uniqueId = Date.now().toString();
                 console.log(`[${uniqueId}] Iniciando envío del formulario`);
-                
+
                 fetch('{{ route('empresa.offers.store') }}', {
                     method: 'POST',
                     body: formData,
@@ -869,16 +869,16 @@
                 })
                 .then(response => {
                     console.log(`[${uniqueId}] Respuesta recibida, status: ${response.status}`);
-                    
+
                     if (!response.ok) {
                         throw new Error(`Error en la respuesta del servidor: ${response.status}`);
                     }
-                    
+
                     const contentType = response.headers.get('content-type');
                     if (contentType && contentType.includes('application/json')) {
                         return response.json().then(data => {
                             console.log(`[${uniqueId}] Datos JSON recibidos:`, data);
-                            
+
                             if (data.success) {
                                 closeModal();
                                 if (window.Swal) {
@@ -906,7 +906,7 @@
                 })
                 .catch(error => {
                     console.error(`[${uniqueId}] Error:`, error);
-                    
+
                     if (window.Swal) {
                         Swal.fire({
                             title: '¡Error!',
@@ -921,14 +921,14 @@
                 })
                 .finally(() => {
                     console.log(`[${uniqueId}] Finalizada la petición`);
-                    
+
                     // Eliminar la solicitud del conjunto de solicitudes en progreso
                     requestsInProgress.delete(requestId);
-                    
+
                     // Restablecer el estado del botón y formulario después de 2 segundos
                     setTimeout(() => {
                         delete formNuevaOferta.dataset.processing;
-                        
+
                         if (submitButton) {
                             submitButton.disabled = false;
                             submitButton.innerHTML = '<div class="flex items-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg> Publicar oferta</div>';
@@ -945,14 +945,14 @@
             const inactivas = {{ $inactivePublications->count() }};
             const solicitudesActivas = {{ $activePublications->sum('solicitudes_count') }};
             const solicitudesInactivas = {{ $inactivePublications->sum('solicitudes_count') }};
-            
+
             // Paleta de colores personalizada con degradados
             const chartPalette = {
                 purple: {
                     primary: 'rgba(124, 58, 237, 0.9)',
                     secondary: 'rgba(139, 92, 246, 0.6)',
                     gradient: createGradient('solicitudesChart', [
-                        'rgba(124, 58, 237, 0.7)', 
+                        'rgba(124, 58, 237, 0.7)',
                         'rgba(139, 92, 246, 0.3)'
                     ])
                 },
@@ -960,7 +960,7 @@
                     primary: 'rgba(217, 119, 6, 0.9)',
                     secondary: 'rgba(245, 158, 11, 0.6)',
                     gradient: createGradient('solicitudesChart', [
-                        'rgba(217, 119, 6, 0.7)', 
+                        'rgba(217, 119, 6, 0.7)',
                         'rgba(251, 191, 36, 0.3)'
                     ])
                 },
@@ -968,7 +968,7 @@
                     primary: 'rgba(59, 130, 246, 0.9)',
                     secondary: 'rgba(96, 165, 250, 0.6)',
                     gradient: createGradient('estadosChart', [
-                        'rgba(59, 130, 246, 0.7)', 
+                        'rgba(59, 130, 246, 0.7)',
                         'rgba(96, 165, 250, 0.3)'
                     ])
                 },
@@ -976,24 +976,24 @@
                     primary: 'rgba(107, 114, 128, 0.9)',
                     secondary: 'rgba(156, 163, 175, 0.6)',
                     gradient: createGradient('estadosChart', [
-                        'rgba(107, 114, 128, 0.7)', 
+                        'rgba(107, 114, 128, 0.7)',
                         'rgba(156, 163, 175, 0.3)'
                     ])
                 }
             };
-            
+
             // Crear degradados para los gráficos
             function createGradient(chartId, colorStops) {
                 const ctx = document.getElementById(chartId).getContext('2d');
                 const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-                
+
                 colorStops.forEach((color, index) => {
                     gradient.addColorStop(index / (colorStops.length - 1), color);
                 });
-                
+
                 return gradient;
             }
-            
+
             // Configurar Chart.js con defaults globales
             Chart.defaults.font.family = "'Inter', 'Helvetica', 'Arial', sans-serif";
             Chart.defaults.color = '#6B7280';
@@ -1001,10 +1001,10 @@
             Chart.defaults.elements.arc.hoverBorderWidth = 3;
             Chart.defaults.elements.arc.hoverBorderColor = '#FFF';
             Chart.defaults.elements.arc.borderRadius = 4;
-            
+
             // Gráfico de distribución de ofertas
             const solicitudesChart = new Chart(
-                document.getElementById('solicitudesChart').getContext('2d'), 
+                document.getElementById('solicitudesChart').getContext('2d'),
                 {
                     type: 'doughnut',
                     data: {
@@ -1094,23 +1094,23 @@
                         beforeDraw: function(chart) {
                             // Si no hay datos, no dibujar nada
                             if (chart.data.datasets[0].data.length === 0) return;
-                            
+
                             const width = chart.width;
                             const height = chart.height;
                             const ctx = chart.ctx;
                             const centerX = width / 2;
                             const centerY = height / 2;
                             const total = chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
-                            
+
                             // Configuración del texto
                             ctx.textAlign = 'center';
                             ctx.textBaseline = 'middle';
-                            
+
                             // Dibujar el valor total
                             ctx.font = 'bold 30px Inter';
                             ctx.fillStyle = '#1F2937';
                             ctx.fillText(total, centerX, centerY - 10);
-                            
+
                             // Texto "Total" debajo
                             ctx.font = '14px Inter';
                             ctx.fillStyle = '#6B7280';
@@ -1119,10 +1119,10 @@
                     }]
                 }
             );
-            
+
             // Gráfico de distribución de solicitudes
             const estadosChart = new Chart(
-                document.getElementById('estadosChart').getContext('2d'), 
+                document.getElementById('estadosChart').getContext('2d'),
                 {
                     type: 'bar',
                     data: {
@@ -1236,26 +1236,26 @@
                         id: 'valueLabels',
                         afterDatasetsDraw: function(chart) {
                             const ctx = chart.ctx;
-                            
+
                             chart.data.datasets.forEach((dataset, datasetIndex) => {
                                 const meta = chart.getDatasetMeta(datasetIndex);
-                                
+
                                 if (!meta.hidden) {
                                     meta.data.forEach((element, index) => {
                                         const value = dataset.data[index];
                                         if (value === 0) return;
-                                        
+
                                         // Obtener posición para el texto
                                         const position = element.getCenterPoint();
                                         const xPos = position.x + 20;
                                         const yPos = position.y;
-                                        
+
                                         // Configuración del texto
                                         ctx.fillStyle = '#1F2937';
                                         ctx.textAlign = 'left';
                                         ctx.textBaseline = 'middle';
                                         ctx.font = 'bold 14px Inter';
-                                        
+
                                         // Dibujar valor
                                         ctx.fillText(value, xPos, yPos);
                                     });
@@ -1265,7 +1265,7 @@
                     }]
                 }
             );
-            
+
             // Añadir animación a los gráficos cuando están visibles en la pantalla
             const chartsSection = document.querySelector('.bg-white.rounded-xl.shadow-md.p-6.mb-8');
             if (chartsSection) {
@@ -1279,13 +1279,13 @@
                                 solicitudesChart.update();
                                 estadosChart.update();
                             }, 100);
-                            
+
                             // Dejar de observar una vez que se han animado
                             observer.unobserve(entry.target);
                         }
                     });
                 }, { threshold: 0.2 });
-                
+
                 observer.observe(chartsSection);
             }
         }
@@ -1302,16 +1302,16 @@
         from { opacity: 0; transform: translateY(-20px); }
         to { opacity: 1; transform: translateY(0); }
     }
-    
+
     @keyframes fadeOut {
         from { opacity: 1; transform: translateY(0); }
         to { opacity: 0; transform: translateY(-20px); }
     }
-    
+
     .animate-fadeIn {
         animation: fadeIn 0.3s ease-out forwards;
     }
-    
+
     .animate-fadeOut {
         animation: fadeOut 0.2s ease-in forwards;
     }

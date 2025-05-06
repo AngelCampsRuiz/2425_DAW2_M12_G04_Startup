@@ -23,11 +23,6 @@ return new class extends Migration
             $table->unsignedBigInteger('subcategoria_id');
             $table->timestamp('fecha_publicacion')->nullable();
             $table->timestamps();
-
-            // Añadir índice único compuesto para prevenir duplicados
-            // Esto evita que una empresa cree ofertas con el mismo título en 24 horas
-            // El límite de caracteres es necesario porque MySQL limita tamaño de índices
-            $table->unique(['empresa_id', 'titulo'], 'uq_emp_titulo_publicacion');
             
             $table->foreign('empresa_id')
                   ->references('id')

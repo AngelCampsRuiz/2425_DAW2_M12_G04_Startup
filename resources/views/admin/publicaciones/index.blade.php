@@ -42,26 +42,31 @@
                                required maxlength="100">
                     </div>
                     
-                    <div>
-                        <label for="empresa_id" class="block text-sm font-medium text-gray-700 mb-1">Empresa</label>
+                    <div class="mb-4">
+                        <label for="empresa_id" class="block text-sm font-medium text-gray-700">Empresa <span class="text-red-500">*</span></label>
                         <select name="empresa_id" id="empresa_id" 
-                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"
+                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50 select-visible"
+                                style="background-color: white !important; -webkit-appearance: menulist !important; appearance: menulist !important;"
                                 required>
-                            <option value="">Selecciona una empresa</option>
+                            <option value="" style="background-color: white !important; padding: 8px !important;">Selecciona una empresa</option>
                             @foreach($empresas as $empresa)
-                                <option value="{{ $empresa->id }}">{{ $empresa->nombre }}</option>
+                                <option value="{{ $empresa->id }}" style="background-color: white !important; padding: 8px !important;">
+                                    {{ $empresa->user ? $empresa->user->nombre : 'Empresa ID: '.$empresa->id }}
+                                </option>
                             @endforeach
                         </select>
+                        <div id="empresa-feedback" class="mt-1 text-sm"></div>
                     </div>
                     
                     <div>
                         <label for="categoria_id" class="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
                         <select name="categoria_id" id="categoria_id" 
-                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"
+                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50 bg-white text-black"
+                                style="color: black !important; background-color: white !important;"
                                 required>
-                            <option value="">Selecciona una categoría</option>
+                            <option value="" style="color: black !important; background-color: white !important;">Selecciona una categoría</option>
                             @foreach($categorias as $categoria)
-                                <option value="{{ $categoria->id }}">{{ $categoria->nombre_categoria }}</option>
+                                <option value="{{ $categoria->id }}" style="color: black !important; background-color: white !important;">{{ $categoria->nombre_categoria }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -69,29 +74,28 @@
                     <div>
                         <label for="subcategoria_id" class="block text-sm font-medium text-gray-700 mb-1">Subcategoría</label>
                         <select name="subcategoria_id" id="subcategoria_id" 
-                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"
+                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50 bg-white text-black"
+                                style="color: black !important; background-color: white !important;"
                                 required>
-                            <option value="">Selecciona una subcategoría</option>
-                            @foreach($subcategorias as $subcategoria)
-                                <option value="{{ $subcategoria->id }}">{{ $subcategoria->nombre_subcategoria }}</option>
-                            @endforeach
+                            <option value="" style="color: black !important; background-color: white !important;">Selecciona primero una categoría</option>
                         </select>
                     </div>
                     
                     <div>
                         <label for="horario" class="block text-sm font-medium text-gray-700 mb-1">Horario</label>
                         <select name="horario" id="horario" 
-                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"
+                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50 bg-white text-black"
+                                style="color: black !important; background-color: white !important;"
                                 required>
-                            <option value="mañana">Mañana</option>
-                            <option value="tarde">Tarde</option>
+                            <option value="mañana" style="color: black !important; background-color: white !important;">Mañana</option>
+                            <option value="tarde" style="color: black !important; background-color: white !important;">Tarde</option>
                         </select>
                     </div>
                     
                     <div>
                         <label for="horas_totales" class="block text-sm font-medium text-gray-700 mb-1">Horas Totales</label>
                         <input type="number" name="horas_totales" id="horas_totales" 
-                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"
+                               class="w-fulsl rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"
                                required min="1">
                     </div>
                     
@@ -158,125 +162,67 @@
             </form>
         </div>
     </div>
+
+    <!-- Modal Eliminar -->
+    <div id="eliminarModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-lg shadow-xl max-w-md w-full">
+            <h2 class="text-xl font-bold text-red-600 mb-4">Confirmar eliminación</h2>
+            <p class="text-gray-600 mb-4">¿Estás seguro de que deseas eliminar esta publicación? Esta acción no se puede deshacer.</p>
+            <div class="flex justify-end space-x-2">
+                <button type="button" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded text-gray-800 font-medium cerrar-modal">Cancelar</button>
+                <button type="button" class="px-4 py-2 bg-red-500 hover:bg-red-600 rounded text-white font-medium confirmar-eliminar">Eliminar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Eliminar SQL -->
+    <div id="eliminarSqlModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-lg shadow-xl max-w-md w-full">
+            <h2 class="text-xl font-bold text-purple-600 mb-4">Confirmar eliminación SQL</h2>
+            <p class="text-gray-600 mb-4">Esta opción eliminará directamente el registro de la base de datos. Use solo en caso de que la eliminación normal no funcione.</p>
+            <div class="flex justify-end space-x-2">
+                <button type="button" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded text-gray-800 font-medium cerrar-modal">Cancelar</button>
+                <button type="button" class="px-4 py-2 bg-purple-500 hover:bg-purple-600 rounded text-white font-medium confirmar-eliminar-sql">Eliminar SQL</button>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('scripts')
 <script>
     // Variable de control para evitar duplicación
     let isSubmitting = false;
-    let initialized = false;
     
     document.addEventListener('DOMContentLoaded', function() {
-        // Inicialización de botones solo una vez
-        if (!initialized) {
-            setupEventListeners();
-            initialized = true;
-        }
+        setupEventListeners();
+        setupSubcategorias();
     });
     
-    // Configura todos los listeners una sola vez
     function setupEventListeners() {
-        // Cerrar modales
-        document.getElementById('modal-close').addEventListener('click', function() {
-            document.getElementById('modal-publicacion').classList.add('hidden');
-        });
-        
-        document.getElementById('btn-cancelar').addEventListener('click', function() {
-            document.getElementById('modal-publicacion').classList.add('hidden');
-        });
-        
-        document.getElementById('modal-eliminar-close').addEventListener('click', function() {
-            document.getElementById('modal-eliminar').classList.add('hidden');
-        });
-        
-        document.getElementById('btn-cancelar-eliminar').addEventListener('click', function() {
-            document.getElementById('modal-eliminar').classList.add('hidden');
-        });
-        
         // Delegación de eventos para los botones dinámicos
         document.addEventListener('click', function(e) {
-            // Botón Crear
-            if (e.target.closest('.btn-crear')) {
-                mostrarFormularioCrear();
-            }
-            
-            // Botones Editar
-            if (e.target.closest('.btn-editar')) {
-                const btn = e.target.closest('.btn-editar');
-                const id = btn.getAttribute('data-id');
-                mostrarFormularioEditar(id);
-            }
-            
             // Botones Eliminar
             if (e.target.closest('.btn-eliminar')) {
                 const btn = e.target.closest('.btn-eliminar');
                 const id = btn.getAttribute('data-id');
                 mostrarModalEliminar(id);
             }
-            
-            // Enlaces de paginación
-            if (e.target.closest('.pagination-link')) {
-                e.preventDefault();
-                const link = e.target.closest('.pagination-link');
-                actualizarTabla(link.getAttribute('href'));
-            }
         });
         
-        // Envío del formulario de crear/editar - Una sola vez
-        document.getElementById('form-publicacion').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // Evitar envíos duplicados
-            if (isSubmitting) return;
-            isSubmitting = true;
-            
-            const formData = new FormData(this);
-            const url = this.getAttribute('action');
-            const method = document.getElementById('form_method').value;
-            
-            // Deshabilitar botones durante la petición
-            document.getElementById('btn-guardar').disabled = true;
-            
-            fetch(url, {
-                method: method === 'PUT' ? 'POST' : 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    document.getElementById('modal-publicacion').classList.add('hidden');
-                    mostrarMensajeExito(data.message);
-                    actualizarTabla();
-                } else if (data.errors) {
-                    mostrarErrores(data.errors);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            })
-            .finally(() => {
-                isSubmitting = false;
-                document.getElementById('btn-guardar').disabled = false;
-            });
-        });
-        
-        // Envío del formulario de eliminar - Una sola vez
+        // Configurar el formulario de eliminación
         document.getElementById('form-eliminar').addEventListener('submit', function(e) {
             e.preventDefault();
             
-            // Evitar envíos duplicados
             if (isSubmitting) return;
             isSubmitting = true;
             
-            const url = this.getAttribute('action');
+            const id = document.getElementById('eliminar_id').value;
+            const url = `/admin/publicaciones/${id}`;
             
             fetch(url, {
                 method: 'DELETE',
                 headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                     'X-Requested-With': 'XMLHttpRequest',
                     'Content-Type': 'application/json'
                 }
@@ -285,48 +231,107 @@
             .then(data => {
                 if (data.success) {
                     document.getElementById('modal-eliminar').classList.add('hidden');
-                    mostrarMensajeExito(data.message);
-                    actualizarTabla();
+                    mostrarMensajeExito(data.message || 'Publicación eliminada correctamente');
+                    window.location.reload(); // Recargar la página después de eliminar
+                } else {
+                    alert(data.message || 'Error al eliminar la publicación');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
+                alert('Error al eliminar la publicación');
             })
             .finally(() => {
                 isSubmitting = false;
             });
         });
+        
+        // Configurar botones de cerrar modal
+        document.getElementById('modal-eliminar-close').addEventListener('click', function() {
+            document.getElementById('modal-eliminar').classList.add('hidden');
+        });
+        
+        document.getElementById('btn-cancelar-eliminar').addEventListener('click', function() {
+            document.getElementById('modal-eliminar').classList.add('hidden');
+        });
+
+        // Botones para crear y editar
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.btn-crear')) {
+                mostrarFormularioCrear();
+            }
+            
+            if (e.target.closest('.btn-editar')) {
+                const btn = e.target.closest('.btn-editar');
+                const id = btn.getAttribute('data-id');
+                mostrarFormularioEditar(id);
+            }
+        });
+
+        // Evento change para el select de categoría
+        const categoriaSelect = document.getElementById('categoria_id');
+        if (categoriaSelect) {
+            categoriaSelect.addEventListener('change', function() {
+                cargarSubcategorias();
+            });
+        }
     }
     
-    // Funciones principales
+    function cargarSubcategorias() {
+        const categoriaId = document.getElementById('categoria_id');
+        if (!categoriaId) return;
+        
+        const subcategoriasSelect = document.getElementById('subcategoria_id');
+        if (!subcategoriasSelect) return;
+        
+        if (!categoriaId.value) {
+            subcategoriasSelect.innerHTML = '<option value="">Selecciona primero una categoría</option>';
+            return;
+        }
+        
+        subcategoriasSelect.innerHTML = '<option value="">Cargando subcategorías...</option>';
+        subcategoriasSelect.disabled = true;
+        
+        fetch(`/admin/publicaciones/subcategorias/${categoriaId.value}`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            subcategoriasSelect.innerHTML = '<option value="">Selecciona una subcategoría</option>';
+            data.forEach(subcategoria => {
+                const option = document.createElement('option');
+                option.value = subcategoria.id;
+                option.textContent = subcategoria.nombre_subcategoria;
+                subcategoriasSelect.appendChild(option);
+            });
+            subcategoriasSelect.disabled = false;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            subcategoriasSelect.innerHTML = '<option value="">Error al cargar subcategorías</option>';
+            subcategoriasSelect.disabled = false;
+        });
+    }
+    
     function mostrarFormularioCrear() {
-        // Resetear el formulario
+        document.getElementById('modal-titulo').textContent = 'Crear Nueva Publicación';
         document.getElementById('form-publicacion').reset();
         document.getElementById('form-errors').classList.add('hidden');
         document.getElementById('publicacion_id').value = '';
         document.getElementById('form_method').value = 'POST';
-        
-        // Configurar la acción del formulario
         document.getElementById('form-publicacion').setAttribute('action', '{{ route("admin.publicaciones.store") }}');
-        
-        // Cambiar el título del modal
-        document.getElementById('modal-titulo').textContent = 'Crear Nueva Publicación';
-        
-        // Mostrar el modal
         document.getElementById('modal-publicacion').classList.remove('hidden');
     }
     
     function mostrarFormularioEditar(id) {
-        // Configurar el formulario
-        document.getElementById('form-errors').classList.add('hidden');
+        document.getElementById('modal-titulo').textContent = 'Editar Publicación';
         document.getElementById('publicacion_id').value = id;
         document.getElementById('form_method').value = 'PUT';
         document.getElementById('form-publicacion').setAttribute('action', `/admin/publicaciones/${id}`);
         
-        // Cambiar el título del modal
-        document.getElementById('modal-titulo').textContent = 'Editar Publicación';
-        
-        // Cargar los datos de la publicación
         fetch(`/admin/publicaciones/${id}/edit`, {
             headers: {
                 'X-Requested-With': 'XMLHttpRequest'
@@ -334,36 +339,39 @@
         })
         .then(response => response.json())
         .then(data => {
-            // Llenar el formulario con los datos
-            document.getElementById('titulo').value = data.publicacion.titulo;
-            document.getElementById('descripcion').value = data.publicacion.descripcion;
-            document.getElementById('empresa_id').value = data.publicacion.empresa_id;
-            document.getElementById('categoria_id').value = data.publicacion.categoria_id;
-            document.getElementById('subcategoria_id').value = data.publicacion.subcategoria_id;
-            document.getElementById('horario').value = data.publicacion.horario;
-            document.getElementById('horas_totales').value = data.publicacion.horas_totales;
-            document.getElementById('fecha_publicacion').value = data.publicacion.fecha_publicacion;
-            document.getElementById('activa').checked = data.publicacion.activa === 1;
+            const publicacion = data.publicacion;
             
-            // Mostrar el modal
+            document.getElementById('titulo').value = publicacion.titulo;
+            document.getElementById('empresa_id').value = publicacion.empresa_id;
+            document.getElementById('categoria_id').value = publicacion.categoria_id;
+            document.getElementById('horario').value = publicacion.horario;
+            document.getElementById('horas_totales').value = publicacion.horas_totales;
+            document.getElementById('fecha_publicacion').value = publicacion.fecha_publicacion ? publicacion.fecha_publicacion.split('T')[0] : '';
+            document.getElementById('descripcion').value = publicacion.descripcion;
+            document.getElementById('activa').checked = publicacion.activa;
+            
+            // Disparar el evento change para cargar las subcategorías
+            cargarSubcategorias();
+            
+            // Esperar a que se carguen las subcategorías y luego seleccionar la correcta
+            setTimeout(() => {
+                document.getElementById('subcategoria_id').value = publicacion.subcategoria_id;
+            }, 500);
+            
             document.getElementById('modal-publicacion').classList.remove('hidden');
         })
         .catch(error => {
             console.error('Error:', error);
+            alert('Error al obtener los datos de la publicación');
         });
     }
     
     function mostrarModalEliminar(id) {
-        // Configurar el formulario
         document.getElementById('eliminar_id').value = id;
-        document.getElementById('form-eliminar').setAttribute('action', `/admin/publicaciones/${id}`);
-        
-        // Mostrar el modal
         document.getElementById('modal-eliminar').classList.remove('hidden');
     }
     
-    // Funciones auxiliares para mostrar mensajes y errores
-    window.mostrarMensajeExito = function(mensaje) {
+    function mostrarMensajeExito(mensaje) {
         const messageElement = document.getElementById('success-message');
         const messageText = document.getElementById('success-message-text');
         
@@ -373,40 +381,7 @@
         setTimeout(function() {
             messageElement.style.display = 'none';
         }, 5000);
-    };
-    
-    window.mostrarErrores = function(errores) {
-        const errorsDiv = document.getElementById('form-errors');
-        const errorsList = document.getElementById('error-list');
-        
-        errorsList.innerHTML = '';
-        
-        for (const key in errores) {
-            errores[key].forEach(error => {
-                const li = document.createElement('li');
-                li.textContent = error;
-                errorsList.appendChild(li);
-            });
-        }
-        
-        errorsDiv.classList.remove('hidden');
-    };
-    
-    // Funciones de actualización de tabla
-    window.actualizarTabla = function(url = '{{ route('admin.publicaciones.index') }}') {
-        fetch(url, {
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            document.getElementById('tabla-container').innerHTML = data.tabla;
-        })
-        .catch(error => {
-            console.error('Error:', error);
-        });
-    };
+    }
 </script>
 
 <style>
@@ -482,6 +457,76 @@ td.whitespace-nowrap {
     min-height: 24px !important;
     min-width: 24px !important;
     margin: 6px auto !important;
+}
+
+/* =========== ESTILOS PARA SELECTS =========== */
+/* Estilos generales para los selects */
+select.rounded-md option {
+    background-color: white !important;
+    padding: 8px !important;
+}
+
+select {
+    background-color: white !important;
+    -webkit-appearance: menulist !important;
+    appearance: menulist !important;
+    border: 1px solid #d1d5db !important;
+}
+
+/* Cuando los selects están enfocados */
+select:focus {
+    background-color: white !important;
+    border-color: #8b5cf6 !important;
+}
+
+/* Cuando los selects están deshabilitados */
+select:disabled {
+    background-color: #f3f4f6 !important;
+    color: #6b7280 !important;
+}
+
+/* Forzar visibilidad de los elementos del select */
+#empresa_id, #categoria_id, #subcategoria_id, #horario {
+    background-color: white !important;
+    border: 1px solid #d1d5db !important;
+    -webkit-appearance: menulist !important;
+    appearance: menulist !important;
+}
+
+#empresa_id option, #categoria_id option, #subcategoria_id option, #horario option {
+    background-color: white !important;
+    padding: 8px !important;
+}
+
+/* Estilos para asegurar que los selects siempre sean visibles */
+.select-visible,
+.select-visible option {
+    background-color: white !important;
+}
+
+/* Reglas específicas para selects */
+select.w-full,
+select.w-full option {
+    background-color: white !important;
+}
+
+/* Forzar modo de selección nativo */
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+    select,
+    select:focus,
+    select:hover {
+        -webkit-appearance: menulist !important;
+        appearance: menulist !important;
+    }
+}
+
+/* Reglas para Firefox */
+@-moz-document url-prefix() {
+    select {
+        -moz-appearance: menulist !important;
+        text-indent: 0.01px;
+        text-overflow: '';
+    }
 }
 </style>
 @endpush 

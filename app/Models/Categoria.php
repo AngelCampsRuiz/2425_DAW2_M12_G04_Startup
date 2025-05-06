@@ -11,7 +11,7 @@ class Categoria extends Model
 
     protected $table = 'categorias';
 
-    protected $fillable = ['nombre_categoria'];
+    protected $fillable = ['nombre_categoria', 'nivel_educativo_id'];
 
     public function subcategorias()
     {
@@ -21,5 +21,15 @@ class Categoria extends Model
     public function tutores()
     {
         return $this->belongsToMany(Tutor::class, 'categoria_tutor');
+    }
+
+    public function nivelEducativo()
+    {
+        return $this->belongsTo(NivelEducativo::class, 'nivel_educativo_id');
+    }
+
+    public function publicaciones()
+    {
+        return $this->hasMany(Publicacion::class);
     }
 }
