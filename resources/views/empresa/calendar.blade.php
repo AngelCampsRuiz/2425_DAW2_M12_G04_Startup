@@ -120,9 +120,9 @@
             <div class="bg-gradient-to-r from-purple-600 to-indigo-600 rounded-t-xl px-6 py-4">
                 <h3 class="text-xl font-semibold text-white" id="modalTitle">Nuevo Recordatorio</h3>
             </div>
-            <form id="reminderForm" action="{{ route('empresa.reminder.store') }}" method="POST" class="p-6">
+            <form id="reminderForm" method="POST" class="p-6">
                 @csrf
-                <input type="hidden" id="reminder_id" name="reminder_id">
+                <input type="hidden" name="_method" value="POST">
                 
                 <div class="space-y-4">
                     <div>
@@ -141,12 +141,19 @@
                     </div>
                     
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Color</label>
-                        <div class="mt-2 flex space-x-3">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Color</label>
+                        <div class="flex space-x-3">
                             @foreach(['#7C3AED', '#EC4899', '#F59E0B', '#10B981', '#3B82F6', '#6B7280'] as $color)
-                                <label class="color-option">
-                                    <input type="radio" name="color" value="{{ $color }}" class="sr-only" {{ $color === '#7C3AED' ? 'checked' : '' }}>
-                                    <div class="w-8 h-8 rounded-full cursor-pointer border-2 hover:opacity-80" style="background-color: {{ $color }}; border-color: {{ $color }}"></div>
+                                <label class="color-option cursor-pointer">
+                                    <input type="radio" name="color" value="{{ $color }}" 
+                                           class="sr-only" 
+                                           {{ $color === '#7C3AED' ? 'checked' : '' }}>
+                                    <div class="w-8 h-8 rounded-full border-2 transition-all duration-200 flex items-center justify-center color-circle"
+                                         style="background-color: {{ $color }}; border-color: {{ $color }}">
+                                        <svg class="w-4 h-4 text-white opacity-0 check-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    </div>
                                 </label>
                             @endforeach
                         </div>
@@ -154,7 +161,7 @@
                 </div>
                 
                 <div class="mt-6 flex justify-end space-x-3">
-                    <button type="button" onclick="window.closeReminderModal()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">
+                    <button type="button" onclick="closeReminderModal()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">
                         Cancelar
                     </button>
                     <button type="submit" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
@@ -190,7 +197,7 @@ document.addEventListener('DOMContentLoaded', function() {
         selectable: true,
         select: function(info) {
             document.getElementById('date').value = info.startStr;
-            window.openReminderModal();
+            openReminderModal();
         }
     });
     calendar.render();
@@ -198,71 +205,148 @@ document.addEventListener('DOMContentLoaded', function() {
     // Marcar fechas con recordatorios
     @foreach($reminders as $reminder)
         calendar.addEvent({
-            title: '',
+            title: '{{ $reminder->title }}',
             start: '{{ $reminder->date->format('Y-m-d') }}',
-            display: 'background',
-            backgroundColor: '{{ $reminder->color }}30'
+            backgroundColor: '{{ $reminder->color }}',
+            borderColor: '{{ $reminder->color }}'
         });
     @endforeach
+
+    // Manejar la selección de colores
+    document.querySelectorAll('.color-option input[type="radio"]').forEach(input => {
+        input.addEventListener('change', function() {
+            // Quitar selección previa
+            document.querySelectorAll('.check-icon').forEach(icon => {
+                icon.style.opacity = '0';
+            });
+            document.querySelectorAll('.color-circle').forEach(circle => {
+                circle.style.transform = 'scale(1)';
+            });
+            
+            // Mostrar selección actual
+            if (this.checked) {
+                const checkIcon = this.parentElement.querySelector('.check-icon');
+                const colorCircle = this.parentElement.querySelector('.color-circle');
+                checkIcon.style.opacity = '1';
+                colorCircle.style.transform = 'scale(1.1)';
+            }
+        });
+    });
+
+    // Inicializar el formulario
+    const reminderForm = document.getElementById('reminderForm');
+    reminderForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        const method = formData.get('_method');
+        const url = method === 'PUT' 
+            ? `/empresa/calendar/reminders/${formData.get('reminder_id')}`
+            : '/empresa/calendar/reminders';
+
+        fetch(url, {
+            method: method === 'PUT' ? 'POST' : 'POST',
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    });
 });
 
 // Funciones globales
-window.openReminderModal = function() {
-    document.getElementById('reminderModal').classList.remove('hidden');
-};
+function openReminderModal(reminder = null) {
+    const modal = document.getElementById('reminderModal');
+    const form = document.getElementById('reminderForm');
+    const methodInput = form.querySelector('input[name="_method"]');
 
-window.closeReminderModal = function() {
+    if (reminder) {
+        // Modo edición
+        form.action = `/empresa/calendar/reminders/${reminder.id}`;
+        methodInput.value = 'PUT';
+        document.getElementById('modalTitle').textContent = 'Editar Recordatorio';
+        
+        // Rellenar datos
+        form.querySelector('#title').value = reminder.title;
+        form.querySelector('#description').value = reminder.description || '';
+        form.querySelector('#date').value = reminder.date;
+        
+        // Seleccionar color
+        const colorInput = form.querySelector(`input[name="color"][value="${reminder.color}"]`);
+        if (colorInput) {
+            colorInput.checked = true;
+            colorInput.dispatchEvent(new Event('change'));
+        }
+    } else {
+        // Modo creación
+        form.action = '/empresa/calendar/reminders';
+        methodInput.value = 'POST';
+        form.reset();
+        document.getElementById('modalTitle').textContent = 'Nuevo Recordatorio';
+        
+        // Seleccionar color por defecto
+        const defaultColor = form.querySelector('input[name="color"][value="#7C3AED"]');
+        if (defaultColor) {
+            defaultColor.checked = true;
+            defaultColor.dispatchEvent(new Event('change'));
+        }
+    }
+
+    modal.classList.remove('hidden');
+}
+
+function closeReminderModal() {
     document.getElementById('reminderModal').classList.add('hidden');
-};
+}
 
-window.toggleReminder = function(id) {
-    fetch(`/empresa/calendar/reminders/${id}/toggle`, {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-            'Content-Type': 'application/json'
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            location.reload();
-        }
-    });
-};
-
-window.editReminder = function(id) {
+function editReminder(id) {
     fetch(`/empresa/calendar/reminders/${id}`)
         .then(response => response.json())
         .then(data => {
-            document.getElementById('reminder_id').value = data.id;
-            document.getElementById('title').value = data.title;
-            document.getElementById('description').value = data.description || '';
-            document.getElementById('date').value = data.date;
-            
-            const colorInput = document.querySelector(`input[name="color"][value="${data.color}"]`);
-            if (colorInput) {
-                colorInput.checked = true;
-            }
-            
-            document.getElementById('modalTitle').textContent = 'Editar Recordatorio';
-            window.openReminderModal();
+            openReminderModal(data);
+        })
+        .catch(error => {
+            console.error('Error:', error);
         });
-};
+}
 
-// Event listeners
+// Cerrar modal con Escape
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
-        window.closeReminderModal();
+        closeReminderModal();
     }
 });
 
+// Cerrar modal haciendo clic fuera
 document.getElementById('reminderModal').addEventListener('click', function(e) {
     if (e.target === this) {
-        window.closeReminderModal();
+        closeReminderModal();
     }
 });
 </script>
+
+<style>
+.color-option input:checked + .color-circle {
+    transform: scale(1.1);
+    box-shadow: 0 0 0 2px white, 0 0 0 4px var(--tw-ring-color);
+}
+
+.color-circle {
+    transition: all 0.2s ease-in-out;
+}
+
+.check-icon {
+    transition: opacity 0.2s ease-in-out;
+}
+</style>
 @endpush
 
 @endsection

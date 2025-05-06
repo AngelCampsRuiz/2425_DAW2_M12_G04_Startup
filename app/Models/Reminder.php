@@ -20,6 +20,14 @@ class Reminder extends Model
         'completed' => 'boolean'
     ];
 
+    // Asegurarse de que la fecha se devuelve en el formato correcto para el input date
+    protected $appends = ['formatted_date'];
+
+    public function getFormattedDateAttribute()
+    {
+        return $this->date->format('Y-m-d');
+    }
+
     public function empresa()
     {
         return $this->belongsTo(Empresa::class);

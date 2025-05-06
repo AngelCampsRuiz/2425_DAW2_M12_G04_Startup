@@ -17,43 +17,65 @@ class CalendarController extends Controller
         return view('empresa.calendar', compact('reminders'));
     }
 
+    public function show(Reminder $reminder)
+    {
+        if ($reminder->empresa_id !== Auth::user()->empresa->id) {
+            return response()->json(['error' => 'No autorizado'], 403);
+        }
+
+        return response()->json([
+            'id' => $reminder->id,
+            'title' => $reminder->title,
+            'description' => $reminder->description,
+            'date' => $reminder->date->format('Y-m-d'),
+            'color' => $reminder->color
+        ]);
+    }
+
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'date' => 'required|date',
-            'color' => 'nullable|string|max:7'
+            'color' => 'required|string|max:7'
         ]);
 
         $reminder = Reminder::create([
             'empresa_id' => Auth::user()->empresa->id,
-            'title' => $request->title,
-            'description' => $request->description,
-            'date' => $request->date,
-            'color' => $request->color ?? '#7C3AED'
+            'title' => $validated['title'],
+            'description' => $validated['description'],
+            'date' => $validated['date'],
+            'color' => $validated['color']
         ]);
 
-        return redirect()->route('empresa.calendar')->with('success', 'Recordatorio creado correctamente');
+        return response()->json([
+            'success' => true,
+            'message' => 'Recordatorio creado correctamente',
+            'reminder' => $reminder
+        ]);
     }
 
     public function update(Request $request, Reminder $reminder)
     {
         if ($reminder->empresa_id !== Auth::user()->empresa->id) {
-            return abort(403);
+            return response()->json(['error' => 'No autorizado'], 403);
         }
 
-        $request->validate([
+        $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'date' => 'required|date',
-            'color' => 'nullable|string|max:7',
-            'completed' => 'nullable|boolean'
+            'color' => 'required|string|max:7'
         ]);
 
-        $reminder->update($request->all());
+        $reminder->update($validated);
 
-        return redirect()->route('empresa.calendar')->with('success', 'Recordatorio actualizado correctamente');
+        return response()->json([
+            'success' => true,
+            'message' => 'Recordatorio actualizado correctamente',
+            'reminder' => $reminder
+        ]);
     }
 
     public function destroy(Reminder $reminder)
