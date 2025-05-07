@@ -1177,11 +1177,8 @@
             };
         });
     </script>
-<<<<<<< HEAD
     <script src="{{ asset('js/distance-filter.js') }}"></script>
-=======
     
     {{-- CARGAR SCRIPT PARA DETALLES DE SOLICITUD --}}
     <script src="{{ asset('js/estudiante-solicitud-detalle.js') }}"></script>
->>>>>>> aina
 @endsection
