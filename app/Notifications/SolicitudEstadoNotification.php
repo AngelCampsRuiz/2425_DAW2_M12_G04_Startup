@@ -32,18 +32,28 @@ class SolicitudEstadoNotification extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return ['database', 'mail'];
     }
 
     /**
      * Get the mail representation of the notification.
      */
-    public function toMail(object $notifiable): MailMessage
+    public function toMail($notifiable)
     {
+        $estadoTexto = $this->estado === 'aceptada' ? 'aceptada' : 'rechazada';
+        $color = $this->estado === 'aceptada' ? 'success' : 'error';
+
         return (new MailMessage)
-            ->line('The introduction to the notification.')
-            ->action('Notification Action', url('/'))
-            ->line('Thank you for using our application!');
+            ->subject('Estado de tu solicitud')
+            ->markdown('emails.notificacion', [
+                'subject' => 'Estado de tu solicitud',
+                'greeting' => '¡Hola ' . $notifiable->nombre . '!',
+                'line1' => 'Tu solicitud ha sido ' . $estadoTexto . ' en la publicación "' . $this->publicacion->titulo . '" de la empresa ' . $this->empresa->user->nombre . '.',
+                'actionText' => 'Ver publicación',
+                'actionUrl' => url('/publication/' . $this->publicacion->id),
+                'actionColor' => $color,
+                'line2' => '¡Gracias por usar NextGen!',
+            ]);
     }
 
     /**

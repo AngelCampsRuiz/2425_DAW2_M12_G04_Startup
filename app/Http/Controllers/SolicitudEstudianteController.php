@@ -6,9 +6,6 @@ use App\Models\Clase;
 use App\Models\SolicitudEstudiante;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Notifications\SolicitudEstadoNotification;
-use App\Events\NotificacionPusher;
-use Illuminate\Support\Facades\Log;
 
 class SolicitudEstudianteController extends Controller
 {
@@ -83,22 +80,6 @@ class SolicitudEstudianteController extends Controller
         // Aprobar la solicitud
         $solicitud->aprobar($request->respuesta, $request->clase_id);
 
-        // Notificar al estudiante
-        $estudiante = $solicitud->estudiante->user;
-        $empresa = $solicitud->clase->empresa ?? $solicitud->publicacion->empresa; // Ajusta según tu modelo
-        $publicacion = $solicitud->publicacion; // Ajusta según tu modelo
-
-        if ($estudiante && $empresa && $publicacion) {
-            $estudiante->notify(new SolicitudEstadoNotification('aceptada', $empresa, $publicacion));
-        }
-
-        event(new NotificacionPusher($estudiante->id));
-
-        Log::info('Notificación de solicitud', [
-            'estudiante' => $estudiante,
-            'empresa' => $empresa,
-            'publicacion' => $publicacion,
-        ]);
 
         return redirect()->route('institucion.solicitudes.index')
             ->with('success', 'Solicitud aprobada correctamente');
@@ -123,22 +104,6 @@ class SolicitudEstudianteController extends Controller
         // Rechazar la solicitud
         $solicitud->rechazar($request->respuesta);
 
-        // Notificar al estudiante
-        $estudiante = $solicitud->estudiante->user;
-        $empresa = $solicitud->clase->empresa ?? $solicitud->publicacion->empresa; // Ajusta según tu modelo
-        $publicacion = $solicitud->publicacion; // Ajusta según tu modelo
-
-        if ($estudiante && $empresa && $publicacion) {
-            $estudiante->notify(new SolicitudEstadoNotification('rechazada', $empresa, $publicacion));
-        }
-
-        event(new NotificacionPusher($estudiante->id));
-
-        Log::info('Notificación de solicitud', [
-            'estudiante' => $estudiante,
-            'empresa' => $empresa,
-            'publicacion' => $publicacion,
-        ]);
 
         return redirect()->route('institucion.solicitudes.index')
             ->with('success', 'Solicitud rechazada correctamente');

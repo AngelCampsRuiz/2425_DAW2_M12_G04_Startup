@@ -95,7 +95,7 @@
                     Route::put('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
                     Route::post('/profile/update-location', [ProfileController::class, 'updateLocation'])
                         ->name('profile.update-location');
-                
+
                 // PUBLICACIONES VISIBLES PARA TODOS LOS USUARIOS
                     Route::get('/publication/{id}', [PublicationController::class, 'show'])->name('publication.show');
 

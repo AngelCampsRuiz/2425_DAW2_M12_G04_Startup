@@ -68,12 +68,14 @@ document.addEventListener('DOMContentLoaded', function () {
                                 break;
                             case 'respuesta_publicacion':
                             case 'App\\Notifications\\SolicitudEstadoNotification':
-                                icon = '<i class="fas fa-check-circle fa-xs"></i>';
-                                iconColor = 'text-green-600 bg-green-100';
-                                break;
                             case 'solicitud_estado':
-                                icon = '<i class="fas fa-check-circle fa-xs"></i>';
-                                iconColor = 'text-green-600 bg-green-100';
+                                if (notification.estado === 'rechazada') {
+                                    icon = '<i class="fas fa-times-circle fa-xs"></i>';
+                                    iconColor = 'text-red-600 bg-red-100';
+                                } else {
+                                    icon = '<i class="fas fa-check-circle fa-xs"></i>';
+                                    iconColor = 'text-green-600 bg-green-100';
+                                }
                                 break;
                             default:
                                 icon = '<i class="fas fa-info-circle fa-xs"></i>';
@@ -81,7 +83,8 @@ document.addEventListener('DOMContentLoaded', function () {
                         }
 
                         notificationList.innerHTML += `
-                            <div class="p-3 border-b hover:bg-gray-100 cursor-pointer flex items-start space-x-2" onclick="markAsRead(${notification.id})">
+                            <div class="p-3 border-b hover:bg-gray-100 cursor-pointer flex items-start space-x-2"
+                                 onclick="markAsReadAndRedirect('${notification.id}', '${notification.url}')">
                                 <div class="flex-shrink-0 rounded-full p-1.5 ${iconColor} flex items-center justify-center" style="width:28px;height:28px;">
                                     ${icon}
                                 </div>
@@ -115,3 +118,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
     loadNotifications();
 });
+
+window.markAsReadAndRedirect = function(id, url) {
+    // Elimina del DOM la notificación antes de redirigir
+    const notifDiv = document.querySelector(`[onclick*="markAsReadAndRedirect('${id}'"]`);
+    if (notifDiv) notifDiv.remove();
+
+    fetch(`/notifications/${id}/read`, {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    }).then(() => {
+        // Opcional: podrías actualizar el contador aquí si quieres
+        window.location.href = url;
+    });
+}

@@ -1,6 +1,7 @@
 {{-- HEADER --}}
 @auth
     <meta name="user-id" content="{{ auth()->id() }}">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 @endauth
 <header class="bg-gradient-to-r from-[#D0AAFE] to-[#E5D0FF] py-4 px-6 shadow-lg">
     <div class="container mx-auto flex justify-between items-center">

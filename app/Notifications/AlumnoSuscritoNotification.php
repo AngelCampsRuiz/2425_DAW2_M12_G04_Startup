@@ -12,13 +12,15 @@ class AlumnoSuscritoNotification extends Notification
     use Queueable;
 
     protected $alumno;
+    protected $publicacion;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct($alumno)
+    public function __construct($alumno, $publicacion)
     {
         $this->alumno = $alumno;
+        $this->publicacion = $publicacion;
     }
 
     /**
@@ -28,18 +30,25 @@ class AlumnoSuscritoNotification extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return ['database', 'mail'];
     }
 
     /**
      * Get the mail representation of the notification.
      */
-    public function toMail(object $notifiable): MailMessage
+    public function toMail($notifiable)
     {
         return (new MailMessage)
-            ->line('The introduction to the notification.')
-            ->action('Notification Action', url('/'))
-            ->line('Thank you for using our application!');
+            ->subject('Nueva solicitud de alumno')
+            ->markdown('emails.notificacion', [
+                'subject' => 'Nueva solicitud de alumno',
+                'greeting' => '¡Hola ' . $notifiable->nombre . '!',
+                'line1' => 'Has recibido una nueva solicitud de ' . $this->alumno->nombre . ' (' . $this->alumno->email . ') para tu publicación "' . $this->publicacion->titulo . '".',
+                'actionText' => 'Ver solicitudes',
+                'actionUrl' => url('/empresa/ofertas/' . $this->publicacion->id . '/solicitudes'),
+                'actionColor' => 'primary',
+                'line2' => '¡Entra en la plataforma para gestionarla!',
+            ]);
     }
 
     /**
@@ -53,6 +62,7 @@ class AlumnoSuscritoNotification extends Notification
             'title' => 'Nueva solicitud de alumno',
             'message' => 'Has recibido una solicitud de ' . $this->alumno->nombre . ' (' . $this->alumno->email . ')',
             'alumno_id' => $this->alumno->id,
+            'publicacion_id' => $this->publicacion->id,
             'type' => 'nueva_solicitud'
         ];
     }
