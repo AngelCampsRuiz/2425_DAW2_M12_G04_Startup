@@ -61,7 +61,7 @@
                 <a href="{{ route('admin.subcategorias.index') }}" class="px-4 py-2 {{ Request::routeIs('admin.subcategorias.*') ? 'text-white bg-purple-600' : 'text-purple-600 hover:bg-purple-100' }} rounded-md transition-colors">Subcategorías</a>
                 <a href="{{ route('admin.empresas.index') }}" class="px-4 py-2 {{ Request::routeIs('admin.empresas.*') ? 'text-white bg-purple-600' : 'text-purple-600 hover:bg-purple-100' }} rounded-md transition-colors">Empresas</a>
                 <a href="{{ route('admin.alumnos.index') }}" class="px-4 py-2 {{ Request::routeIs('admin.alumnos.*') ? 'text-white bg-purple-600' : 'text-purple-600 hover:bg-purple-100' }} rounded-md transition-colors">Alumnos</a>
-                <a href="#" class="px-4 py-2 text-purple-600 hover:bg-purple-100 rounded-md transition-colors">Profesores</a>
+                <a href="{{ route('admin.profesores.index') }}" class="px-4 py-2 {{ Request::routeIs('admin.profesores.*') ? 'text-white bg-purple-600' : 'text-purple-600 hover:bg-purple-100' }} rounded-md transition-colors">Profesores</a>
             </div>
         </div>
 

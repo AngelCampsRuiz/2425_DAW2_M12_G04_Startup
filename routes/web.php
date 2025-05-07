@@ -162,6 +162,14 @@
                     // RUTA GESTIONAR EMPRESAS
                         Route::resource('empresas', App\Http\Controllers\Admin\EmpresaController::class);
 
+                // RUTAS PARA GESTIONAR LOS PROFESORES
+                    Route::get('profesores', [App\Http\Controllers\Admin\ProfesorController::class, 'index'])->name('profesores.index');
+                    Route::post('profesores', [App\Http\Controllers\Admin\ProfesorController::class, 'store'])->name('profesores.store');
+                    Route::get('profesores/{profesor}/edit', [App\Http\Controllers\Admin\ProfesorController::class, 'edit'])->name('profesores.edit');
+                    Route::put('profesores/{profesor}', [App\Http\Controllers\Admin\ProfesorController::class, 'update'])->name('profesores.update');
+                    Route::delete('profesores/{profesor}', [App\Http\Controllers\Admin\ProfesorController::class, 'destroy'])->name('profesores.destroy');
+                    Route::delete('profesores/eliminar-sql/{profesor}', [App\Http\Controllers\Admin\ProfesorController::class, 'eliminarSQL'])->name('profesores.eliminar-sql');
+
                 // Rutas de Publicaciones
                 Route::get('/publicaciones', [App\Http\Controllers\Admin\PublicacionController::class, 'index'])->name('publicaciones.index');
                 Route::post('/publicaciones', [App\Http\Controllers\Admin\PublicacionController::class, 'store'])->name('publicaciones.store');
