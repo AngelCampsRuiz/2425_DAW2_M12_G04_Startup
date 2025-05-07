@@ -1112,6 +1112,27 @@
                                 </div>
 
                                 <div class="space-y-6">
+                                    {{-- Banner de Perfil --}}
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Banner de Perfil</label>
+                                        @if($user->banner)
+                                            <div class="mt-2 mb-4">
+                                                <img src="{{ asset('public/profile_banners/' . $user->banner) }}"
+                                                     alt="Banner actual"
+                                                     class="w-full h-32 object-cover rounded-lg border-4 border-purple-100 shadow-md">
+                                            </div>
+                                        @else
+                                            <p class="mt-2 text-sm text-gray-500">No hay banner personalizado</p>
+                                        @endif
+                                        <input type="file" name="banner" id="banner" accept="image/*"
+                                               class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 transition-all duration-200"
+                                               onchange="validarBanner(this)">
+                                        <span id="error-banner" class="error-message text-xs text-red-500 mt-1 hidden"></span>
+                                        @error('banner')
+                                            <span class="error-message text-xs text-red-500 mt-1">{{ $message }}</span>
+                                        @enderror
+                                    </div>
+
                                     {{-- Foto de Perfil --}}
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">Foto de Perfil Actual</label>

@@ -31,7 +31,7 @@ class Estudiante extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'id', 'id');
     }
 
     public function institucion()
@@ -51,7 +51,7 @@ class Estudiante extends Model
     {
         return $this->belongsTo(Clase::class);
     }
-    
+
     /**
      * Relación muchos a muchos con clases a través de la tabla pivote
      */
@@ -61,7 +61,7 @@ class Estudiante extends Model
                     ->withPivot('fecha_asignacion', 'fecha_finalizacion', 'estado', 'calificacion', 'comentarios')
                     ->withTimestamps();
     }
-    
+
     /**
      * Obtiene las asignaciones de este estudiante a clases
      */
