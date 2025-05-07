@@ -31,6 +31,7 @@ class User extends Authenticatable
         'telefono',
         'descripcion',
         'imagen',
+        'banner',
         'visibilidad',
         'role_id',
         'show_telefono',
@@ -38,6 +39,7 @@ class User extends Authenticatable
         'show_ciudad',
         'show_direccion',
         'show_web',
+        'web',
         'lat',
         'lng',
         'direccion',
@@ -60,6 +62,12 @@ class User extends Authenticatable
     public function role()
     {
         return $this->belongsTo(Rol::class, 'role_id');
+    }
+
+    // Método helper para verificar el rol
+    public function hasRole($roleId)
+    {
+        return $this->role_id == $roleId;
     }
 
     // Relaciones polimórficas

@@ -13,8 +13,11 @@ return new class extends Migration
     {
         Schema::create('chats', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('empresa_id')->constrained('empresas');
-            $table->foreignId('solicitud_id')->constrained('solicitudes');
+            $table->foreignId('empresa_id')->nullable()->constrained('empresas');
+            $table->foreignId('solicitud_id')->nullable()->constrained('solicitudes');
+            $table->foreignId('docente_id')->nullable()->constrained('docentes');
+            $table->foreignId('estudiante_id')->nullable()->constrained('estudiantes');
+            $table->string('tipo')->default('empresa_estudiante'); // valores posibles: empresa_estudiante, docente_estudiante
             $table->timestamps();
         });
     }
