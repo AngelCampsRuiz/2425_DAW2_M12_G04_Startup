@@ -103,6 +103,7 @@
                     Route::post('/chat/{chat}/message', [ChatController::class, 'sendMessage'])->name('chat.message');
                     Route::get('/chat/{chat}/messages', [ChatController::class, 'getMessages'])->name('chat.messages');
                     Route::post('/chat/create/{solicitud}', [ChatController::class, 'createChat'])->name('chat.create');
+                    Route::post('/chat/create-docente', [ChatController::class, 'createDocenteChat'])->name('chat.create.docente');
 
                 // RUTAS PARA VALORACIONES
                     Route::post('/valoraciones', [ValoracionController::class, 'store'])->name('valoraciones.store');
@@ -246,4 +247,25 @@
         // Asignación de clases a estudiantes tras aprobar solicitudes
         Route::get('/solicitudes/{solicitud}/asignar-clase', [App\Http\Controllers\Institucion\SolicitudClaseController::class, 'asignar'])->name('solicitudes.asignar-clase');
         Route::post('/solicitudes/{solicitud}/asignar-clase', [App\Http\Controllers\Institucion\SolicitudClaseController::class, 'store'])->name('solicitudes.asignar-clase.store');
+    });
+
+    // RUTAS PARA DOCENTES
+    Route::prefix('docente')->middleware(['auth', \App\Http\Middleware\CheckRole::class.':docente'])->name('docente.')->group(function () {
+        // Dashboard
+        Route::get('/dashboard', [App\Http\Controllers\DocenteController::class, 'dashboard'])->name('dashboard');
+
+        // Alumnos
+        Route::get('/alumnos', [App\Http\Controllers\DocenteController::class, 'alumnos'])->name('alumnos.index');
+        Route::get('/alumnos/{id}', [App\Http\Controllers\DocenteController::class, 'showAlumno'])->name('alumnos.show');
+
+        // Clases
+        Route::get('/clases', [App\Http\Controllers\DocenteController::class, 'clases'])->name('clases.index');
+        Route::get('/clases/{id}', [App\Http\Controllers\DocenteController::class, 'showClase'])->name('clases.show');
+        Route::get('/clases/{id}/alumnos', [App\Http\Controllers\DocenteController::class, 'clasesAlumnos'])->name('clases.alumnos');
+
+        // Solicitudes
+        Route::get('/solicitudes', [App\Http\Controllers\DocenteController::class, 'solicitudes'])->name('solicitudes.index');
+        Route::get('/solicitudes/{id}', [App\Http\Controllers\DocenteController::class, 'showSolicitud'])->name('solicitudes.show');
+        Route::post('/solicitudes/{id}/aprobar', [App\Http\Controllers\DocenteController::class, 'aprobarSolicitud'])->name('solicitudes.aprobar');
+        Route::post('/solicitudes/{id}/rechazar', [App\Http\Controllers\DocenteController::class, 'rechazarSolicitud'])->name('solicitudes.rechazar');
     });
