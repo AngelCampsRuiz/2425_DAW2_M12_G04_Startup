@@ -45,7 +45,6 @@ class CategoriaSeeder extends Seeder
                 ['nombre_categoria' => 'Soldadura y Calderería', 'nivel_educativo_id' => $gradoMedio],
                 ['nombre_categoria' => 'Joyería', 'nivel_educativo_id' => $gradoMedio],
                 ['nombre_categoria' => 'Cocina y Gastronomía', 'nivel_educativo_id' => $gradoMedio],
-                ['nombre_categoria' => 'Comercialización de Productos Alimentarios', 'nivel_educativo_id' => $gradoMedio],
                 ['nombre_categoria' => 'Servicios en Restauración', 'nivel_educativo_id' => $gradoMedio],
                 ['nombre_categoria' => 'Estética y Belleza', 'nivel_educativo_id' => $gradoMedio],
                 ['nombre_categoria' => 'Peluquería y Cosmética Capilar', 'nivel_educativo_id' => $gradoMedio],
@@ -85,7 +84,6 @@ class CategoriaSeeder extends Seeder
                 ['nombre_categoria' => 'Mantenimiento de Embarcaciones de Recreo', 'nivel_educativo_id' => $gradoMedio],
                 ['nombre_categoria' => 'Mantenimiento de Estructuras de Madera y Mobiliario de Embarcaciones de Recreo', 'nivel_educativo_id' => $gradoMedio],
                 ['nombre_categoria' => 'Mantenimiento de Material Rodante Ferroviario', 'nivel_educativo_id' => $gradoMedio],
-                ['nombre_categoria' => 'Montaje de Estructuras e Instalación de Sistemas Aeronáuticos', 'nivel_educativo_id' => $gradoMedio],
                 ['nombre_categoria' => 'Fabricación de Productos Cerámicos', 'nivel_educativo_id' => $gradoMedio],
 
             // CICLOS DE GRADO SUPERIOR
@@ -163,7 +161,6 @@ class CategoriaSeeder extends Seeder
                 ['nombre_categoria' => 'Dietética', 'nivel_educativo_id' => $gradoSuperior],
                 ['nombre_categoria' => 'Coordinación de Emergencias y Protección Civil', 'nivel_educativo_id' => $gradoSuperior],
                 ['nombre_categoria' => 'Educación y Control Ambiental', 'nivel_educativo_id' => $gradoSuperior],
-                ['nombre_categoria' => 'Prevención de Riesgos Profesionales', 'nivel_educativo_id' => $gradoSuperior],
                 ['nombre_categoria' => 'Química y Salud Ambiental', 'nivel_educativo_id' => $gradoSuperior],
                 ['nombre_categoria' => 'Animación Sociocultural y Turística', 'nivel_educativo_id' => $gradoSuperior],
                 ['nombre_categoria' => 'Educación Infantil', 'nivel_educativo_id' => $gradoSuperior],
@@ -243,8 +240,15 @@ class CategoriaSeeder extends Seeder
                 ['nombre_categoria' => 'Abogacía', 'nivel_educativo_id' => $master]
         ];
 
+        // Usar updateOrCreate para evitar duplicados
         foreach ($categorias as $categoria) {
-            Categoria::create($categoria);
+            Categoria::updateOrCreate(
+                [
+                    'nombre_categoria' => $categoria['nombre_categoria'],
+                    'nivel_educativo_id' => $categoria['nivel_educativo_id']
+                ],
+                $categoria
+            );
         }
     }
 }

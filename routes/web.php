@@ -22,6 +22,8 @@
                 use App\Http\Controllers\PublicationController;
             // CONTROLADOR CATEGORÍAS
                 use App\Http\Controllers\Admin\CategoriaController;
+            // CONTROLADOR API CATEGORÍAS
+                use App\Http\Controllers\API\CategoriaController as APICategoriaController;
             // CONTROLADOR SUBCATEGORÍAS
                 use App\Http\Controllers\Admin\SubcategoriaController;
             // CONTROLADOR SOLICITUDES
@@ -42,6 +44,9 @@
     // RUTAS DE LA APLICACIÓN
         // RUTA PRINCIPAL HOME
             Route::get('/', [HomeController::class, 'index'])->name('home');
+
+        // API CATEGORÍAS POR NIVELES
+            Route::post('/api/categorias-por-niveles', [APICategoriaController::class, 'getCategoriasPorNiveles']);
 
         // RUTAS DE DEMOSTRACIÓN
             Route::get('/demo/student', [DemoController::class, 'demoStudent'])->name('demo.student');

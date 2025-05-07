@@ -22,10 +22,7 @@ return new class extends Migration
                 $table->dropColumn('tutor_id');
             }
             
-            // Añadir la columna de solicitud_id si no existe
-            if (!Schema::hasColumn('chats', 'solicitud_id')) {
-                $table->foreignId('solicitud_id')->nullable()->constrained('solicitudes')->onDelete('cascade');
-            }
+            // No necesitamos añadir solicitud_id ya que ya está incluido en la migración original
         });
     }
 
@@ -35,12 +32,6 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('chats', function (Blueprint $table) {
-            // Eliminar la columna de solicitud_id si existe
-            if (Schema::hasColumn('chats', 'solicitud_id')) {
-                $table->dropForeign(['solicitud_id']);
-                $table->dropColumn('solicitud_id');
-            }
-            
             // Restaurar las columnas originales si no existen
             if (!Schema::hasColumn('chats', 'alumno_id')) {
                 $table->foreignId('alumno_id')->nullable()->constrained('estudiantes');
@@ -50,4 +41,4 @@ return new class extends Migration
             }
         });
     }
-};
+}; 
