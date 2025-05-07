@@ -11,8 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('docentes', function (Blueprint $table) {
-            $table->foreignId('departamento_id')->nullable()->after('institucion_id');
+        Schema::create('chats', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('empresa_id')->nullable()->constrained('empresas');
+            $table->foreignId('solicitud_id')->nullable()->constrained('solicitudes');
+            $table->foreignId('estudiante_id')->nullable()->constrained('estudiantes');
+            $table->string('tipo')->default('empresa_estudiante'); // valores posibles: empresa_estudiante, docente_estudiante
+            $table->timestamps();
         });
     }
 
@@ -21,8 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('docentes', function (Blueprint $table) {
-            $table->dropColumn('departamento_id');
-        });
+        Schema::dropIfExists('chats');
     }
 }; 
