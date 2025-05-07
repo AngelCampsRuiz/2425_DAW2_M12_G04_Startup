@@ -6,14 +6,8 @@
         <span id="success-message-text" class="block sm:inline"></span>
     </div>
     
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">Gestión de Profesores</h1>
-        <button id="btnCrearProfesor" class="btn-crear bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded">
-            Crear Profesor
-        </button>
-    </div>
-
-    <div id="tabla-profesores">
+    <!-- Contenedor de la tabla -->
+    <div id="tabla-profesores" class="bg-white rounded-lg shadow overflow-hidden">
         @include('admin.profesores.tabla')
     </div>
 
@@ -105,6 +99,12 @@
                             <button type="button" id="eliminar-imagen" class="text-xs text-red-600 mt-1">Eliminar imagen</button>
                         </div>
                     </div>
+                    
+                    <div id="activo-container" class="col-span-2 flex items-center hidden">
+                        <input type="checkbox" name="activo" id="activo" value="1"
+                               class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-300 focus:ring focus:ring-purple-200 focus:ring-opacity-50">
+                        <label for="activo" class="ml-2 text-sm font-medium text-gray-700">Cuenta Activa</label>
+                    </div>
                 </div>
 
                 <div class="mt-6">
@@ -180,13 +180,12 @@
     
     function setupEventListeners() {
         // Delegación de eventos para los botones dinámicos
-        const btnCrear = document.querySelector('.btn-crear');
-        if (btnCrear) {
-            btnCrear.addEventListener('click', mostrarFormularioCrear);
-        }
-        
-        // Los botones de editar y eliminar se manejan con delegación de eventos
-        document.querySelector('#tabla-profesores').addEventListener('click', function(e) {
+        document.addEventListener('click', function(e) {
+            // Botón Crear
+            if (e.target.closest('.btn-crear')) {
+                mostrarFormularioCrear();
+            }
+            
             // Botones Editar
             if (e.target.closest('.btn-editar')) {
                 const btn = e.target.closest('.btn-editar');
@@ -200,36 +199,40 @@
                 const id = btn.getAttribute('data-id');
                 mostrarModalEliminar(id);
             }
+            
+            // Cerrar modales
+            if (e.target.closest('#modal-close') || e.target.closest('#btn-cancelar')) {
+                document.getElementById('modal-profesor').classList.add('hidden');
+            }
+            
+            if (e.target.closest('#modal-eliminar-close') || e.target.closest('#btn-cancelar-eliminar')) {
+                document.getElementById('modal-eliminar').classList.add('hidden');
+            }
+            
+            // Eliminar foto
+            if (e.target.closest('#eliminar-imagen')) {
+                document.getElementById('imagen').value = '';
+                document.getElementById('imagen-preview').classList.add('hidden');
+                document.getElementById('imagen-preview-img').src = '';
+                // Agregar campo oculto para indicar que se debe eliminar la foto existente
+                const inputEliminarImagen = document.getElementById('eliminar_imagen_actual') || document.createElement('input');
+                inputEliminarImagen.type = 'hidden';
+                inputEliminarImagen.id = 'eliminar_imagen_actual';
+                inputEliminarImagen.name = 'eliminar_imagen_actual';
+                inputEliminarImagen.value = '1';
+                document.getElementById('form-profesor').appendChild(inputEliminarImagen);
+            }
+            
+            // Cerrar modal de eliminar SQL
+            if (e.target.closest('.cerrar-modal')) {
+                document.getElementById('eliminarSqlModal').classList.add('hidden');
+            }
+            
+            // Confirmar eliminación SQL
+            if (e.target.closest('.confirmar-eliminar-sql')) {
+                eliminarProfesorSQL();
+            }
         });
-        
-        // Cerrar modales
-        const modalClose = document.getElementById('modal-close');
-        if (modalClose) {
-            modalClose.addEventListener('click', function() {
-                document.getElementById('modal-profesor').classList.add('hidden');
-            });
-        }
-        
-        const btnCancelar = document.getElementById('btn-cancelar');
-        if (btnCancelar) {
-            btnCancelar.addEventListener('click', function() {
-                document.getElementById('modal-profesor').classList.add('hidden');
-            });
-        }
-        
-        const modalEliminarClose = document.getElementById('modal-eliminar-close');
-        if (modalEliminarClose) {
-            modalEliminarClose.addEventListener('click', function() {
-                document.getElementById('modal-eliminar').classList.add('hidden');
-            });
-        }
-        
-        const btnCancelarEliminar = document.getElementById('btn-cancelar-eliminar');
-        if (btnCancelarEliminar) {
-            btnCancelarEliminar.addEventListener('click', function() {
-                document.getElementById('modal-eliminar').classList.add('hidden');
-            });
-        }
         
         // Manejo de la previsualización de la foto
         const inputImagen = document.getElementById('imagen');
@@ -244,23 +247,6 @@
                     };
                     reader.readAsDataURL(file);
                 }
-            });
-        }
-        
-        // Eliminar foto
-        const btnEliminarImagen = document.getElementById('eliminar-imagen');
-        if (btnEliminarImagen) {
-            btnEliminarImagen.addEventListener('click', function() {
-                document.getElementById('imagen').value = '';
-                document.getElementById('imagen-preview').classList.add('hidden');
-                document.getElementById('imagen-preview-img').src = '';
-                // Agregar campo oculto para indicar que se debe eliminar la foto existente
-                const inputEliminarImagen = document.getElementById('eliminar_imagen_actual') || document.createElement('input');
-                inputEliminarImagen.type = 'hidden';
-                inputEliminarImagen.id = 'eliminar_imagen_actual';
-                inputEliminarImagen.name = 'eliminar_imagen_actual';
-                inputEliminarImagen.value = '1';
-                document.getElementById('form-profesor').appendChild(inputEliminarImagen);
             });
         }
         
@@ -302,12 +288,9 @@
                         mostrarMensajeExito(data.message || 'Profesor guardado correctamente');
                         document.getElementById('modal-profesor').classList.add('hidden');
                         limpiarFormulario();
-                        console.log('Formulario procesado correctamente');
                         
-                        // Recargamos la página después de un breve retraso
-                        setTimeout(() => {
-                            window.location.href = window.location.pathname;
-                        }, 1000);
+                        // Recargamos la tabla de profesores después de guardar
+                        actualizarTabla();
                     } else {
                         if (data.errors) {
                             mostrarErroresFormulario(data.errors);
@@ -353,12 +336,9 @@
                     if (response.ok) {
                         mostrarMensajeExito(data.message || 'Profesor eliminado correctamente');
                         document.getElementById('modal-eliminar').classList.add('hidden');
-                        console.log('Profesor eliminado correctamente');
                         
-                        // Recargamos la página después de un breve retraso
-                        setTimeout(() => {
-                            window.location.href = window.location.pathname;
-                        }, 1000);
+                        // Recargamos la tabla de profesores después de eliminar
+                        actualizarTabla();
                     } else {
                         mostrarMensajeError(data.message || 'Error al eliminar el profesor');
                     }
@@ -370,48 +350,6 @@
                 }
             });
         }
-        
-        // Botón de eliminar SQL (fallback)
-        document.querySelectorAll('.confirmar-eliminar-sql').forEach(btn => {
-            btn.addEventListener('click', async function() {
-                const profesorId = document.getElementById('eliminar_id').value;
-                try {
-                    const response = await fetch(`/admin/profesores/eliminar-sql/${profesorId}`, {
-                        method: 'DELETE',
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                            'Accept': 'application/json'
-                        }
-                    });
-                    
-                    const data = await response.json();
-                    
-                    if (response.ok) {
-                        mostrarMensajeExito(data.message || 'Profesor eliminado correctamente (SQL)');
-                        document.getElementById('eliminarSqlModal').classList.add('hidden');
-                        document.getElementById('modal-eliminar').classList.add('hidden');
-                        console.log('Profesor eliminado correctamente (SQL)');
-                        
-                        // Recargamos la página después de un breve retraso
-                        setTimeout(() => {
-                            window.location.href = window.location.pathname;
-                        }, 1000);
-                    } else {
-                        mostrarMensajeError(data.message || 'Error al eliminar el profesor');
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    mostrarMensajeError('Error al eliminar el profesor mediante SQL');
-                }
-            });
-        });
-        
-        // Cerrar modal de eliminar SQL
-        document.querySelectorAll('.cerrar-modal').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.getElementById('eliminarSqlModal').classList.add('hidden');
-            });
-        });
     }
     
     // Funciones auxiliares
@@ -424,6 +362,8 @@
         document.querySelector('.password-help').classList.add('hidden');
         document.getElementById('password').required = true;
         document.getElementById('password_confirmation').required = true;
+        // Ocultar el checkbox de activo para crear
+        document.getElementById('activo-container').classList.add('hidden');
         document.getElementById('modal-profesor').classList.remove('hidden');
     }
     
@@ -459,6 +399,10 @@
                 document.querySelector('.password-help').classList.remove('hidden');
                 document.getElementById('password').required = false;
                 document.getElementById('password_confirmation').required = false;
+                
+                // Mostrar el checkbox de activo y configurar estado
+                document.getElementById('activo-container').classList.remove('hidden');
+                document.getElementById('activo').checked = profesor.activo;
                 
                 document.getElementById('modal-profesor').classList.remove('hidden');
             } else {
@@ -508,8 +452,50 @@
     }
     
     async function actualizarTabla() {
-        // Simplemente recargamos la página completa para garantizar que se ven los cambios
-        window.location.href = window.location.pathname;
+        try {
+            const response = await fetch('/admin/profesores?ajax=1');
+            if (response.ok) {
+                const html = await response.text();
+                document.getElementById('tabla-profesores').innerHTML = html;
+            } else {
+                console.error('Error al actualizar la tabla');
+                // Si hay un error, recargamos la página completa
+                window.location.reload();
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            // Si hay un error, recargamos la página completa
+            window.location.reload();
+        }
+    }
+    
+    async function eliminarProfesorSQL() {
+        const profesorId = document.getElementById('eliminar_id').value;
+        try {
+            const response = await fetch(`/admin/profesores/eliminar-sql/${profesorId}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json'
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok) {
+                mostrarMensajeExito(data.message || 'Profesor eliminado correctamente (SQL)');
+                document.getElementById('eliminarSqlModal').classList.add('hidden');
+                document.getElementById('modal-eliminar').classList.add('hidden');
+                
+                // Recargamos la tabla de profesores después de eliminar
+                actualizarTabla();
+            } else {
+                mostrarMensajeError(data.message || 'Error al eliminar el profesor');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            mostrarMensajeError('Error al eliminar el profesor mediante SQL');
+        }
     }
     
     function mostrarMensajeExito(mensaje) {
@@ -521,8 +507,10 @@
         // Nos aseguramos de que el mensaje sea visible
         window.scrollTo({ top: 0, behavior: 'smooth' });
         
-        // El mensaje se mostrará durante el tiempo que pasa antes de la redirección
-        // No lo ocultamos automáticamente ya que la página se recargará
+        // Ocultar el mensaje después de 5 segundos
+        setTimeout(() => {
+            successMessage.style.display = 'none';
+        }, 5000);
     }
     
     function mostrarMensajeError(mensaje) {

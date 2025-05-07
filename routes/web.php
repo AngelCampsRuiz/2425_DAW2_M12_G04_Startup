@@ -143,6 +143,7 @@
                 // RUTAS PARA GESTIONAR LAS CATEGORÍAS
                     // RUTA GESTIONAR CATEGORÍAS
                         Route::resource('categorias', CategoriaController::class);
+                        Route::get('categorias/{categoria}/subcategorias', [CategoriaController::class, 'getSubcategorias'])->name('categorias.subcategorias');
 
                 // RUTAS PARA GESTIONAR LAS SUBCATEGORÍAS
                     // RUTA COMPROBAR PUBLICACIONES

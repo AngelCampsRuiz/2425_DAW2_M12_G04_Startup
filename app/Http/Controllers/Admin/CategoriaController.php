@@ -161,4 +161,16 @@ class CategoriaController extends Controller
                 ->with('error', 'Error al eliminar la categoría: ' . $e->getMessage());
         }
     }
+    
+    /**
+     * Obtiene las subcategorías de una categoría específica.
+     */
+    public function getSubcategorias(Categoria $categoria)
+    {
+        $subcategorias = $categoria->subcategorias;
+        
+        return response()->json([
+            'subcategorias' => $subcategorias
+        ]);
+    }
 }

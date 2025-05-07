@@ -15,24 +15,15 @@ class ProfesorController extends Controller
 {
     public function index(Request $request)
     {
-        // Asegurar que obtenemos datos frescos sin caché
-        $profesores = User::where('role_id', 4)
-            ->select('id', 'nombre', 'email', 'dni', 'telefono', 'ciudad', 'activo', 'imagen', 'created_at')
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
-
-        if ($request->ajax()) {
-            // Log para debugging
-            \Log::info('Petición AJAX recibida para actualizar la tabla de profesores');
-            
-            return response()->json([
-                'tabla' => view('admin.profesores.tabla', compact('profesores'))->render(),
-                'pagination' => $profesores->links()->toHtml(),
-                'success' => true,
-                'timestamp' => now()->timestamp
-            ]);
+        // Obtenemos los profesores con paginación
+        $profesores = User::where('role_id', 4)->paginate(10);
+        
+        // Si es una petición AJAX, devolvemos solo la tabla
+        if ($request->ajax() || $request->has('ajax')) {
+            return view('admin.profesores.tabla', compact('profesores'));
         }
-
+        
+        // Si no es AJAX, devolvemos la vista completa
         return view('admin.profesores.index', compact('profesores'));
     }
 

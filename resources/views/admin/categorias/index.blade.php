@@ -11,9 +11,6 @@
         <div class="text-sm text-gray-600">
             Mostrando {{ $categorias->count() }} categorías de {{ $categorias->total() }}
         </div>
-        <button onclick="openCreateModal()" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
-            <i class="fas fa-plus mr-2"></i>Nueva Categoría
-        </button>
     </div>
 
     <div id="tabla-container">
