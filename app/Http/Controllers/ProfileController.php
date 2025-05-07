@@ -116,4 +116,27 @@ class ProfileController extends Controller
 
         return redirect()->back()->with('success', 'Perfil actualizado correctamente');
     }
+
+    public function updateLocation(Request $request)
+    {
+        try {
+            $user = auth()->user();
+            $user->update([
+                'lat' => $request->lat,
+                'lng' => $request->lng,
+                'direccion' => $request->direccion,
+                'ciudad' => $request->ciudad
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Ubicación actualizada correctamente'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al actualizar la ubicación: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 } 
