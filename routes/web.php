@@ -143,12 +143,7 @@
                 // RUTA OBTENER SUBCATEGORÍAS
                     Route::get('/empresa/get-subcategorias/{categoria}', [CompanyDashboardController::class, 'getSubcategorias'])
                         ->name('empresa.subcategorias');
-                // RUTAS DEL CALENDARIO
-                    Route::get('/empresa/calendar', [CalendarController::class, 'index'])->name('empresa.calendar');
-                    Route::post('/empresa/calendar/reminders', [CalendarController::class, 'store'])->name('empresa.reminder.store');
-                    Route::put('/empresa/calendar/reminders/{reminder}', [CalendarController::class, 'update'])->name('empresa.reminder.update');
-                    Route::delete('/empresa/calendar/reminders/{reminder}', [CalendarController::class, 'destroy'])->name('empresa.reminder.destroy');
-                    Route::post('/empresa/calendar/reminders/{reminder}/toggle', [CalendarController::class, 'toggleComplete'])->name('empresa.reminder.toggle');
+               
             });
 
         // RUTAS PROTEGIDAS PARA ADMINISTRADORES
