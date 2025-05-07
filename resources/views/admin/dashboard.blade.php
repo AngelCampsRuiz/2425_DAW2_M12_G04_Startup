@@ -105,7 +105,7 @@
                             </div>
                         </div>
                         <div class="mt-2">
-                            <p class="text-sm text-green-500">{{ \App\Models\Empresa::where('activa', 1)->count() }} activas</p>
+                            <p class="text-sm text-green-500">{{ \App\Models\Empresa::count() }} totales</p>
                         </div>
                     </div>
                     

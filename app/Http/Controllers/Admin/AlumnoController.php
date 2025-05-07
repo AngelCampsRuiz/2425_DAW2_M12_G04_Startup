@@ -49,7 +49,7 @@ class AlumnoController extends Controller
             'fecha_nacimiento' => ['nullable', 'date'],
             'sitio_web' => ['nullable', 'url', 'max:255'],
             'descripcion' => ['nullable', 'string', 'max:1000'],
-            'imagen' => ['nullable', 'image', 'max:2048'] // 2MB máximo
+            'imagen' => ['nullable', 'image'] // Sin límite de tamaño
         ]);
 
         if ($validator->fails()) {
@@ -152,7 +152,7 @@ class AlumnoController extends Controller
             'sitio_web' => ['nullable', 'url', 'max:255'],
             'descripcion' => ['nullable', 'string', 'max:1000'],
             'activo' => ['required', 'boolean'],
-            'imagen' => ['nullable', 'image', 'max:2048'] // 2MB máximo
+            'imagen' => ['nullable', 'image'] // Sin límite de tamaño
         ]);
 
         if ($validator->fails()) {
