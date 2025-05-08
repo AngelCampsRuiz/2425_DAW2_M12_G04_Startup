@@ -5,6 +5,104 @@
     <div id="success-message" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-6" role="alert" style="display: none;">
         <span id="success-message-text" class="block sm:inline"></span>
     </div>
+
+    <!-- Filtros -->
+    <div class="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl shadow-md p-6 mb-8 border border-purple-100">
+        <div class="flex flex-col md:flex-row justify-between items-center mb-6">
+            <div class="flex items-center mb-4 md:mb-0">
+                <svg class="w-5 h-5 text-purple-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                </svg>
+                <h3 class="text-lg font-semibold text-purple-800">Filtros de búsqueda</h3>
+            </div>
+            <button id="reset-filtros" class="inline-flex items-center px-4 py-2 bg-white border border-purple-200 rounded-lg font-medium text-sm text-purple-700 hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors duration-150 shadow-sm">
+                <svg class="w-4 h-4 mr-2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Reiniciar filtros
+            </button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-5">
+            <div class="relative">
+                <label for="filtro_nombre" class="block text-sm font-medium text-purple-700 mb-2">Nombre</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
+                    <input type="text" id="filtro_nombre" class="pl-10 w-full rounded-lg border-purple-200 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50" placeholder="Buscar por nombre...">
+                </div>
+            </div>
+            
+            <div class="relative">
+                <label for="filtro_email" class="block text-sm font-medium text-purple-700 mb-2">Email</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                    <input type="text" id="filtro_email" class="pl-10 w-full rounded-lg border-purple-200 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50" placeholder="Buscar por email...">
+                </div>
+            </div>
+
+            <div class="relative">
+                <label for="filtro_dni" class="block text-sm font-medium text-purple-700 mb-2">DNI</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
+                        </svg>
+                    </div>
+                    <input type="text" id="filtro_dni" class="pl-10 w-full rounded-lg border-purple-200 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50" placeholder="Buscar por DNI...">
+                </div>
+            </div>
+
+            <div class="relative">
+                <label for="filtro_ciudad" class="block text-sm font-medium text-purple-700 mb-2">Ciudad</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                    </div>
+                    <select id="filtro_ciudad" class="pl-10 w-full rounded-lg border-purple-200 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50 appearance-none bg-white">
+                        <option value="">Todas las ciudades</option>
+                        @foreach($ciudades as $ciudad)
+                            <option value="{{ $ciudad }}">{{ $ciudad }}</option>
+                        @endforeach
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                        <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="relative">
+                <label for="filtro_estado" class="block text-sm font-medium text-purple-700 mb-2">Estado</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <select id="filtro_estado" class="pl-10 w-full rounded-lg border-purple-200 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50 appearance-none bg-white">
+                        <option value="">Todos</option>
+                        <option value="1">Activos</option>
+                        <option value="0">Inactivos</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                        <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     
     <!-- Contenedor de la tabla -->
     <div id="tabla-profesores" class="bg-white rounded-lg shadow overflow-hidden">
@@ -176,6 +274,7 @@
     
     document.addEventListener('DOMContentLoaded', function() {
         setupEventListeners();
+        setupFiltros();
     });
     
     function setupEventListeners() {
@@ -348,6 +447,70 @@
                 } finally {
                     isSubmitting = false;
                 }
+            });
+        }
+    }
+    
+    function setupFiltros() {
+        let timeoutId = null;
+
+        // Eventos para filtrado automático
+        document.getElementById('filtro_nombre').addEventListener('input', debounceFilter);
+        document.getElementById('filtro_email').addEventListener('input', debounceFilter);
+        document.getElementById('filtro_dni').addEventListener('input', debounceFilter);
+        document.getElementById('filtro_ciudad').addEventListener('change', aplicarFiltros);
+        document.getElementById('filtro_estado').addEventListener('change', aplicarFiltros);
+        
+        // Resetear filtros
+        document.getElementById('reset-filtros').addEventListener('click', function() {
+            document.getElementById('filtro_nombre').value = '';
+            document.getElementById('filtro_email').value = '';
+            document.getElementById('filtro_dni').value = '';
+            document.getElementById('filtro_ciudad').value = '';
+            document.getElementById('filtro_estado').value = '';
+            aplicarFiltros();
+        });
+
+        // Función para debounce en campos de texto
+        function debounceFilter() {
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
+            timeoutId = setTimeout(() => {
+                aplicarFiltros();
+            }, 300);
+        }
+
+        function aplicarFiltros() {
+            const filtros = {
+                nombre: document.getElementById('filtro_nombre').value,
+                email: document.getElementById('filtro_email').value,
+                dni: document.getElementById('filtro_dni').value,
+                ciudad: document.getElementById('filtro_ciudad').value,
+                estado: document.getElementById('filtro_estado').value
+            };
+            
+            const params = new URLSearchParams();
+            Object.entries(filtros).forEach(([key, value]) => {
+                if (value) {
+                    params.append(key, value);
+                }
+            });
+            
+            fetch(`/admin/profesores?${params.toString()}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.tabla) {
+                    document.getElementById('tabla-profesores').innerHTML = data.tabla;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
             });
         }
     }
@@ -551,4 +714,29 @@
         document.getElementById('form-errors').classList.remove('hidden');
     }
 </script>
+
+<style>
+/* Asegurar que los botones de acción siempre estén visibles */
+.btn-editar, .btn-eliminar {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-height: 32px !important;
+    min-width: 32px !important;
+}
+
+/* Aplicar estilos a los campos de formulario con error */
+.border-red-500 {
+    border-color: #f56565 !important;
+}
+
+/* Estilos para las tarjetas en móvil */
+@media (max-width: 768px) {
+    .md\:hidden .btn-editar,
+    .md\:hidden .btn-eliminar {
+        width: 40px !important;
+        height: 40px !important;
+    }
+}
+</style>
 @endpush 
