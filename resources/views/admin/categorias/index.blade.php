@@ -7,10 +7,65 @@
         </div>
     @endif
 
+    <!-- Filtros -->
+    <div class="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl shadow-md p-6 mb-8 border border-purple-100">
+        <div class="flex flex-col md:flex-row justify-between items-center mb-6">
+            <div class="flex items-center mb-4 md:mb-0">
+                <svg class="w-5 h-5 text-purple-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                </svg>
+                <h3 class="text-lg font-semibold text-purple-800">Filtros de búsqueda</h3>
+            </div>
+            <button id="reset-filtros" class="inline-flex items-center px-4 py-2 bg-white border border-purple-200 rounded-lg font-medium text-sm text-purple-700 hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors duration-150 shadow-sm">
+                <svg class="w-4 h-4 mr-2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Reiniciar filtros
+            </button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div class="relative">
+                <label for="filtro_nombre" class="block text-sm font-medium text-purple-700 mb-2">Nombre de la categoría</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
+                    <input type="text" id="filtro_nombre" class="pl-10 w-full rounded-lg border-purple-200 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50" placeholder="Buscar por nombre...">
+                </div>
+            </div>
+            
+            <div class="relative">
+                <label for="filtro_subcategorias" class="block text-sm font-medium text-purple-700 mb-2">Número de subcategorías</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                        </svg>
+                    </div>
+                    <select id="filtro_subcategorias" class="pl-10 w-full rounded-lg border-purple-200 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50 appearance-none bg-white">
+                        <option value="">Todas</option>
+                        <option value="0">Sin subcategorías</option>
+                        <option value="1">Con subcategorías</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                        <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="flex justify-between items-center mb-4">
         <div class="text-sm text-gray-600">
             Mostrando {{ $categorias->count() }} categorías de {{ $categorias->total() }}
         </div>
+        <button onclick="openCreateModal()" class="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 transition-colors duration-200">
+            Nueva Categoría
+        </button>
     </div>
 
     <div id="tabla-container">
@@ -23,7 +78,9 @@
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-xl font-semibold" id="modalTitle">Nueva Categoría</h3>
                 <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
-                    <i class="fas fa-times"></i>
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
                 </button>
             </div>
 
@@ -55,7 +112,9 @@
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-xl font-semibold text-gray-800">Confirmar Eliminación</h3>
                 <button onclick="closeDeleteModal()" class="text-gray-500 hover:text-gray-700">
-                    <i class="fas fa-times"></i>
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
                 </button>
             </div>
 
@@ -80,18 +139,74 @@
 
     <script>
         let currentPage = 1;
+        let timeoutId = null;
+
+        // Eventos para filtrado automático
+        document.getElementById('filtro_nombre').addEventListener('input', debounceFilter);
+        document.getElementById('filtro_subcategorias').addEventListener('change', aplicarFiltros);
+        
+        // Resetear filtros
+        document.getElementById('reset-filtros').addEventListener('click', function() {
+            document.getElementById('filtro_nombre').value = '';
+            document.getElementById('filtro_subcategorias').value = '';
+            aplicarFiltros();
+        });
+
+        // Función para debounce en campos de texto
+        function debounceFilter() {
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
+            timeoutId = setTimeout(() => {
+                aplicarFiltros();
+            }, 300);
+        }
+
+        function aplicarFiltros() {
+            const filtros = {
+                nombre: document.getElementById('filtro_nombre').value,
+                subcategorias: document.getElementById('filtro_subcategorias').value
+            };
+            
+            const params = new URLSearchParams();
+            Object.entries(filtros).forEach(([key, value]) => {
+                if (value) {
+                    params.append(key, value);
+                }
+            });
+            
+            refreshTable(params.toString());
+        }
+
+        function refreshTable(queryString = '') {
+            const url = queryString 
+                ? `/admin/categorias?${queryString}`
+                : '/admin/categorias';
+
+            fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.tabla) {
+                    document.getElementById('tabla-container').innerHTML = data.tabla;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
 
         function showSuccessMessage(message) {
-            // Crear el elemento del mensaje
             const messageDiv = document.createElement('div');
             messageDiv.className = 'bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4';
             messageDiv.textContent = message;
 
-            // Insertar el mensaje al principio del contenedor principal
             const container = document.querySelector('#tabla-container').parentNode;
             container.insertBefore(messageDiv, container.firstChild);
 
-            // Eliminar el mensaje después de 3 segundos
             setTimeout(() => {
                 messageDiv.remove();
             }, 3000);
@@ -198,34 +313,5 @@
                 alert('Ha ocurrido un error al eliminar la categoría');
             });
         }
-
-        function refreshTable() {
-            fetch(`/admin/categorias?page=${currentPage}`, {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('tabla-container').innerHTML = data.tabla;
-                setupPagination();
-            });
-        }
-
-        function setupPagination() {
-            document.querySelectorAll('.pagination a').forEach(link => {
-                link.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const page = this.href.split('page=')[1];
-                    currentPage = page;
-                    refreshTable();
-                });
-            });
-        }
-
-        // Configurar la paginación inicial
-        document.addEventListener('DOMContentLoaded', function() {
-            setupPagination();
-        });
     </script>
 @endsection 
