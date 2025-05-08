@@ -19,8 +19,43 @@ class AlumnoController extends Controller
      */
     public function index(Request $request)
     {
-        $alumnos = User::where('role_id', 3)
-            ->select('id', 'nombre', 'email', 'dni', 'telefono', 'ciudad', 'activo', 'imagen', 'created_at')
+        $query = User::where('role_id', 3);
+
+        // Aplicar filtro por nombre
+        if ($request->has('nombre') && !empty($request->nombre)) {
+            $query->where('nombre', 'like', '%' . $request->nombre . '%');
+        }
+
+        // Aplicar filtro por email
+        if ($request->has('email') && !empty($request->email)) {
+            $query->where('email', 'like', '%' . $request->email . '%');
+        }
+
+        // Aplicar filtro por DNI
+        if ($request->has('dni') && !empty($request->dni)) {
+            $query->where('dni', 'like', '%' . $request->dni . '%');
+        }
+
+        // Aplicar filtro por ciudad
+        if ($request->has('ciudad') && !empty($request->ciudad)) {
+            $query->where('ciudad', $request->ciudad);
+        }
+
+        // Aplicar filtro por estado
+        if ($request->has('estado') && $request->estado !== '') {
+            $query->where('activo', $request->estado);
+        }
+
+        // Obtener ciudades únicas para el selector
+        $ciudades = User::where('role_id', 3)
+                       ->whereNotNull('ciudad')
+                       ->where('ciudad', '!=', '')
+                       ->distinct()
+                       ->pluck('ciudad')
+                       ->sort()
+                       ->values();
+
+        $alumnos = $query->select('id', 'nombre', 'email', 'dni', 'telefono', 'ciudad', 'activo', 'imagen', 'created_at')
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
@@ -31,7 +66,7 @@ class AlumnoController extends Controller
             ]);
         }
 
-        return view('admin.alumnos.index', compact('alumnos'));
+        return view('admin.alumnos.index', compact('alumnos', 'ciudades'));
     }
 
     /**
