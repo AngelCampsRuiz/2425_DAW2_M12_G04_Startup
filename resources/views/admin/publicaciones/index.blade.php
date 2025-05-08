@@ -19,42 +19,85 @@
     @endif
     
     <!-- Filtros -->
-    <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-medium text-gray-900">Filtros de búsqueda</h3>
-            <button id="reset-filtros" class="inline-flex items-center px-4 py-2 bg-gray-100 border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-200 active:bg-gray-300 focus:outline-none focus:border-gray-900 focus:ring ring-gray-300 disabled:opacity-25 transition ease-in-out duration-150">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div class="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl shadow-md p-6 mb-8 border border-purple-100">
+        <div class="flex flex-col md:flex-row justify-between items-center mb-6">
+            <div class="flex items-center mb-4 md:mb-0">
+                <svg class="w-5 h-5 text-purple-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                </svg>
+                <h3 class="text-lg font-semibold text-purple-800">Filtros de búsqueda</h3>
+            </div>
+            <button id="reset-filtros" class="inline-flex items-center px-4 py-2 bg-white border border-purple-200 rounded-lg font-medium text-sm text-purple-700 hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors duration-150 shadow-sm">
+                <svg class="w-4 h-4 mr-2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
                 Reiniciar filtros
             </button>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div>
-                <label for="filtro_titulo" class="block text-sm font-medium text-gray-700 mb-1">Título de la oferta</label>
-                <input type="text" id="filtro_titulo" class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50" placeholder="Buscar por título...">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div class="relative">
+                <label for="filtro_titulo" class="block text-sm font-medium text-purple-700 mb-2">Título de la oferta</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
+                    <input type="text" id="filtro_titulo" class="pl-10 w-full rounded-lg border-purple-200 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50" placeholder="Buscar por título...">
+                </div>
             </div>
             
-            <div>
-                <label for="filtro_empresa" class="block text-sm font-medium text-gray-700 mb-1">Nombre de la empresa</label>
-                <input type="text" id="filtro_empresa" class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50" placeholder="Buscar por empresa...">
+            <div class="relative">
+                <label for="filtro_empresa" class="block text-sm font-medium text-purple-700 mb-2">Nombre de la empresa</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                    </div>
+                    <input type="text" id="filtro_empresa" class="pl-10 w-full rounded-lg border-purple-200 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50" placeholder="Buscar por empresa...">
+                </div>
             </div>
             
-            <div>
-                <label for="filtro_categoria" class="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
-                <select id="filtro_categoria" class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50">
+            <div class="relative">
+                <label for="filtro_categoria" class="block text-sm font-medium text-purple-700 mb-2">Categoría</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                        </svg>
+                    </div>
+                    <select id="filtro_categoria" class="pl-10 w-full rounded-lg border-purple-200 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50 appearance-none bg-white">
                     <option value="">Todas las categorías</option>
                     @foreach($categorias as $categoria)
                         <option value="{{ $categoria->id }}">{{ $categoria->nombre_categoria }}</option>
                     @endforeach
                 </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                        <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </div>
+                </div>
             </div>
             
-            <div>
-                <label for="filtro_subcategoria" class="block text-sm font-medium text-gray-700 mb-1">Subcategoría</label>
-                <select id="filtro_subcategoria" class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50">
+            <div class="relative">
+                <label for="filtro_subcategoria" class="block text-sm font-medium text-purple-700 mb-2">Subcategoría</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
+                        </svg>
+                    </div>
+                    <select id="filtro_subcategoria" class="pl-10 w-full rounded-lg border-purple-200 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50 appearance-none bg-white">
                     <option value="">Todas las subcategorías</option>
                 </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                        <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -194,14 +237,14 @@
                     </svg>
                 </button>
             </div>
-
+            
             <p class="text-gray-600 mb-6">¿Estás seguro de que deseas eliminar esta oferta? Esta acción no se puede deshacer.</p>
-
+            
             <form id="form-eliminar" method="POST">
                 @csrf
                 @method('DELETE')
                 <input type="hidden" name="eliminar_id" id="eliminar_id">
-
+                
                 <div class="flex justify-end space-x-3">
                     <button type="button" id="btn-cancelar-eliminar" class="px-4 py-2 text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200">
                         Cancelar
@@ -218,6 +261,7 @@
     document.addEventListener('DOMContentLoaded', function() {
         // Variable para controlar si ya se han cargado los event listeners
         let listenersLoaded = false;
+        let timeoutId = null;
         
         // Inicializar los event listeners
         setupEventListeners();
@@ -231,6 +275,12 @@
         document.getElementById('filtro_categoria').addEventListener('change', function() {
             cargarSubcategoriasFiltro(this.value);
         });
+
+        // Eventos para filtrado automático
+        document.getElementById('filtro_titulo').addEventListener('input', debounceFilter);
+        document.getElementById('filtro_empresa').addEventListener('input', debounceFilter);
+        document.getElementById('filtro_categoria').addEventListener('change', aplicarFiltros);
+        document.getElementById('filtro_subcategoria').addEventListener('change', aplicarFiltros);
         
         // Manejar envío del formulario
         document.getElementById('form-publicacion').addEventListener('submit', function(e) {
@@ -250,8 +300,18 @@
             document.getElementById('filtro_empresa').value = '';
             document.getElementById('filtro_categoria').value = '';
             document.getElementById('filtro_subcategoria').value = '';
-            aplicarFiltros();
+        aplicarFiltros();
         });
+
+        // Función para debounce en campos de texto
+        function debounceFilter() {
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
+            timeoutId = setTimeout(() => {
+                aplicarFiltros();
+            }, 300); // Espera 300ms después de que el usuario deje de escribir
+        }
         
         function setupEventListeners() {
             if (listenersLoaded) return;
@@ -401,9 +461,9 @@
             
             if (!categoriaId) {
                 aplicarFiltros();
-                return;
-            }
-            
+                    return;
+                }
+
             fetch(`/admin/categorias/${categoriaId}/subcategorias`, {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
@@ -579,40 +639,40 @@
             .catch(error => {
                 console.error('Error:', error);
             });
-        }
-        
-        function aplicarFiltros() {
-            const filtros = {
-                titulo: document.getElementById('filtro_titulo').value,
-                empresa: document.getElementById('filtro_empresa').value,
-                categoria: document.getElementById('filtro_categoria').value,
-                subcategoria: document.getElementById('filtro_subcategoria').value
-            };
-            
-            const params = new URLSearchParams();
-            Object.entries(filtros).forEach(([key, value]) => {
-                if (value) {
-                    params.append(key, value);
-                }
-            });
-            
-            fetch(`/admin/publicaciones?${params.toString()}`, {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json'
-                }
-            })
+    }
+
+    function aplicarFiltros() {
+        const filtros = {
+            titulo: document.getElementById('filtro_titulo').value,
+            empresa: document.getElementById('filtro_empresa').value,
+            categoria: document.getElementById('filtro_categoria').value,
+            subcategoria: document.getElementById('filtro_subcategoria').value
+        };
+
+        const params = new URLSearchParams();
+        Object.entries(filtros).forEach(([key, value]) => {
+            if (value) {
+                params.append(key, value);
+            }
+        });
+
+        fetch(`/admin/publicaciones?${params.toString()}`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        })
             .then(response => response.json())
-            .then(data => {
-                if (data.tabla) {
-                    document.getElementById('tabla-container').innerHTML = data.tabla;
+        .then(data => {
+            if (data.tabla) {
+                document.getElementById('tabla-container').innerHTML = data.tabla;
                     setupEventListeners();
-                }
-            })
-            .catch(error => {
+            }
+        })
+        .catch(error => {
                 console.error('Error:', error);
-            });
-        }
+        });
+    }
     });
 </script>
 @endsection 
