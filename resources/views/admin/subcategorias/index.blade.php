@@ -118,7 +118,7 @@
                     
                     <div>
                         <label for="categoria_id" class="block text-sm font-medium text-gray-700">Categoría</label>
-                        <select name="categoria_id" id="categoria_id" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500">
+                        <select name="categoria_id" id="categoria_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500">
                             <option value="">Seleccione una categoría</option>
                             @foreach($categorias as $categoria)
                                 <option value="{{ $categoria->id }}">{{ $categoria->nombre_categoria }}</option>
