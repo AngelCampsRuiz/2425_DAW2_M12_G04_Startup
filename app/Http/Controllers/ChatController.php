@@ -200,7 +200,6 @@ class ChatController extends Controller
         // Verificar que el usuario tiene acceso al chat
         $user = Auth::user();
         $solicitud = $chat->solicitud;
-
         $hasAccess = false;
 
         // Si es empresa
@@ -268,8 +267,8 @@ class ChatController extends Controller
                 $query->where('estudiante_id', $user->estudiante->id);
             })->with(['solicitud.publicacion.empresa.user', 'solicitud.publicacion'])
               ->get();
-        }
 
+            }
         return view('chat.index', compact('chats'));
     }
 }

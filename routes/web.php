@@ -40,6 +40,8 @@
                 use App\Http\Controllers\DepartamentoController;
             // CONTROLADOR CALENDARIO
                 use App\Http\Controllers\CalendarController;
+            // CONTROLADOR DE RECORDATORIOS
+                use App\Http\Controllers\ReminderController;
 
     // RUTAS DE LA APLICACIÓN
         // RUTA PRINCIPAL HOME
@@ -268,3 +270,6 @@
         Route::get('/api/solicitudes/{id}', [App\Http\Controllers\Estudiante\SolicitudAjaxController::class, 'getSolicitud'])->name('api.solicitudes.show');
         Route::post('/api/solicitudes/{id}/cancelar', [App\Http\Controllers\Estudiante\SolicitudAjaxController::class, 'cancelarSolicitud'])->name('api.solicitudes.cancelar');
     });
+
+    // Rutas para recordatorios
+    Route::delete('/empresa/calendar/reminders/{id}', [ReminderController::class, 'destroy']);

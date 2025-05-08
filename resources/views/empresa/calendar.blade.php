@@ -37,15 +37,23 @@
                     </div>
                     
                     <input type="hidden" id="eventDate" name="date">
+                    <input type="hidden" id="eventId" name="id">
                 </div>
                 
-                <div class="mt-6 flex justify-end space-x-3">
-                    <button type="button" onclick="closeModal()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">
-                        Cancelar
+                <div class="mt-6 flex justify-between">
+                    <!-- Botón de eliminar (inicialmente oculto) -->
+                    <button type="button" id="deleteButton" onclick="deleteEvent()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 hidden">
+                        Eliminar
                     </button>
-                    <button type="submit" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
-                        Guardar
-                    </button>
+                    
+                    <div class="flex space-x-3">
+                        <button type="button" onclick="closeModal()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                            Guardar
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>
@@ -94,9 +102,12 @@
 <script src='https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.10/locales/es.global.min.js'></script>
 
 <script>
+// Declarar calendar como variable global
+let calendar;
+
 document.addEventListener('DOMContentLoaded', function() {
     const calendarEl = document.getElementById('calendar');
-    const calendar = new FullCalendar.Calendar(calendarEl, {
+    calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
         locale: 'es',
         buttonText: {
@@ -165,19 +176,52 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function openModal(date) {
     document.getElementById('eventDate').value = date;
+    document.getElementById('eventId').value = '';
+    document.getElementById('deleteButton').classList.add('hidden');
+    document.getElementById('modalTitle').textContent = 'Nuevo Recordatorio';
     document.getElementById('reminderModal').classList.remove('hidden');
-}
-
-function closeModal() {
-    document.getElementById('reminderModal').classList.add('hidden');
-    document.getElementById('reminderForm').reset();
 }
 
 function editEvent(event) {
     document.getElementById('title').value = event.title;
     document.getElementById('description').value = event.extendedProps.description || '';
     document.getElementById('eventDate').value = event.startStr;
+    document.getElementById('eventId').value = event.id;
+    document.getElementById('deleteButton').classList.remove('hidden');
+    document.getElementById('modalTitle').textContent = 'Editar Recordatorio';
     document.getElementById('reminderModal').classList.remove('hidden');
+}
+
+function deleteEvent() {
+    const eventId = document.getElementById('eventId').value;
+    if (!eventId) return;
+
+    if (confirm('¿Estás seguro de que deseas eliminar este recordatorio?')) {
+        fetch(`/empresa/calendar/reminders/${eventId}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            calendar.refetchEvents();
+            closeModal();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Hubo un error al eliminar el recordatorio');
+        });
+    }
+}
+
+function closeModal() {
+    document.getElementById('reminderModal').classList.add('hidden');
+    document.getElementById('reminderForm').reset();
+    document.getElementById('eventId').value = '';
+    document.getElementById('deleteButton').classList.add('hidden');
 }
 </script>
 @endpush
