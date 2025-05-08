@@ -60,6 +60,24 @@
     </div>
 </div>
 
+<!-- Modal de confirmación para eliminar -->
+<div id="confirmDeleteModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen px-4">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4">Confirmar eliminación</h3>
+            <p class="text-gray-600 mb-6">¿Estás seguro de que deseas eliminar este recordatorio?</p>
+            <div class="flex justify-end space-x-3">
+                <button type="button" onclick="closeConfirmModal()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">
+                    Cancelar
+                </button>
+                <button type="button" onclick="confirmDelete()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                    Eliminar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @push('styles')
 <!-- Estilos de FullCalendar -->
 <link href='https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.10/main.min.css' rel='stylesheet' />
@@ -102,6 +120,9 @@
 <script src='https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.10/locales/es.global.min.js'></script>
 
 <script>
+// Variable global para el ID del evento a eliminar
+let eventIdToDelete = null;
+
 // Declarar calendar como variable global
 let calendar;
 
@@ -150,9 +171,14 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('reminderForm').addEventListener('submit', function(e) {
         e.preventDefault();
         const formData = new FormData(this);
+        const eventId = document.getElementById('eventId').value;
         
-        fetch('/empresa/calendar/reminders', {
-            method: 'POST',
+        // Determinar si es una edición o una creación nueva
+        const method = eventId ? 'PUT' : 'POST';
+        const url = eventId ? `/empresa/calendar/reminders/${eventId}` : '/empresa/calendar/reminders';
+        
+        fetch(url, {
+            method: method,
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                 'Content-Type': 'application/json',
@@ -164,8 +190,6 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             calendar.refetchEvents();
             closeModal();
-            // Limpiar el formulario
-            this.reset();
         })
         .catch(error => {
             console.error('Error:', error);
@@ -193,28 +217,11 @@ function editEvent(event) {
 }
 
 function deleteEvent() {
-    const eventId = document.getElementById('eventId').value;
-    if (!eventId) return;
-
-    if (confirm('¿Estás seguro de que deseas eliminar este recordatorio?')) {
-        fetch(`/empresa/calendar/reminders/${eventId}`, {
-            method: 'DELETE',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            calendar.refetchEvents();
-            closeModal();
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Hubo un error al eliminar el recordatorio');
-        });
-    }
+    eventIdToDelete = document.getElementById('eventId').value;
+    if (!eventIdToDelete) return;
+    
+    // Mostrar el modal de confirmación personalizado
+    document.getElementById('confirmDeleteModal').classList.remove('hidden');
 }
 
 function closeModal() {
@@ -222,6 +229,34 @@ function closeModal() {
     document.getElementById('reminderForm').reset();
     document.getElementById('eventId').value = '';
     document.getElementById('deleteButton').classList.add('hidden');
+}
+
+function closeConfirmModal() {
+    document.getElementById('confirmDeleteModal').classList.add('hidden');
+    eventIdToDelete = null;
+}
+
+function confirmDelete() {
+    if (!eventIdToDelete) return;
+
+    fetch(`/empresa/calendar/reminders/${eventIdToDelete}`, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        calendar.refetchEvents();
+        closeModal();
+        closeConfirmModal();
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Hubo un error al eliminar el recordatorio');
+    });
 }
 </script>
 @endpush

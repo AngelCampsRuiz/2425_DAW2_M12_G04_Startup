@@ -147,10 +147,12 @@
                         ->name('empresa.subcategorias');
                 // RUTA CALENDARIO
                     Route::get('/empresa/calendar', [CalendarController::class, 'index'])->name('empresa.calendar');
-                    Route::get('/empresa/calendar/reminders', [CalendarController::class, 'getReminders']);
-                    Route::post('/empresa/calendar/reminders', [CalendarController::class, 'store']);
-                    Route::put('/empresa/calendar/reminders/{reminder}', [CalendarController::class, 'update']);
-                    Route::delete('/empresa/calendar/reminders/{reminder}', [CalendarController::class, 'destroy']);
+                    Route::prefix('empresa/calendar')->group(function () {
+                        Route::get('/reminders', [CalendarController::class, 'getReminders']);
+                        Route::post('/reminders', [CalendarController::class, 'store']);
+                        Route::put('/reminders/{reminder}', [CalendarController::class, 'update']);
+                        Route::delete('/reminders/{reminder}', [CalendarController::class, 'destroy']);
+                    });
             });
 
         // RUTAS PROTEGIDAS PARA ADMINISTRADORES
@@ -272,4 +274,3 @@
     });
 
     // Rutas para recordatorios
-    Route::delete('/empresa/calendar/reminders/{id}', [ReminderController::class, 'destroy']);

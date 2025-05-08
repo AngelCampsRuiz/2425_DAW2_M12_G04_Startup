@@ -48,31 +48,29 @@ class CalendarController extends Controller
         return response()->json($reminder);
     }
 
-    public function update(Request $request, Reminder $reminder)
+    public function update(Request $request, $id)
     {
-        if ($reminder->empresa_id !== Auth::user()->empresa->id) {
-            return response()->json(['error' => 'No autorizado'], 403);
+        try {
+            $reminder = Reminder::findOrFail($id);
+            $reminder->update([
+                'title' => $request->title,
+                'description' => $request->description,
+                'date' => $request->date
+            ]);
+            return response()->json($reminder);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
         }
-
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'date' => 'required|date'
-        ]);
-
-        $reminder->update($validated);
-
-        return response()->json($reminder);
     }
 
-    public function destroy(Reminder $reminder)
+    public function destroy($id)
     {
-        if ($reminder->empresa_id !== Auth::user()->empresa->id) {
-            return response()->json(['error' => 'No autorizado'], 403);
+        try {
+            $reminder = Reminder::findOrFail($id);
+            $reminder->delete();
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
         }
-
-        $reminder->delete();
-
-        return response()->json(['message' => 'Recordatorio eliminado']);
     }
 }
