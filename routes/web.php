@@ -38,6 +38,8 @@
                 use App\Http\Controllers\DocenteController;
             // CONTROLADOR DEPARTAMENTOS
                 use App\Http\Controllers\DepartamentoController;
+            // CONTROLADOR CALENDARIO
+                use App\Http\Controllers\CalendarController;
 
     // RUTAS DE LA APLICACIÓN
         // RUTA PRINCIPAL HOME
@@ -141,6 +143,12 @@
                 // RUTA OBTENER SUBCATEGORÍAS
                     Route::get('/empresa/get-subcategorias/{categoria}', [CompanyDashboardController::class, 'getSubcategorias'])
                         ->name('empresa.subcategorias');
+                // RUTA CALENDARIO
+                    Route::get('/empresa/calendar', [CalendarController::class, 'index'])->name('empresa.calendar');
+                    Route::get('/empresa/calendar/reminders', [CalendarController::class, 'getReminders']);
+                    Route::post('/empresa/calendar/reminders', [CalendarController::class, 'store']);
+                    Route::put('/empresa/calendar/reminders/{reminder}', [CalendarController::class, 'update']);
+                    Route::delete('/empresa/calendar/reminders/{reminder}', [CalendarController::class, 'destroy']);
             });
 
         // RUTAS PROTEGIDAS PARA ADMINISTRADORES
