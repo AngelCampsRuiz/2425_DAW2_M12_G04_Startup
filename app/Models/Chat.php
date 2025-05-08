@@ -11,7 +11,13 @@ class Chat extends Model
 
     protected $table = 'chats';
 
-    protected $fillable = ['empresa_id', 'solicitud_id'];
+    protected $fillable = [
+        'empresa_id', 
+        'solicitud_id',
+        'docente_id',
+        'estudiante_id',
+        'tipo'
+    ];
 
     public function mensajes()
     {
@@ -25,18 +31,35 @@ class Chat extends Model
 
     public function estudiante()
     {
-        return $this->hasOneThrough(
-            Estudiante::class,
-            Solicitud::class,
-            'id', // Clave foránea en solicitudes
-            'id', // Clave local en estudiantes
-            'solicitud_id', // Clave local en chats
-            'estudiante_id' // Clave foránea en solicitudes
-        );
+        return $this->belongsTo(Estudiante::class);
     }
 
     public function empresa()
     {
         return $this->belongsTo(Empresa::class);
+    }
+
+    public function docente()
+    {
+        return $this->belongsTo(Docente::class);
+    }
+
+    public function getOtherUser()
+    {
+        $user = auth()->user();
+        
+        if ($user->role_id == 2) { // Empresa
+            return $this->estudiante->user;
+        } elseif ($user->role_id == 3) { // Estudiante
+            if ($this->tipo == 'empresa_estudiante') {
+                return $this->empresa->user;
+            } else {
+                return $this->docente->user;
+            }
+        } elseif ($user->role_id == 4) { // Docente
+            return $this->estudiante->user;
+        }
+        
+        return null;
     }
 }

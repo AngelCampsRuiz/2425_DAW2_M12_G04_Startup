@@ -6,6 +6,7 @@ use App\Models\Solicitud;
 use App\Models\Publication;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Notifications\AlumnoSuscritoNotification;
 
 class SolicitudController extends Controller
 {
@@ -31,10 +32,24 @@ class SolicitudController extends Controller
             'mensaje' => $request->mensaje
         ]);
 
+        // Obtener el estudiante (remitente)
+        $alumno = Auth::user();
+
+        // Obtener la empresa de la publicación
+        $empresa = $publication->empresa;
+
+        // Obtener el usuario de la empresa
+        $usuarioEmpresa = $empresa->user;
+
+        // Notificar a la empresa
+        if ($usuarioEmpresa) {
+            $usuarioEmpresa->notify(new AlumnoSuscritoNotification($alumno, $publication));
+        }
+
         return response()->json([
             'status' => 'success',
             'message' => 'Solicitud enviada correctamente',
             'solicitud' => $solicitud
         ]);
     }
-} 
+}

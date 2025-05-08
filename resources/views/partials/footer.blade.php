@@ -64,7 +64,7 @@
                 <h3 class="text-lg font-semibold text-primary mb-5 border-b border-primary/20 pb-2">Enlaces rápidos</h3>
                 <ul class="space-y-3">
                     <li>
-                        <a href="#" class="group flex items-center text-gray-600 hover:text-primary transition">
+                        <a href="{{ route('home') }}" class="group flex items-center text-gray-600 hover:text-primary transition">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-primary/70 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                             </svg>
@@ -96,7 +96,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="group flex items-center text-gray-600 hover:text-primary transition">
+                        <a href="{{ route('blog') }}" class="group flex items-center text-gray-600 hover:text-primary transition">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-primary/70 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                             </svg>
@@ -124,7 +124,7 @@
                 <h3 class="text-lg font-semibold text-primary mb-5 border-b border-primary/20 pb-2">Recursos</h3>
                 <ul class="space-y-3">
                     <li>
-                        <a href="#" class="group flex items-center text-gray-600 hover:text-primary transition">
+                        <a href="{{ route('help.center') }}" class="group flex items-center text-gray-600 hover:text-primary transition">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-primary/70 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                             </svg>
@@ -132,7 +132,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="group flex items-center text-gray-600 hover:text-primary transition">
+                        <a href="{{ route('student.guides') }}" class="group flex items-center text-gray-600 hover:text-primary transition">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-primary/70 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                             </svg>
@@ -140,7 +140,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="group flex items-center text-gray-600 hover:text-primary transition">
+                        <a href="{{ route('company.resources') }}" class="group flex items-center text-gray-600 hover:text-primary transition">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-primary/70 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                             </svg>
@@ -148,7 +148,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="group flex items-center text-gray-600 hover:text-primary transition">
+                        <a href="{{ route('terms.conditions') }}" class="group flex items-center text-gray-600 hover:text-primary transition">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-primary/70 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                             </svg>
@@ -156,7 +156,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="group flex items-center text-gray-600 hover:text-primary transition">
+                        <a href="{{ route('privacy.policy') }}" class="group flex items-center text-gray-600 hover:text-primary transition">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-primary/70 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                             </svg>
@@ -167,13 +167,16 @@
 
                 <!-- Idiomas -->
                 <div class="mt-8 bg-white/80 rounded-lg p-4 shadow-sm backdrop-blur-sm">
-                    <h4 class="font-semibold text-primary text-sm mb-2">Selecciona tu idioma</h4>
-                    <select name="locale" class="w-full p-2 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-primary text-sm">
-                        <option value="es" {{ app()->getLocale() == 'es' ? 'selected' : '' }}>Español</option>
-                        <option value="en" {{ app()->getLocale() == 'en' ? 'selected' : '' }}>English</option>
-                        <option value="ca" {{ app()->getLocale() == 'ca' ? 'selected' : '' }}>Català</option>
-                    </select>
+                    <h4 class="font-semibold text-primary text-sm mb-2">{{ __('footer.select_language') }}</h4>
+                        
+                        <select name="locale" class="w-full p-2 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-primary text-sm">
+                            <option >Español</option>
+                            <option >English</option>
+                            <option >Català</option>
+                        </select>
                 </div>
+
+                
             </div>
 
             <!-- Contacto -->
@@ -238,7 +241,7 @@
                 <div class="mt-4 md:mt-0 flex items-center">
                     <p class="text-sm text-gray-600">Diseñado y desarrollado con</p>
                     <span class="mx-1 text-red-500 animate-pulse text-lg">❤</span>
-                    <p class="text-sm text-gray-600">por <span class="text-primary hover:underline">Grupo 04</span></p>
+                    <p class="text-sm text-gray-600">por <span class="text-primary hover:underline">Grupo 03</span></p>
                 </div>
             </div>
 

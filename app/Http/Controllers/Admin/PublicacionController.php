@@ -9,6 +9,7 @@ use App\Models\Subcategoria;
 use App\Models\Empresa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB; // Importar DB para SQL directo
+use Illuminate\Support\Facades\Log; // Importar Log para registros
 
 class PublicacionController extends Controller
 {
@@ -89,7 +90,7 @@ class PublicacionController extends Controller
             DB::beginTransaction();
             
             $publication = Publication::create($validated);
-            \Log::info('Publicación creada:', $publication->toArray());
+            Log::info('Publicación creada:', $publication->toArray());
             
             DB::commit();
             
@@ -106,7 +107,7 @@ class PublicacionController extends Controller
                 
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Error al crear publicación: ' . $e->getMessage());
+            Log::error('Error al crear publicación: ' . $e->getMessage());
             
             if ($request->ajax()) {
                 return response()->json([
@@ -271,14 +272,14 @@ class PublicacionController extends Controller
     {
         try {
             // Registrar la solicitud para debug
-            \Log::info('Intento de eliminación SQL para publicación ID: ' . $id);
+            Log::info('Intento de eliminación SQL para publicación ID: ' . $id);
             
             // Ejecutar SQL directo para eliminar
             $affected = DB::delete('DELETE FROM publications WHERE id = ?', [$id]);
             
             // Comprobar si se eliminó algún registro
             if ($affected > 0) {
-                \Log::info('Publicación eliminada correctamente mediante SQL directo. ID: ' . $id);
+                Log::info('Publicación eliminada correctamente mediante SQL directo. ID: ' . $id);
                 
                 if (request()->ajax()) {
                     return response()->json([
@@ -290,7 +291,7 @@ class PublicacionController extends Controller
                 return redirect()->route('admin.publicaciones.index')
                     ->with('success', 'Publicación eliminada correctamente mediante SQL directo');
             } else {
-                \Log::warning('No se encontró la publicación para eliminar. ID: ' . $id);
+                Log::warning('No se encontró la publicación para eliminar. ID: ' . $id);
                 
                 if (request()->ajax()) {
                     return response()->json([
@@ -303,7 +304,7 @@ class PublicacionController extends Controller
                     ->with('error', 'No se encontró la publicación para eliminar');
             }
         } catch (\Exception $e) {
-            \Log::error('Error al eliminar publicación mediante SQL: ' . $e->getMessage());
+            Log::error('Error al eliminar publicación mediante SQL: ' . $e->getMessage());
             
             if (request()->ajax()) {
                 return response()->json([

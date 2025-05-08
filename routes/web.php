@@ -22,6 +22,8 @@
                 use App\Http\Controllers\PublicationController;
             // CONTROLADOR CATEGORÍAS
                 use App\Http\Controllers\Admin\CategoriaController;
+            // CONTROLADOR API CATEGORÍAS
+                use App\Http\Controllers\API\CategoriaController as APICategoriaController;
             // CONTROLADOR SUBCATEGORÍAS
                 use App\Http\Controllers\Admin\SubcategoriaController;
             // CONTROLADOR SOLICITUDES
@@ -32,10 +34,23 @@
                 use App\Http\Controllers\ProfileController;
             // CONTROLADOR VALORACIONES
                 use App\Http\Controllers\ValoracionController;
+            // CONTROLADOR NOTIFICACIONES
+                use App\Http\Controllers\NotificationController;
+            // CONTROLADOR DOCENTES
+                use App\Http\Controllers\DocenteController;
+            // CONTROLADOR DEPARTAMENTOS
+                use App\Http\Controllers\DepartamentoController;
+            // CONTROLADOR CALENDARIO
+                use App\Http\Controllers\CalendarController;
+            // CONTROLADOR DE RECORDATORIOS
+                use App\Http\Controllers\ReminderController;
 
     // RUTAS DE LA APLICACIÓN
         // RUTA PRINCIPAL HOME
             Route::get('/', [HomeController::class, 'index'])->name('home');
+
+        // API CATEGORÍAS POR NIVELES
+            Route::post('/api/categorias-por-niveles', [APICategoriaController::class, 'getCategoriasPorNiveles']);
 
         // RUTAS DE DEMOSTRACIÓN
             Route::get('/demo/student', [DemoController::class, 'demoStudent'])->name('demo.student');
@@ -87,6 +102,8 @@
                     Route::get('/profile/{id}', [HomeController::class, 'profile'])->name('profile.view');
                     Route::get('/profile/{user}', [ProfileController::class, 'show'])->name('profile.show');
                     Route::put('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
+                    Route::post('/profile/update-location', [ProfileController::class, 'updateLocation'])
+                        ->name('profile.update-location');
 
                 // PUBLICACIONES VISIBLES PARA TODOS LOS USUARIOS
                     Route::get('/publication/{id}', [PublicationController::class, 'show'])->name('publication.show');
@@ -97,6 +114,7 @@
                     Route::post('/chat/{chat}/message', [ChatController::class, 'sendMessage'])->name('chat.message');
                     Route::get('/chat/{chat}/messages', [ChatController::class, 'getMessages'])->name('chat.messages');
                     Route::post('/chat/create/{solicitud}', [ChatController::class, 'createChat'])->name('chat.create');
+                    Route::post('/chat/create-docente', [ChatController::class, 'createDocenteChat'])->name('chat.create.docente');
 
                 // RUTAS PARA VALORACIONES
                     Route::post('/valoraciones', [ValoracionController::class, 'store'])->name('valoraciones.store');
@@ -106,6 +124,11 @@
 
                 // RUTAS PARA SOLICITUDES
                     Route::post('/solicitudes/{publication}', [SolicitudController::class, 'store'])->name('solicitudes.store');
+
+                // RUTAS PARA NOTIFICACIONES
+                    Route::get('/notifications/unread', [NotificationController::class, 'getUnreadNotifications']);
+                    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+                    Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
             });
 
         // RUTAS PROTEGIDAS PARA ESTUDIANTES
@@ -130,6 +153,14 @@
                 // RUTA OBTENER SUBCATEGORÍAS
                     Route::get('/empresa/get-subcategorias/{categoria}', [CompanyDashboardController::class, 'getSubcategorias'])
                         ->name('empresa.subcategorias');
+                // RUTA CALENDARIO
+                    Route::get('/empresa/calendar', [CalendarController::class, 'index'])->name('empresa.calendar');
+                    Route::prefix('empresa/calendar')->group(function () {
+                        Route::get('/reminders', [CalendarController::class, 'getReminders']);
+                        Route::post('/reminders', [CalendarController::class, 'store']);
+                        Route::put('/reminders/{reminder}', [CalendarController::class, 'update']);
+                        Route::delete('/reminders/{reminder}', [CalendarController::class, 'destroy']);
+                    });
             });
 
         // RUTAS PROTEGIDAS PARA ADMINISTRADORES
@@ -189,18 +220,24 @@
                 Route::delete('alumnos/eliminar-sql/{alumno}', [App\Http\Controllers\Admin\AlumnoController::class, 'destroySQL'])->name('alumnos.destroySQL');
             });
 
-        Route::post('/set-locale', [App\Http\Controllers\LocaleController::class, 'setLocale'])->name('set-locale');
+        // Footer resource pages
+        Route::get('/help-center', [App\Http\Controllers\ResourceController::class, 'helpCenter'])->name('help.center');
+        Route::get('/student-guides', [App\Http\Controllers\ResourceController::class, 'studentGuides'])->name('student.guides');
+        Route::get('/company-resources', [App\Http\Controllers\ResourceController::class, 'companyResources'])->name('company.resources');
+        Route::get('/terms-conditions', [App\Http\Controllers\ResourceController::class, 'termsConditions'])->name('terms.conditions');
+        Route::get('/privacy-policy', [App\Http\Controllers\ResourceController::class, 'privacyPolicy'])->name('privacy.policy');
+        Route::get('/blog', [App\Http\Controllers\ResourceController::class, 'blog'])->name('blog');
 
     // RUTAS PARA INSTITUCIONES
     Route::prefix('institucion')->middleware(['auth', \App\Http\Middleware\CheckRole::class.':institucion'])->name('institucion.')->group(function () {
         // Dashboard
         Route::get('/dashboard', [App\Http\Controllers\InstitucionController::class, 'dashboard'])->name('dashboard');
-        
+
         // Perfil
         Route::get('/perfil', [App\Http\Controllers\InstitucionController::class, 'perfil'])->name('perfil');
         Route::put('/perfil', [App\Http\Controllers\InstitucionController::class, 'actualizarPerfil'])->name('perfil.update');
         Route::put('/perfil/password', [App\Http\Controllers\InstitucionController::class, 'cambiarPassword'])->name('perfil.password');
-        
+
         // Docentes
         Route::get('/docentes', [App\Http\Controllers\DocenteController::class, 'index'])->name('docentes.index');
         Route::get('/docentes/create', [App\Http\Controllers\DocenteController::class, 'create'])->name('docentes.create');
@@ -211,7 +248,8 @@
         Route::delete('/docentes/{id}', [App\Http\Controllers\DocenteController::class, 'destroy'])->name('docentes.destroy');
         Route::post('/docentes/{id}/toggle-active', [App\Http\Controllers\DocenteController::class, 'toggleActive'])->name('docentes.toggle-active');
         Route::post('/docentes/{id}/reset-password', [App\Http\Controllers\DocenteController::class, 'resetPassword'])->name('docentes.reset-password');
-        
+        Route::get('/docentes/{id}/get-data', [App\Http\Controllers\DocenteController::class, 'getData'])->name('docentes.get-data');
+
         // Departamentos
         Route::get('/departamentos', [App\Http\Controllers\DepartamentoController::class, 'index'])->name('departamentos.index');
         Route::get('/departamentos/create', [App\Http\Controllers\DepartamentoController::class, 'create'])->name('departamentos.create');
@@ -222,7 +260,8 @@
         Route::delete('/departamentos/{id}', [App\Http\Controllers\DepartamentoController::class, 'destroy'])->name('departamentos.destroy');
         Route::get('/departamentos/{id}/asignar-docentes', [App\Http\Controllers\DepartamentoController::class, 'asignarDocentes'])->name('departamentos.asignar-docentes');
         Route::post('/departamentos/{id}/asignar-docentes', [App\Http\Controllers\DepartamentoController::class, 'guardarAsignacionDocentes'])->name('departamentos.guardar-asignacion-docentes');
-        
+        Route::get('/departamentos/{id}/get-data', [App\Http\Controllers\DepartamentoController::class, 'getData'])->name('departamentos.get-data');
+
         // Clases
         Route::get('/clases', [App\Http\Controllers\ClaseController::class, 'index'])->name('clases.index');
         Route::get('/clases/create', [App\Http\Controllers\ClaseController::class, 'create'])->name('clases.create');
@@ -234,14 +273,48 @@
         Route::post('/clases/{id}/toggle-active', [App\Http\Controllers\ClaseController::class, 'toggleActive'])->name('clases.toggle-active');
         Route::get('/clases/{id}/asignar-estudiantes', [App\Http\Controllers\ClaseController::class, 'asignarEstudiantes'])->name('clases.asignar-estudiantes');
         Route::post('/clases/{id}/asignar-estudiantes', [App\Http\Controllers\ClaseController::class, 'guardarAsignacionEstudiantes'])->name('clases.guardar-asignacion-estudiantes');
-        
+
         // Solicitudes de estudiantes
         Route::get('/solicitudes', [App\Http\Controllers\SolicitudEstudianteController::class, 'index'])->name('solicitudes.index');
         Route::get('/solicitudes/{id}', [App\Http\Controllers\SolicitudEstudianteController::class, 'show'])->name('solicitudes.show');
         Route::post('/solicitudes/{id}/aprobar', [App\Http\Controllers\SolicitudEstudianteController::class, 'aprobar'])->name('solicitudes.aprobar');
         Route::post('/solicitudes/{id}/rechazar', [App\Http\Controllers\SolicitudEstudianteController::class, 'rechazar'])->name('solicitudes.rechazar');
-        
+
         // Asignación de clases a estudiantes tras aprobar solicitudes
         Route::get('/solicitudes/{solicitud}/asignar-clase', [App\Http\Controllers\Institucion\SolicitudClaseController::class, 'asignar'])->name('solicitudes.asignar-clase');
         Route::post('/solicitudes/{solicitud}/asignar-clase', [App\Http\Controllers\Institucion\SolicitudClaseController::class, 'store'])->name('solicitudes.asignar-clase.store');
+    });
+
+    // Rutas para estudiantes
+    Route::middleware(['auth', \App\Http\Middleware\CheckRole::class.':student'])->prefix('estudiante')->name('estudiante.')->group(function () {
+        // Solicitudes del estudiante
+        Route::get('/solicitudes', [App\Http\Controllers\Estudiante\SolicitudController::class, 'index'])->name('solicitudes.index');
+        Route::get('/solicitudes/{id}', [App\Http\Controllers\Estudiante\SolicitudController::class, 'show'])->name('solicitudes.show');
+        Route::post('/solicitudes/{id}/cancelar', [App\Http\Controllers\Estudiante\SolicitudController::class, 'cancelar'])->name('solicitudes.cancelar');
+        
+        // Rutas AJAX para solicitudes
+        Route::get('/api/solicitudes', [App\Http\Controllers\Estudiante\SolicitudAjaxController::class, 'getSolicitudes'])->name('api.solicitudes');
+        Route::get('/api/solicitudes/{id}', [App\Http\Controllers\Estudiante\SolicitudAjaxController::class, 'getSolicitud'])->name('api.solicitudes.show');
+        Route::post('/api/solicitudes/{id}/cancelar', [App\Http\Controllers\Estudiante\SolicitudAjaxController::class, 'cancelarSolicitud'])->name('api.solicitudes.cancelar');
+    });
+
+    // RUTAS PARA DOCENTES
+    Route::prefix('docente')->middleware(['auth', \App\Http\Middleware\CheckRole::class.':docente'])->name('docente.')->group(function () {
+        // Dashboard
+        Route::get('/dashboard', [App\Http\Controllers\DocenteController::class, 'dashboard'])->name('dashboard');
+
+        // Alumnos
+        Route::get('/alumnos', [App\Http\Controllers\DocenteController::class, 'alumnos'])->name('alumnos.index');
+        Route::get('/alumnos/{id}', [App\Http\Controllers\DocenteController::class, 'showAlumno'])->name('alumnos.show');
+
+        // Clases
+        Route::get('/clases', [App\Http\Controllers\DocenteController::class, 'clases'])->name('clases.index');
+        Route::get('/clases/{id}', [App\Http\Controllers\DocenteController::class, 'showClase'])->name('clases.show');
+        Route::get('/clases/{id}/alumnos', [App\Http\Controllers\DocenteController::class, 'clasesAlumnos'])->name('clases.alumnos');
+
+        // Solicitudes
+        Route::get('/solicitudes', [App\Http\Controllers\DocenteController::class, 'solicitudes'])->name('solicitudes.index');
+        Route::get('/solicitudes/{id}', [App\Http\Controllers\DocenteController::class, 'showSolicitud'])->name('solicitudes.show');
+        Route::post('/solicitudes/{id}/aprobar', [App\Http\Controllers\DocenteController::class, 'aprobarSolicitud'])->name('solicitudes.aprobar');
+        Route::post('/solicitudes/{id}/rechazar', [App\Http\Controllers\DocenteController::class, 'rechazarSolicitud'])->name('solicitudes.rechazar');
     });

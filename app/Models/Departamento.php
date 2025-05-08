@@ -14,6 +14,7 @@ class Departamento extends Model
     protected $fillable = [
         'institucion_id',
         'nombre',
+        'codigo',
         'descripcion',
         'jefe_departamento_id'
     ];

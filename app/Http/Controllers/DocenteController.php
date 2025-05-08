@@ -10,6 +10,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use App\Models\Clase;
+use App\Models\Estudiante;
+use App\Models\SolicitudEstudiante;
 
 class DocenteController extends Controller
 {
@@ -186,5 +189,149 @@ class DocenteController extends Controller
         
         return redirect()->route('institucion.docentes.show', $docente->id)
             ->with('success', 'Contraseña reseteada correctamente. Nueva contraseña temporal: ' . $password);
+    }
+
+    // Obtener datos de docente para edición por AJAX
+    public function getData($id)
+    {
+        $institucion = Auth::user()->institucion;
+        $docente = $institucion->docentes()->with('user')->findOrFail($id);
+        
+        return response()->json([
+            'success' => true,
+            'docente' => $docente
+        ]);
+    }
+
+    public function dashboard()
+    {
+        $user = Auth::user();
+        $totalAlumnos = Estudiante::whereHas('clases', function($query) use ($user) {
+            $query->where('docente_id', $user->id);
+        })->count();
+
+        $totalClases = Clase::where('docente_id', $user->id)->count();
+
+        $solicitudesPendientes = SolicitudEstudiante::whereHas('clase', function($query) use ($user) {
+            $query->where('docente_id', $user->id);
+        })->where('estado', 'pendiente')->count();
+
+        $clases = Clase::where('docente_id', $user->id)
+            ->withCount('estudiantes')
+            ->get();
+
+        return view('docentes.dashboard', compact('totalAlumnos', 'totalClases', 'solicitudesPendientes', 'clases'));
+    }
+
+    public function alumnos()
+    {
+        $user = Auth::user();
+        $alumnos = Estudiante::whereHas('clases', function($query) use ($user) {
+            $query->where('docente_id', $user->id);
+        })->paginate(10);
+
+        $clases = Clase::where('docente_id', $user->id)->get();
+
+        return view('docentes.alumnos.index', compact('alumnos', 'clases'));
+    }
+
+    public function showAlumno($id)
+    {
+        $alumno = Estudiante::findOrFail($id);
+        return view('docentes.alumnos.show', compact('alumno'));
+    }
+
+    public function clases()
+    {
+        $user = Auth::user();
+        $clases = Clase::where('docente_id', $user->id)->paginate(10);
+        return view('docentes.clases.index', compact('clases'));
+    }
+
+    public function showClase($id)
+    {
+        $clase = Clase::findOrFail($id);
+        return view('docentes.clases.show', compact('clase'));
+    }
+
+    public function clasesAlumnos($id)
+    {
+        $clase = Clase::findOrFail($id);
+        $alumnos = $clase->estudiantes()->paginate(10);
+        return view('docentes.clases.alumnos', compact('clase', 'alumnos'));
+    }
+
+    public function solicitudes(Request $request)
+    {
+        $user = Auth::user();
+        $query = SolicitudEstudiante::whereHas('clase', function($query) use ($user) {
+            $query->where('docente_id', $user->id);
+        });
+
+        // Filtrar por estado si se proporciona
+        $filtro = $request->estado ?? 'todos';
+        if ($filtro !== 'todos') {
+            $query->where('estado', $filtro);
+        }
+
+        // Búsqueda por nombre o email
+        $busqueda = $request->buscar ?? '';
+        if (!empty($busqueda)) {
+            $query->whereHas('estudiante.user', function($q) use ($busqueda) {
+                $q->where('nombre', 'like', '%' . $busqueda . '%')
+                  ->orWhere('email', 'like', '%' . $busqueda . '%');
+            });
+        }
+
+        // Estadísticas para el resumen
+        $stats = [
+            'total' => SolicitudEstudiante::whereHas('clase', function($q) use ($user) {
+                $q->where('docente_id', $user->id);
+            })->count(),
+            'pendientes' => SolicitudEstudiante::whereHas('clase', function($q) use ($user) {
+                $q->where('docente_id', $user->id);
+            })->where('estado', 'pendiente')->count(),
+            'aprobadas' => SolicitudEstudiante::whereHas('clase', function($q) use ($user) {
+                $q->where('docente_id', $user->id);
+            })->where('estado', 'aprobada')->count(),
+            'rechazadas' => SolicitudEstudiante::whereHas('clase', function($q) use ($user) {
+                $q->where('docente_id', $user->id);
+            })->where('estado', 'rechazada')->count(),
+        ];
+
+        $solicitudes = $query->with(['estudiante.user', 'clase'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        return view('docentes.solicitudes.index', compact('solicitudes', 'stats', 'filtro', 'busqueda'));
+    }
+
+    public function showSolicitud($id)
+    {
+        $solicitud = SolicitudEstudiante::findOrFail($id);
+        return view('docentes.solicitudes.show', compact('solicitud'));
+    }
+
+    public function aprobarSolicitud($id)
+    {
+        $solicitud = SolicitudEstudiante::findOrFail($id);
+        $solicitud->estado = 'aprobada';
+        $solicitud->fecha_respuesta = now();
+        $solicitud->save();
+
+        return redirect()->route('docente.solicitudes.index')
+            ->with('success', 'Solicitud aprobada correctamente');
+    }
+
+    public function rechazarSolicitud($id, Request $request)
+    {
+        $solicitud = SolicitudEstudiante::findOrFail($id);
+        $solicitud->estado = 'rechazada';
+        $solicitud->mensaje_rechazo = $request->mensaje_rechazo;
+        $solicitud->fecha_respuesta = now();
+        $solicitud->save();
+
+        return redirect()->route('docente.solicitudes.index')
+            ->with('success', 'Solicitud rechazada correctamente');
     }
 } 

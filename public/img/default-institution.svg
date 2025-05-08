@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#5e0490" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M2 22h20"></path>
+  <path d="M17 22v-8h-2"></path>
+  <path d="M9 22v-8h2"></path>
+  <path d="M13 22v-8"></path>
+  <path d="M21 2a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14h18V2z"></path>
+  <path d="M5 2v14"></path>
+  <path d="M9 2v14"></path>
+  <path d="M13 2v14"></path>
+  <path d="M17 2v14"></path>
+  <path d="M2 6h20"></path>
+  <path d="M2 10h20"></path>
+  <path d="M2 14h20"></path>
+</svg> 

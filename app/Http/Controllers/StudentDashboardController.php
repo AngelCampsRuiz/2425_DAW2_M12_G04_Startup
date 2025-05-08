@@ -7,11 +7,15 @@ use App\Models\Categoria;
 use App\Models\Subcategoria;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class StudentDashboardController extends Controller
 {
     public function index(Request $request)
     {
+        DB::enableQueryLog();
+
         $query = Publication::with(['empresa', 'categoria', 'subcategoria'])->where('activa', true);
 
         // Aplicar búsqueda por título
@@ -44,6 +48,29 @@ class StudentDashboardController extends Controller
             $query->whereBetween('horas_totales', [$request->get('horas_totales_min'), $request->get('horas_totales_max')]);
         }
 
+        // Aplicar filtro de distancia
+        if ($request->has('user_lat') && $request->has('user_lng') && $request->has('radio_distancia')) {
+            $lat = $request->get('user_lat');
+            $lng = $request->get('user_lng');
+            $radio = $request->get('radio_distancia');
+
+            $query->whereHas('empresa', function($q) use ($lat, $lng, $radio) {
+                // Asegurarse de que la empresa tiene coordenadas
+                $q->whereNotNull('latitud')
+                  ->whereNotNull('longitud')
+                  // Fórmula Haversine para calcular distancia en kilómetros
+                  ->whereRaw('(
+                    6371 * acos(
+                        cos(radians(?)) * 
+                        cos(radians(latitud)) * 
+                        cos(radians(longitud) - radians(?)) + 
+                        sin(radians(?)) * 
+                        sin(radians(latitud))
+                    )
+                  ) <= ?', [$lat, $lng, $lat, $radio]);
+            });
+        }
+
         // Aplicar ordenamiento
         $orderBy = $request->get('order_by', 'fecha_publicacion');
         $orderDirection = $request->get('order_direction', 'desc');
@@ -74,6 +101,8 @@ class StudentDashboardController extends Controller
         // Obtener valores mínimos y máximos de horas totales
         $horasTotalesMin = Publication::min('horas_totales');
         $horasTotalesMax = Publication::max('horas_totales');
+
+        Log::info('SQL Queries:', DB::getQueryLog());
 
         // Verificar si es una solicitud AJAX
         if ($request->ajax()) {

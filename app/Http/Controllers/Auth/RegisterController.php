@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules;
+use Illuminate\Support\Facades\DB;
 
 class RegisterController extends Controller
 {
@@ -79,7 +80,13 @@ class RegisterController extends Controller
                 ->withErrors(['error' => 'Esta página es solo para instituciones']);
         }
         
-        return view('auth.register-institution');
+        // Obtener todos los niveles educativos para pasarlos a la vista (asegurando que no haya duplicados)
+        $nivelesEducativos = \App\Models\NivelEducativo::select('id', 'nombre_nivel')
+                                ->distinct()
+                                ->orderBy('nombre_nivel')
+                                ->get();
+        
+        return view('auth.register-institution', compact('nivelesEducativos'));
     }
 
     // Registro de estudiante (tercer paso)
@@ -236,38 +243,26 @@ class RegisterController extends Controller
         $validator = Validator::make($request->all(), [
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'codigo_centro' => ['required', 'string', 'max:8', 'unique:instituciones,codigo_centro'],
-            'tipo_institucion' => ['required', 'string', 'max:255'],
+            'niveles_educativos' => ['required', 'array', 'min:1'],
+            'niveles_educativos.*' => ['exists:niveles_educativos,id'],
             'direccion' => ['required', 'string', 'max:255'],
             'provincia' => ['required', 'string', 'max:100'],
             'codigo_postal' => ['required', 'string', 'max:5'],
             'representante_legal' => ['required', 'string', 'max:255'],
             'cargo_representante' => ['required', 'string', 'max:255'],
+            'categorias' => ['sometimes', 'array'],
         ], [
             'codigo_centro.unique' => 'Este código de centro ya está registrado',
             'password.required' => 'La contraseña es obligatoria',
             'password.min' => 'La contraseña debe tener al menos 8 caracteres',
             'password.confirmed' => 'Las contraseñas no coinciden',
-            'tipo_institucion.required' => 'El tipo de institución es obligatorio',
-            'direccion.required' => 'La dirección es obligatoria',
-            'provincia.required' => 'La provincia es obligatoria',
-            'codigo_postal.required' => 'El código postal es obligatorio',
-            'representante_legal.required' => 'El nombre del representante legal es obligatorio',
-            'cargo_representante.required' => 'El cargo del representante es obligatorio',
+            'niveles_educativos.required' => 'Debes seleccionar al menos un nivel educativo',
+            'niveles_educativos.min' => 'Debes seleccionar al menos un nivel educativo',
         ]);
-
-        // Validar email único
-        $emailValidator = Validator::make(['email' => $registrationData['email']], [
-            'email' => 'unique:user,email'
-        ], [
-            'email.unique' => 'Este correo electrónico ya está registrado'
-        ]);
-
-        if ($validator->fails() || $emailValidator->fails()) {
+        
+        if ($validator->fails()) {
             return redirect()->back()
-                ->withErrors(array_merge(
-                    $validator->errors()->toArray(),
-                    $emailValidator->errors()->toArray()
-                ))
+                ->withErrors($validator)
                 ->withInput();
         }
         
@@ -276,28 +271,83 @@ class RegisterController extends Controller
             'nombre' => $registrationData['name'],
             'email' => $registrationData['email'],
             'password' => Hash::make($request->password),
-            'role_id' => Rol::where('nombre_rol', 'Institución')->first()->id,
-            'fecha_nacimiento' => now()->subYears(rand(25, 65)),
+            'role_id' => Rol::where('nombre_rol', 'Institucion')->first()->id,
+            'fecha_nacimiento' => now()->subYears(rand(25, 50)),
             'ciudad' => $request->provincia,
-            'dni' => 'DNI' . rand(10000000, 99999999),
+            'dni' => 'INST' . rand(10000000, 99999999),
             'activo' => true,
-            'telefono' => '6' . rand(100000000, 999999999),
+            'telefono' => '9' . rand(10000000, 99999999),
             'descripcion' => 'Institución Educativa',
             'imagen' => null
         ]);
-
+        
+        // Tipo de institución basado en los niveles seleccionados
+        $tiposInstitucion = [
+            1 => 'Educación Primaria',
+            2 => 'Educación Secundaria',
+            3 => 'Formación Profesional',
+            4 => 'Universidad',
+            5 => 'Centro de Educación Especial',
+            6 => 'Centro de Educación de Adultos',
+            7 => 'Escuela de Idiomas',
+            8 => 'Escuela de Arte',
+            9 => 'Conservatorio',
+            10 => 'Otro'
+        ];
+        
+        // Determinar el tipo de institución según el primer nivel seleccionado
+        $tipoInstitucion = 'Centro Educativo';
+        $nivelesSeleccionados = $request->niveles_educativos;
+        if (count($nivelesSeleccionados) > 0) {
+            $primerNivelId = $nivelesSeleccionados[0];
+            $tipoInstitucion = $tiposInstitucion[$primerNivelId] ?? 'Centro Educativo';
+        }
+        
         // Crear el perfil de institución
-        Institucion::create([
+        $institucion = Institucion::create([
             'user_id' => $user->id,
             'codigo_centro' => $request->codigo_centro,
-            'tipo_institucion' => $request->tipo_institucion,
+            'tipo_institucion' => $tipoInstitucion,
             'direccion' => $request->direccion,
             'provincia' => $request->provincia,
             'codigo_postal' => $request->codigo_postal,
             'representante_legal' => $request->representante_legal,
             'cargo_representante' => $request->cargo_representante,
+            'verificada' => false,
         ]);
-
+        
+        // Registrar los niveles educativos seleccionados
+        if ($request->has('niveles_educativos')) {
+            foreach ($request->niveles_educativos as $nivelId) {
+                DB::table('institucion_nivel_educativo')->insert([
+                    'institucion_id' => $institucion->id,
+                    'nivel_educativo_id' => $nivelId,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+        }
+        
+        // Registrar las categorías seleccionadas para cada nivel
+        if ($request->has('categorias') && is_array($request->categorias)) {
+            foreach ($request->categorias as $nivelId => $categorias) {
+                if (is_array($categorias)) {
+                    foreach ($categorias as $categoriaId) {
+                        DB::table('institucion_categoria')->insert([
+                            'institucion_id' => $institucion->id,
+                            'categoria_id' => $categoriaId,
+                            'nivel_educativo_id' => $nivelId,
+                            'nombre_personalizado' => null,
+                            'descripcion' => null,
+                            'activo' => true,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ]);
+                    }
+                }
+            }
+        }
+        
         // Limpiar los datos de sesión
         $request->session()->forget('registration_data');
         

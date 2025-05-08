@@ -37,7 +37,7 @@ class SeguimientoSeeder extends Seeder
 
                 Seguimiento::create([
                     'estado' => $estado,
-                    'fecha_solicitud' => fake()->dateTimeBetween('-6 months', 'now'),
+                    'fecha_solicitud' => now()->subDays(rand(1, 180))->format('Y-m-d H:i:s'),
                     'empresa_id' => $empresa->id,
                     'alumno_id' => $estudiante->id,
                     'created_at' => now(),

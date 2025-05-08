@@ -4,7 +4,7 @@
 {{-- CONTENIDO --}}
     @section('content')
         <section class="py-12 text-center bg-gradient-to-b from-purple-50 to-white">
-            <h1 class="text-4xl font-bold text-[#7705B6] mb-4 leading-tight max-w-5xl mx-auto">{{ __('messages.bridge_between_school_and_work') }}</h1>
+            <h1 class="text-4xl font-bold text-[#7705B6] mb-4 leading-tight max-w-5xl mx-auto">Somos el puente entre la escuela y el mundo laboral</h1>
             <p class="text-lg text-gray-600 max-w-4xl mx-auto mb-12">Conectamos estudiantes con las mejores empresas para crear oportunidades que transforman carreras</p>
 
             <!-- BLOQUE DE ESTUDIANTES -->
@@ -97,50 +97,8 @@
 
                 <!-- Scripts para el slider -->
                 @push('scripts')
-                <script>
-                    document.addEventListener('DOMContentLoaded', function() {
-                        // Destruir cualquier instancia previa si existe
-                        if (window.empresasSwiper) {
-                            window.empresasSwiper.destroy(true, true);
-                        }
-
-                        // Usar la configuración más simple posible para garantizar funcionamiento
-                        window.empresasSwiper = new Swiper('.empresas-slider', {
-                            // Configuración básica
-                            slidesPerView: 1,
-                            spaceBetween: 20,
-                            speed: 300,
-
-                            // Navegación
-                            navigation: {
-                                nextEl: '.swiper-button-next',
-                                prevEl: '.swiper-button-prev',
-                            },
-
-                            // Paginación simple
-                            pagination: {
-                                el: '.swiper-pagination',
-                                clickable: true,
-                                type: 'bullets'
-                            },
-
-                            // Sin bucle infinito
-                            loop: false,
-
-                            // Puntos de ruptura para diseño responsive
-                            breakpoints: {
-                                640: {
-                                    slidesPerView: 2,
-                                    spaceBetween: 20,
-                                },
-                                1024: {
-                                    slidesPerView: 3,
-                                    spaceBetween: 20,
-                                }
-                            }
-                        });
-                    });
-                </script>
+                <link rel="stylesheet" href="{{ asset('assets/css/welcome.css') }}">
+                <script src="{{ asset('assets/js/welcome.js') }}"></script>
                 @endpush
 
             <!-- CTA FINAL - Solo visible para usuarios no autenticados -->

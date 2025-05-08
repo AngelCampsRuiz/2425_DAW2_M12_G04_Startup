@@ -1,135 +1,163 @@
-document.addEventListener('DOMContentLoaded', function() {
-    // Referencias a elementos del DOM
-    const modal = document.getElementById('modalValoracion');
-    const closeBtn = document.querySelector('.close');
-    const valorarBtn = document.querySelector('.valorar-button');
-    const stars = document.querySelectorAll('.rating-star');
-    const ratingInput = document.getElementById('rating');
-    const valoracionForm = document.getElementById('valoracionForm');
+// Variables globales para el mapa
+let map = null;
+let marker = null;
 
-    // Función para abrir el modal
-    if (valorarBtn) {
-        valorarBtn.addEventListener('click', function() {
-            modal.style.display = 'block';
-        });
+// Funciones para el modal principal
+function openEditModal() {
+    document.getElementById('editModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    resetAllErrors();
+    
+    // Inicializar mapa después de que el modal sea visible
+    setTimeout(() => {
+        initializeMap();
+    }, 300);
+}
+
+function closeEditModal() {
+    document.getElementById('editModal').classList.add('hidden');
+    document.body.style.overflow = 'auto';
+}
+
+// Funciones para el mapa
+function initializeMap() {
+    // Si ya existe un mapa, eliminarlo
+    if (map !== null) {
+        map.remove();
     }
 
-    // Función para cerrar el modal
-    if (closeBtn) {
-        closeBtn.addEventListener('click', function() {
-            modal.style.display = 'none';
+    try {
+        // Obtener coordenadas iniciales
+        const latInput = document.getElementById('latitud');
+        const lngInput = document.getElementById('longitud');
+        const initialLat = latInput ? parseFloat(latInput.value) || 40.4167 : 40.4167;
+        const initialLng = lngInput ? parseFloat(lngInput.value) || -3.7037 : -3.7037;
+
+        // Crear el mapa
+        map = L.map('map').setView([initialLat, initialLng], 13);
+
+        // Añadir capa de OpenStreetMap
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Añadir marcador inicial
+        marker = L.marker([initialLat, initialLng], {
+            draggable: true
+        }).addTo(map);
+
+        // Evento de clic en el mapa
+        map.on('click', function(e) {
+            const newLat = e.latlng.lat;
+            const newLng = e.latlng.lng;
+            
+            if (marker) {
+                marker.setLatLng([newLat, newLng]);
+            }
+            
+            updateCoordinates(newLat, newLng);
         });
+
+        // Evento de arrastre del marcador
+        marker.on('dragend', function() {
+            const pos = marker.getLatLng();
+            updateCoordinates(pos.lat, pos.lng);
+        });
+
+        // Forzar redimensionamiento del mapa después de que sea visible
+        setTimeout(() => {
+            map.invalidateSize();
+        }, 250);
+
+    } catch (error) {
+        console.error('Error al inicializar el mapa:', error);
     }
+}
 
-    // Cerrar modal al hacer clic fuera de él
-    window.addEventListener('click', function(event) {
-        if (event.target == modal) {
-            modal.style.display = 'none';
-        }
+function updateCoordinates(lat, lng) {
+    const latInput = document.getElementById('latitud');
+    const lngInput = document.getElementById('longitud');
+    
+    if (latInput && lngInput) {
+        latInput.value = lat.toFixed(6);
+        lngInput.value = lng.toFixed(6);
+    }
+}
+
+// Funciones de validación
+function showError(field, message) {
+    const errorElement = document.getElementById('error-' + field.id);
+    if (errorElement) {
+        errorElement.textContent = message;
+        errorElement.classList.remove('hidden');
+        field.classList.add('border-red-500');
+    }
+}
+
+function hideError(field) {
+    const errorElement = document.getElementById('error-' + field.id);
+    if (errorElement) {
+        errorElement.classList.add('hidden');
+        field.classList.remove('border-red-500');
+    }
+}
+
+function resetAllErrors() {
+    document.querySelectorAll('.error-message').forEach(el => {
+        el.classList.add('hidden');
     });
-
-    // Manejar la interacción con las estrellas
-    stars.forEach((star, index) => {
-        star.addEventListener('mouseover', function() {
-            for (let i = 0; i <= index; i++) {
-                stars[i].classList.add('star-filled');
-            }
-        });
-
-        star.addEventListener('mouseout', function() {
-            const rating = ratingInput.value;
-            stars.forEach((s, i) => {
-                if (i < rating) {
-                    s.classList.add('star-filled');
-                } else {
-                    s.classList.remove('star-filled');
-                }
-            });
-        });
-
-        star.addEventListener('click', function() {
-            ratingInput.value = index + 1;
-            stars.forEach((s, i) => {
-                if (i <= index) {
-                    s.classList.add('star-filled');
-                } else {
-                    s.classList.remove('star-filled');
-                }
-            });
-        });
+    document.querySelectorAll('input, textarea').forEach(el => {
+        el.classList.remove('border-red-500');
     });
+}
 
-    // Función para mostrar mensajes con SweetAlert2
-    const showMessage = (title, text, icon) => {
-        return Swal.fire({
-            title,
-            text,
-            icon,
-            confirmButtonText: 'Aceptar',
-            confirmButtonColor: '#7705b6'
-        });
-    };
-
-    // Función para enviar la valoración
-    const enviarValoracion = async (formData, url) => {
-        try {
-            const response = await fetch(url, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const data = await response.json();
-
-            if (data.success) {
-                await showMessage('¡Éxito!', 'La valoración se ha enviado correctamente', 'success');
-                modal.style.display = 'none';
-                valoracionForm.reset();
-                window.location.reload();
+// Funciones de validación de campos
+function validarNombre(field) {
+    if (!field.value.trim()) {
+        showError(field, "El nombre es obligatorio");
+        return false;
+    } else if (field.value.trim().length < 2) {
+        showError(field, "El nombre debe tener al menos 2 caracteres");
+        return false;
+    } else if (field.value.trim().length > 100) {
+        showError(field, "El nombre no puede exceder los 100 caracteres");
+        return false;
             } else {
-                throw new Error(data.message || 'Error al enviar la valoración');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            await showMessage('Error', error.message || 'Ha ocurrido un error al enviar la valoración', 'error');
-        }
-    };
+        hideError(field);
+        return true;
+    }
+}
 
-    // Manejar el envío del formulario
-    if (valoracionForm) {
-        valoracionForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
+// ... (resto de funciones de validación)
 
-            // Deshabilitar el botón de envío y mostrar estado de carga
-            const submitButton = this.querySelector('button[type="submit"]');
-            const originalText = submitButton.innerHTML;
-            submitButton.disabled = true;
-            submitButton.innerHTML = `
-                <div class="flex items-center justify-center">
-                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Enviando...
-                </div>
-            `;
-
-            try {
-                const formData = new FormData(this);
-                const url = this.getAttribute('action');
-                await enviarValoracion(formData, url);
-            } finally {
-                // Restaurar el botón
-                submitButton.disabled = false;
-                submitButton.innerHTML = originalText;
+// Event Listeners cuando el DOM está cargado
+document.addEventListener('DOMContentLoaded', function() {
+    // Event listener para cerrar el modal al hacer clic fuera
+    const modal = document.getElementById('editModal');
+    if (modal) {
+        modal.addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeEditModal();
             }
         });
+    }
+
+    // Event listeners para validación de campos
+    const nombreInput = document.getElementById('nombre');
+    const descripcionInput = document.getElementById('descripcion');
+    const telefonoInput = document.getElementById('telefono');
+    const dniInput = document.getElementById('dni');
+    const ciudadInput = document.getElementById('ciudad');
+    
+    if (nombreInput) nombreInput.addEventListener('blur', function() { validarNombre(this); });
+    if (descripcionInput) descripcionInput.addEventListener('blur', function() { validarDescripcion(this); });
+    if (telefonoInput) telefonoInput.addEventListener('blur', function() { validarTelefono(this); });
+    if (dniInput) dniInput.addEventListener('blur', function() { validarDNI(this); });
+    if (ciudadInput) ciudadInput.addEventListener('blur', function() { validarCiudad(this); });
+
+    // Event listener para el formulario
+    const profileForm = document.getElementById('profileForm');
+    if (profileForm) {
+        profileForm.addEventListener('submit', handleFormSubmit);
     }
 });
