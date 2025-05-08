@@ -14,6 +14,7 @@
 
         <form method="POST" action="{{ route('institution.register') }}" id="institutionRegisterForm" class="space-y-6">
             @csrf
+            <meta name="csrf-token" content="{{ csrf_token() }}">
             <div class="grid md:grid-cols-2 gap-6">
                 <!-- Nombre de la institución (readonly) -->
                 <div class="mb-4">
@@ -49,22 +50,38 @@
                     <span id="codigo_centro-error" class="text-red-500 text-xs"></span>
                 </div>
 
-                <!-- Tipo de institución -->
+                <!-- Niveles educativos (select múltiple) -->
                 <div class="mb-4">
-                    <label for="tipo_institucion" class="block text-gray-700 text-sm font-medium mb-2">Tipo de institución</label>
-                    <select id="tipo_institucion" name="tipo_institucion" 
-                        class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary @error('tipo_institucion') border-red-500 @enderror">
-                        <option value="">Selecciona un tipo</option>
-                        <option value="Instituto de Educación Secundaria">Instituto de Educación Secundaria</option>
-                        <option value="Universidad">Universidad</option>
-                        <option value="Centro de Formación Profesional">Centro de Formación Profesional</option>
-                        <option value="Escuela de Negocios">Escuela de Negocios</option>
-                        <option value="Otro">Otro</option>
+                    <label for="niveles_educativos" class="block text-gray-700 text-sm font-medium mb-2">Niveles educativos</label>
+                    <select id="niveles_educativos" name="niveles_educativos[]" multiple
+                        class="select2 w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary @error('niveles_educativos') border-red-500 @enderror">
+                        @php
+                            // Asegurar que no haya duplicados en los niveles educativos
+                            $nivelesIds = [];
+                        @endphp
+                        @foreach ($nivelesEducativos as $nivel)
+                            @if (!in_array($nivel->id, $nivelesIds))
+                                @php $nivelesIds[] = $nivel->id; @endphp
+                                <option value="{{ $nivel->id }}">{{ $nivel->nombre_nivel }}</option>
+                            @endif
+                        @endforeach
                     </select>
-                    @error('tipo_institucion')
+                    @error('niveles_educativos')
                         <span class="text-red-500 text-xs">{{ $message }}</span>
                     @enderror
-                    <span id="tipo_institucion-error" class="text-red-500 text-xs"></span>
+                    <span id="niveles_educativos-error" class="text-red-500 text-xs"></span>
+                </div>
+
+                <!-- Categorías (aparecerá dinámicamente según los niveles seleccionados) -->
+                <div class="mb-4 md:col-span-2" id="categorias-container">
+                    <label class="block text-gray-700 text-sm font-medium mb-2">Categorías por nivel educativo</label>
+                    <div id="categorias-por-nivel" class="space-y-4">
+                        <!-- Aquí se cargarán dinámicamente las categorías según los niveles seleccionados -->
+                        <p class="text-sm text-gray-500">Selecciona primero los niveles educativos para ver las categorías disponibles</p>
+                    </div>
+                    @error('categorias')
+                        <span class="text-red-500 text-xs">{{ $message }}</span>
+                    @enderror
                 </div>
 
                 <!-- Dirección -->
@@ -164,7 +181,100 @@
     </div>
 </div>
 
+<!-- Incluir Select2 -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<style>
+    /* Estilos personalizados para Select2 */
+    .select2-container--default .select2-selection--multiple {
+        border-color: #e2e8f0;
+        border-radius: 0.5rem;
+        min-height: 42px;
+        line-height: 24px;
+        padding: 2px 4px;
+    }
+    
+    .select2-container--default.select2-container--focus .select2-selection--multiple {
+        border-color: #4f46e5;
+        box-shadow: 0 0 0 1px #4f46e5;
+    }
+    
+    .select2-container--default .select2-selection--multiple .select2-selection__choice {
+        background-color: #4f46e5;
+        color: white;
+        border: none;
+        border-radius: 0.375rem;
+        padding: 2px 8px 2px 25px;  /* Aumentado el padding izquierdo para dar espacio al botón de eliminar */
+        margin-top: 4px;
+        margin-right: 4px;
+        position: relative;  /* Para posicionar correctamente el botón de eliminar */
+    }
+    
+    .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+        color: white;
+        margin-right: 5px;
+        position: absolute;  /* Posicionamiento absoluto para que no empuje el texto */
+        left: 6px;  /* Posicionar a la izquierda */
+        top: 50%;  /* Centrar verticalmente */
+        transform: translateY(-50%);  /* Ajuste fino para centrado vertical */
+        font-weight: bold;
+        border: none;
+        background: none;
+    }
+    
+    .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
+        color: #f9fafb;
+        background-color: rgba(255, 255, 255, 0.1);  /* Fondo sutil al hacer hover */
+        border-radius: 50%;  /* Forma circular al hacer hover */
+    }
+    
+    .select2-dropdown {
+        border-color: #e2e8f0;
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+    
+    .select2-container--default .select2-results__option--highlighted[aria-selected] {
+        background-color: #4f46e5;
+    }
+</style>
+
 <script>
+$(document).ready(function() {
+    // Inicializar Select2 con prevención de duplicados
+    $('.select2').select2({
+        placeholder: "Selecciona los niveles educativos",
+        allowClear: true,
+        width: '100%',
+        // Esta función de selección previene seleccionar un mismo valor dos veces
+        selectOnClose: true,
+        // Personalización adicional
+        language: {
+            noResults: function() {
+                return "No se encontraron resultados";
+            }
+        },
+        // Clases personalizadas para mejor integración con Tailwind
+        theme: "default"
+    }).on('select2:selecting', function(e) {
+        const existingValues = $(this).val() || [];
+        const selectedValue = e.params.args.data.id;
+        
+        // Si ya está seleccionado, prevenir la selección
+        if (existingValues.includes(selectedValue)) {
+            e.preventDefault();
+        }
+    });
+    
+    // Detectar cambios en Select2
+    $('.select2').on('change', function() {
+        validateNivelesEducativos();
+        cargarCategoriasPorNivel();
+    });
+});
+
 // Objeto global para almacenar el estado de validación de cada campo
 window.validationErrors = {};
 
@@ -249,18 +359,19 @@ window.validateCodigoCentro = function() {
     return true;
 };
 
-// Validación del tipo de institución
-window.validateTipoInstitucion = function() {
-    const tipoField = document.getElementById('tipo_institucion');
-    if (!tipoField) return true;
+// Validación de los niveles educativos
+window.validateNivelesEducativos = function() {
+    const nivelesField = document.getElementById('niveles_educativos');
+    if (!nivelesField) return true;
     
-    const tipoValue = tipoField.value;
-    if (!tipoValue) {
-        window.updateFieldStatus(tipoField, false, 'El tipo de institución es obligatorio');
+    const nivelesSeleccionados = $('#niveles_educativos').val(); // Uso de jQuery para Select2
+    
+    if (!nivelesSeleccionados || nivelesSeleccionados.length === 0) {
+        window.updateFieldStatus(nivelesField, false, 'Debes seleccionar al menos un nivel educativo');
         return false;
     }
     
-    window.updateFieldStatus(tipoField, true);
+    window.updateFieldStatus(nivelesField, true);
     return true;
 };
 
@@ -390,7 +501,7 @@ document.getElementById('institutionRegisterForm').addEventListener('submit', fu
         validateName() &&
         validateEmail() &&
         validateCodigoCentro() &&
-        validateTipoInstitucion() &&
+        validateNivelesEducativos() &&
         validateDireccion() &&
         validateProvincia() &&
         validateCodigoPostal() &&
@@ -404,8 +515,193 @@ document.getElementById('institutionRegisterForm').addEventListener('submit', fu
     }
 });
 
-// Validación en tiempo real
-document.querySelectorAll('input, select').forEach(field => {
+// Función para cargar las categorías según los niveles seleccionados
+function cargarCategoriasPorNivel() {
+    const nivelesSeleccionados = $('#niveles_educativos').val(); // Uso de jQuery para Select2
+    const contenedorCategorias = document.getElementById('categorias-por-nivel');
+    
+    // Guardar las selecciones actuales antes de recargar
+    const seleccionesActuales = {};
+    document.querySelectorAll('input[name^="categorias["]').forEach(checkbox => {
+        if (checkbox.checked) {
+            const name = checkbox.name;
+            const value = checkbox.value;
+            if (!seleccionesActuales[name]) {
+                seleccionesActuales[name] = [];
+            }
+            seleccionesActuales[name].push(value);
+        }
+    });
+    
+    // Mostrar un estado de carga
+    contenedorCategorias.innerHTML = '<p class="text-sm text-gray-500">Cargando categorías...</p>';
+    
+    // Limpiar el contenedor
+    if (!nivelesSeleccionados || nivelesSeleccionados.length === 0) {
+        contenedorCategorias.innerHTML = '<p class="text-sm text-gray-500">Selecciona primero los niveles educativos para ver las categorías disponibles</p>';
+        return;
+    }
+    
+    // Mapear los niveles seleccionados con sus nombres (sin duplicados)
+    const nivelesInfo = [];
+    const nivelesYaAgregados = new Set();
+    
+    $('#niveles_educativos option:selected').each(function() {
+        const nivelId = $(this).val();
+        // Solo agregamos el nivel si no está ya en el conjunto
+        if (!nivelesYaAgregados.has(nivelId)) {
+            nivelesYaAgregados.add(nivelId);
+            nivelesInfo.push({
+                id: nivelId,
+                nombre: $(this).text()
+            });
+        }
+    });
+    
+    // Solicitar las categorías para cada nivel seleccionado
+    fetch(window.location.origin + '/api/categorias-por-niveles', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({ niveles: Array.from(nivelesYaAgregados) }) // Convertir a array
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Error en la respuesta del servidor: ' + response.status);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Datos recibidos:', data); // Para depuración
+        
+        if (Object.keys(data).length === 0) {
+            contenedorCategorias.innerHTML = '<p class="text-sm text-gray-500">No hay categorías disponibles para los niveles seleccionados</p>';
+            return;
+        }
+        
+        // Limpiar el contenedor antes de añadir nuevos elementos
+        contenedorCategorias.innerHTML = '';
+        
+        // Crear una sección para cada nivel con sus categorías
+        nivelesInfo.forEach(nivel => {
+            if (!data[nivel.id]) {
+                console.log('No hay datos para el nivel:', nivel.id); // Para depuración
+                return;
+            }
+            
+            // Almacenar todas las categorías para este nivel
+            const todasLasCategorias = data[nivel.id] || [];
+            console.log('Categorías para nivel', nivel.id, ':', todasLasCategorias); // Para depuración
+            
+            // Crear el contenedor para este nivel
+            const nivelContainer = document.createElement('div');
+            nivelContainer.className = 'p-4 border rounded-lg mb-4';
+            nivelContainer.dataset.nivelId = nivel.id;
+            
+            // Título del nivel
+            const nivelTitle = document.createElement('h3');
+            nivelTitle.className = 'font-medium text-gray-800 mb-2';
+            nivelTitle.textContent = nivel.nombre;
+            nivelContainer.appendChild(nivelTitle);
+            
+            // Si no hay categorías para este nivel
+            if (todasLasCategorias.length === 0) {
+                const noCategoriasMsg = document.createElement('p');
+                noCategoriasMsg.className = 'text-sm text-gray-500';
+                noCategoriasMsg.textContent = 'No hay categorías disponibles para este nivel';
+                nivelContainer.appendChild(noCategoriasMsg);
+            } else {
+                // Añadir un campo de búsqueda
+                const searchContainer = document.createElement('div');
+                searchContainer.className = 'mb-3';
+                
+                const searchInput = document.createElement('input');
+                searchInput.type = 'text';
+                searchInput.placeholder = 'Buscar categorías...';
+                searchInput.className = 'w-full px-3 py-2 text-sm border rounded-lg focus:ring-primary focus:border-primary';
+                searchInput.dataset.nivelId = nivel.id;
+                
+                searchContainer.appendChild(searchInput);
+                nivelContainer.appendChild(searchContainer);
+                
+                // Crear un div para contener las checkboxes de las categorías
+                const categoriasWrapper = document.createElement('div');
+                categoriasWrapper.className = 'grid grid-cols-2 gap-2';
+                categoriasWrapper.id = `categorias-wrapper-${nivel.id}`;
+                
+                // Eliminar duplicados en las categorías mediante un Set de IDs
+                const categoriasVistas = new Set();
+                const categoriasFiltradas = [];
+                
+                todasLasCategorias.forEach(categoria => {
+                    if (!categoriasVistas.has(categoria.id)) {
+                        categoriasVistas.add(categoria.id);
+                        categoriasFiltradas.push(categoria);
+                    }
+                });
+                
+                // Añadir las checkboxes de categorías sin duplicados
+                categoriasFiltradas.forEach(categoria => {
+                    const categoriaDiv = document.createElement('div');
+                    categoriaDiv.className = 'flex items-center categoria-item';
+                    categoriaDiv.dataset.nombre = categoria.nombre_categoria.toLowerCase();
+                    
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.name = `categorias[${nivel.id}][]`;
+                    checkbox.value = categoria.id;
+                    checkbox.id = `categoria-${nivel.id}-${categoria.id}`;
+                    checkbox.className = 'mr-2';
+                    
+                    // Comprobar si esta categoría estaba seleccionada anteriormente
+                    const checkboxName = `categorias[${nivel.id}][]`;
+                    if (seleccionesActuales[checkboxName] && seleccionesActuales[checkboxName].includes(categoria.id.toString())) {
+                        checkbox.checked = true;
+                    }
+                    
+                    const label = document.createElement('label');
+                    label.htmlFor = `categoria-${nivel.id}-${categoria.id}`;
+                    label.className = 'text-sm text-gray-700';
+                    label.textContent = categoria.nombre_categoria;
+                    
+                    categoriaDiv.appendChild(checkbox);
+                    categoriaDiv.appendChild(label);
+                    categoriasWrapper.appendChild(categoriaDiv);
+                });
+                
+                nivelContainer.appendChild(categoriasWrapper);
+                
+                // Añadir evento de búsqueda
+                searchInput.addEventListener('input', function() {
+                    const searchText = this.value.toLowerCase();
+                    const nivelId = this.dataset.nivelId;
+                    const categoriaItems = document.querySelectorAll(`#categorias-wrapper-${nivelId} .categoria-item`);
+                    
+                    categoriaItems.forEach(item => {
+                        const nombreCategoria = item.dataset.nombre;
+                        if (nombreCategoria.includes(searchText)) {
+                            item.style.display = '';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+                });
+            }
+            
+            // Añadir este nivel al contenedor principal
+            contenedorCategorias.appendChild(nivelContainer);
+        });
+    })
+    .catch(error => {
+        console.error('Error al cargar categorías:', error);
+        contenedorCategorias.innerHTML = `<p class="text-sm text-red-500">Error al cargar las categorías: ${error.message}. Inténtalo de nuevo más tarde.</p>`;
+    });
+}
+
+// Validación en tiempo real para campos normales
+document.querySelectorAll('input').forEach(field => {
     field.addEventListener('input', function() {
         const fieldId = this.id;
         switch(fieldId) {
@@ -417,9 +713,6 @@ document.querySelectorAll('input, select').forEach(field => {
                 break;
             case 'codigo_centro':
                 validateCodigoCentro();
-                break;
-            case 'tipo_institucion':
-                validateTipoInstitucion();
                 break;
             case 'direccion':
                 validateDireccion();

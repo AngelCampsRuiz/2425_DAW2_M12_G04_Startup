@@ -32,7 +32,7 @@ class DatabaseSeeder extends Seeder
             FavoritoSeeder::class,
             SolicitudSeeder::class,
             InstitucionSeeder::class,
-            DocenteSeeder::class,
+            DocenteSeeder::class
         ]);
     }
 }

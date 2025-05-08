@@ -1,0 +1,47 @@
+/* Welcome page specific styles */
+.empresas-slider-container {
+    position: relative;
+    width: 100%;
+}
+
+.empresas-slider {
+    width: 100%;
+    overflow: hidden;
+}
+
+/* Swiper navigation buttons */
+.swiper-button-next,
+.swiper-button-prev {
+    color: #7705B6;
+    position: absolute;
+    top: 50%;
+    z-index: 10;
+    margin-top: -24px;
+}
+
+.swiper-button-next {
+    right: 0;
+}
+
+.swiper-button-prev {
+    left: 0;
+}
+
+/* Swiper pagination */
+.swiper-pagination {
+    margin-top: 1rem;
+    text-align: center;
+}
+
+/* Card hover effects */
+.hover\:scale-\[1\.02\]:hover {
+    transform: scale(1.02);
+}
+
+.hover\:-translate-y-1:hover {
+    transform: translateY(-0.25rem);
+}
+
+.hover\:shadow-xl:hover {
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+} 

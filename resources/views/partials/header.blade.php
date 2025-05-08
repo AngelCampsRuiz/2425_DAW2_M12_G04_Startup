@@ -1,6 +1,7 @@
 {{-- HEADER --}}
 @auth
     <meta name="user-id" content="{{ auth()->id() }}">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 @endauth
 <header class="bg-gradient-to-r from-[#D0AAFE] to-[#E5D0FF] py-4 px-6 shadow-lg">
     <div class="container mx-auto flex justify-between items-center">
@@ -91,7 +92,7 @@
                         <!-- Dropdown de notificaciones -->
                         <div id="notificationDropdown" class="hidden absolute right-full top-0 mr-2 w-80 bg-white rounded-lg shadow-lg z-50">
                             <div class="p-4 border-b font-bold text-[#7705B6]">Notificaciones</div>
-                            <div id="notificationList" class="max-h-80 overflow-y-auto">
+                            <div id="notificationList" class="max-h-60 overflow-y-auto">
                                 <!-- Aquí se cargarán las notificaciones -->
                             </div>
                         </div>

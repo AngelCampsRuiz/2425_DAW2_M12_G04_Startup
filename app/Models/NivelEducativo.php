@@ -9,13 +9,36 @@ class NivelEducativo extends Model
 {
     use HasFactory;
 
+    /**
+     * Nombre de la tabla en la base de datos.
+     *
+     * @var string
+     */
     protected $table = 'niveles_educativos';
 
-    protected $fillable = ['nombre_nivel'];
+    /**
+     * Los atributos que son asignables en masa.
+     *
+     * @var array
+     */
+    protected $fillable = [
+        'nombre_nivel',
+    ];
 
+    /**
+     * Obtiene las instituciones que ofrecen este nivel educativo.
+     */
+    public function instituciones()
+    {
+        return $this->belongsToMany(Institucion::class, 'institucion_nivel_educativo');
+    }
+
+    /**
+     * Obtiene las categorías asociadas a este nivel educativo.
+     */
     public function categorias()
     {
-        return $this->hasMany(Categoria::class, 'nivel_educativo_id');
+        return $this->belongsToMany(Categoria::class, 'institucion_categoria');
     }
 
     // Relación a través de categorías para obtener publicaciones

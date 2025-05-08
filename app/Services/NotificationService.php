@@ -42,10 +42,12 @@ class NotificationService
         return $notification;
     }
 
-    public function markAsRead($notificationId)
+    public function markAsRead($id)
     {
-        $notification = Notification::findOrFail($notificationId);
-        $notification->update(['is_read' => true]);
+        $notification = auth()->user()->notifications()->find($id);
+        if ($notification) {
+            $notification->markAsRead();
+        }
         return $notification;
     }
 

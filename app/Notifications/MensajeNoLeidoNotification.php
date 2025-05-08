@@ -61,4 +61,16 @@ class MensajeNoLeidoNotification extends Notification
             'type' => 'mensaje_no_leido'
         ];
     }
+
+    public function toArray($notifiable)
+    {
+        return [
+            'title' => 'Tienes mensajes sin leer',
+            'message' => 'Tienes un mensaje de ' . $this->sender->nombre . ' en el chat.',
+            'sender_id' => $this->sender->id,
+            'sender_name' => $this->sender->nombre,
+            'chat_id' => $this->chat->id,
+            'type' => 'mensaje_no_leido'
+        ];
+    }
 }
