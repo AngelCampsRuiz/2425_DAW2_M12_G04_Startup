@@ -15,17 +15,42 @@ class SubcategoriaController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $subcategorias = Subcategoria::with('categoria')->paginate(10);
-        $categorias = Categoria::all();
-        
-        if (request()->ajax()) {
-            return response()->json([
-                'tabla' => view('admin.subcategorias.tabla', compact('subcategorias'))->render()
-            ]);
+        $query = Subcategoria::query();
+
+        // Aplicar filtro por nombre
+        if ($request->has('nombre') && !empty($request->nombre)) {
+            $query->where('nombre_subcategoria', 'like', '%' . $request->nombre . '%');
         }
+
+        // Aplicar filtro por categoría
+        if ($request->has('categoria') && !empty($request->categoria)) {
+            $query->where('categoria_id', $request->categoria);
+        }
+
+        // Aplicar filtro por publicaciones
+        if ($request->has('publicaciones') && $request->publicaciones !== '') {
+            if ($request->publicaciones === '0') {
+                $query->whereDoesntHave('publicaciones');
+            } elseif ($request->publicaciones === '1') {
+                $query->whereHas('publicaciones');
+            }
+        }
+
+        // Usar selectRaw para el conteo de publicaciones directamente
+        $query->selectRaw('subcategorias.*, (SELECT COUNT(*) FROM publicaciones WHERE publicaciones.subcategoria_id = subcategorias.id) as publicaciones_count');
+
+        $subcategorias = $query->with('categoria')
+                              ->paginate(10);
         
+        $categorias = Categoria::all();
+
+        if ($request->ajax()) {
+            $view = view('admin.subcategorias.tabla', compact('subcategorias'))->render();
+            return response()->json(['tabla' => $view]);
+        }
+
         return view('admin.subcategorias.index', compact('subcategorias', 'categorias'));
     }
 

@@ -20,6 +20,80 @@
         <p id="notification-text"></p>
     </div>
 
+    <!-- Filtros -->
+    <div class="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl shadow-md p-6 mb-8 border border-purple-100">
+        <div class="flex flex-col md:flex-row justify-between items-center mb-6">
+            <div class="flex items-center mb-4 md:mb-0">
+                <svg class="w-5 h-5 text-purple-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                </svg>
+                <h3 class="text-lg font-semibold text-purple-800">Filtros de búsqueda</h3>
+            </div>
+            <button id="reset-filtros" class="inline-flex items-center px-4 py-2 bg-white border border-purple-200 rounded-lg font-medium text-sm text-purple-700 hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors duration-150 shadow-sm">
+                <svg class="w-4 h-4 mr-2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Reiniciar filtros
+            </button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div class="relative">
+                <label for="filtro_nombre" class="block text-sm font-medium text-purple-700 mb-2">Nombre de la subcategoría</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
+                    <input type="text" id="filtro_nombre" class="pl-10 w-full rounded-lg border-purple-200 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50" placeholder="Buscar por nombre...">
+                </div>
+            </div>
+            
+            <div class="relative">
+                <label for="filtro_categoria" class="block text-sm font-medium text-purple-700 mb-2">Categoría</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                        </svg>
+                    </div>
+                    <select id="filtro_categoria" class="pl-10 w-full rounded-lg border-purple-200 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50 appearance-none bg-white">
+                        <option value="">Todas las categorías</option>
+                        @foreach($categorias as $categoria)
+                            <option value="{{ $categoria->id }}">{{ $categoria->nombre_categoria }}</option>
+                        @endforeach
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                        <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="relative">
+                <label for="filtro_publicaciones" class="block text-sm font-medium text-purple-700 mb-2">Publicaciones</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                    </div>
+                    <select id="filtro_publicaciones" class="pl-10 w-full rounded-lg border-purple-200 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50 appearance-none bg-white">
+                        <option value="">Todas</option>
+                        <option value="0">Sin publicaciones</option>
+                        <option value="1">Con publicaciones</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                        <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Contenedor de la tabla -->
     <div id="tabla-container">
         @include('admin.subcategorias.tabla')
@@ -421,5 +495,68 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+let timeoutId = null;
+
+// Eventos para filtrado automático
+document.getElementById('filtro_nombre').addEventListener('input', debounceFilter);
+document.getElementById('filtro_categoria').addEventListener('change', aplicarFiltros);
+document.getElementById('filtro_publicaciones').addEventListener('change', aplicarFiltros);
+
+// Resetear filtros
+document.getElementById('reset-filtros').addEventListener('click', function() {
+    document.getElementById('filtro_nombre').value = '';
+    document.getElementById('filtro_categoria').value = '';
+    document.getElementById('filtro_publicaciones').value = '';
+    aplicarFiltros();
+});
+
+// Función para debounce en campos de texto
+function debounceFilter() {
+    if (timeoutId) {
+        clearTimeout(timeoutId);
+    }
+    timeoutId = setTimeout(() => {
+        aplicarFiltros();
+    }, 300);
+}
+
+function aplicarFiltros() {
+    const filtros = {
+        nombre: document.getElementById('filtro_nombre').value,
+        categoria: document.getElementById('filtro_categoria').value,
+        publicaciones: document.getElementById('filtro_publicaciones').value
+    };
+    
+    const params = new URLSearchParams();
+    Object.entries(filtros).forEach(([key, value]) => {
+        if (value) {
+            params.append(key, value);
+        }
+    });
+    
+    refreshTable(params.toString());
+}
+
+function refreshTable(queryString = '') {
+    const url = queryString 
+        ? `/admin/subcategorias?${queryString}`
+        : '/admin/subcategorias';
+
+    fetch(url, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.tabla) {
+            document.getElementById('tabla-container').innerHTML = data.tabla;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
 </script>
 @endsection 
