@@ -120,6 +120,9 @@
                     Route::get('/notifications/unread', [NotificationController::class, 'getUnreadNotifications']);
                     Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
                     Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+
+                // RUTAS PARA PUBLICACIONES GUARDADAS
+                    Route::get('/saved', [ProfileController::class, 'saved'])->name('publication.index');
             });
 
         // RUTAS PROTEGIDAS PARA ESTUDIANTES
@@ -257,7 +260,7 @@
         Route::get('/solicitudes', [App\Http\Controllers\Estudiante\SolicitudController::class, 'index'])->name('solicitudes.index');
         Route::get('/solicitudes/{id}', [App\Http\Controllers\Estudiante\SolicitudController::class, 'show'])->name('solicitudes.show');
         Route::post('/solicitudes/{id}/cancelar', [App\Http\Controllers\Estudiante\SolicitudController::class, 'cancelar'])->name('solicitudes.cancelar');
-        
+
         // Rutas AJAX para solicitudes
         Route::get('/api/solicitudes', [App\Http\Controllers\Estudiante\SolicitudAjaxController::class, 'getSolicitudes'])->name('api.solicitudes');
         Route::get('/api/solicitudes/{id}', [App\Http\Controllers\Estudiante\SolicitudAjaxController::class, 'getSolicitud'])->name('api.solicitudes.show');

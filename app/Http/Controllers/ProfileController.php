@@ -49,7 +49,7 @@ class ProfileController extends Controller
     public function update(Request $request)
     {
         $user = auth()->user();
-        
+
         $request->validate([
             'nombre' => 'required|string|max:255',
             'email' => 'required|email|unique:user,email,' . $user->id,
@@ -71,7 +71,7 @@ class ProfileController extends Controller
             if ($request->hasFile('imagen')) {
             $imageName = time() . '_' . $request->file('imagen')->getClientOriginalName();
             $request->file('imagen')->move(public_path('profile_images'), $imageName);
-            
+
             // Eliminar la imagen anterior si existe
             if ($user->imagen) {
                 $oldImagePath = public_path('profile_images/' . $user->imagen);
@@ -79,15 +79,15 @@ class ProfileController extends Controller
                     unlink($oldImagePath);
                 }
             }
-            
+
             $user->imagen = $imageName;
                 }
-                
+
         // Manejar la subida del banner
         if ($request->hasFile('banner')) {
             $bannerName = time() . '_banner_' . $request->file('banner')->getClientOriginalName();
             $request->file('banner')->move(public_path('profile_banners'), $bannerName);
-            
+
             // Eliminar el banner anterior si existe
             if ($user->banner) {
                 $oldBannerPath = public_path('profile_banners/' . $user->banner);
@@ -95,7 +95,7 @@ class ProfileController extends Controller
                     unlink($oldBannerPath);
             }
             }
-            
+
             $user->banner = $bannerName;
         }
 
@@ -139,4 +139,20 @@ class ProfileController extends Controller
             ], 500);
         }
     }
-} 
+
+    public function saved()
+    {
+        $user = auth()->user();
+
+        $saved = $user->favoritePublications()
+            ->whereHas('publicacion', function($q) {
+                $q->where('activa', 1);
+            })
+            ->with('publicacion.empresa')
+            ->get()
+            ->pluck('publicacion')
+            ->filter();
+
+        return view('publication.saved', compact('saved', 'user'));
+    }
+}

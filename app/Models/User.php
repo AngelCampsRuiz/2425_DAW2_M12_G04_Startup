@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-
+use App\Models\FavoritePublication;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
@@ -148,5 +148,10 @@ class User extends Authenticatable
     public function valoracionesEmitidas()
     {
         return $this->hasMany(Valoracion::class, 'emisor_id');
+    }
+
+    public function favoritePublications()
+    {
+        return $this->hasMany(FavoritePublication::class, 'user_id');
     }
 }
