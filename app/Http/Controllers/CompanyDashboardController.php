@@ -13,7 +13,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-
+use App\Notifications\SolicitudEstadoNotification;
+use App\Events\NotificacionPusher;
 class CompanyDashboardController extends Controller
 {
     /**
@@ -52,7 +53,7 @@ class CompanyDashboardController extends Controller
         try {
             // Validar que la categoría existe
             $subcategorias = Subcategoria::where('categoria_id', $categoria)->get();
-            
+
             if ($subcategorias->isEmpty()) {
                 return response()->json([
                     'error' => true,
@@ -85,7 +86,7 @@ class CompanyDashboardController extends Controller
 
         // 1. BLOQUEO ABSOLUTO POR CLAVE - Adquirir un bloqueo distribuido exclusivo por usuario
         $lockKey = 'LOCK_CREAR_OFERTA_' . Auth::id();
-        
+
         try {
             return DB::transaction(function() use ($request, $lockKey) {
                 // Obtenemos un bloqueo con un timeout corto (3 segundos de espera máximo)
@@ -120,7 +121,7 @@ class CompanyDashboardController extends Controller
                             ]);
 
                             $mensaje = 'DUPLICADO DETECTADO: Ya has creado una oferta similar en las últimas 24 horas.';
-                            
+
                             if ($request->ajax()) {
                                 return response()->json([
                                     'success' => false,
@@ -128,7 +129,7 @@ class CompanyDashboardController extends Controller
                                     'message' => $mensaje
                                 ], 409); // 409 Conflict
                             }
-                            
+
                             return redirect()->route('empresa.dashboard')
                                 ->with('error', $mensaje);
                         }
@@ -188,7 +189,7 @@ class CompanyDashboardController extends Controller
                 'user_id' => Auth::id(),
                 'tiempo' => now()->format('Y-m-d H:i:s.u')
             ]);
-            
+
             if ($request->ajax()) {
                 return response()->json([
                     'success' => false,
@@ -205,7 +206,7 @@ class CompanyDashboardController extends Controller
                 Log::warning('⛔ DUPLICADO DETECTADO EN MODELO', [
                     'mensaje' => $e->getMessage()
                 ]);
-                
+
                 if ($request->ajax()) {
                     return response()->json([
                         'success' => false,
@@ -213,18 +214,18 @@ class CompanyDashboardController extends Controller
                         'message' => $e->getMessage()
                     ], 409); // 409 Conflict
                 }
-                
+
                 return redirect()->route('empresa.dashboard')
                     ->with('error', $e->getMessage());
             }
-            
+
             // Error general
             Log::error('Error general', [
                 'message' => $e->getMessage(),
                 'line' => $e->getLine(),
                 'file' => $e->getFile()
             ]);
-            
+
             if ($request->ajax()) {
                 return response()->json([
                     'success' => false,
@@ -256,7 +257,7 @@ class CompanyDashboardController extends Controller
     {
         $publication = Publicacion::where('empresa_id', Auth::id())
             ->findOrFail($publicationId);
-        
+
         $solicitudes = Solicitud::where('publicacion_id', $publicationId)
             ->with(['estudiante.user', 'estudiante.titulo', 'chat'])
             ->orderBy('created_at', 'desc')
@@ -281,6 +282,11 @@ class CompanyDashboardController extends Controller
             'respuesta_empresa' => $request->respuesta_empresa
         ]);
 
+        // Notificar al estudiante
+        $estudiante = $solicitud->estudiante->user;
+        $estudiante->notify(new SolicitudEstadoNotification($request->estado, $solicitud->publicacion->empresa, $solicitud->publicacion));
+        event(new NotificacionPusher($estudiante->id));
+
         // Si la solicitud fue aceptada
         if ($request->estado === 'aceptada') {
             // Marcar la publicación como inactiva
@@ -295,13 +301,13 @@ class CompanyDashboardController extends Controller
                     'estado' => 'rechazada',
                     'respuesta_empresa' => 'Solicitud rechazada automáticamente porque otro candidato fue aceptado.'
                 ]);
-                
+
             // Crear un chat entre la empresa y el estudiante
             $chat = \App\Models\Chat::create([
                 'empresa_id' => Auth::id(),
                 'solicitud_id' => $solicitud->id
             ]);
-            
+
             // Redirigir al chat
             return redirect()->route('chat.show', $chat->id)
                 ->with('success', 'Solicitud aceptada y chat creado correctamente');
@@ -315,7 +321,7 @@ class CompanyDashboardController extends Controller
         try {
             $publication = Publicacion::where('empresa_id', Auth::id())
                 ->findOrFail($publicationId);
-            
+
             $publication->activa = !$publication->activa;
             $publication->save();
 

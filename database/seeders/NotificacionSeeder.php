@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\Empresa;
 use App\Models\Estudiante;
 use App\Models\Tutor;
+use App\Models\Notification;
 
 class NotificacionSeeder extends Seeder
 {
@@ -48,12 +49,12 @@ class NotificacionSeeder extends Seeder
         // Generar notificaciones para estudiantes
         foreach ($estudiantes as $estudiante) {
             $numNotificaciones = rand(1, 5);
-            
+
             for ($i = 0; $i < $numNotificaciones; $i++) {
                 $tipo = array_rand($tiposNotificacion);
                 $fecha = fake()->dateTimeBetween('-3 months', 'now');
-                
-                Notificacion::create([
+
+                Notification::create([
                     'titulo' => $tiposNotificacion[$tipo]['título'],
                     'mensaje' => $tiposNotificacion[$tipo]['mensaje'],
                     'leida' => fake()->boolean(70), // 70% de probabilidad de estar leída
@@ -67,12 +68,12 @@ class NotificacionSeeder extends Seeder
         // Generar notificaciones para tutores
         foreach ($tutores as $tutor) {
             $numNotificaciones = rand(1, 3);
-            
+
             for ($i = 0; $i < $numNotificaciones; $i++) {
                 $tipo = array_rand($tiposNotificacion);
                 $fecha = fake()->dateTimeBetween('-3 months', 'now');
-                
-                Notificacion::create([
+
+                Notification::create([
                     'titulo' => $tiposNotificacion[$tipo]['título'],
                     'mensaje' => $tiposNotificacion[$tipo]['mensaje'],
                     'leida' => fake()->boolean(80), // 80% de probabilidad de estar leída
@@ -86,12 +87,12 @@ class NotificacionSeeder extends Seeder
         // Generar notificaciones para empresas
         foreach ($empresas as $empresa) {
             $numNotificaciones = rand(1, 4);
-            
+
             for ($i = 0; $i < $numNotificaciones; $i++) {
                 $tipo = array_rand($tiposNotificacion);
                 $fecha = fake()->dateTimeBetween('-3 months', 'now');
-                
-                Notificacion::create([
+
+                Notification::create([
                     'titulo' => $tiposNotificacion[$tipo]['título'],
                     'mensaje' => $tiposNotificacion[$tipo]['mensaje'],
                     'leida' => fake()->boolean(75), // 75% de probabilidad de estar leída
@@ -102,4 +103,4 @@ class NotificacionSeeder extends Seeder
             }
         }
     }
-} 
+}

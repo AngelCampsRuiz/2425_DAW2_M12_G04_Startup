@@ -43,7 +43,7 @@ class SolicitudController extends Controller
 
         // Notificar a la empresa
         if ($usuarioEmpresa) {
-            $usuarioEmpresa->notify(new AlumnoSuscritoNotification($alumno));
+            $usuarioEmpresa->notify(new AlumnoSuscritoNotification($alumno, $publication));
         }
 
         return response()->json([
