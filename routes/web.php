@@ -180,6 +180,20 @@
                         Route::delete('empresas/eliminar-sql/{empresa}', [App\Http\Controllers\Admin\EmpresaController::class, 'destroySQL'])->name('empresas.destroySQL');
                     // RUTA GESTIONAR EMPRESAS
                         Route::resource('empresas', App\Http\Controllers\Admin\EmpresaController::class);
+                        
+                // RUTAS PARA GESTIONAR LAS INSTITUCIONES
+                    // RUTA CAMBIAR VERIFICACIÓN
+                        Route::post('instituciones/cambiar-verificacion/{id}', [App\Http\Controllers\Admin\InstitucionController::class, 'cambiarVerificacion'])->name('instituciones.cambiar-verificacion');
+                    // RUTA ELIMINAR SQL
+                        Route::delete('instituciones/eliminar-sql/{institucion}', [App\Http\Controllers\Admin\InstitucionController::class, 'destroySQL'])->name('instituciones.destroySQL');
+                    // RUTA OBTENER CATEGORÍAS
+                        Route::get('instituciones/{id}/categorias', [App\Http\Controllers\Admin\InstitucionController::class, 'getCategorias'])->name('instituciones.categorias');
+                    // RUTA ACTUALIZAR CATEGORÍAS
+                        Route::post('instituciones/{id}/categorias', [App\Http\Controllers\Admin\InstitucionController::class, 'updateCategorias'])->name('instituciones.updateCategorias');
+                    // RUTA ACTIVAR/DESACTIVAR CATEGORÍA
+                        Route::post('instituciones/{id}/categorias/{categoria}/toggle', [App\Http\Controllers\Admin\InstitucionController::class, 'toggleCategoriaActiva'])->name('instituciones.toggleCategoria');
+                    // RUTA GESTIONAR INSTITUCIONES
+                        Route::resource('instituciones', App\Http\Controllers\Admin\InstitucionController::class);
 
                 // Rutas de Publicaciones
                 Route::get('/publicaciones', [App\Http\Controllers\Admin\PublicacionController::class, 'index'])->name('publicaciones.index');
