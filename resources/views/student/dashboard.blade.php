@@ -801,6 +801,69 @@
             // Inicializar los botones de favoritos al cargar la página
             initFavoriteButtons();
 
+            // Manejar la paginación con AJAX
+            const paginationContainer = document.querySelector('.pagination-container');
+            if (paginationContainer) {
+                paginationContainer.addEventListener('click', function(e) {
+                    e.preventDefault(); // Prevenir el comportamiento por defecto
+                    
+                    // Verificar si el clic fue en un enlace de paginación
+                    const paginationLink = e.target.closest('a[href*="page="]');
+                    if (!paginationLink) return;
+                    
+                    const pageUrl = paginationLink.getAttribute('href');
+                    
+                    // Mostrar spinner si existe
+                    const searchSpinner = document.getElementById('searchSpinner');
+                    if (searchSpinner) searchSpinner.classList.remove('hidden');
+                    
+                    // Hacer la petición AJAX
+                    fetch(pageUrl, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => response.text())
+                    .then(html => {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(html, 'text/html');
+                        
+                        // Actualizar el contenido de las publicaciones
+                        const newGridContent = doc.querySelector('.grid');
+                        if (newGridContent) {
+                            document.querySelector('.grid').innerHTML = newGridContent.innerHTML;
+                        }
+                        
+                        // Actualizar la paginación
+                        const newPagination = doc.querySelector('.pagination-container');
+                        if (newPagination) {
+                            paginationContainer.innerHTML = newPagination.innerHTML;
+                        }
+                        
+                        // Reinicializar los botones de favoritos si la función existe
+                        if (typeof initFavoriteButtons === 'function') {
+                            initFavoriteButtons();
+                        }
+                        
+                        // Actualizar la URL sin recargar la página
+                        window.history.pushState({}, '', pageUrl);
+                        
+                        // Hacer scroll hacia arriba suavemente
+                        window.scrollTo({
+                            top: 0,
+                            behavior: 'smooth'
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    })
+                    .finally(() => {
+                        // Ocultar spinner si existe
+                        if (searchSpinner) searchSpinner.classList.add('hidden');
+                    });
+                });
+            }
+
             // Nuevas funciones para gestionar la navegación por pestañas
             const ofertasBtn = document.getElementById('ofertas-btn');
             const solicitudesBtn = document.getElementById('solicitudes-btn');
