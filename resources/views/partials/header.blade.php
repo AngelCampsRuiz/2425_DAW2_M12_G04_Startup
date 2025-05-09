@@ -74,8 +74,6 @@
 
         <!-- Agrupa campana, user dropdown y hamburguesa -->
         <div class="flex items-center space-x-2">
-        <!-- Agrupa campana, user dropdown y hamburguesa -->
-        <div class="flex items-center space-x-2">
             @auth
             <!-- Campana de notificaciones -->
             <div class="relative flex items-center">
@@ -111,55 +109,6 @@
                                 </svg>
                             </button>
 
-                            <!-- Dropdown Menu -->
-                            <div id="userMenu" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl py-2 z-20 border border-purple-100 opacity-0 transform -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200">
-                                <div class="px-4 py-3 border-b border-gray-100">
-                                    <p class="text-sm text-gray-500">Conectado como</p>
-                                    <p class="text-sm font-medium text-[#7705B6] truncate">{{ auth()->user()->email }}</p>
-                                </div>
-                                <a href="{{ $dashboardRoute }}" class="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-purple-50 hover:text-[#7705B6]">
-                                    <svg class="w-5 h-5 mr-2 text-[#9333EA]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                        {!! $dashboardIcon !!}
-                                    </svg>
-                                    {{ $roleName }}
-                                </a>
-                                <a href="{{ route('profile') }}" class="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-purple-50 hover:text-[#7705B6]">
-                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                                    </svg>
-                                    Mi Perfil
-                                </a>
-                                @if(auth()->user()->role->nombre_rol === 'Estudiante')
-                                <a href="{{ route('estudiante.solicitudes.index') }}" class="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-purple-50 hover:text-[#7705B6]">
-                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                                    </svg>
-                                    Mis Solicitudes
-                                </a>
-                                @endif
-                                <form method="POST" action="{{ route('logout') }}">
-                                    @csrf
-                                    <button type="submit" class="flex items-center w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-purple-50 hover:text-[#7705B6]">
-                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                                        </svg>
-                                        Cerrar sesión
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                @else
-                    <div class="flex items-center space-x-4">
-                        <a href="{{ route('login') }}" class="bg-[#7705B6] text-white px-5 py-2.5 rounded-lg font-medium hover:bg-[#5E0490] transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
-                            Iniciar sesión
-                        </a>
-                        <a href="{{ route('register') }}" class="bg-white text-[#7705B6] px-5 py-2.5 rounded-lg font-medium border border-[#7705B6] hover:bg-gray-50 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
-                            Registrarte
-                        </a>
-                    </div>
-                @endauth
-            </div>
                             <!-- Dropdown Menu -->
                             <div id="userMenu" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl py-2 z-20 border border-purple-100 opacity-0 transform -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200">
                                 <div class="px-4 py-3 border-b border-gray-100">
