@@ -21,4 +21,9 @@
         {
             return $this->belongsTo(User::class, 'id');
         }
+
+        public function publication()
+        {
+            return $this->belongsTo(Publication::class, 'publicacion_id');
+        }
     }

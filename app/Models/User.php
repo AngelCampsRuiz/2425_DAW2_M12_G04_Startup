@@ -152,6 +152,11 @@ class User extends Authenticatable
 
     public function favoritePublications()
     {
-        return $this->hasMany(FavoritePublication::class, 'user_id');
+        return $this->belongsToMany(
+            Publication::class,           // Modelo relacionado
+            'favorite_publication',       // Nombre de la tabla pivote
+            'user_id',                    // Foreign key de este modelo en la tabla pivote
+            'publicacion_id'              // Foreign key del modelo relacionado en la tabla pivote
+        );
     }
 }

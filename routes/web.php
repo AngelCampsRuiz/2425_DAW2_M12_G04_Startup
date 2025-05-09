@@ -123,6 +123,9 @@
 
                 // RUTAS PARA PUBLICACIONES GUARDADAS
                     Route::get('/saved', [ProfileController::class, 'saved'])->name('publication.index');
+                    Route::get('/saved-publications/partial', [ProfileController::class, 'savedPartial'])->name('saved.publications.partial');
+                    Route::post('/saved-publications/{id}', [ProfileController::class, 'savedPublication'])->name('saved.publications.store');
+                    Route::delete('/favorite/{id}', [ProfileController::class, 'deleteSavedPublication']);
             });
 
         // RUTAS PROTEGIDAS PARA ESTUDIANTES

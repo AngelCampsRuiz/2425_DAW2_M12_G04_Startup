@@ -144,15 +144,35 @@ class ProfileController extends Controller
     {
         $user = auth()->user();
 
+        // Obtén las publicaciones guardadas activas
         $saved = $user->favoritePublications()
-            ->whereHas('publicacion', function($q) {
-                $q->where('activa', 1);
-            })
-            ->with('publicacion.empresa')
-            ->get()
-            ->pluck('publicacion')
-            ->filter();
+            ->where('activa', 1)
+            ->with('empresa')
+            ->get();
 
         return view('publication.saved', compact('saved', 'user'));
     }
+
+    public function savedPublication($id)
+    {
+        $user = auth()->user();
+        $user->favoritePublications()->attach($id);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Publicación guardada correctamente'
+        ]);
+    }
+
+    public function deleteSavedPublication($id)
+    {
+        $user = auth()->user();
+        $user->favoritePublications()->detach($id);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Publicación eliminada de guardados correctamente'
+        ]);
+    }
+
 }
