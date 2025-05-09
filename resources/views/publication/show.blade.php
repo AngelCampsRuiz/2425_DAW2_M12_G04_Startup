@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+    <link rel="stylesheet" href="{{ asset('css/publication.css') }}">
     <div class="min-h-screen bg-gray-50">
         {{-- BREADCRUMBS --}}
         <div class="bg-white shadow-sm border-b border-gray-200">
@@ -21,7 +22,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="container mx-auto px-4 py-8">
             <!-- Botón de regreso con animación mejorada -->
             <div class="mb-6">
@@ -32,7 +33,7 @@
                     Volver a las ofertas
                 </a>
             </div>
-            
+
             <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 relative">
                 <!-- Cinta de destacado si la oferta está destacada -->
                 @if(isset($publication->destacado) && $publication->destacado)
@@ -40,7 +41,7 @@
                     Destacado
                 </div>
                 @endif
-                
+
                 <!-- Cabecera con diseño mejorado -->
                 <div class="bg-gradient-to-r from-[#5e0490] to-[#8a2be2] px-6 py-8 text-white relative overflow-hidden">
                     <!-- Patrón decorativo de fondo -->
@@ -54,13 +55,13 @@
                             <rect width="100%" height="100%" fill="url(#dots)" />
                         </svg>
                     </div>
-                    
+
                     <div class="absolute top-0 right-0 w-64 h-64 opacity-10">
                         <svg viewBox="0 0 24 24" fill="white">
                             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.31-8.86c-1.77-.45-2.34-.94-2.34-1.67 0-.84.79-1.43 2.1-1.43 1.38 0 1.9.66 1.94 1.64h1.71c-.05-1.34-.87-2.57-2.49-2.97V5H10.9v1.69c-1.51.32-2.72 1.3-2.72 2.81 0 1.79 1.49 2.69 3.66 3.21 1.95.46 2.34 1.15 2.34 1.87 0 .53-.39 1.39-2.1 1.39-1.6 0-2.23-.72-2.32-1.64H8.04c.1 1.7 1.36 2.66 2.86 2.97V19h2.34v-1.67c1.52-.29 2.72-1.16 2.73-2.77-.01-2.2-1.9-2.96-3.66-3.42z"></path>
                         </svg>
                     </div>
-                    
+
                     <div class="relative z-10">
                         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                             <div>
@@ -74,7 +75,7 @@
                                         Publicado {{ \Carbon\Carbon::parse($publication->fecha_publicacion)->diffForHumans() }}
                                     </p>
                                     @endif
-                                    
+
                                     @if(isset($publication->ubicacion))
                                     <p class="text-white/80 text-sm flex items-center">
                                         <svg class="w-4 h-4 mr-1 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -90,7 +91,7 @@
                                 <span class="bg-white/20 text-white text-sm font-medium px-4 py-2 rounded-full backdrop-blur-sm shadow-inner">
                             {{ ucfirst($publication->categoria->nombre_categoria ?? 'General') }}
                         </span>
-                                
+
                                 <!-- Estado en la parte superior como badge -->
                                 @if(isset($publication->estado))
                                     @if($publication->estado == 'cerrada')
@@ -103,7 +104,7 @@
                                     </span>
                                     @endif
                                 @endif
-                                
+
                                 <!-- Modalidad en la parte superior como badge con icono -->
                                 @if(isset($publication->modalidad))
                                 <span class="bg-white/20 text-white text-sm font-medium px-4 py-2 rounded-full backdrop-blur-sm shadow-inner flex items-center">
@@ -117,12 +118,12 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="flex flex-col md:flex-row relative">
                     {{-- IMAGEN DE LA EMPRESA --}}
                     <div class="w-full md:w-1/3 p-6 border-r border-gray-100 flex flex-col items-center justify-center bg-gradient-to-b from-gray-50 to-white">
                         <div class="w-48 h-48 rounded-lg overflow-hidden border-4 border-white shadow-lg mb-5 flex items-center justify-center group" style="aspect-ratio: 1/1;">
-                            <img src="{{ asset('public/profile_images/' . ($publication->empresa->user->imagen ?? 'company-default.png')) }}" 
+                            <img src="{{ asset('public/profile_images/' . ($publication->empresa->user->imagen ?? 'company-default.png')) }}"
                                 alt="{{ $publication->empresa->nombre }}"
                                 class="max-w-[85%] max-h-[85%] object-contain group-hover:scale-105 transition-transform duration-300">
                         </div>
@@ -136,7 +137,7 @@
                                 </span>
                             </h3>
                         </a>
-                        
+
                         <!-- Badge de verificación si es una empresa verificada -->
                         @if(isset($publication->empresa->verificado) && $publication->empresa->verificado)
                         <div class="mt-2 bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-xs font-medium inline-flex items-center">
@@ -146,12 +147,12 @@
                             Empresa verificada
                         </div>
                         @endif
-                        
+
                         <!-- Información de contacto de la empresa con hover effects -->
                         <div class="mt-6 text-center w-full">
                             <div class="p-4 bg-gray-50 rounded-lg border border-gray-100 hover:shadow-md transition-shadow duration-300">
                                 <h4 class="text-sm font-semibold text-gray-700 mb-3">Información de contacto</h4>
-                                
+
                             @if(isset($publication->empresa->email))
                                 <div class="flex items-center justify-center mb-3 px-3">
                                     <span class="flex-shrink-0 inline-flex items-center justify-center w-8 h-8 mr-2 rounded-full bg-purple-100 text-[#5e0490]">
@@ -162,7 +163,7 @@
                                     <span class="text-sm text-gray-600 overflow-hidden text-ellipsis">{{ $publication->empresa->email }}</span>
                                 </div>
                             @endif
-                                
+
                             @if(isset($publication->empresa->telefono))
                                 <div class="flex items-center justify-center px-3">
                                     <span class="flex-shrink-0 inline-flex items-center justify-center w-8 h-8 mr-2 rounded-full bg-purple-100 text-[#5e0490]">
@@ -173,7 +174,7 @@
                                     <span class="text-sm text-gray-600">{{ $publication->empresa->telefono }}</span>
                         </div>
                         @endif
-                        
+
                                 @if(isset($publication->empresa->sitio_web))
                                 <div class="flex items-center justify-center mt-3 px-3">
                                     <span class="flex-shrink-0 inline-flex items-center justify-center w-8 h-8 mr-2 rounded-full bg-purple-100 text-[#5e0490]">
@@ -187,7 +188,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     {{-- INFORMACIÓN DE LA PUBLICACIÓN --}}
                     <div class="w-full md:w-2/3 p-6">
                         <div class="mb-8">
@@ -197,7 +198,7 @@
                                 </svg>
                                 Detalles de la oferta
                             </h3>
-                            
+
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                                 <div class="flex items-center p-4 bg-purple-50 rounded-lg border border-purple-100 hover:shadow-md transition-all duration-300 transform hover:-translate-y-1">
                                     <span class="flex items-center justify-center w-12 h-12 mr-4 bg-[#5e0490] rounded-full shadow-inner">
@@ -210,7 +211,7 @@
                                         <p class="font-semibold text-gray-800 text-lg">{{ ucfirst($publication->horario) }}</p>
                                     </div>
                                 </div>
-                                
+
                                 <div class="flex items-center p-4 bg-purple-50 rounded-lg border border-purple-100 hover:shadow-md transition-all duration-300 transform hover:-translate-y-1">
                                     <span class="flex items-center justify-center w-12 h-12 mr-4 bg-[#5e0490] rounded-full shadow-inner">
                                         <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -235,7 +236,7 @@
                                         <p class="font-semibold text-gray-800 text-lg">{{ $publication->solicitudes_count }} {{ Str::plural('candidato', $publication->solicitudes_count) }}</p>
                                     </div>
                                 </div>
-                                
+
                                 <!-- Salario si está disponible -->
                                 @if(isset($publication->salario))
                                 <div class="flex items-center p-4 bg-purple-50 rounded-lg border border-purple-100 hover:shadow-md transition-all duration-300 transform hover:-translate-y-1">
@@ -262,7 +263,7 @@
                                     </div>
                                 </div>
                                 @endif
-                                
+
                                 @if(isset($publication->subcategoria))
                                 <div class="flex items-center p-4 bg-purple-50 rounded-lg border border-purple-100 hover:shadow-md transition-all duration-300 transform hover:-translate-y-1">
                                     <span class="flex items-center justify-center w-12 h-12 mr-4 bg-[#5e0490] rounded-full shadow-inner">
@@ -276,7 +277,7 @@
                                     </div>
                                 </div>
                                 @endif
-                                
+
                                 <!-- Añado una nueva tarjeta para la ubicación si existe -->
                                 @if(isset($publication->ubicacion))
                                 <div class="flex items-center p-4 bg-purple-50 rounded-lg border border-purple-100 hover:shadow-md transition-all duration-300 transform hover:-translate-y-1">
@@ -294,7 +295,7 @@
                                 @endif
                             </div>
                         </div>
-                        
+
                         <!-- Requisitos si existen -->
                         @if(isset($publication->requisitos) && !empty($publication->requisitos))
                         <div class="mb-8">
@@ -320,7 +321,7 @@
                             </div>
                         </div>
                         @endif
-                        
+
                         <div>
                             <h3 class="text-lg font-semibold text-gray-700 mb-4 flex items-center">
                                 <svg class="w-5 h-5 mr-2 text-[#5e0490]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -332,7 +333,7 @@
                                 <p class="text-gray-700 whitespace-pre-line leading-relaxed">{{ $publication->descripcion }}</p>
                             </div>
                         </div>
-                        
+
                         <!-- Beneficios si existen -->
                         @if(isset($publication->beneficios) && !empty($publication->beneficios))
                         <div class="mt-8">
@@ -358,23 +359,32 @@
                             </div>
                         </div>
                         @endif
-                        
+
                         <!-- Botones de acción incluido el botón de compartir con ID -->
                         <div class="mt-8 flex justify-end items-center space-x-4">
+                            <!-- Botón de guardar solo en desktop -->
+                            <button class="save-button hidden md:inline-flex items-center px-5 py-2.5 bg-gray-200 text-gray-800 font-medium rounded-lg shadow hover:bg-gray-300 transition-colors duration-300" data-id="{{ $publication->id }}">
+                                @if(isset($publication->favorito) && $publication->favorito)
+                                    <i class="fas text-yellow-500 fa-star mr-1"></i>
+                                @else
+                                    <i class="far text-gray-400 fa-star mr-1"></i>
+                                @endif
+                            </button>
+
                             <!-- Modifico el botón de compartir para añadir un id y una clase para posicionar el popover -->
                             <div class="relative" id="shareContainer">
-                                <button id="shareButton" onclick="toggleShareMenu()" class="inline-flex items-center px-5 py-2.5 bg-gray-200 text-gray-800 font-medium rounded-lg shadow hover:bg-gray-300 transition-colors duration-300">
+                                <button id="shareButton" onclick="toggleShareMenu()" class="hidden md:inline-flex items-center px-5 py-2.5 bg-gray-200 text-gray-800 font-medium rounded-lg shadow hover:bg-gray-300 transition-colors duration-300">
                                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
                                     </svg>
                                     Compartir oferta
                                 </button>
-                                
+
                                 <!-- Menú de compartir colocado encima del botón -->
                                 <div id="shareMenu" class="absolute z-50 bottom-full left-0 mb-2 bg-white rounded-lg shadow-xl border border-gray-200 hidden w-64 transform transition-all duration-200">
                                     <!-- Flecha inferior del popover -->
                                     <div class="absolute -bottom-2 left-7 w-4 h-4 bg-white transform rotate-45 border-r border-b border-gray-200"></div>
-                                    
+
                                     <div class="p-3 relative rounded-lg bg-white">
                                         <h4 class="text-sm font-semibold text-gray-700 mb-2">Compartir oferta</h4>
                                         <div class="grid grid-cols-4 gap-3">
@@ -414,17 +424,17 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             @if(Auth::check())
                                 @if($solicitudExistente)
-                                    <button disabled class="inline-flex items-center px-6 py-3 bg-gray-400 text-white font-medium rounded-lg shadow cursor-not-allowed">
+                                    <button disabled class="hidden md:inline-flex items-center px-6 py-3 bg-gray-400 text-white font-medium rounded-lg shadow cursor-not-allowed">
                                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                                         </svg>
                                         Solicitud enviada ({{ ucfirst($solicitudExistente->estado) }})
                                     </button>
                                 @else
-                                    <button onclick="openSolicitudModal()" class="inline-flex items-center px-6 py-3 bg-[#5e0490] text-white font-medium rounded-lg shadow hover:bg-[#4a0370] transition-colors duration-300 transform hover:scale-105">
+                                    <button onclick="openSolicitudModal()" class="hidden md:inline-flex items-center px-6 py-3 bg-[#5e0490] text-white font-medium rounded-lg shadow hover:bg-[#4a0370] transition-colors duration-300 transform hover:scale-105">
                                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"/>
                                         </svg>
@@ -432,7 +442,7 @@
                                     </button>
                                 @endif
                             @else
-                                <a href="{{ route('login') }}" class="inline-flex items-center px-6 py-3 bg-[#5e0490] text-white font-medium rounded-lg shadow hover:bg-[#4a0370] transition-colors duration-300 transform hover:scale-105">
+                                <a href="{{ route('login') }}" class="hidden md:inline-flex items-center px-6 py-3 bg-[#5e0490] text-white font-medium rounded-lg shadow hover:bg-[#4a0370] transition-colors duration-300 transform hover:scale-105">
                                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
                                     </svg>
@@ -457,22 +467,70 @@
                 Solicitar
             </button>
             @endif
-            
-            <!-- Botón de favoritos -->
-            <button 
-                class="favorite-button px-3 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors duration-300 flex items-center justify-center"
-                data-publication-id="{{ $publication->id }}"
-            >
+
+            <!-- Botón de favoritos solo en móvil -->
+            <button class="save-button px-3 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors duration-300 flex items-center justify-center" data-id="{{ $publication->id }}">
                 <i class="{{ isset($publication->favorito) && $publication->favorito ? 'fas text-yellow-500' : 'far text-gray-400' }} fa-star mr-1"></i>
-                <span class="text-sm">{{ isset($publication->favorito) && $publication->favorito ? 'Guardada' : 'Guardar' }}</span>
             </button>
-            
-            <button onclick="sharePage()" class="px-3 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors duration-300 flex items-center justify-center ml-2">
-                <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
-                </svg>
-                Compartir
-            </button>
+
+            <!-- Botón de compartir mejorado para móvil -->
+            <div class="relative ml-2">
+                <button onclick="toggleMobileShareMenu()" class="px-3 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors duration-300 flex items-center justify-center">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
+                    </svg>
+                </button>
+
+                <!-- Menú de compartir para móvil -->
+                <div id="mobileShareMenu" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+                    <div class="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl transform transition-transform duration-300 ease-in-out">
+                        <div class="p-4">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-lg font-semibold text-gray-800">Compartir oferta</h3>
+                                <button onclick="toggleMobileShareMenu()" class="text-gray-500 hover:text-gray-700">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <div class="grid grid-cols-4 gap-4 mb-4">
+                                <a href="#" onclick="shareOnPlatform('facebook')" class="flex flex-col items-center">
+                                    <div class="w-12 h-12 rounded-full bg-blue-500 text-white flex items-center justify-center mb-2">
+                                        <i class="fab fa-facebook-f text-xl"></i>
+                                    </div>
+                                    <span class="text-xs text-gray-600">Facebook</span>
+                                </a>
+                                <a href="#" onclick="shareOnPlatform('twitter')" class="flex flex-col items-center">
+                                    <div class="w-12 h-12 rounded-full bg-blue-400 text-white flex items-center justify-center mb-2">
+                                        <i class="fab fa-twitter text-xl"></i>
+                                    </div>
+                                    <span class="text-xs text-gray-600">Twitter</span>
+                                </a>
+                                <a href="#" onclick="shareOnPlatform('linkedin')" class="flex flex-col items-center">
+                                    <div class="w-12 h-12 rounded-full bg-blue-700 text-white flex items-center justify-center mb-2">
+                                        <i class="fab fa-linkedin-in text-xl"></i>
+                                    </div>
+                                    <span class="text-xs text-gray-600">LinkedIn</span>
+                                </a>
+                                <a href="#" onclick="shareOnPlatform('whatsapp')" class="flex flex-col items-center">
+                                    <div class="w-12 h-12 rounded-full bg-green-500 text-white flex items-center justify-center mb-2">
+                                        <i class="fab fa-whatsapp text-xl"></i>
+                                    </div>
+                                    <span class="text-xs text-gray-600">WhatsApp</span>
+                                </a>
+                            </div>
+
+                            <button onclick="copyLink()" class="w-full flex items-center justify-center space-x-2 bg-gray-100 text-gray-700 px-4 py-3 rounded-lg hover:bg-gray-200 transition-colors duration-300">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                </svg>
+                                <span>Copiar enlace</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         @else
             <a href="{{ route('login') }}" class="inline-flex items-center justify-center px-4 py-2 bg-[#5e0490] text-white font-medium rounded-lg shadow hover:bg-[#4a0370] transition-colors duration-300 flex-1">
                 <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -482,7 +540,7 @@
             </a>
         @endif
     </div>
-    
+
     <!-- Ofertas relacionadas -->
     @if(isset($related_publications) && count($related_publications) > 0)
     <div class="container mx-auto px-4 py-8 mb-16">
@@ -492,7 +550,7 @@
             </svg>
             Ofertas similares
         </h2>
-        
+
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             @foreach($related_publications as $related)
             <a href="{{ route('publication.show', $related->id) }}" class="bg-white rounded-lg shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition-shadow duration-300 transform hover:-translate-y-1">
@@ -502,13 +560,13 @@
                 <div class="p-4">
                     <div class="flex items-center mb-3">
                         <div class="w-10 h-10 rounded-full overflow-hidden mr-3 flex-shrink-0 border border-gray-200">
-                            <img src="{{ asset('public/profile_images/' . ($related->empresa->user->imagen ?? 'company-default.png')) }}" 
+                            <img src="{{ asset('public/profile_images/' . ($related->empresa->user->imagen ?? 'company-default.png')) }}"
                                 alt="{{ $related->empresa->nombre }}"
                                 class="w-full h-full object-contain">
                         </div>
                         <span class="text-sm text-gray-700 truncate">{{ $related->empresa->user->nombre }}</span>
                     </div>
-                    
+
                     <div class="grid grid-cols-2 gap-2 mb-3 text-xs text-gray-600">
                         <div class="flex items-center">
                             <svg class="w-4 h-4 mr-1 text-[#5e0490]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -516,7 +574,7 @@
                             </svg>
                             {{ ucfirst($related->horario) }}
                         </div>
-                        
+
                         @if(isset($related->ubicacion))
                         <div class="flex items-center">
                             <svg class="w-4 h-4 mr-1 text-[#5e0490]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -527,14 +585,14 @@
                         </div>
                         @endif
                     </div>
-                    
+
                     <p class="text-gray-600 text-sm line-clamp-2 mb-3">{{ Str::limit($related->descripcion, 100) }}</p>
-                    
+
                     <div class="flex items-center justify-between">
                         <span class="bg-purple-100 text-[#5e0490] text-xs px-2 py-1 rounded-full">
                             {{ ucfirst($related->categoria->nombre_categoria ?? 'General') }}
                         </span>
-                        
+
                         <span class="text-xs text-gray-500">
                             {{ isset($related->fecha_publicacion) ? \Carbon\Carbon::parse($related->fecha_publicacion)->diffForHumans() : '' }}
                         </span>
@@ -565,9 +623,9 @@
                     </div>
                     <h3 class="ml-3 text-lg leading-6 font-medium text-gray-900">Solicitar Oferta</h3>
                 </div>
-                
+
                 <p class="text-sm text-gray-600 mb-4">Estás a punto de solicitar la oferta para "{{ $publication->titulo }}". Incluye un mensaje para destacar entre los demás candidatos.</p>
-                
+
                 <form id="solicitudForm" action="{{ route('solicitudes.store', $publication->id) }}" method="POST" class="mt-4">
                     @csrf
                     <div class="mb-4">
@@ -580,7 +638,7 @@
                             placeholder="Explica por qué eres el candidato ideal para esta oferta..."></textarea>
                         <p class="mt-1 text-xs text-gray-500">Un buen mensaje aumenta tus posibilidades de ser seleccionado.</p>
                     </div>
-                    
+
                     <!-- Opción de adjuntar CV si está disponible -->
                     <div class="mb-4">
                         <div class="flex items-center">
@@ -589,7 +647,7 @@
                         </div>
                         <p class="mt-1 text-xs text-gray-500">Tu CV registrado será enviado a la empresa.</p>
                     </div>
-                    
+
                     <div class="mt-6 flex justify-end space-x-3">
                         <button
                             type="button"
@@ -613,7 +671,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Font Awesome para iconos -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
-
+    <script src="{{ asset('js/savedPublications.js') }}"></script>
     <style>
         /* Barra de progreso de lectura */
         .progress-bar {
@@ -626,54 +684,54 @@
             z-index: 1000;
             transition: width 0.2s ease-out;
         }
-        
+
         /* Animación para el botón de favoritos */
         .favorite-button i.fas {
             animation: pulse 1s ease-in-out;
         }
-        
+
         @keyframes pulse {
             0% { transform: scale(1); }
             50% { transform: scale(1.2); }
             100% { transform: scale(1); }
         }
-        
+
         /* Estilos para la imagen de la empresa */
         .w-48.h-48.rounded-lg {
             background-color: white;
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
-        
+
         .w-48.h-48.rounded-lg img {
             transition: transform 0.3s ease;
         }
-        
+
         .w-48.h-48.rounded-lg:hover img {
             transform: scale(1.05);
         }
-        
+
         /* Efecto hover para las cards */
         .hover\:shadow-md:hover {
             box-shadow: 0 4px 10px rgba(94, 4, 144, 0.1);
         }
-        
+
         /* Mejorar el modal en móvil */
         @media (max-width: 640px) {
             .relative.top-20 {
                 top: 10%;
                 margin-bottom: 5rem;
             }
-            
+
             .fixed.bottom-0 {
                 padding-bottom: env(safe-area-inset-bottom);
             }
-            
+
             .max-w-xs {
                 max-width: 150px;
             }
         }
-        
+
         /* Animaciones de entrada para elementos principales */
         @keyframes fadeInUp {
             from {
@@ -685,39 +743,39 @@
                 transform: translateY(0);
             }
         }
-        
+
         .bg-white.rounded-xl {
             animation: fadeInUp 0.6s ease-out;
         }
-        
+
         /* Efecto de selección para el formulario */
         textarea:focus, select:focus, input:focus {
             border-color: #5e0490;
             box-shadow: 0 0 0 2px rgba(94, 4, 144, 0.2);
         }
-        
+
         /* Esquina de cinta para ofertas destacadas */
         .absolute.-right-12.top-8 {
             transform: rotate(45deg);
             width: 150px;
             text-align: center;
         }
-        
+
         /* Animación para hover en cards de ofertas relacionadas */
         .grid.grid-cols-1 a {
             transition: all 0.3s ease;
         }
-        
+
         .grid.grid-cols-1 a:hover {
             transform: translateY(-5px);
         }
-        
+
         /* Stagger animation para cards */
         .grid.grid-cols-1 a {
             opacity: 0;
             animation: fadeUp 0.5s ease forwards;
         }
-        
+
         @keyframes fadeUp {
             from {
                 opacity: 0;
@@ -728,20 +786,20 @@
                 transform: translateY(0);
             }
         }
-        
+
         .grid.grid-cols-1 a:nth-child(1) { animation-delay: 0.1s; }
         .grid.grid-cols-1 a:nth-child(2) { animation-delay: 0.2s; }
         .grid.grid-cols-1 a:nth-child(3) { animation-delay: 0.3s; }
         .grid.grid-cols-1 a:nth-child(4) { animation-delay: 0.4s; }
         .grid.grid-cols-1 a:nth-child(5) { animation-delay: 0.5s; }
         .grid.grid-cols-1 a:nth-child(6) { animation-delay: 0.6s; }
-        
+
         /* Efecto de shimmer para las badges */
         .bg-white\/20 {
             position: relative;
             overflow: hidden;
         }
-        
+
         .bg-white\/20::after {
             content: '';
             position: absolute;
@@ -753,49 +811,49 @@
             animation: shimmer 2s infinite;
             pointer-events: none;
         }
-        
+
         @keyframes shimmer {
             to {
                 left: 150%;
             }
         }
-        
+
         /* Scrollbar personalizada */
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
         }
-        
+
         ::-webkit-scrollbar-track {
             background: #f1f1f1;
             border-radius: 4px;
         }
-        
+
         ::-webkit-scrollbar-thumb {
             background: #5e0490;
             border-radius: 4px;
         }
-        
+
         ::-webkit-scrollbar-thumb:hover {
             background: #4a0370;
         }
-        
+
         /* Sistema de valoración de estrellas */
         .rating-stars {
             display: inline-flex;
             font-size: 0; /* Eliminar espacio entre elementos inline */
         }
-        
+
         .rating-stars i {
             color: #e2e8f0;
             font-size: 16px;
             padding: 2px;
         }
-        
+
         .rating-stars i.filled {
             color: #fbbf24;
         }
-        
+
         /* Botón flotante para volver arriba */
         .back-to-top {
             position: fixed;
@@ -815,13 +873,13 @@
             transition: all 0.3s ease;
             z-index: 40;
         }
-        
+
         .back-to-top.visible {
             opacity: 1;
             transform: translateY(0);
         }
     </style>
-    
+
     <script>
         // Progress bar de lectura
         document.addEventListener('DOMContentLoaded', function() {
@@ -829,7 +887,7 @@
             const progressBar = document.createElement('div');
             progressBar.className = 'progress-bar';
             document.body.appendChild(progressBar);
-            
+
             // Actualizar el progreso al hacer scroll
             window.addEventListener('scroll', function() {
                 const windowHeight = window.innerHeight;
@@ -837,7 +895,7 @@
                 const scrollTop = window.scrollY || window.pageYOffset;
                 const progress = (scrollTop / documentHeight) * 100;
                 progressBar.style.width = progress + '%';
-                
+
                 // Mostrar/ocultar el botón de volver arriba
                 const backToTopButton = document.querySelector('.back-to-top');
                 if (backToTopButton) {
@@ -848,20 +906,20 @@
                     }
                 }
             });
-            
+
             // Crear botón para volver arriba
             const backToTopButton = document.createElement('div');
             backToTopButton.className = 'back-to-top shadow-lg';
             backToTopButton.innerHTML = '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>';
             document.body.appendChild(backToTopButton);
-            
+
             backToTopButton.addEventListener('click', function() {
                 window.scrollTo({
                     top: 0,
                     behavior: 'smooth'
                 });
             });
-            
+
             // Script para manejar el botón de favoritos
             const favoriteButton = document.querySelector('.favorite-button');
             if (favoriteButton) {
@@ -869,7 +927,7 @@
                     const publicationId = this.getAttribute('data-publication-id');
                     const icon = this.querySelector('i');
                     const text = this.querySelector('span');
-                    
+
                     fetch(`/toggle-favorite/${publicationId}`, {
                         method: 'POST',
                         headers: {
@@ -884,7 +942,7 @@
                             icon.classList.remove('far', 'text-gray-400');
                             icon.classList.add('fas', 'text-yellow-500');
                             text.textContent = 'Quitar de favoritos';
-                            
+
                             // Mostrar notificación
                             Swal.fire({
                                 title: '¡Guardada!',
@@ -902,7 +960,7 @@
                             icon.classList.remove('fas', 'text-yellow-500');
                             icon.classList.add('far', 'text-gray-400');
                             text.textContent = 'Añadir a favoritos';
-                            
+
                             // Mostrar notificación
                             Swal.fire({
                                 title: 'Eliminada',
@@ -921,13 +979,13 @@
                     .catch(error => console.error('Error:', error));
                 });
             }
-            
+
             // Inicializar cualquier instancia del sistema de valoración
             const ratings = document.querySelectorAll('.rating-container');
             ratings.forEach(function(container) {
                 const stars = container.querySelectorAll('.rating-stars i');
                 const ratingValue = parseFloat(container.getAttribute('data-rating') || 0);
-                
+
                 // Llenar estrellas según la valoración
                 stars.forEach(function(star, index) {
                     if (index < Math.floor(ratingValue)) {
@@ -949,7 +1007,7 @@
             document.getElementById('solicitudModal').classList.add('hidden');
             document.body.style.overflow = 'auto';
         }
-        
+
         // Nueva función para manejar el menú de compartir
         function toggleShareMenu() {
             const shareMenu = document.getElementById('shareMenu');
@@ -969,18 +1027,18 @@
                 }, 200);
             }
         }
-        
+
         // Compatibilidad con la función anterior para móvil
         function sharePage() {
             toggleShareMenu();
         }
-        
+
         function shareOnPlatform(platform) {
             const url = encodeURIComponent(window.location.href);
             const title = encodeURIComponent("{{ $publication->titulo }} - Oferta laboral");
-            
+
             let shareUrl = '';
-            
+
             switch (platform) {
                 case 'facebook':
                     shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
@@ -995,11 +1053,11 @@
                     shareUrl = `https://api.whatsapp.com/send?text=${title} ${url}`;
                     break;
             }
-            
+
             window.open(shareUrl, '_blank');
             toggleShareMenu();
         }
-        
+
         function copyLink() {
             const url = window.location.href;
             navigator.clipboard.writeText(url).then(() => {
@@ -1025,12 +1083,12 @@
             const shareMenu = document.getElementById('shareMenu');
             const shareButton = document.getElementById('shareButton');
             const shareContainer = document.getElementById('shareContainer');
-            
+
             if (e.target === solicitudModal) {
                 closeSolicitudModal();
             }
-            
-            if (shareMenu && !shareMenu.classList.contains('hidden') && 
+
+            if (shareMenu && !shareMenu.classList.contains('hidden') &&
                 !shareContainer.contains(e.target)) {
                 toggleShareMenu();
             }
@@ -1042,7 +1100,7 @@
             if (solicitudForm) {
                 solicitudForm.addEventListener('submit', function(e) {
             e.preventDefault();
-                    
+
                     // Mostrar indicador de carga
                     const submitButton = this.querySelector('button[type="submit"]');
                     const originalText = submitButton.innerHTML;
@@ -1054,7 +1112,7 @@
                         </svg>
                         Enviando...
                     `;
-            
+
             fetch(this.action, {
                 method: 'POST',
                 body: new FormData(this),
@@ -1067,10 +1125,10 @@
                         // Restaurar botón
                         submitButton.disabled = false;
                         submitButton.innerHTML = originalText;
-                        
+
                 if (data.status === 'success') {
                     closeSolicitudModal();
-                    
+
                     // Actualizar el botón de solicitud
                     const solicitudButton = document.querySelector('[onclick="openSolicitudModal()"]').parentElement;
                     solicitudButton.innerHTML = `
@@ -1081,13 +1139,13 @@
                             Solicitud enviada (Pendiente)
                         </button>
                     `;
-                    
+
                             // Actualizar los botones móviles si existen
                             const mobileSolicitudButton = document.querySelector('.md\\:hidden [onclick="openSolicitudModal()"]');
                             if (mobileSolicitudButton) {
                                 mobileSolicitudButton.remove();
                             }
-                    
+
                     // Mostrar mensaje de éxito
                     Swal.fire({
                         title: '¡Solicitud enviada!',
@@ -1118,7 +1176,7 @@
                         // Restaurar botón
                         submitButton.disabled = false;
                         submitButton.innerHTML = originalText;
-                        
+
                         console.error('Error:', error);
                         Swal.fire({
                             title: '¡Error!',
@@ -1135,5 +1193,17 @@
                 });
             }
         });
+
+        // Funciones para el menú de compartir móvil
+        function toggleMobileShareMenu() {
+            const mobileShareMenu = document.getElementById('mobileShareMenu');
+            if (mobileShareMenu.classList.contains('hidden')) {
+                mobileShareMenu.classList.remove('hidden');
+                mobileShareMenu.style.transform = 'translateY(0)';
+            } else {
+                mobileShareMenu.classList.add('hidden');
+                mobileShareMenu.style.transform = 'translateY(100%)';
+            }
+        }
     </script>
 @endsection
