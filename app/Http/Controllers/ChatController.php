@@ -208,7 +208,6 @@ class ChatController extends Controller
         // Verificar que el usuario tiene acceso al chat
         $user = Auth::user();
         $solicitud = $chat->solicitud;
-
         $hasAccess = false;
 
         // Si es empresa

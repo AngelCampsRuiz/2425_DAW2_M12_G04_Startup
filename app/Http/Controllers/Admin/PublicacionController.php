@@ -16,22 +16,40 @@ class PublicacionController extends Controller
     /**
      * Muestra el listado de publicaciones
      */
-    public function index()
+    public function index(Request $request)
     {
-        $publicaciones = Publication::with(['empresa.user', 'categoria', 'subcategoria'])
-                        ->orderBy('id', 'asc')
-                        ->paginate(10);
+        $query = Publication::with(['empresa.user', 'categoria', 'subcategoria']);
+
+        // Aplicar filtros sumativos
+        if ($request->filled('titulo')) {
+            $query->where('titulo', 'like', '%' . $request->titulo . '%');
+        }
+
+        if ($request->filled('empresa')) {
+            $query->whereHas('empresa.user', function($q) use ($request) {
+                $q->where('nombre', 'like', '%' . $request->empresa . '%');
+            });
+        }
+
+        if ($request->filled('categoria')) {
+            $query->where('categoria_id', $request->categoria);
+        }
+
+        if ($request->filled('subcategoria')) {
+            $query->where('subcategoria_id', $request->subcategoria);
+        }
+
+        $publicaciones = $query->orderBy('id', 'asc')->paginate(10);
+        $empresas = Empresa::with('user')->get();
         $categorias = Categoria::all();
-        $subcategorias = Subcategoria::all();
-        $empresas = Empresa::all();
-        
-        if (request()->ajax()) {
+
+        if ($request->ajax()) {
             return response()->json([
                 'tabla' => view('admin.publicaciones.tabla', compact('publicaciones'))->render()
             ]);
         }
-        
-        return view('admin.publicaciones.index', compact('publicaciones', 'categorias', 'subcategorias', 'empresas'));
+
+        return view('admin.publicaciones.index', compact('publicaciones', 'empresas', 'categorias'));
     }
 
     /**
@@ -223,10 +241,28 @@ class PublicacionController extends Controller
      */
     public function getSubcategorias($categoriaId)
     {
-        $subcategorias = Subcategoria::where('categoria_id', $categoriaId)
-            ->orderBy('nombre_subcategoria', 'asc')
-            ->get();
-        return response()->json($subcategorias);
+        try {
+            $subcategorias = Subcategoria::where('categoria_id', $categoriaId)
+                ->orderBy('nombre_subcategoria', 'asc')
+                ->get();
+            
+            if ($subcategorias->isEmpty()) {
+                return response()->json([
+                    'error' => true,
+                    'message' => 'No se encontraron subcategorías para esta categoría'
+                ], 404);
+            }
+            
+            return response()->json([
+                'error' => false,
+                'data' => $subcategorias
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => true,
+                'message' => 'Error al obtener subcategorías'
+            ], 500);
+        }
     }
 
     /**

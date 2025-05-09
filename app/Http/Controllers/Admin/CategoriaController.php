@@ -13,16 +13,31 @@ class CategoriaController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $categorias = Categoria::with('subcategorias')->paginate(10);
-        
-        if (request()->ajax()) {
-            return response()->json([
-                'tabla' => view('admin.categorias.tabla', compact('categorias'))->render()
-            ]);
+        $query = Categoria::query();
+
+        // Aplicar filtro por nombre
+        if ($request->has('nombre') && !empty($request->nombre)) {
+            $query->where('nombre_categoria', 'like', '%' . $request->nombre . '%');
         }
-        
+
+        // Aplicar filtro por subcategorías
+        if ($request->has('subcategorias') && $request->subcategorias !== '') {
+            if ($request->subcategorias === '0') {
+                $query->whereDoesntHave('subcategorias');
+            } elseif ($request->subcategorias === '1') {
+                $query->whereHas('subcategorias');
+            }
+        }
+
+        $categorias = $query->withCount('subcategorias')->paginate(10);
+
+        if ($request->ajax()) {
+            $view = view('admin.categorias.tabla', compact('categorias'))->render();
+            return response()->json(['tabla' => $view]);
+        }
+
         return view('admin.categorias.index', compact('categorias'));
     }
 
@@ -160,5 +175,17 @@ class CategoriaController extends Controller
             return redirect()->route('admin.categorias.index')
                 ->with('error', 'Error al eliminar la categoría: ' . $e->getMessage());
         }
+    }
+    
+    /**
+     * Obtiene las subcategorías de una categoría específica.
+     */
+    public function getSubcategorias(Categoria $categoria)
+    {
+        $subcategorias = $categoria->subcategorias;
+        
+        return response()->json([
+            'subcategorias' => $subcategorias
+        ]);
     }
 }

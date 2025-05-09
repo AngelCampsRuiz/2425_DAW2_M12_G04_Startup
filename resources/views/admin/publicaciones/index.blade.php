@@ -6,19 +6,115 @@
         <span id="success-message-text" class="block sm:inline"></span>
     </div>
     
+    @if(session('success'))
+    <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4" role="alert">
+        <p>{{ session('success') }}</p>
+    </div>
+    @endif
+
+    @if(session('error'))
+    <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">
+        <p>{{ session('error') }}</p>
+    </div>
+    @endif
+    
+    <!-- Filtros -->
+    <div class="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl shadow-md p-6 mb-8 border border-purple-100">
+        <div class="flex flex-col md:flex-row justify-between items-center mb-6">
+            <div class="flex items-center mb-4 md:mb-0">
+                <svg class="w-5 h-5 text-purple-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                </svg>
+                <h3 class="text-lg font-semibold text-purple-800">Filtros de búsqueda</h3>
+            </div>
+            <button id="reset-filtros" class="inline-flex items-center px-4 py-2 bg-white border border-purple-200 rounded-lg font-medium text-sm text-purple-700 hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors duration-150 shadow-sm">
+                <svg class="w-4 h-4 mr-2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Reiniciar filtros
+            </button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div class="relative">
+                <label for="filtro_titulo" class="block text-sm font-medium text-purple-700 mb-2">Título de la oferta</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
+                    <input type="text" id="filtro_titulo" class="pl-10 w-full rounded-lg border-purple-200 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50" placeholder="Buscar por título...">
+                </div>
+            </div>
+            
+            <div class="relative">
+                <label for="filtro_empresa" class="block text-sm font-medium text-purple-700 mb-2">Nombre de la empresa</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                    </div>
+                    <input type="text" id="filtro_empresa" class="pl-10 w-full rounded-lg border-purple-200 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50" placeholder="Buscar por empresa...">
+                </div>
+            </div>
+            
+            <div class="relative">
+                <label for="filtro_categoria" class="block text-sm font-medium text-purple-700 mb-2">Categoría</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                        </svg>
+                    </div>
+                    <select id="filtro_categoria" class="pl-10 w-full rounded-lg border-purple-200 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50 appearance-none bg-white">
+                    <option value="">Todas las categorías</option>
+                    @foreach($categorias as $categoria)
+                        <option value="{{ $categoria->id }}">{{ $categoria->nombre_categoria }}</option>
+                    @endforeach
+                </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                        <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="relative">
+                <label for="filtro_subcategoria" class="block text-sm font-medium text-purple-700 mb-2">Subcategoría</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
+                        </svg>
+                    </div>
+                    <select id="filtro_subcategoria" class="pl-10 w-full rounded-lg border-purple-200 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50 appearance-none bg-white">
+                    <option value="">Todas las subcategorías</option>
+                </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                        <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <!-- Contenedor de la tabla -->
-    <div id="tabla-container" class="bg-white rounded-lg shadow overflow-hidden">
+    <div id="tabla-container">
         @include('admin.publicaciones.tabla')
     </div>
 
-    <!-- Modal Crear/Editar Publicación -->
-    <div id="modal-publicacion" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center hidden z-50">
-        <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-screen overflow-y-auto p-6">
+    <!-- Modal para Crear/Editar Publicación -->
+    <div id="modal-publicacion" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-8 max-w-4xl w-full max-h-screen overflow-y-auto">
             <div class="flex justify-between items-center mb-6">
-                <h2 id="modal-titulo" class="text-xl font-semibold">Crear Nueva Publicación</h2>
-                <button id="modal-close" class="text-gray-500 hover:text-gray-700 focus:outline-none">
+                <h3 id="modal-titulo" class="text-xl font-semibold">Nueva Oferta</h3>
+                <button id="modal-close" class="text-gray-500 hover:text-gray-700">
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
                 </button>
             </div>
@@ -42,31 +138,30 @@
                                required maxlength="100">
                     </div>
                     
-                    <div class="mb-4">
-                        <label for="empresa_id" class="block text-sm font-medium text-gray-700">Empresa <span class="text-red-500">*</span></label>
+                    <div>
+                        <label for="empresa_id" class="block text-sm font-medium text-gray-700 mb-1">Empresa</label>
                         <select name="empresa_id" id="empresa_id" 
-                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50 select-visible"
-                                style="background-color: white !important; -webkit-appearance: menulist !important; appearance: menulist !important;"
+                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"
                                 required>
-                            <option value="" style="background-color: white !important; padding: 8px !important;">Selecciona una empresa</option>
+                            <option value="">Selecciona una empresa</option>
                             @foreach($empresas as $empresa)
-                                <option value="{{ $empresa->id }}" style="background-color: white !important; padding: 8px !important;">
-                                    {{ $empresa->user ? $empresa->user->nombre : 'Empresa ID: '.$empresa->id }}
+                                <option value="{{ $empresa->id }}">
+                                    {{ $empresa->user->nombre ?? 'Empresa #'.$empresa->id }}
                                 </option>
                             @endforeach
                         </select>
-                        <div id="empresa-feedback" class="mt-1 text-sm"></div>
                     </div>
                     
                     <div>
                         <label for="categoria_id" class="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
                         <select name="categoria_id" id="categoria_id" 
-                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50 bg-white text-black"
-                                style="color: black !important; background-color: white !important;"
+                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"
                                 required>
-                            <option value="" style="color: black !important; background-color: white !important;">Selecciona una categoría</option>
+                            <option value="">Selecciona una categoría</option>
                             @foreach($categorias as $categoria)
-                                <option value="{{ $categoria->id }}" style="color: black !important; background-color: white !important;">{{ $categoria->nombre_categoria }}</option>
+                                <option value="{{ $categoria->id }}">
+                                    {{ $categoria->nombre_categoria }}
+                                </option>
                             @endforeach
                         </select>
                     </div>
@@ -74,28 +169,27 @@
                     <div>
                         <label for="subcategoria_id" class="block text-sm font-medium text-gray-700 mb-1">Subcategoría</label>
                         <select name="subcategoria_id" id="subcategoria_id" 
-                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50 bg-white text-black"
-                                style="color: black !important; background-color: white !important;"
+                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"
                                 required>
-                            <option value="" style="color: black !important; background-color: white !important;">Selecciona primero una categoría</option>
+                            <option value="">Selecciona una subcategoría</option>
                         </select>
                     </div>
                     
                     <div>
                         <label for="horario" class="block text-sm font-medium text-gray-700 mb-1">Horario</label>
                         <select name="horario" id="horario" 
-                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50 bg-white text-black"
-                                style="color: black !important; background-color: white !important;"
+                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"
                                 required>
-                            <option value="mañana" style="color: black !important; background-color: white !important;">Mañana</option>
-                            <option value="tarde" style="color: black !important; background-color: white !important;">Tarde</option>
+                            <option value="mañana">Mañana</option>
+                            <option value="tarde">Tarde</option>
+                            <option value="flexible">Flexible</option>
                         </select>
                     </div>
                     
                     <div>
                         <label for="horas_totales" class="block text-sm font-medium text-gray-700 mb-1">Horas Totales</label>
                         <input type="number" name="horas_totales" id="horas_totales" 
-                               class="w-fulsl rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"
+                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"
                                required min="1">
                     </div>
                     
@@ -120,11 +214,11 @@
                               required></textarea>
                 </div>
                 
-                <div class="mt-6 flex justify-end">
-                    <button type="button" id="btn-cancelar" class="inline-flex items-center px-4 py-2 bg-gray-300 border border-transparent rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-400 active:bg-gray-500 focus:outline-none focus:border-gray-500 focus:ring ring-gray-300 disabled:opacity-25 transition ease-in-out duration-150 mr-3">
+                <div class="mt-6 flex justify-end space-x-3">
+                    <button type="button" id="btn-cancelar" class="px-4 py-2 text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200">
                         Cancelar
                     </button>
-                    <button type="submit" id="btn-guardar" class="inline-flex items-center px-4 py-2 bg-purple-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-purple-700 active:bg-purple-900 focus:outline-none focus:border-purple-900 focus:ring ring-purple-300 disabled:opacity-25 transition ease-in-out duration-150">
+                    <button type="submit" id="btn-guardar" class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700">
                         Guardar
                     </button>
                 </div>
@@ -132,30 +226,30 @@
         </div>
     </div>
 
-    <!-- Modal Confirmación Eliminar -->
-    <div id="modal-eliminar" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center hidden z-50">
-        <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+    <!-- Modal de Confirmación de Eliminación -->
+    <div id="modal-eliminar" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-8 max-w-md w-full">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-semibold">Confirmar Eliminación</h2>
-                <button id="modal-eliminar-close" class="text-gray-500 hover:text-gray-700 focus:outline-none">
+                <h3 class="text-xl font-semibold text-gray-800">Confirmar Eliminación</h3>
+                <button id="modal-eliminar-close" class="text-gray-500 hover:text-gray-700">
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
                 </button>
             </div>
             
-            <p class="mb-6">¿Estás seguro de que deseas eliminar esta publicación? Esta acción no se puede deshacer.</p>
+            <p class="text-gray-600 mb-6">¿Estás seguro de que deseas eliminar esta oferta? Esta acción no se puede deshacer.</p>
             
             <form id="form-eliminar" method="POST">
                 @csrf
                 @method('DELETE')
-                <input type="hidden" id="eliminar_id" name="eliminar_id" value="">
+                <input type="hidden" name="eliminar_id" id="eliminar_id">
                 
-                <div class="flex justify-end">
-                    <button type="button" id="btn-cancelar-eliminar" class="inline-flex items-center px-4 py-2 bg-gray-300 border border-transparent rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-400 active:bg-gray-500 focus:outline-none focus:border-gray-500 focus:ring ring-gray-300 disabled:opacity-25 transition ease-in-out duration-150 mr-3">
+                <div class="flex justify-end space-x-3">
+                    <button type="button" id="btn-cancelar-eliminar" class="px-4 py-2 text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200">
                         Cancelar
                     </button>
-                    <button type="submit" class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700 active:bg-red-800 focus:outline-none focus:border-red-800 focus:ring ring-red-300 disabled:opacity-25 transition ease-in-out duration-150">
+                    <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
                         Eliminar
                     </button>
                 </div>
@@ -163,370 +257,422 @@
         </div>
     </div>
 
-    <!-- Modal Eliminar -->
-    <div id="eliminarModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white p-6 rounded-lg shadow-xl max-w-md w-full">
-            <h2 class="text-xl font-bold text-red-600 mb-4">Confirmar eliminación</h2>
-            <p class="text-gray-600 mb-4">¿Estás seguro de que deseas eliminar esta publicación? Esta acción no se puede deshacer.</p>
-            <div class="flex justify-end space-x-2">
-                <button type="button" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded text-gray-800 font-medium cerrar-modal">Cancelar</button>
-                <button type="button" class="px-4 py-2 bg-red-500 hover:bg-red-600 rounded text-white font-medium confirmar-eliminar">Eliminar</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Eliminar SQL -->
-    <div id="eliminarSqlModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white p-6 rounded-lg shadow-xl max-w-md w-full">
-            <h2 class="text-xl font-bold text-purple-600 mb-4">Confirmar eliminación SQL</h2>
-            <p class="text-gray-600 mb-4">Esta opción eliminará directamente el registro de la base de datos. Use solo en caso de que la eliminación normal no funcione.</p>
-            <div class="flex justify-end space-x-2">
-                <button type="button" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded text-gray-800 font-medium cerrar-modal">Cancelar</button>
-                <button type="button" class="px-4 py-2 bg-purple-500 hover:bg-purple-600 rounded text-white font-medium confirmar-eliminar-sql">Eliminar SQL</button>
-            </div>
-        </div>
-    </div>
-@endsection
-
-@push('scripts')
 <script>
-    // Variable de control para evitar duplicación
-    let isSubmitting = false;
-    
     document.addEventListener('DOMContentLoaded', function() {
+        // Variable para controlar si ya se han cargado los event listeners
+        let listenersLoaded = false;
+        let timeoutId = null;
+        
+        // Inicializar los event listeners
         setupEventListeners();
-        setupSubcategorias();
-    });
-    
-    function setupEventListeners() {
-        // Delegación de eventos para los botones dinámicos
-        document.addEventListener('click', function(e) {
-            // Botones Eliminar
-            if (e.target.closest('.btn-eliminar')) {
-                const btn = e.target.closest('.btn-eliminar');
-                const id = btn.getAttribute('data-id');
-                mostrarModalEliminar(id);
-            }
+        
+        // Cargar las subcategorías cuando cambia la categoría
+        document.getElementById('categoria_id').addEventListener('change', function() {
+            cargarSubcategorias(this.value);
         });
         
-        // Configurar el formulario de eliminación
+        // Lo mismo para los filtros
+        document.getElementById('filtro_categoria').addEventListener('change', function() {
+            cargarSubcategoriasFiltro(this.value);
+        });
+
+        // Eventos para filtrado automático
+        document.getElementById('filtro_titulo').addEventListener('input', debounceFilter);
+        document.getElementById('filtro_empresa').addEventListener('input', debounceFilter);
+        document.getElementById('filtro_categoria').addEventListener('change', aplicarFiltros);
+        document.getElementById('filtro_subcategoria').addEventListener('change', aplicarFiltros);
+        
+        // Manejar envío del formulario
+        document.getElementById('form-publicacion').addEventListener('submit', function(e) {
+            e.preventDefault();
+            guardarPublicacion();
+        });
+        
+        // Manejar eliminación
         document.getElementById('form-eliminar').addEventListener('submit', function(e) {
             e.preventDefault();
+            eliminarPublicacion();
+        });
+        
+        // Resetear filtros
+        document.getElementById('reset-filtros').addEventListener('click', function() {
+            document.getElementById('filtro_titulo').value = '';
+            document.getElementById('filtro_empresa').value = '';
+            document.getElementById('filtro_categoria').value = '';
+            document.getElementById('filtro_subcategoria').value = '';
+        aplicarFiltros();
+        });
+
+        // Función para debounce en campos de texto
+        function debounceFilter() {
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
+            timeoutId = setTimeout(() => {
+                aplicarFiltros();
+            }, 300); // Espera 300ms después de que el usuario deje de escribir
+        }
+        
+        function setupEventListeners() {
+            if (listenersLoaded) return;
             
-            if (isSubmitting) return;
-            isSubmitting = true;
+            // Delegar eventos para los botones
+            document.addEventListener('click', function(e) {
+                // Botón crear
+                if (e.target.closest('.btn-crear')) {
+                    e.preventDefault();
+                    resetForm();
+                    document.getElementById('modal-titulo').textContent = 'Nueva Oferta';
+                    document.getElementById('form-publicacion').setAttribute('action', '{{ route("admin.publicaciones.store") }}');
+                    document.getElementById('form_method').value = 'POST';
+                    document.getElementById('modal-publicacion').classList.remove('hidden');
+                    document.getElementById('modal-publicacion').classList.add('flex');
+                }
+                
+                // Botón editar
+                if (e.target.closest('.btn-editar')) {
+                    e.preventDefault();
+                    const id = e.target.closest('.btn-editar').getAttribute('data-id');
+                    cargarPublicacion(id);
+                }
+                
+                // Botón eliminar
+                if (e.target.closest('.btn-eliminar')) {
+                    e.preventDefault();
+                    const id = e.target.closest('.btn-eliminar').getAttribute('data-id');
+                    document.getElementById('eliminar_id').value = id;
+                    document.getElementById('form-eliminar').setAttribute('action', `{{ route("admin.publicaciones.destroy", ":id") }}`.replace(':id', id));
+                    document.getElementById('modal-eliminar').classList.remove('hidden');
+                    document.getElementById('modal-eliminar').classList.add('flex');
+                }
+                
+                // Botones cerrar y cancelar
+                if (e.target.closest('#modal-close') || e.target.closest('#btn-cancelar')) {
+                    document.getElementById('modal-publicacion').classList.remove('flex');
+                    document.getElementById('modal-publicacion').classList.add('hidden');
+                    resetForm();
+                }
+                
+                if (e.target.closest('#modal-eliminar-close') || e.target.closest('#btn-cancelar-eliminar')) {
+                    document.getElementById('modal-eliminar').classList.remove('flex');
+                    document.getElementById('modal-eliminar').classList.add('hidden');
+                }
+                
+                // Enlaces de paginación
+                const paginationLink = e.target.closest('.pagination a');
+                if (paginationLink) {
+                    e.preventDefault();
+                    const url = paginationLink.getAttribute('href');
+                    actualizarTabla(url);
+                }
+            });
             
-            const id = document.getElementById('eliminar_id').value;
-            const url = `/admin/publicaciones/${id}`;
+            listenersLoaded = true;
+        }
+        
+        function resetForm() {
+            const form = document.getElementById('form-publicacion');
+            form.reset();
+            document.getElementById('publicacion_id').value = '';
+            document.getElementById('form_method').value = 'POST';
+            
+            const errorsDiv = document.getElementById('form-errors');
+            const errorsList = document.getElementById('error-list');
+            errorsDiv.classList.add('hidden');
+            errorsList.innerHTML = '';
+            
+            // Reiniciar el select de subcategorías
+            const subcatSelect = document.getElementById('subcategoria_id');
+            subcatSelect.innerHTML = '<option value="">Selecciona una subcategoría</option>';
+        }
+        
+        function cargarPublicacion(id) {
+            fetch(`/admin/publicaciones/${id}/edit`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                resetForm();
+                
+                // Cargar datos de la publicación
+                document.getElementById('modal-titulo').textContent = 'Editar Oferta';
+                document.getElementById('publicacion_id').value = data.publicacion.id;
+                document.getElementById('titulo').value = data.publicacion.titulo;
+                document.getElementById('empresa_id').value = data.publicacion.empresa_id;
+                document.getElementById('categoria_id').value = data.publicacion.categoria_id;
+                document.getElementById('horario').value = data.publicacion.horario;
+                document.getElementById('horas_totales').value = data.publicacion.horas_totales;
+                document.getElementById('fecha_publicacion').value = data.publicacion.fecha_publicacion.substring(0, 10);
+                document.getElementById('activa').checked = data.publicacion.activa == 1;
+                document.getElementById('descripcion').value = data.publicacion.descripcion;
+                
+                // Cargar subcategorías y seleccionar la correcta
+                cargarSubcategorias(data.publicacion.categoria_id, data.publicacion.subcategoria_id);
+                
+                document.getElementById('form_method').value = 'PUT';
+                document.getElementById('form-publicacion').setAttribute('action', `/admin/publicaciones/${id}`);
+                
+                document.getElementById('modal-publicacion').classList.remove('hidden');
+                document.getElementById('modal-publicacion').classList.add('flex');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                mostrarMensajeError('Error al cargar la oferta');
+            });
+        }
+        
+        function cargarSubcategorias(categoriaId, subcategoriaSeleccionada = null) {
+            if (!categoriaId) return;
+            
+            fetch(`/admin/categorias/${categoriaId}/subcategorias`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const subcatSelect = document.getElementById('subcategoria_id');
+                subcatSelect.innerHTML = '<option value="">Selecciona una subcategoría</option>';
+                
+                data.subcategorias.forEach(subcategoria => {
+                    const option = document.createElement('option');
+                    option.value = subcategoria.id;
+                    option.textContent = subcategoria.nombre_subcategoria;
+                    
+                    if (subcategoriaSeleccionada && subcategoriaSeleccionada == subcategoria.id) {
+                        option.selected = true;
+                    }
+                    
+                    subcatSelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+        
+        function cargarSubcategoriasFiltro(categoriaId) {
+            const subcatSelect = document.getElementById('filtro_subcategoria');
+            subcatSelect.innerHTML = '<option value="">Todas las subcategorías</option>';
+            
+            if (!categoriaId) {
+                aplicarFiltros();
+                    return;
+                }
+
+            fetch(`/admin/categorias/${categoriaId}/subcategorias`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                data.subcategorias.forEach(subcategoria => {
+                    const option = document.createElement('option');
+                    option.value = subcategoria.id;
+                    option.textContent = subcategoria.nombre_subcategoria;
+                    subcatSelect.appendChild(option);
+                });
+                
+                aplicarFiltros();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+        
+        function guardarPublicacion() {
+            const form = document.getElementById('form-publicacion');
+            const formData = new FormData(form);
+            const method = document.getElementById('form_method').value;
+            const url = form.getAttribute('action');
+            
+            if (method === 'PUT') {
+                formData.append('_method', 'PUT');
+            }
             
             fetch(url, {
-                method: 'DELETE',
+                method: 'POST',
+                body: formData,
                 headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                     'X-Requested-With': 'XMLHttpRequest',
-                    'Content-Type': 'application/json'
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                 }
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    document.getElementById('modal-eliminar').classList.add('hidden');
-                    mostrarMensajeExito(data.message || 'Publicación eliminada correctamente');
-                    window.location.reload(); // Recargar la página después de eliminar
-                } else {
-                    alert(data.message || 'Error al eliminar la publicación');
+                    document.getElementById('modal-publicacion').classList.remove('flex');
+                    document.getElementById('modal-publicacion').classList.add('hidden');
+                    
+                    mostrarMensajeExito(data.message || 'Oferta guardada exitosamente');
+                    actualizarTabla();
+                    resetForm();
+                } else if (data.errors) {
+                    mostrarErrores(data.errors);
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Error al eliminar la publicación');
-            })
-            .finally(() => {
-                isSubmitting = false;
+                mostrarMensajeError('Error al guardar la oferta');
             });
-        });
+        }
         
-        // Configurar botones de cerrar modal
-        document.getElementById('modal-eliminar-close').addEventListener('click', function() {
-            document.getElementById('modal-eliminar').classList.add('hidden');
-        });
+        function eliminarPublicacion() {
+            const form = document.getElementById('form-eliminar');
+            const url = form.getAttribute('action');
+            
+            fetch(url, {
+                method: 'POST',
+                body: new FormData(form),
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('modal-eliminar').classList.remove('flex');
+                document.getElementById('modal-eliminar').classList.add('hidden');
+                
+                if (data.success) {
+                    mostrarMensajeExito(data.message || 'Oferta eliminada exitosamente');
+                    actualizarTabla();
+                } else {
+                    mostrarMensajeError(data.message || 'Error al eliminar la oferta');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                mostrarMensajeError('Error al eliminar la oferta');
+            });
+        }
         
-        document.getElementById('btn-cancelar-eliminar').addEventListener('click', function() {
-            document.getElementById('modal-eliminar').classList.add('hidden');
-        });
-
-        // Botones para crear y editar
-        document.addEventListener('click', function(e) {
-            if (e.target.closest('.btn-crear')) {
-                mostrarFormularioCrear();
+        function mostrarMensajeExito(mensaje) {
+            const messageElement = document.getElementById('success-message');
+            const messageText = document.getElementById('success-message-text');
+            
+            messageText.textContent = mensaje;
+            messageElement.style.display = 'block';
+            
+            window.scrollTo(0, 0);
+            
+            setTimeout(function() {
+                messageElement.style.display = 'none';
+            }, 5000);
+        }
+        
+        function mostrarMensajeError(mensaje) {
+            // Si tenemos un div de error global, mostrarlo
+            // Si no, usar alert
+            alert(mensaje);
+        }
+        
+        function mostrarErrores(errores) {
+            const errorsDiv = document.getElementById('form-errors');
+            const errorsList = document.getElementById('error-list');
+            
+            errorsList.innerHTML = '';
+            
+            for (const key in errores) {
+                if (errores.hasOwnProperty(key)) {
+                    errores[key].forEach(error => {
+                        const li = document.createElement('li');
+                        li.textContent = error;
+                        errorsList.appendChild(li);
+                    });
+                }
             }
             
-            if (e.target.closest('.btn-editar')) {
-                const btn = e.target.closest('.btn-editar');
-                const id = btn.getAttribute('data-id');
-                mostrarFormularioEditar(id);
+            errorsDiv.classList.remove('hidden');
+        }
+        
+        function actualizarTabla(url = '{{ route("admin.publicaciones.index") }}') {
+            if (url.indexOf('?') !== -1) {
+                // La URL ya tiene parámetros
+                const filtros = {
+                    titulo: document.getElementById('filtro_titulo').value,
+                    empresa: document.getElementById('filtro_empresa').value,
+                    categoria: document.getElementById('filtro_categoria').value,
+                    subcategoria: document.getElementById('filtro_subcategoria').value
+                };
+                
+                // Construir un objeto URLSearchParams con los parámetros existentes
+                const urlObj = new URL(url, window.location.origin);
+                const params = urlObj.searchParams;
+                
+                // Agregar los filtros
+                Object.entries(filtros).forEach(([key, value]) => {
+                    if (value) {
+                        params.set(key, value);
+                    } else {
+                        params.delete(key);
+                    }
+                });
+                
+                // Reconstruir la URL
+                url = urlObj.pathname + '?' + params.toString();
+            } else {
+                // La URL no tiene parámetros, aplicar filtros
+                aplicarFiltros();
+                return;
+            }
+            
+            fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.tabla) {
+                    document.getElementById('tabla-container').innerHTML = data.tabla;
+                    setupEventListeners();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }
+
+    function aplicarFiltros() {
+        const filtros = {
+            titulo: document.getElementById('filtro_titulo').value,
+            empresa: document.getElementById('filtro_empresa').value,
+            categoria: document.getElementById('filtro_categoria').value,
+            subcategoria: document.getElementById('filtro_subcategoria').value
+        };
+
+        const params = new URLSearchParams();
+        Object.entries(filtros).forEach(([key, value]) => {
+            if (value) {
+                params.append(key, value);
             }
         });
 
-        // Evento change para el select de categoría
-        const categoriaSelect = document.getElementById('categoria_id');
-        if (categoriaSelect) {
-            categoriaSelect.addEventListener('change', function() {
-                cargarSubcategorias();
-            });
-        }
-    }
-    
-    function cargarSubcategorias() {
-        const categoriaId = document.getElementById('categoria_id');
-        if (!categoriaId) return;
-        
-        const subcategoriasSelect = document.getElementById('subcategoria_id');
-        if (!subcategoriasSelect) return;
-        
-        if (!categoriaId.value) {
-            subcategoriasSelect.innerHTML = '<option value="">Selecciona primero una categoría</option>';
-            return;
-        }
-        
-        subcategoriasSelect.innerHTML = '<option value="">Cargando subcategorías...</option>';
-        subcategoriasSelect.disabled = true;
-        
-        fetch(`/admin/publicaciones/subcategorias/${categoriaId.value}`, {
+        fetch(`/admin/publicaciones?${params.toString()}`, {
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
                 'Accept': 'application/json'
             }
         })
-        .then(response => response.json())
+            .then(response => response.json())
         .then(data => {
-            subcategoriasSelect.innerHTML = '<option value="">Selecciona una subcategoría</option>';
-            data.forEach(subcategoria => {
-                const option = document.createElement('option');
-                option.value = subcategoria.id;
-                option.textContent = subcategoria.nombre_subcategoria;
-                subcategoriasSelect.appendChild(option);
-            });
-            subcategoriasSelect.disabled = false;
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            subcategoriasSelect.innerHTML = '<option value="">Error al cargar subcategorías</option>';
-            subcategoriasSelect.disabled = false;
-        });
-    }
-    
-    function mostrarFormularioCrear() {
-        document.getElementById('modal-titulo').textContent = 'Crear Nueva Publicación';
-        document.getElementById('form-publicacion').reset();
-        document.getElementById('form-errors').classList.add('hidden');
-        document.getElementById('publicacion_id').value = '';
-        document.getElementById('form_method').value = 'POST';
-        document.getElementById('form-publicacion').setAttribute('action', '{{ route("admin.publicaciones.store") }}');
-        document.getElementById('modal-publicacion').classList.remove('hidden');
-    }
-    
-    function mostrarFormularioEditar(id) {
-        document.getElementById('modal-titulo').textContent = 'Editar Publicación';
-        document.getElementById('publicacion_id').value = id;
-        document.getElementById('form_method').value = 'PUT';
-        document.getElementById('form-publicacion').setAttribute('action', `/admin/publicaciones/${id}`);
-        
-        fetch(`/admin/publicaciones/${id}/edit`, {
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
+            if (data.tabla) {
+                document.getElementById('tabla-container').innerHTML = data.tabla;
+                    setupEventListeners();
             }
         })
-        .then(response => response.json())
-        .then(data => {
-            const publicacion = data.publicacion;
-            
-            document.getElementById('titulo').value = publicacion.titulo;
-            document.getElementById('empresa_id').value = publicacion.empresa_id;
-            document.getElementById('categoria_id').value = publicacion.categoria_id;
-            document.getElementById('horario').value = publicacion.horario;
-            document.getElementById('horas_totales').value = publicacion.horas_totales;
-            document.getElementById('fecha_publicacion').value = publicacion.fecha_publicacion ? publicacion.fecha_publicacion.split('T')[0] : '';
-            document.getElementById('descripcion').value = publicacion.descripcion;
-            document.getElementById('activa').checked = publicacion.activa;
-            
-            // Disparar el evento change para cargar las subcategorías
-            cargarSubcategorias();
-            
-            // Esperar a que se carguen las subcategorías y luego seleccionar la correcta
-            setTimeout(() => {
-                document.getElementById('subcategoria_id').value = publicacion.subcategoria_id;
-            }, 500);
-            
-            document.getElementById('modal-publicacion').classList.remove('hidden');
-        })
         .catch(error => {
-            console.error('Error:', error);
-            alert('Error al obtener los datos de la publicación');
+                console.error('Error:', error);
         });
     }
-    
-    function mostrarModalEliminar(id) {
-        document.getElementById('eliminar_id').value = id;
-        document.getElementById('modal-eliminar').classList.remove('hidden');
-    }
-    
-    function mostrarMensajeExito(mensaje) {
-        const messageElement = document.getElementById('success-message');
-        const messageText = document.getElementById('success-message-text');
-        
-        messageText.textContent = mensaje;
-        messageElement.style.display = 'block';
-        
-        setTimeout(function() {
-            messageElement.style.display = 'none';
-        }, 5000);
-    }
+    });
 </script>
-
-<style>
-/* =========== ESTILOS PARA ASEGURAR VISIBILIDAD DE BOTONES =========== */
-/* Asegurar que los botones de acción siempre estén visibles */
-.btn-editar, .btn-eliminar {
-    display: inline-block !important;
-    line-height: 1 !important;
-    height: 24px !important;
-    width: 24px !important;
-    min-height: 24px !important;
-    min-width: 24px !important;
-    border-radius: 4px !important;
-    padding: 0 !important;
-    text-align: center !important;
-}
-
-.btn-editar {
-    background-color: #3b82f6 !important;
-    margin-right: 8px !important;
-}
-
-.btn-eliminar {
-    background-color: #ef4444 !important;
-}
-
-/* Forzar estilo en los iconos SVG */
-.btn-editar svg, .btn-eliminar svg {
-    display: block !important;
-    height: 18px !important;
-    width: 18px !important;
-    min-height: 18px !important;
-    min-width: 18px !important;
-    margin: 3px auto !important;
-    color: white !important;
-    stroke: white !important;
-}
-
-/* Estilo para el contenedor de botones */
-td .flex.justify-center.space-x-2 {
-    display: flex !important;
-    gap: 8px !important; 
-    min-width: 70px !important;
-}
-
-/* Estilos específicos para las celdas de la tabla */
-td.whitespace-nowrap:last-child {
-    width: 100px !important;
-    min-width: 100px !important;
-    max-width: 100px !important;
-    text-align: center !important;
-    padding: 8px !important;
-}
-
-/* Forzar ancho mínimo de celda para todas las columnas */
-td.whitespace-nowrap {
-    min-width: 80px !important;
-}
-
-/* Estilos para las tarjetas en móvil */
-.md\\:hidden .btn-editar,
-.md\\:hidden .btn-eliminar {
-    width: 36px !important;
-    height: 36px !important;
-    min-width: 36px !important;
-    min-height: 36px !important;
-}
-
-.md\\:hidden .btn-editar svg,
-.md\\:hidden .btn-eliminar svg {
-    height: 24px !important;
-    width: 24px !important;
-    min-height: 24px !important;
-    min-width: 24px !important;
-    margin: 6px auto !important;
-}
-
-/* =========== ESTILOS PARA SELECTS =========== */
-/* Estilos generales para los selects */
-select.rounded-md option {
-    background-color: white !important;
-    padding: 8px !important;
-}
-
-select {
-    background-color: white !important;
-    -webkit-appearance: menulist !important;
-    appearance: menulist !important;
-    border: 1px solid #d1d5db !important;
-}
-
-/* Cuando los selects están enfocados */
-select:focus {
-    background-color: white !important;
-    border-color: #8b5cf6 !important;
-}
-
-/* Cuando los selects están deshabilitados */
-select:disabled {
-    background-color: #f3f4f6 !important;
-    color: #6b7280 !important;
-}
-
-/* Forzar visibilidad de los elementos del select */
-#empresa_id, #categoria_id, #subcategoria_id, #horario {
-    background-color: white !important;
-    border: 1px solid #d1d5db !important;
-    -webkit-appearance: menulist !important;
-    appearance: menulist !important;
-}
-
-#empresa_id option, #categoria_id option, #subcategoria_id option, #horario option {
-    background-color: white !important;
-    padding: 8px !important;
-}
-
-/* Estilos para asegurar que los selects siempre sean visibles */
-.select-visible,
-.select-visible option {
-    background-color: white !important;
-}
-
-/* Reglas específicas para selects */
-select.w-full,
-select.w-full option {
-    background-color: white !important;
-}
-
-/* Forzar modo de selección nativo */
-@media screen and (-webkit-min-device-pixel-ratio:0) {
-    select,
-    select:focus,
-    select:hover {
-        -webkit-appearance: menulist !important;
-        appearance: menulist !important;
-    }
-}
-
-/* Reglas para Firefox */
-@-moz-document url-prefix() {
-    select {
-        -moz-appearance: menulist !important;
-        text-indent: 0.01px;
-        text-overflow: '';
-    }
-}
-</style>
-@endpush 
+@endsection 

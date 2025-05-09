@@ -40,6 +40,10 @@
                 use App\Http\Controllers\DocenteController;
             // CONTROLADOR DEPARTAMENTOS
                 use App\Http\Controllers\DepartamentoController;
+            // CONTROLADOR CALENDARIO
+                use App\Http\Controllers\CalendarController;
+            // CONTROLADOR DE RECORDATORIOS
+                use App\Http\Controllers\ReminderController;
 
     // RUTAS DE LA APLICACIÓN
         // RUTA PRINCIPAL HOME
@@ -149,6 +153,14 @@
                 // RUTA OBTENER SUBCATEGORÍAS
                     Route::get('/empresa/get-subcategorias/{categoria}', [CompanyDashboardController::class, 'getSubcategorias'])
                         ->name('empresa.subcategorias');
+                // RUTA CALENDARIO
+                    Route::get('/empresa/calendar', [CalendarController::class, 'index'])->name('empresa.calendar');
+                    Route::prefix('empresa/calendar')->group(function () {
+                        Route::get('/reminders', [CalendarController::class, 'getReminders']);
+                        Route::post('/reminders', [CalendarController::class, 'store']);
+                        Route::put('/reminders/{reminder}', [CalendarController::class, 'update']);
+                        Route::delete('/reminders/{reminder}', [CalendarController::class, 'destroy']);
+                    });
             });
 
         // RUTAS PROTEGIDAS PARA ADMINISTRADORES
@@ -162,6 +174,7 @@
                 // RUTAS PARA GESTIONAR LAS CATEGORÍAS
                     // RUTA GESTIONAR CATEGORÍAS
                         Route::resource('categorias', CategoriaController::class);
+                        Route::get('categorias/{categoria}/subcategorias', [CategoriaController::class, 'getSubcategorias'])->name('categorias.subcategorias');
 
                 // RUTAS PARA GESTIONAR LAS SUBCATEGORÍAS
                     // RUTA COMPROBAR PUBLICACIONES
@@ -195,6 +208,14 @@
                     // RUTA GESTIONAR INSTITUCIONES
                         Route::resource('instituciones', App\Http\Controllers\Admin\InstitucionController::class);
 
+                // RUTAS PARA GESTIONAR LOS PROFESORES
+                    Route::get('profesores', [App\Http\Controllers\Admin\ProfesorController::class, 'index'])->name('profesores.index');
+                    Route::post('profesores', [App\Http\Controllers\Admin\ProfesorController::class, 'store'])->name('profesores.store');
+                    Route::get('profesores/{profesor}/edit', [App\Http\Controllers\Admin\ProfesorController::class, 'edit'])->name('profesores.edit');
+                    Route::put('profesores/{profesor}', [App\Http\Controllers\Admin\ProfesorController::class, 'update'])->name('profesores.update');
+                    Route::delete('profesores/{profesor}', [App\Http\Controllers\Admin\ProfesorController::class, 'destroy'])->name('profesores.destroy');
+                    Route::delete('profesores/eliminar-sql/{profesor}', [App\Http\Controllers\Admin\ProfesorController::class, 'eliminarSQL'])->name('profesores.eliminar-sql');
+
                 // Rutas de Publicaciones
                 Route::get('/publicaciones', [App\Http\Controllers\Admin\PublicacionController::class, 'index'])->name('publicaciones.index');
                 Route::post('/publicaciones', [App\Http\Controllers\Admin\PublicacionController::class, 'store'])->name('publicaciones.store');
@@ -203,6 +224,14 @@
                 Route::delete('/publicaciones/{publicacion}', [App\Http\Controllers\Admin\PublicacionController::class, 'destroy'])->name('publicaciones.destroy');
                 Route::delete('/publicaciones/eliminar-sql/{publicacion}', [App\Http\Controllers\Admin\PublicacionController::class, 'destroySQL'])->name('publicaciones.destroySQL');
                 Route::get('publicaciones/subcategorias/{categoriaId}', [PublicacionController::class, 'getSubcategorias'])->name('publicaciones.subcategorias');
+
+                // RUTAS PARA GESTIONAR LOS ALUMNOS
+                Route::get('alumnos', [App\Http\Controllers\Admin\AlumnoController::class, 'index'])->name('alumnos.index');
+                Route::post('alumnos', [App\Http\Controllers\Admin\AlumnoController::class, 'store'])->name('alumnos.store');
+                Route::get('alumnos/{alumno}/edit', [App\Http\Controllers\Admin\AlumnoController::class, 'edit'])->name('alumnos.edit');
+                Route::put('alumnos/{alumno}', [App\Http\Controllers\Admin\AlumnoController::class, 'update'])->name('alumnos.update');
+                Route::delete('alumnos/{alumno}', [App\Http\Controllers\Admin\AlumnoController::class, 'destroy'])->name('alumnos.destroy');
+                Route::delete('alumnos/eliminar-sql/{alumno}', [App\Http\Controllers\Admin\AlumnoController::class, 'destroySQL'])->name('alumnos.destroySQL');
             });
 
         // Footer resource pages

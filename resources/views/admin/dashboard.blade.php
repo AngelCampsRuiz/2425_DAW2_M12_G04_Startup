@@ -17,6 +17,8 @@
                         OFERTAS
                     @elseif(request()->routeIs('admin.categorias.*'))
                         CATEGORÍAS
+                    @elseif(request()->routeIs('admin.subcategorias.*'))
+                        SUBCATEGORÍAS
                     @elseif(request()->routeIs('admin.empresas.*'))
                         EMPRESAS
                     @elseif(request()->routeIs('admin.alumnos.*'))
@@ -37,6 +39,8 @@
                         OFERTAS
                     @elseif(request()->routeIs('admin.categorias.*'))
                         CATEGORÍAS
+                    @elseif(request()->routeIs('admin.subcategorias.*'))
+                        SUBCATEGORÍAS
                     @elseif(request()->routeIs('admin.empresas.*'))
                         EMPRESAS
                     @elseif(request()->routeIs('admin.alumnos.*'))
@@ -58,21 +62,155 @@
 
         <!-- Menú de navegación -->
         <div class="bg-white shadow-md rounded-lg p-4 mb-6">
-            <div class="flex justify-center space-x-4 py-4 border-b border-purple-200 overflow-x-auto">
+            <!-- Menú para escritorio -->
+            <div class="hidden md:flex justify-center space-x-4 py-4 border-b border-purple-200">
                 <a href="{{ route('admin.dashboard') }}" class="px-4 py-2 {{ Request::routeIs('admin.dashboard') ? 'text-white bg-purple-600' : 'text-purple-600 hover:bg-purple-100' }} rounded-md transition-colors">Dashboard</a>
                 <a href="{{ route('admin.publicaciones.index') }}" class="px-4 py-2 {{ Request::routeIs('admin.publicaciones.*') ? 'text-white bg-purple-600' : 'text-purple-600 hover:bg-purple-100' }} rounded-md transition-colors">Ofertas</a>
                 <a href="{{ route('admin.categorias.index') }}" class="px-4 py-2 {{ Request::routeIs('admin.categorias.*') ? 'text-white bg-purple-600' : 'text-purple-600 hover:bg-purple-100' }} rounded-md transition-colors">Categorías</a>
                 <a href="{{ route('admin.subcategorias.index') }}" class="px-4 py-2 {{ Request::routeIs('admin.subcategorias.*') ? 'text-white bg-purple-600' : 'text-purple-600 hover:bg-purple-100' }} rounded-md transition-colors">Subcategorías</a>
                 <a href="{{ route('admin.empresas.index') }}" class="px-4 py-2 {{ Request::routeIs('admin.empresas.*') ? 'text-white bg-purple-600' : 'text-purple-600 hover:bg-purple-100' }} rounded-md transition-colors">Empresas</a>
                 <a href="{{ route('admin.instituciones.index') }}" class="px-4 py-2 {{ Request::routeIs('admin.instituciones.*') ? 'text-white bg-purple-600' : 'text-purple-600 hover:bg-purple-100' }} rounded-md transition-colors">Instituciones</a>
-                <a href="#" class="px-4 py-2 text-purple-600 hover:bg-purple-100 rounded-md transition-colors">Alumnos</a>
-                <a href="#" class="px-4 py-2 text-purple-600 hover:bg-purple-100 rounded-md transition-colors">Profesores</a>
+                <a href="{{ route('admin.alumnos.index') }}" class="px-4 py-2 {{ Request::routeIs('admin.alumnos.*') ? 'text-white bg-purple-600' : 'text-purple-600 hover:bg-purple-100' }} rounded-md transition-colors">Alumnos</a>
+                <a href="{{ route('admin.profesores.index') }}" class="px-4 py-2 {{ Request::routeIs('admin.profesores.*') ? 'text-white bg-purple-600' : 'text-purple-600 hover:bg-purple-100' }} rounded-md transition-colors">Profesores</a>
+            </div>
+            
+            <!-- Menú móvil desplegable -->
+            <div id="mobile-menu" class="md:hidden">
+                <div class="space-y-2 py-3">
+                    <a href="{{ route('admin.dashboard') }}" class="block px-4 py-2 {{ Request::routeIs('admin.dashboard') ? 'text-white bg-purple-600' : 'text-purple-600 hover:bg-purple-100' }} rounded-md transition-colors">
+                        <div class="flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                            </svg>
+                            Dashboard
+                        </div>
+                    </a>
+                    <a href="{{ route('admin.publicaciones.index') }}" class="block px-4 py-2 {{ Request::routeIs('admin.publicaciones.*') ? 'text-white bg-purple-600' : 'text-purple-600 hover:bg-purple-100' }} rounded-md transition-colors">
+                        <div class="flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            Ofertas
+                        </div>
+                    </a>
+                    <a href="{{ route('admin.categorias.index') }}" class="block px-4 py-2 {{ Request::routeIs('admin.categorias.*') ? 'text-white bg-purple-600' : 'text-purple-600 hover:bg-purple-100' }} rounded-md transition-colors">
+                        <div class="flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                            </svg>
+                            Categorías
+                        </div>
+                    </a>
+                    <a href="{{ route('admin.subcategorias.index') }}" class="block px-4 py-2 {{ Request::routeIs('admin.subcategorias.*') ? 'text-white bg-purple-600' : 'text-purple-600 hover:bg-purple-100' }} rounded-md transition-colors">
+                        <div class="flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+                            </svg>
+                            Subcategorías
+                        </div>
+                    </a>
+                    <a href="{{ route('admin.empresas.index') }}" class="block px-4 py-2 {{ Request::routeIs('admin.empresas.*') ? 'text-white bg-purple-600' : 'text-purple-600 hover:bg-purple-100' }} rounded-md transition-colors">
+                        <div class="flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                            </svg>
+                            Empresas
+                        </div>
+                    </a>
+                    <a href="{{ route('admin.alumnos.index') }}" class="block px-4 py-2 {{ Request::routeIs('admin.alumnos.*') ? 'text-white bg-purple-600' : 'text-purple-600 hover:bg-purple-100' }} rounded-md transition-colors">
+                        <div class="flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                            </svg>
+                            Alumnos
+                        </div>
+                    </a>
+                    <a href="{{ route('admin.profesores.index') }}" class="block px-4 py-2 {{ Request::routeIs('admin.profesores.*') ? 'text-white bg-purple-600' : 'text-purple-600 hover:bg-purple-100' }} rounded-md transition-colors">
+                        <div class="flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                            </svg>
+                            Profesores
+                        </div>
+                    </a>
+                </div>
             </div>
         </div>
 
         @if(request()->routeIs('admin.dashboard'))
             <div class="bg-white rounded-lg shadow p-6">
                 <h2 class="text-2xl font-semibold mb-6 text-purple-800">Panel de Administración</h2>
+                
+                <!-- Stats cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                    <div class="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <p class="text-sm text-gray-500 font-medium">Total Ofertas</p>
+                                <p class="text-2xl font-bold text-gray-800">{{ \App\Models\Publication::count() }}</p>
+                            </div>
+                            <div class="bg-blue-100 p-3 rounded-full">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <p class="text-sm text-green-500">{{ \App\Models\Publication::where('activa', 1)->count() }} activas</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <p class="text-sm text-gray-500 font-medium">Total Empresas</p>
+                                <p class="text-2xl font-bold text-gray-800">{{ \App\Models\Empresa::count() }}</p>
+                            </div>
+                            <div class="bg-green-100 p-3 rounded-full">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <p class="text-sm text-green-500">{{ \App\Models\Empresa::count() }} totales</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow p-6 border-l-4 border-purple-500">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <p class="text-sm text-gray-500 font-medium">Total Alumnos</p>
+                                <p class="text-2xl font-bold text-gray-800">{{ \App\Models\Estudiante::count() }}</p>
+                            </div>
+                            <div class="bg-purple-100 p-3 rounded-full">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <p class="text-sm text-purple-500">{{ \App\Models\User::where('role_id', 3)->where('activo', 1)->count() }} activos</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg shadow p-6 border-l-4 border-yellow-500">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <p class="text-sm text-gray-500 font-medium">Total Profesores</p>
+                                <p class="text-2xl font-bold text-gray-800">{{ \App\Models\User::where('role_id', 4)->count() }}</p>
+                            </div>
+                            <div class="bg-yellow-100 p-3 rounded-full">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <p class="text-sm text-yellow-500">{{ \App\Models\User::where('role_id', 4)->where('activo', 1)->count() }} activos</p>
+                        </div>
+                    </div>
+                </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     <div class="bg-blue-50 rounded-lg p-6 shadow-sm">
@@ -82,12 +220,12 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                 </svg>
                             </div>
-                            <h3 class="text-lg font-semibold text-gray-800">Publicaciones</h3>
+                            <h3 class="text-lg font-semibold text-gray-800">Ofertas</h3>
                         </div>
                         <p class="text-gray-600">Gestiona las ofertas de prácticas para los estudiantes.</p>
                         <div class="mt-4">
                             <a href="{{ route('admin.publicaciones.index') }}" class="text-blue-600 hover:text-blue-800 font-medium">
-                                Gestionar publicaciones →
+                                Gestionar ofertas →
                             </a>
                         </div>
                     </div>
@@ -120,8 +258,61 @@
                         </div>
                         <p class="text-gray-600">Gestiona los perfiles de estudiantes registrados.</p>
                         <div class="mt-4">
-                            <a href="#" class="text-purple-600 hover:text-purple-800 font-medium">
+                            <a href="{{ route('admin.alumnos.index') }}" class="text-purple-600 hover:text-purple-800 font-medium">
                                 Gestionar alumnos →
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-yellow-50 rounded-lg p-6 shadow-sm">
+                        <div class="flex items-center mb-3">
+                            <div class="bg-yellow-100 p-3 rounded-full mr-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                                </svg>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-800">Profesores</h3>
+                        </div>
+                        <p class="text-gray-600">Gestiona los perfiles de profesores y tutores.</p>
+                        <div class="mt-4">
+                            <a href="{{ route('admin.profesores.index') }}" class="text-yellow-600 hover:text-yellow-800 font-medium">
+                                Gestionar profesores →
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-indigo-50 rounded-lg p-6 shadow-sm">
+                        <div class="flex items-center mb-3">
+                            <div class="bg-indigo-100 p-3 rounded-full mr-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                                </svg>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-800">Categorías</h3>
+                        </div>
+                        <p class="text-gray-600">Gestiona categorías y subcategorías de ofertas.</p>
+                        <div class="mt-4">
+                            <a href="{{ route('admin.categorias.index') }}" class="text-indigo-600 hover:text-indigo-800 font-medium">
+                                Gestionar categorías →
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-pink-50 rounded-lg p-6 shadow-sm">
+                        <div class="flex items-center mb-3">
+                            <div class="bg-pink-100 p-3 rounded-full mr-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-pink-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
+                                </svg>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-800">Subcategorías</h3>
+                        </div>
+                        <p class="text-gray-600">Gestiona las subcategorías asociadas a cada categoría.</p>
+                        <div class="mt-4">
+                            <a href="{{ route('admin.subcategorias.index') }}" class="text-pink-600 hover:text-pink-800 font-medium">
+                                Gestionar subcategorías →
                             </a>
                         </div>
                     </div>
@@ -200,29 +391,54 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const menuToggle = document.getElementById('menu-toggle');
-            const menuNav = document.getElementById('menu-nav');
-            
+            const mobileMenu = document.getElementById('mobile-menu');
+            let isMenuVisible = false;
+
+            // Inicialmente ocultar el menú móvil
+            mobileMenu.style.display = 'none';
+
             menuToggle.addEventListener('click', function() {
-                menuNav.classList.toggle('hidden');
-            });
-            
-            // Ocultar menú en pantallas pequeñas cuando se hace clic en un enlace
-            const menuLinks = menuNav.querySelectorAll('a');
-            menuLinks.forEach(link => {
-                link.addEventListener('click', function() {
-                    if (window.innerWidth < 768) { // 768px es el breakpoint md de Tailwind
-                        menuNav.classList.add('hidden');
-                    }
-                });
-            });
-            
-            // Ajustar visibilidad del menú en cambio de tamaño de ventana
-            window.addEventListener('resize', function() {
-                if (window.innerWidth >= 768) {
-                    menuNav.classList.remove('hidden');
+                isMenuVisible = !isMenuVisible;
+                
+                // Cambiar el ícono del botón
+                if (isMenuVisible) {
+                    menuToggle.innerHTML = `
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    `;
+                    mobileMenu.style.display = 'block';
+                    
+                    // Añadir animación de entrada
+                    mobileMenu.classList.add('animate-fade-in-down');
                 } else {
-                    menuNav.classList.add('hidden');
+                    menuToggle.innerHTML = `
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    `;
+                    
+                    // Añadir animación de salida
+                    mobileMenu.classList.add('animate-fade-out-up');
+                    setTimeout(() => {
+                        mobileMenu.style.display = 'none';
+                        mobileMenu.classList.remove('animate-fade-out-up');
+                    }, 200);
                 }
+            });
+
+            // Cerrar el menú al hacer clic en un enlace
+            const mobileLinks = mobileMenu.querySelectorAll('a');
+            mobileLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    isMenuVisible = false;
+                    mobileMenu.style.display = 'none';
+                    menuToggle.innerHTML = `
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    `;
+                });
             });
         });
     </script>
@@ -230,201 +446,37 @@
     <!-- CSRF token para AJAX -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
     
-    <!-- Scripts adicionales para la sección admin -->
-    <script>
-        // Asegurarse de que los listeners de eventos se apliquen a elementos cargados dinámicamente
-        document.addEventListener('DOMContentLoaded', function() {
-            // Delegación de eventos para todos los botones y formularios
-            document.addEventListener('click', function(e) {
-                // Botón de crear
-                if (e.target.closest('.btn-crear')) {
-                    resetForm();
-                    document.getElementById('modal-titulo').textContent = 'Crear Nueva Publicación';
-                    document.getElementById('form-publicacion').setAttribute('action', '{{ route('admin.publicaciones.store') }}');
-                    document.getElementById('form_method').value = 'POST';
-                    document.getElementById('modal-publicacion').classList.remove('hidden');
-                }
-                
-                // Botón de editar
-                if (e.target.closest('.btn-editar')) {
-                    const id = e.target.closest('.btn-editar').getAttribute('data-id');
-                    cargarPublicacion(id);
-                }
-                
-                // Botón de eliminar
-                if (e.target.closest('.btn-eliminar')) {
-                    const id = e.target.closest('.btn-eliminar').getAttribute('data-id');
-                    document.getElementById('eliminar_id').value = id;
-                    document.getElementById('form-eliminar').setAttribute('action', '{{ route('admin.publicaciones.index') }}/' + id);
-                    document.getElementById('modal-eliminar').classList.remove('hidden');
-                }
-                
-                // Botones de cerrar y cancelar
-                if (e.target.closest('#modal-close') || e.target.closest('#btn-cancelar')) {
-                    document.getElementById('modal-publicacion').classList.add('hidden');
-                }
-                
-                if (e.target.closest('#modal-eliminar-close') || e.target.closest('#btn-cancelar-eliminar')) {
-                    document.getElementById('modal-eliminar').classList.add('hidden');
-                }
-                
-                // Enlaces de paginación
-                const paginationLink = e.target.closest('.pagination-link');
-                if (paginationLink) {
-                    e.preventDefault();
-                    const url = paginationLink.getAttribute('href');
-                    actualizarTabla(url);
-                }
-            });
-            
-            // Manejo de envío de formularios
-            document.addEventListener('submit', function(e) {
-                // Formulario de crear/editar
-                if (e.target.id === 'form-publicacion') {
-                    e.preventDefault();
-                    const formData = new FormData(e.target);
-                    const url = e.target.getAttribute('action');
-                    const method = document.getElementById('form_method').value;
-                    
-                    fetch(url, {
-                        method: method === 'PUT' ? 'POST' : 'POST',
-                        body: formData,
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                        }
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            document.getElementById('modal-publicacion').classList.add('hidden');
-                            mostrarMensajeExito(data.message);
-                            actualizarTabla();
-                        } else if (data.errors) {
-                            mostrarErrores(data.errors);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                    });
-                }
-                
-                // Formulario de eliminar
-                if (e.target.id === 'form-eliminar') {
-                    e.preventDefault();
-                    const url = e.target.getAttribute('action');
-                    
-                    fetch(url, {
-                        method: 'DELETE',
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'Content-Type': 'application/json'
-                        }
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            document.getElementById('modal-eliminar').classList.add('hidden');
-                            mostrarMensajeExito(data.message);
-                            actualizarTabla();
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                    });
-                }
-            });
-            
-            // Definir funciones auxiliares que podrían ser llamadas por los eventos
-            window.resetForm = function() {
-                if (document.getElementById('form-publicacion')) {
-                    document.getElementById('form-publicacion').reset();
-                    document.getElementById('publicacion_id').value = '';
-                    document.getElementById('fecha_publicacion').value = new Date().toISOString().split('T')[0];
-                    document.getElementById('form-errors').classList.add('hidden');
-                    document.getElementById('error-list').innerHTML = '';
-                }
-            };
-            
-            window.cargarPublicacion = function(id) {
-                fetch('{{ route('admin.publicaciones.index') }}/' + id + '/edit', {
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    resetForm();
-                    
-                    const publicacion = data.publicacion;
-                    
-                    document.getElementById('publicacion_id').value = publicacion.id;
-                    document.getElementById('titulo').value = publicacion.titulo;
-                    document.getElementById('descripcion').value = publicacion.descripcion;
-                    document.getElementById('horario').value = publicacion.horario;
-                    document.getElementById('horas_totales').value = publicacion.horas_totales;
-                    document.getElementById('fecha_publicacion').value = publicacion.fecha_publicacion.split(' ')[0];
-                    document.getElementById('activa').checked = publicacion.activa == 1;
-                    document.getElementById('empresa_id').value = publicacion.empresa_id;
-                    document.getElementById('categoria_id').value = publicacion.categoria_id;
-                    document.getElementById('subcategoria_id').value = publicacion.subcategoria_id;
-                    
-                    document.getElementById('modal-titulo').textContent = 'Editar Publicación';
-                    document.getElementById('form-publicacion').setAttribute('action', '{{ route('admin.publicaciones.index') }}/' + id);
-                    document.getElementById('form_method').value = 'PUT';
-                    
-                    document.getElementById('modal-publicacion').classList.remove('hidden');
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-            };
-            
-            window.mostrarMensajeExito = function(mensaje) {
-                const messageElement = document.getElementById('success-message');
-                const messageText = document.getElementById('success-message-text');
-                
-                messageText.textContent = mensaje;
-                messageElement.style.display = 'block';
-                
-                setTimeout(function() {
-                    messageElement.style.display = 'none';
-                }, 5000);
-            };
-            
-            window.mostrarErrores = function(errores) {
-                const errorsDiv = document.getElementById('form-errors');
-                const errorsList = document.getElementById('error-list');
-                
-                errorsList.innerHTML = '';
-                
-                for (const key in errores) {
-                    errores[key].forEach(error => {
-                        const li = document.createElement('li');
-                        li.textContent = error;
-                        errorsList.appendChild(li);
-                    });
-                }
-                
-                errorsDiv.classList.remove('hidden');
-            };
-            
-            window.actualizarTabla = function(url = '{{ route('admin.publicaciones.index') }}') {
-                fetch(url, {
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('tabla-container').innerHTML = data.tabla;
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-            };
-        });
-    </script>
+    @yield('scripts')
     @endsection
+
+<style>
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeOutUp {
+        from {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        to {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+    }
+
+    .animate-fade-in-down {
+        animation: fadeInDown 0.2s ease-out forwards;
+    }
+
+    .animate-fade-out-up {
+        animation: fadeOutUp 0.2s ease-out forwards;
+    }
+</style>

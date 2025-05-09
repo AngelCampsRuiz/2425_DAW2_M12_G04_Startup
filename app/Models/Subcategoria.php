@@ -20,8 +20,7 @@ class Subcategoria extends Model
 
     public function publicaciones()
     {
-        return $this->belongsToMany(Publicacion::class, 'publicacion_subcategoria', 'subcategoria_id', 'publicacion_id')
-                    ->withTimestamps();
+        return $this->hasMany(Publicacion::class, 'subcategoria_id');
     }
 
     public function publications()
