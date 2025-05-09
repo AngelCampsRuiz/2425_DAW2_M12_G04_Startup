@@ -21,9 +21,44 @@ class EmpresaController extends Controller
      */
     public function index()
     {
-        $empresas = Empresa::with('user')
-                ->orderBy('id', 'asc')
-                ->paginate(10);
+        $query = Empresa::with('user');
+
+        // Aplicar filtro por nombre
+        if (request()->has('nombre') && !empty(request()->nombre)) {
+            $query->whereHas('user', function($q) {
+                $q->where('nombre', 'like', '%' . request()->nombre . '%');
+            });
+        }
+
+        // Aplicar filtro por CIF
+        if (request()->has('cif') && !empty(request()->cif)) {
+            $query->where('cif', 'like', '%' . request()->cif . '%');
+        }
+
+        // Aplicar filtro por estado
+        if (request()->has('estado') && request()->estado !== '') {
+            $query->whereHas('user', function($q) {
+                $q->where('activo', request()->estado);
+            });
+        }
+
+        // Aplicar filtro por ciudad
+        if (request()->has('ciudad') && !empty(request()->ciudad)) {
+            $query->whereHas('user', function($q) {
+                $q->where('ciudad', request()->ciudad);
+            });
+        }
+
+        // Obtener ciudades únicas para el selector
+        $ciudades = User::whereHas('empresa')
+                       ->whereNotNull('ciudad')
+                       ->where('ciudad', '!=', '')
+                       ->distinct()
+                       ->pluck('ciudad')
+                       ->sort()
+                       ->values();
+
+        $empresas = $query->orderBy('id', 'asc')->paginate(10);
         
         if (request()->ajax()) {
             return response()->json([
@@ -31,7 +66,7 @@ class EmpresaController extends Controller
             ]);
         }
         
-        return view('admin.empresas.index', compact('empresas'));
+        return view('admin.empresas.index', compact('empresas', 'ciudades'));
     }
 
     /**

@@ -1,9 +1,8 @@
-<div class="bg-white rounded-lg mb-4 py-3 px-6 flex justify-between items-center">
-    <div>
-        <span class="text-sm text-gray-700">Mostrando {{ $empresas->count() }} {{ $empresas->count() == 1 ? 'empresa' : 'empresas' }} de {{ $empresas->total() }}</span>
-    </div>
-    <button type="button" class="btn-crear inline-flex items-center px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-bold rounded">
-        AÑADIR
+<!-- Encabezado y botón crear -->
+<div class="flex justify-between items-center p-6 border-b">
+    <h1 class="text-2xl font-semibold text-gray-800">Empresas</h1>
+    <button class="btn-crear bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2">
+        Crear Empresa
     </button>
 </div>
 
@@ -15,189 +14,115 @@
 
 <!-- Vista de tabla para pantallas medianas y grandes -->
 <div class="hidden md:block">
-    <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-200">
-            <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">ID</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Nombre</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Email</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">CIF</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Ciudad</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Teléfono</th>
-                <th class="px-6 py-3 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">ACCIONES</th>
-            </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-            @forelse ($empresas as $empresa)
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
                 <tr>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $empresa->id }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {{ $empresa->user->nombre ?? 'Sin nombre' }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {{ $empresa->user->email ?? 'Sin email' }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $empresa->cif }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $empresa->user->ciudad ?? 'No especificado' }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $empresa->user->telefono ?? 'No especificado' }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                        <div class="flex justify-center space-x-2">
-                            <button type="button" class="btn-editar inline-flex items-center p-1 border border-transparent rounded-full text-blue-600 hover:text-blue-800 focus:outline-none" data-id="{{ $empresa->id }}">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                </svg>
-                            </button>
-                            <button type="button" class="btn-eliminar inline-flex items-center p-1 border border-transparent rounded-full text-red-600 hover:text-red-800 focus:outline-none" data-id="{{ $empresa->id }}">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                            </button>
-                        </div>
-                    </td>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CIF</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ciudad</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Teléfono</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
                 </tr>
-            @empty
-                <tr>
-                    <td colspan="7" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
-                        No hay empresas disponibles
-                    </td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                @forelse ($empresas as $empresa)
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <div class="flex items-center">
+                                @if($empresa->user->imagen)
+                                    <img class="h-10 w-10 rounded-full object-cover mr-3" src="{{ asset('public/profile_images/' . $empresa->user->imagen) }}" alt="{{ $empresa->user->nombre }}">
+                                @else
+                                    <div class="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center mr-3">
+                                        <span class="text-purple-800 font-medium text-sm">{{ strtoupper(substr($empresa->user->nombre ?? 'NA', 0, 2)) }}</span>
+                                    </div>
+                                @endif
+                                <div class="text-sm font-medium text-gray-900">{{ $empresa->user->nombre ?? 'Sin nombre' }}</div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $empresa->user->email ?? 'Sin email' }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $empresa->cif }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $empresa->user->ciudad ?? 'No especificado' }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $empresa->user->telefono ?? 'No especificado' }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div class="flex space-x-3">
+                                <button class="btn-editar text-indigo-600 hover:text-indigo-900" data-id="{{ $empresa->id }}">
+                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                    </svg>
+                                </button>
+                                <button class="btn-eliminar text-red-600 hover:text-red-900" data-id="{{ $empresa->id }}">
+                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="6" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                            No hay empresas disponibles
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+    <div class="px-6 py-4 border-t border-gray-200">
+        {{ $empresas->links() }}
+    </div>
 </div>
 
 <!-- Vista de tarjetas para móviles -->
 <div class="md:hidden space-y-4">
     @forelse ($empresas as $empresa)
-        <div class="bg-white rounded-lg shadow border overflow-hidden">
-            <div class="p-4 border-b">
-                <div class="flex items-start">
-                    <div class="flex-shrink-0 bg-purple-500 rounded-lg h-14 w-14 flex items-center justify-center text-white">
-                        {{ strtoupper(substr($empresa->user->nombre ?? 'NA', 0, 2)) }}
-                    </div>
-                    <div class="ml-4 flex-1">
-                        <h3 class="text-lg font-bold text-gray-900">{{ $empresa->user->nombre ?? 'Sin nombre' }}</h3>
-                        <p class="text-sm text-gray-700">{{ $empresa->user->email ?? 'Sin email' }}</p>
-                        <div class="flex items-center mt-1">
-                            <p class="text-sm text-gray-700">
-                                CIF: {{ $empresa->cif }} | {{ $empresa->user->ciudad ?? 'No especificado' }}
-                            </p>
+        <div class="bg-white shadow rounded-lg p-4">
+            <div class="flex items-center space-x-4">
+                <div class="flex-shrink-0">
+                    @if($empresa->user->imagen)
+                        <img class="h-12 w-12 rounded-full object-cover" src="{{ asset('public/profile_images/' . $empresa->user->imagen) }}" alt="{{ $empresa->user->nombre }}">
+                    @else
+                        <div class="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center">
+                            <span class="text-purple-800 font-medium text-sm">{{ strtoupper(substr($empresa->user->nombre ?? 'NA', 0, 2)) }}</span>
                         </div>
-                    </div>
+                    @endif
                 </div>
-                <p class="mt-3 text-sm text-gray-600">
-                    {{ \Illuminate\Support\Str::limit($empresa->user->descripcion ?? 'Sin descripción', 100) }}
-                </p>
-            </div>
-            <div class="px-4 py-2 bg-gray-50 flex justify-end">
-                <button type="button" class="btn-editar inline-flex items-center p-2 border border-transparent rounded-full text-blue-600 hover:text-blue-800 focus:outline-none mr-4" data-id="{{ $empresa->id }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                </button>
-                <button type="button" class="btn-eliminar inline-flex items-center p-2 border border-transparent rounded-full text-red-600 hover:text-red-800 focus:outline-none" data-id="{{ $empresa->id }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                </button>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-900 truncate">
+                        {{ $empresa->user->nombre ?? 'Sin nombre' }}
+                    </p>
+                    <p class="text-sm text-gray-500 truncate">
+                        {{ $empresa->user->email ?? 'Sin email' }}
+                    </p>
+                    <p class="text-sm text-gray-500 truncate">
+                        CIF: {{ $empresa->cif }}
+                    </p>
+                    <p class="text-sm text-gray-500 truncate">
+                        {{ $empresa->user->ciudad ?? 'No especificado' }}
+                    </p>
+                </div>
+                <div class="flex space-x-2">
+                    <button class="btn-editar text-indigo-600 hover:text-indigo-900" data-id="{{ $empresa->id }}">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                        </svg>
+                    </button>
+                    <button class="btn-eliminar text-red-600 hover:text-red-900" data-id="{{ $empresa->id }}">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                    </button>
+                </div>
             </div>
         </div>
     @empty
-        <div class="bg-white p-4 text-center text-gray-500">
+        <div class="bg-white shadow rounded-lg p-4 text-center text-gray-500">
             No hay empresas disponibles
         </div>
     @endforelse
-</div>
-
-<div class="bg-white px-6 py-4">
-    <div class="pagination-links">
-        @if($empresas->hasPages())
-            <nav role="navigation" aria-label="Pagination Navigation" class="flex items-center justify-between">
-                <div class="flex justify-between flex-1 sm:hidden">
-                    @if($empresas->onFirstPage())
-                        <span class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 cursor-default rounded-md">
-                            Anterior
-                        </span>
-                    @else
-                        <a href="{{ $empresas->previousPageUrl() }}" class="pagination-link relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:text-gray-500">
-                            Anterior
-                        </a>
-                    @endif
-
-                    @if($empresas->hasMorePages())
-                        <a href="{{ $empresas->nextPageUrl() }}" class="pagination-link relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:text-gray-500">
-                            Siguiente
-                        </a>
-                    @else
-                        <span class="relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium text-gray-500 bg-white border border-gray-300 cursor-default rounded-md">
-                            Siguiente
-                        </span>
-                    @endif
-                </div>
-
-                <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                    <div>
-                        <p class="text-sm text-gray-700">
-                            Mostrando
-                            <span class="font-medium">{{ $empresas->firstItem() ?? 0 }}</span>
-                            a
-                            <span class="font-medium">{{ $empresas->lastItem() ?? 0 }}</span>
-                            de
-                            <span class="font-medium">{{ $empresas->total() }}</span>
-                            resultados
-                        </p>
-                    </div>
-
-                    <div>
-                        <span class="relative z-0 inline-flex shadow-sm rounded-md">
-                            @if($empresas->onFirstPage())
-                                <span class="relative inline-flex items-center px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 cursor-default rounded-l-md">
-                                    <span class="sr-only">Anterior</span>
-                                    <svg class="h-5 w-5" x-description="Heroicon name: solid/chevron-left" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                        <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                                    </svg>
-                                </span>
-                            @else
-                                <a href="{{ $empresas->previousPageUrl() }}" class="pagination-link relative inline-flex items-center px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-l-md hover:bg-gray-50">
-                                    <span class="sr-only">Anterior</span>
-                                    <svg class="h-5 w-5" x-description="Heroicon name: solid/chevron-left" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                        <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                                    </svg>
-                                </a>
-                            @endif
-
-                            {{-- Números de página --}}
-                            @foreach($empresas->getUrlRange(1, $empresas->lastPage()) as $page => $url)
-                                @if($page == $empresas->currentPage())
-                                    <span class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-purple-600 border border-gray-300 cursor-default">
-                                        {{ $page }}
-                                    </span>
-                                @else
-                                    <a href="{{ $url }}" class="pagination-link relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50">
-                                        {{ $page }}
-                                    </a>
-                                @endif
-                            @endforeach
-
-                            @if($empresas->hasMorePages())
-                                <a href="{{ $empresas->nextPageUrl() }}" class="pagination-link relative inline-flex items-center px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-r-md hover:bg-gray-50">
-                                    <span class="sr-only">Siguiente</span>
-                                    <svg class="h-5 w-5" x-description="Heroicon name: solid/chevron-right" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-                                    </svg>
-                                </a>
-                            @else
-                                <span class="relative inline-flex items-center px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 cursor-default rounded-r-md">
-                                    <span class="sr-only">Siguiente</span>
-                                    <svg class="h-5 w-5" x-description="Heroicon name: solid/chevron-right" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-                                    </svg>
-                                </span>
-                            @endif
-                        </span>
-                    </div>
-                </div>
-            </nav>
-        @endif
+    <div class="mt-4">
+        {{ $empresas->links() }}
     </div>
 </div> 
