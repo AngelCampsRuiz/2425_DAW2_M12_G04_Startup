@@ -72,43 +72,28 @@
             @endauth
         </div>
 
-        {{-- NAVIGATION BUTTONS --}}
-        <div class="hidden md:flex items-center space-x-6">
+        <!-- Agrupa campana, user dropdown y hamburguesa -->
+        <div class="flex items-center space-x-2">
             @auth
                 <div class="flex items-center space-x-5">
                     <!-- Botón de notificaciones y su dropdown -->
-                    <div class="flex items-center space-x-3">
-                        <!-- Botón de modo oscuro -->
-                        <button id="contrast-toggle" class="focus:outline-none bg-white/30 px-3 py-2 rounded-lg hover:bg-white/50 transition-all flex items-center">
-                            <!-- Icono de luna (visible por defecto) -->
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-[#7705B6] dark-mode-toggle-icon moon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                    <div class="relative">
+                        <button id="notificationButton" class="focus:outline-none bg-white/30 px-3 py-2 rounded-lg hover:bg-white/50 transition-all flex items-center">
+                            <!-- Icono de campana -->
+                            <svg class="w-6 h-6 text-[#7705B6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                             </svg>
-                            <!-- Icono de sol (oculto por defecto) -->
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-[#7705B6] dark-mode-toggle-icon sun hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                            </svg>
+                            <!-- Contador de notificaciones -->
+                            <span id="notificationCount" class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full" style="display:none;">
+                                0
+                            </span>
                         </button>
-
-                        <!-- Botón de notificaciones -->
-                        <div class="relative">
-                            <button id="notificationButton" class="focus:outline-none bg-white/30 px-3 py-2 rounded-lg hover:bg-white/50 transition-all flex items-center">
-                                <!-- Icono de campana -->
-                                <svg class="w-6 h-6 text-[#7705B6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                                </svg>
-                                <!-- Contador de notificaciones -->
-                                <span id="notificationCount" class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full" style="display:none;">
-                                    0
-                                </span>
-                            </button>
-                            <!-- Dropdown de notificaciones -->
-                            <div id="notificationDropdown" class="hidden absolute right-0 top-full mt-2 w-80 bg-white rounded-lg shadow-lg z-50">
-                                <div class="p-4 border-b font-bold text-[#7705B6]">Notificaciones</div>
-                                <div id="notificationList" class="max-h-60 overflow-y-auto">
-                                    <!-- Aquí se cargarán las notificaciones -->
-                                </div>
+                        <!-- Dropdown de notificaciones -->
+                        <div id="notificationDropdown" class="hidden absolute right-full top-0 mr-2 w-80 bg-white rounded-lg shadow-lg z-50">
+                            <div class="p-4 border-b font-bold text-[#7705B6]">Notificaciones</div>
+                            <div id="notificationList" class="max-h-60 overflow-y-auto">
+                                <!-- Aquí se cargarán las notificaciones -->
                             </div>
                         </div>
                     </div>
@@ -121,63 +106,64 @@
                             </svg>
                         </button>
 
-                        <!-- Dropdown Menu -->
-                        <div id="userMenu" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl py-2 z-20 border border-purple-100 opacity-0 transform -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200">
-                            <div class="px-4 py-3 border-b border-gray-100">
-                                <p class="text-sm text-gray-500">Conectado como</p>
-                                <p class="text-sm font-medium text-[#7705B6] truncate">{{ auth()->user()->email }}</p>
-                            </div>
-                            <a href="{{ $dashboardRoute }}" class="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-purple-50 hover:text-[#7705B6]">
-                                <svg class="w-5 h-5 mr-2 text-[#9333EA]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    {!! $dashboardIcon !!}
-                                </svg>
-                                {{ $roleName }}
-                            </a>
-                            <a href="{{ route('profile') }}" class="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-purple-50 hover:text-[#7705B6]">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                                </svg>
-                                Mi Perfil
-                            </a>
-                            @if(auth()->user()->role->nombre_rol === 'Estudiante')
-                            <a href="{{ route('estudiante.solicitudes.index') }}" class="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-purple-50 hover:text-[#7705B6]">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                                </svg>
-                                Mis Solicitudes
-                            </a>
-                            @endif
-                            <form method="POST" action="{{ route('logout') }}">
-                                @csrf
-                                <button type="submit" class="flex items-center w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-purple-50 hover:text-[#7705B6]">
-                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                            <!-- Dropdown Menu -->
+                            <div id="userMenu" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl py-2 z-20 border border-purple-100 opacity-0 transform -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200">
+                                <div class="px-4 py-3 border-b border-gray-100">
+                                    <p class="text-sm text-gray-500">Conectado como</p>
+                                    <p class="text-sm font-medium text-[#7705B6] truncate">{{ auth()->user()->email }}</p>
+                                </div>
+                                <a href="{{ $dashboardRoute }}" class="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-purple-50 hover:text-[#7705B6]">
+                                    <svg class="w-5 h-5 mr-2 text-[#9333EA]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        {!! $dashboardIcon !!}
                                     </svg>
-                                    Cerrar sesión
-                                </button>
-                            </form>
+                                    {{ $roleName }}
+                                </a>
+                                <a href="{{ route('profile') }}" class="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-purple-50 hover:text-[#7705B6]">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                    </svg>
+                                    Mi Perfil
+                                </a>
+                                @if(auth()->user()->role->nombre_rol === 'Estudiante')
+                                <a href="{{ route('estudiante.solicitudes.index') }}" class="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-purple-50 hover:text-[#7705B6]">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                                    </svg>
+                                    Mis Solicitudes
+                                </a>
+                                @endif
+                                <form method="POST" action="{{ route('logout') }}">
+                                    @csrf
+                                    <button type="submit" class="flex items-center w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-purple-50 hover:text-[#7705B6]">
+                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                                        </svg>
+                                        Cerrar sesión
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </div>
-                </div>
-            @else
-                <div class="flex items-center space-x-4">
-                    <a href="{{ route('login') }}" class="bg-[#7705B6] text-white px-5 py-2.5 rounded-lg font-medium hover:bg-[#5E0490] transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
-                        Iniciar sesión
-                    </a>
-                    <a href="{{ route('register') }}" class="bg-white text-[#7705B6] px-5 py-2.5 rounded-lg font-medium border border-[#7705B6] hover:bg-gray-50 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
-                        Registrarte
-                    </a>
-                </div>
-            @endauth
-        </div>
+                @else
+                    <div class="flex items-center space-x-4">
+                        <a href="{{ route('login') }}" class="bg-[#7705B6] text-white px-5 py-2.5 rounded-lg font-medium hover:bg-[#5E0490] transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                            Iniciar sesión
+                        </a>
+                        <a href="{{ route('register') }}" class="bg-white text-[#7705B6] px-5 py-2.5 rounded-lg font-medium border border-[#7705B6] hover:bg-gray-50 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                            Registrarte
+                        </a>
+                    </div>
+                @endauth
+            </div>
 
-        <!-- Mobile menu button -->
-        <div class="md:hidden">
-            <button id="mobileMenuButton" class="text-[#7705B6] focus:outline-none">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                </svg>
-            </button>
+            <!-- Botón hamburguesa (solo en móvil) -->
+            <div class="md:hidden">
+                <button id="mobileMenuButton" class="text-[#7705B6] focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
         </div>
     </div>
 

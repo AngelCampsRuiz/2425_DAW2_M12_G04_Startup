@@ -1,0 +1,31 @@
+/* Estilos para el menú de compartir móvil */
+#mobileShareMenu {
+    transition: opacity 0.3s ease;
+}
+
+#mobileShareMenu > div {
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+}
+
+#mobileShareMenu:not(.hidden) > div {
+    transform: translateY(0);
+}
+
+/* Animación para los iconos de compartir */
+.grid.grid-cols-4 a {
+    transition: transform 0.2s ease;
+}
+
+.grid.grid-cols-4 a:active {
+    transform: scale(0.95);
+}
+
+/* Mejorar la accesibilidad táctil */
+@media (max-width: 640px) {
+    .grid.grid-cols-4 a,
+    button {
+        min-height: 44px;
+        min-width: 44px;
+    }
+}
