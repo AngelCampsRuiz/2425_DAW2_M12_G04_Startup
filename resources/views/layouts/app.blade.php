@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     
-    <title>NextGen</title>
+    <title>{{ config('app.name', 'Laravel') }}</title>
     
     <!-- Favicon -->
     <link rel="icon" href="{{ asset('assets/images/logo.svg') }}" type="image/svg+xml">
@@ -18,6 +18,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
@@ -28,6 +29,89 @@
             }
         }
     </script>
+
+    <style>
+        /* Estilos globales para el modo oscuro */
+        .dark body {
+            background-color: #000000 !important;
+            color: #ffffff;
+        }
+        
+        .dark .bg-gradient-to-r {
+            background-image: none !important;
+            background-color: #000000 !important;
+        }
+
+        .dark .bg-gradient-to-tr {
+            background-image: none !important;
+            background-color: #000000 !important;
+        }
+
+        .dark section {
+            background-color: #000000 !important;
+        }
+
+        .dark .bg-white {
+            background-color: #000000 !important;
+        }
+
+        .dark .bg-gray-100 {
+            background-color: #000000 !important;
+        }
+
+        .dark .text-gray-700 {
+            color: #ffffff;
+        }
+
+        .dark .border-gray-200 {
+            border-color: #333333;
+        }
+
+        /* Asegurarse de que todos los fondos con opacidad sean oscuros */
+        .dark .bg-white\/30,
+        .dark .bg-white\/50,
+        .dark .bg-white\/80 {
+            background-color: rgba(0, 0, 0, 0.8) !important;
+        }
+
+        /* Asegurarse de que todos los elementos con fondo primario sean oscuros */
+        .dark .from-primary\/5,
+        .dark .to-primary\/15,
+        .dark .bg-primary\/5,
+        .dark [class*="from-primary"],
+        .dark [class*="to-primary"],
+        .dark [class*="bg-primary"] {
+            background-color: #000000 !important;
+            background-image: none !important;
+        }
+
+        /* Asegurarse de que las cards y elementos elevados sean más oscuros */
+        .dark .shadow-lg {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.25);
+        }
+
+        /* Ajustar el color de fondo de los contenedores con backdrop-blur */
+        .dark .backdrop-blur-sm {
+            backdrop-filter: none !important;
+            background-color: #000000 !important;
+        }
+
+        /* Asegurarse de que todos los gradientes sean negros */
+        .dark [class*="bg-gradient"] {
+            background-image: none !important;
+            background-color: #000000 !important;
+        }
+
+        /* Asegurarse de que todos los elementos con fondo blanco sean negros */
+        .dark [class*="bg-white"] {
+            background-color: #000000 !important;
+        }
+
+        /* Asegurarse de que todos los elementos con fondo gris sean negros */
+        .dark [class*="bg-gray"] {
+            background-color: #000000 !important;
+        }
+    </style>
     
     <!-- Swiper.js para sliders -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
@@ -37,17 +121,19 @@
     <script src="{{ asset('js/high-contrast.js') }}"></script>
     
     @stack('scripts')
+    
+    <!-- Dark Mode Script -->
+    <script src="{{ asset('js/darkMode.js') }}"></script>
+
+    <!-- Styles -->
+    <link href="{{ asset('css/app.css') }}" rel="stylesheet">
 </head>
-<body class="font-sans antialiased">
-    <div class="min-h-screen bg-gray-100">
-        <!-- Header -->
+<body class="font-sans antialiased min-h-full bg-gray-100 dark:bg-gray-900">
+    <div class="min-h-screen flex flex-col">
         @include('partials.header')
 
-     
-
         <!-- Page Content -->
-        <main>
-            <!-- YIELD PERMITE QUE LAS VISTAS QUE EXTIENDEN ESTA PLANTILLA INSERTEN SU CONTENIDO AQUÍ -->
+        <main class="flex-grow dark:bg-gray-900 dark:text-white">
             @yield('content')
         </main>
         
