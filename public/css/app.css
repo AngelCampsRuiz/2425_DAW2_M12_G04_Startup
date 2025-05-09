@@ -36,4 +36,38 @@
 
 .leaflet-control-zoom a:hover {
     background-color: #f3f4f6 !important;
+}
+
+/* Estilos para modo alto contraste */
+body.high-contrast {
+    background-color: #000 !important;
+    color: #fff !important;
+}
+
+.high-contrast * {
+    background-color: #000 !important;
+    color: #fff !important;
+    border-color: #fff !important;
+}
+
+.high-contrast a {
+    color: #ffff00 !important;
+}
+
+.high-contrast button,
+.high-contrast .btn {
+    background-color: #fff !important;
+    color: #000 !important;
+    border: 2px solid #fff !important;
+}
+
+.high-contrast img {
+    filter: grayscale(100%) contrast(120%);
+}
+
+.high-contrast input,
+.high-contrast textarea {
+    background-color: #000 !important;
+    color: #fff !important;
+    border: 1px solid #fff !important;
 } 
