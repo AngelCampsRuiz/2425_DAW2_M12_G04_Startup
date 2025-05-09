@@ -4,9 +4,23 @@ body.high-contrast {
     color: #ffffff !important;
 }
 
-/* Regla más específica para asegurar que todos los elementos heredan el fondo oscuro */
+/* Regla más específica para asegurar que todos los elementos heredan el fondo oscuro y texto blanco */
 .high-contrast *:not(svg):not(path) {
     background-color: #000000 !important;
+    color: #ffffff !important;
+}
+
+/* Asegurar que todos los textos sean blancos */
+.high-contrast [class*="text-"],
+.high-contrast p,
+.high-contrast h1,
+.high-contrast h2,
+.high-contrast h3,
+.high-contrast h4,
+.high-contrast h5,
+.high-contrast h6,
+.high-contrast span,
+.high-contrast label {
     color: #ffffff !important;
 }
 

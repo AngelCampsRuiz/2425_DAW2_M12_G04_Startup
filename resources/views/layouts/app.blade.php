@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full">
 <head>
+    <!-- Script para prevenir el parpadeo en modo oscuro -->
+    <script>
+        // Verificar inmediatamente si el modo oscuro está activado
+        if (localStorage.getItem('darkMode') === 'dark' || 
+            (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
+
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -34,7 +43,27 @@
         /* Estilos globales para el modo oscuro */
         .dark body {
             background-color: #000000 !important;
-            color: #ffffff;
+            color: #ffffff !important;
+        }
+        
+        /* Asegurar que todo el texto sea blanco en modo oscuro */
+        .dark * {
+            color: #ffffff !important;
+        }
+
+        .dark .text-gray-700,
+        .dark .text-gray-600,
+        .dark .text-gray-800,
+        .dark .text-gray-900,
+        .dark [class*="text-gray-"],
+        .dark [class*="text-primary"],
+        .dark [class*="text-purple"] {
+            color: #ffffff !important;
+        }
+
+        /* Mantener el color de los SVG y paths */
+        .dark svg:not([class*="text-white"]) {
+            color: #ffffff !important;
         }
         
         .dark .bg-gradient-to-r {
@@ -57,10 +86,6 @@
 
         .dark .bg-gray-100 {
             background-color: #000000 !important;
-        }
-
-        .dark .text-gray-700 {
-            color: #ffffff;
         }
 
         .dark .border-gray-200 {
