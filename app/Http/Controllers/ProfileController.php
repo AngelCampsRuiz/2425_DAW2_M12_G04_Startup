@@ -57,7 +57,7 @@ class ProfileController extends Controller
             'telefono' => 'nullable|string|max:20',
             'ciudad' => 'nullable|string|max:100',
             'dni' => 'nullable|string|max:20',
-            'web' => 'nullable|url|max:255',
+            'sitio_web' => 'nullable|url|max:255',
             'imagen' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'banner' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:4096',
             'show_telefono' => 'boolean',
@@ -106,7 +106,7 @@ class ProfileController extends Controller
             'telefono' => $request->telefono,
             'ciudad' => $request->ciudad,
             'dni' => $request->dni,
-            'web' => $request->web,
+            'sitio_web' => $request->sitio_web,
             'show_telefono' => $request->has('show_telefono'),
             'show_dni' => $request->has('show_dni'),
             'show_ciudad' => $request->has('show_ciudad'),
@@ -114,7 +114,16 @@ class ProfileController extends Controller
             'show_web' => $request->has('show_web'),
         ]);
 
-        return redirect()->back()->with('success', 'Perfil actualizado correctamente');
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Perfil actualizado correctamente',
+                'user' => $user,
+                // Puedes agregar más datos si tu JS los necesita
+            ]);
+        } else {
+            return redirect()->back()->with('success', 'Perfil actualizado correctamente');
+        }
     }
 
     public function updateLocation(Request $request)
