@@ -129,6 +129,12 @@
                     Route::get('/notifications/unread', [NotificationController::class, 'getUnreadNotifications']);
                     Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
                     Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+
+                // RUTAS PARA PUBLICACIONES GUARDADAS
+                    Route::get('/saved', [ProfileController::class, 'saved'])->name('publication.index');
+                    Route::get('/saved-publications/partial', [ProfileController::class, 'savedPartial'])->name('saved.publications.partial');
+                    Route::post('/saved-publications/{id}', [ProfileController::class, 'savedPublication'])->name('saved.publications.store');
+                    Route::delete('/favorite/{id}', [ProfileController::class, 'deleteSavedPublication']);
             });
 
         // RUTAS PROTEGIDAS PARA ESTUDIANTES
@@ -193,6 +199,20 @@
                         Route::delete('empresas/eliminar-sql/{empresa}', [App\Http\Controllers\Admin\EmpresaController::class, 'destroySQL'])->name('empresas.destroySQL');
                     // RUTA GESTIONAR EMPRESAS
                         Route::resource('empresas', App\Http\Controllers\Admin\EmpresaController::class);
+                        
+                // RUTAS PARA GESTIONAR LAS INSTITUCIONES
+                    // RUTA CAMBIAR VERIFICACIÓN
+                        Route::post('instituciones/cambiar-verificacion/{id}', [App\Http\Controllers\Admin\InstitucionController::class, 'cambiarVerificacion'])->name('instituciones.cambiar-verificacion');
+                    // RUTA ELIMINAR SQL
+                        Route::delete('instituciones/eliminar-sql/{institucion}', [App\Http\Controllers\Admin\InstitucionController::class, 'destroySQL'])->name('instituciones.destroySQL');
+                    // RUTA OBTENER CATEGORÍAS
+                        Route::get('instituciones/{id}/categorias', [App\Http\Controllers\Admin\InstitucionController::class, 'getCategorias'])->name('instituciones.categorias');
+                    // RUTA ACTUALIZAR CATEGORÍAS
+                        Route::post('instituciones/{id}/categorias', [App\Http\Controllers\Admin\InstitucionController::class, 'updateCategorias'])->name('instituciones.updateCategorias');
+                    // RUTA ACTIVAR/DESACTIVAR CATEGORÍA
+                        Route::post('instituciones/{id}/categorias/{categoria}/toggle', [App\Http\Controllers\Admin\InstitucionController::class, 'toggleCategoriaActiva'])->name('instituciones.toggleCategoria');
+                    // RUTA GESTIONAR INSTITUCIONES
+                        Route::resource('instituciones', App\Http\Controllers\Admin\InstitucionController::class);
 
                 // RUTAS PARA GESTIONAR LOS PROFESORES
                     Route::get('profesores', [App\Http\Controllers\Admin\ProfesorController::class, 'index'])->name('profesores.index');
@@ -291,7 +311,7 @@
         Route::get('/solicitudes', [App\Http\Controllers\Estudiante\SolicitudController::class, 'index'])->name('solicitudes.index');
         Route::get('/solicitudes/{id}', [App\Http\Controllers\Estudiante\SolicitudController::class, 'show'])->name('solicitudes.show');
         Route::post('/solicitudes/{id}/cancelar', [App\Http\Controllers\Estudiante\SolicitudController::class, 'cancelar'])->name('solicitudes.cancelar');
-        
+
         // Rutas AJAX para solicitudes
         Route::get('/api/solicitudes', [App\Http\Controllers\Estudiante\SolicitudAjaxController::class, 'getSolicitudes'])->name('api.solicitudes');
         Route::get('/api/solicitudes/{id}', [App\Http\Controllers\Estudiante\SolicitudAjaxController::class, 'getSolicitud'])->name('api.solicitudes.show');

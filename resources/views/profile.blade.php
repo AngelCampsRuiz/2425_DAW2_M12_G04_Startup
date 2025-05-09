@@ -223,12 +223,17 @@
                             </div>
                 @if(auth()->id() == $user->id)
                                 <div class="flex space-x-4">
+                                    <a href={{ route('publication.index') }} class="chat-button px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors duration-200 flex items-center space-x-2 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 21l7-5 7 5V5a2 2 0 00-2-2H7a2 2 0 00-2 2z"/>
+                                        </svg>
+                                    </a>
                                     <button onclick="openEditModal()"
                                             class="edit-button px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors duration-200 flex items-center space-x-2 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                         </svg>
-                                        <span>{{ __('messages.edit_profile') }}</span>
+                                        <span>Editar Perfil</span>
                         </button>
 
                                     <a href="{{ route('chat.index') }}"
@@ -236,7 +241,7 @@
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
                                         </svg>
-                                        <span>{{ __('messages.go_to_chat') }}</span>
+                                        <span>Ir al Chat</span>
                                     </a>
                                 </div>
                             @endif
@@ -1155,7 +1160,6 @@
                                     </div>
                                 {{-- iffjujf --}}
 
-                                    
                                     {{-- CV --}}
                                     @if($user->role_id == 3)
                                         <div>
@@ -1683,9 +1687,9 @@
                 <h2 class="text-2xl font-bold text-gray-900 mb-6">Ubicación</h2>
                 <div class="bg-white rounded-xl shadow-lg p-6">
                     <div class="w-full h-[300px] rounded-xl overflow-hidden shadow-md">
-                        <div id="viewLocationMap" 
-                             class="w-full h-full" 
-                             data-lat="{{ number_format($user->lat, 8, '.', '') }}" 
+                        <div id="viewLocationMap"
+                             class="w-full h-full"
+                             data-lat="{{ number_format($user->lat, 8, '.', '') }}"
                              data-lng="{{ number_format($user->lng, 8, '.', '') }}">
                         </div>
                     </div>

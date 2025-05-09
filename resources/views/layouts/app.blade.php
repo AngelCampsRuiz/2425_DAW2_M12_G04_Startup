@@ -33,12 +33,17 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
     
+    <link href="{{ asset('css/high-contrast.css') }}" rel="stylesheet">
+    <script src="{{ asset('js/high-contrast.js') }}"></script>
+    
     @stack('scripts')
 </head>
 <body class="font-sans antialiased">
     <div class="min-h-screen bg-gray-100">
         <!-- Header -->
         @include('partials.header')
+
+     
 
         <!-- Page Content -->
         <main>

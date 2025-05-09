@@ -25,6 +25,8 @@
                         ALUMNOS
                     @elseif(request()->routeIs('admin.profesores.*'))
                         PROFESORES
+                    @elseif(request()->routeIs('admin.instituciones.*'))
+                        INSTITUCIONES
                     @else
                         PANEL DE ADMINISTRACIÓN
                     @endif
@@ -45,6 +47,8 @@
                         ALUMNOS
                     @elseif(request()->routeIs('admin.profesores.*'))
                         PROFESORES
+                    @elseif(request()->routeIs('admin.instituciones.*'))
+                        INSTITUCIONES
                     @else
                         PANEL DE ADMINISTRACIÓN
                     @endif
@@ -65,6 +69,7 @@
                 <a href="{{ route('admin.categorias.index') }}" class="px-4 py-2 {{ Request::routeIs('admin.categorias.*') ? 'text-white bg-purple-600' : 'text-purple-600 hover:bg-purple-100' }} rounded-md transition-colors">Categorías</a>
                 <a href="{{ route('admin.subcategorias.index') }}" class="px-4 py-2 {{ Request::routeIs('admin.subcategorias.*') ? 'text-white bg-purple-600' : 'text-purple-600 hover:bg-purple-100' }} rounded-md transition-colors">Subcategorías</a>
                 <a href="{{ route('admin.empresas.index') }}" class="px-4 py-2 {{ Request::routeIs('admin.empresas.*') ? 'text-white bg-purple-600' : 'text-purple-600 hover:bg-purple-100' }} rounded-md transition-colors">Empresas</a>
+                <a href="{{ route('admin.instituciones.index') }}" class="px-4 py-2 {{ Request::routeIs('admin.instituciones.*') ? 'text-white bg-purple-600' : 'text-purple-600 hover:bg-purple-100' }} rounded-md transition-colors">Instituciones</a>
                 <a href="{{ route('admin.alumnos.index') }}" class="px-4 py-2 {{ Request::routeIs('admin.alumnos.*') ? 'text-white bg-purple-600' : 'text-purple-600 hover:bg-purple-100' }} rounded-md transition-colors">Alumnos</a>
                 <a href="{{ route('admin.profesores.index') }}" class="px-4 py-2 {{ Request::routeIs('admin.profesores.*') ? 'text-white bg-purple-600' : 'text-purple-600 hover:bg-purple-100' }} rounded-md transition-colors">Profesores</a>
             </div>
@@ -308,6 +313,25 @@
                         <div class="mt-4">
                             <a href="{{ route('admin.subcategorias.index') }}" class="text-pink-600 hover:text-pink-800 font-medium">
                                 Gestionar subcategorías →
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-yellow-50 rounded-lg p-6 shadow-sm">
+                        <div class="flex items-center mb-3">
+                            <div class="bg-yellow-100 p-3 rounded-full mr-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                </svg>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-800">Instituciones</h3>
+                        </div>
+                        <p class="text-gray-600">Administra las instituciones educativas de la plataforma.</p>
+                        <div class="mt-4">
+                            <a href="{{ route('admin.instituciones.index') }}" class="text-yellow-600 hover:text-yellow-800 font-medium">
+                                Gestionar instituciones →
                             </a>
                         </div>
                     </div>
