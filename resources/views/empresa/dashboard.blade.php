@@ -18,20 +18,20 @@
                 <div class="bg-white rounded-xl shadow-lg p-6 mb-6 hover:shadow-xl transition-shadow duration-300">
                     <div class="flex items-center space-x-4 mb-6">
                         @if(Auth::user()->imagen)
-                            <div class="relative">
-                                <img src="{{ asset('public/profile_images/' . Auth::user()->imagen) }}" alt="Logo empresa" class="w-16 h-16 rounded-full object-cover border-2 border-purple-200">
+                            <div class="relative flex items-center justify-center w-16 h-16 rounded-full bg-purple-50 border-2 border-purple-200 overflow-hidden">
+                                <img src="{{ asset('public/profile_images/' . Auth::user()->imagen) }}" alt="Logo empresa" class="w-full h-full object-contain">
                                 <div class="absolute bottom-0 right-0 w-4 h-4 bg-green-400 rounded-full border-2 border-white"></div>
                             </div>
                         @else
                             <div class="relative">
                                 <div class="w-16 h-16 rounded-full bg-gradient-to-br from-purple-400 to-indigo-500 flex items-center justify-center text-white text-xl font-bold shadow-md">
-                                    {{ strtoupper(substr(Auth::user()->name, 0, 2)) }}
+                                    {{ strtoupper(substr(Auth::user()->nombre, 0, 2)) }}
                                 </div>
                                 <div class="absolute bottom-0 right-0 w-4 h-4 bg-green-400 rounded-full border-2 border-white"></div>
                             </div>
                         @endif
                         <div>
-                            <h2 class="text-lg font-bold text-gray-800">{{ Auth::user()->name }}</h2>
+                            <h2 class="text-lg font-bold text-gray-800">{{ Auth::user()->nombre }}</h2>
                             <p class="text-indigo-600 font-medium">Empresa</p>
                         </div>
                     </div>
@@ -42,12 +42,12 @@
                             </svg>
                             CIF: <span class="font-medium text-gray-800 ml-1">{{ Auth::user()->empresa->cif ?? 'No especificado' }}</span>
                         </p>
-                        <p class="text-gray-600 mb-2 flex items-center">
+                        {{-- <p class="text-gray-600 mb-2 flex items-center">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                             </svg>
                             Sector: <span class="font-medium text-gray-800 ml-1">{{ Auth::user()->empresa->sector ?? 'No especificado' }}</span>
-                        </p>
+                        </p> --}}
                         <p class="text-gray-600 flex items-center">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
