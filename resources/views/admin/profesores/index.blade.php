@@ -6,8 +6,7 @@
         <span id="success-message-text" class="block sm:inline"></span>
     </div>
 
-    <div class="flex justify-between items-center mb-4">
-        <h1 class="text-2xl font-semibold text-gray-800">Profesores</h1>
+    <div class="flex justify-end mb-4">
         <button id="btnCrearProfesor" class="btn-crear bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2">
             Crear Profesor
         </button>

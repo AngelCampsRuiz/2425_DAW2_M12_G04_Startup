@@ -1,3 +1,8 @@
+<!-- Título de la sección -->
+<div class="flex justify-between items-center mb-4">
+    <h2 class="text-xl font-semibold text-gray-800">Profesores</h2>
+</div>
+
 <!-- Tabla para pantallas medianas y grandes -->
 <div class="bg-white rounded-lg shadow overflow-hidden">
     <div class="hidden md:block">
