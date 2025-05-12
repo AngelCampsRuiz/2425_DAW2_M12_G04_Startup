@@ -38,10 +38,14 @@
                                     {{ $categoria->nombre_categoria }}
                                 </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $categoria->subcategorias_count > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
-                                    {{ $categoria->subcategorias_count }} subcategorías
-                                </span>
+                            <td class="px-6 py-4">
+                                <div class="flex flex-wrap gap-1">
+                                    @foreach ($categoria->subcategorias as $subcategoria)
+                                        <span class="inline-block bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded">
+                                            {{ $subcategoria->nombre_subcategoria }}
+                                        </span>
+                                    @endforeach
+                                </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                 <button onclick="openEditModal({{ $categoria->id }})" class="text-indigo-600 hover:text-indigo-900 mr-3">

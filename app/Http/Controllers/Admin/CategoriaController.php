@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Categoria;
 use App\Models\Publication;
+use App\Models\NivelEducativo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -15,23 +16,21 @@ class CategoriaController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Categoria::query();
+        $query = Categoria::query()->with('subcategorias');
 
-        // Aplicar filtro por nombre
-        if ($request->has('nombre') && !empty($request->nombre)) {
+        if ($request->has('nombre')) {
             $query->where('nombre_categoria', 'like', '%' . $request->nombre . '%');
         }
 
-        // Aplicar filtro por subcategorías
-        if ($request->has('subcategorias') && $request->subcategorias !== '') {
+        if ($request->has('subcategorias')) {
             if ($request->subcategorias === '0') {
-                $query->whereDoesntHave('subcategorias');
+                $query->doesntHave('subcategorias');
             } elseif ($request->subcategorias === '1') {
-                $query->whereHas('subcategorias');
+                $query->has('subcategorias');
             }
         }
 
-        $categorias = $query->withCount('subcategorias')->paginate(10);
+        $categorias = $query->paginate(10);
 
         if ($request->ajax()) {
             $view = view('admin.categorias.tabla', compact('categorias'))->render();
@@ -58,17 +57,40 @@ class CategoriaController extends Controller
             'nombre_categoria' => 'required|string|max:255|unique:categorias'
         ]);
 
-        $categoria = Categoria::create($request->all());
-
-        if ($request->ajax()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Categoría creada exitosamente'
+        try {
+            DB::beginTransaction();
+            
+            $categoria = Categoria::create([
+                'nombre_categoria' => $request->nombre_categoria,
+                'nivel_educativo_id' => 1 // Establecer nivel educativo por defecto a 1
             ]);
-        }
+            
+            DB::commit();
 
-        return redirect()->route('admin.categorias.index')
-            ->with('success', 'Categoría creada exitosamente');
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Categoría creada exitosamente'
+                ]);
+            }
+
+            return redirect()->route('admin.categorias.index')
+                ->with('success', 'Categoría creada exitosamente');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error al crear la categoría: ' . $e->getMessage()
+                ], 500);
+            }
+
+            return redirect()->back()
+                ->with('error', 'Error al crear la categoría: ' . $e->getMessage())
+                ->withInput();
+        }
     }
 
     /**
@@ -86,11 +108,10 @@ class CategoriaController extends Controller
     {
         if (request()->ajax()) {
             return response()->json([
-                'categoria' => $categoria
+                'categoria' => $categoria->load('nivelEducativo')
             ]);
         }
-
-        return view('admin.categorias.form', compact('categoria'));
+        return view('admin.categorias.edit', compact('categoria'));
     }
 
     /**
@@ -102,7 +123,10 @@ class CategoriaController extends Controller
             'nombre_categoria' => 'required|string|max:255|unique:categorias,nombre_categoria,' . $categoria->id
         ]);
 
-        $categoria->update($request->all());
+        $categoria->update([
+            'nombre_categoria' => $request->nombre_categoria,
+            'nivel_educativo_id' => $categoria->nivel_educativo_id // Mantener el nivel educativo existente
+        ]);
 
         if ($request->ajax()) {
             return response()->json([
