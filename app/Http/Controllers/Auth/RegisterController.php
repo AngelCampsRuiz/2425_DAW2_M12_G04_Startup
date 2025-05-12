@@ -112,12 +112,17 @@ class RegisterController extends Controller
             'password' => 'required|string|min:8|confirmed',
             'dni' => ['required', 'string', 'max:20', 'unique:user', 'regex:/^[0-9]{8}[A-Za-z]$|^[XYZxyz][0-9]{7}[A-Za-z]$/'],
             'telefono' => 'required|string|max:20|unique:user',
+            'provincia_id' => 'required|exists:json/provincias.json,id',
             'ciudad' => 'required|string|max:100',
-            'centro_estudios' => 'required|string|max:255',
+            'centro_estudios' => 'required|exists:instituciones,id',
+            'nivel_educativo_id' => 'required|exists:niveles_educativos,id',
             'titulo_id' => 'required|exists:titulos,id',
             'cv_pdf' => 'required|file|mimes:pdf|max:5120', // 5MB máximo
             'numero_seguridad_social' => ['required', 'string', 'max:50', 'regex:/^SS[0-9]{8}$/']
         ], [
+            'provincia_id.required' => 'Debes seleccionar una provincia',
+            'nivel_educativo_id.required' => 'Debes seleccionar un nivel educativo',
+            'centro_estudios.exists' => 'El centro educativo seleccionado no existe',
             'numero_seguridad_social.regex' => 'El número de seguridad social debe tener el formato SS seguido de 8 dígitos',
             'cv_pdf.mimes' => 'El archivo debe ser un PDF',
             'cv_pdf.max' => 'El archivo no puede ser mayor a 5MB',
@@ -132,6 +137,13 @@ class RegisterController extends Controller
                 ->withInput();
         }
 
+        // Obtener el nombre de la ciudad seleccionada
+        $nombreCiudad = $request->ciudad;
+        
+        // Obtener el nombre del centro educativo
+        $institucion = Institucion::find($request->centro_estudios);
+        $nombreCentro = $institucion ? $institucion->user->nombre : 'Centro no encontrado';
+
         // Crear usuario
         $user = User::create([
             'nombre' => $data['name'],
@@ -139,7 +151,7 @@ class RegisterController extends Controller
             'password' => Hash::make($request->password),
             'role_id' => Rol::where('nombre_rol', 'Estudiante')->first()->id,
             'fecha_nacimiento' => now()->subYears(rand(18, 25)),
-            'ciudad' => $request->ciudad,
+            'ciudad' => $nombreCiudad,
             'dni' => $request->dni,
             'activo' => true,
             'telefono' => $request->telefono,
@@ -164,7 +176,8 @@ class RegisterController extends Controller
         // Crear estudiante
         Estudiante::create([
             'id' => $user->id,
-            'centro_educativo' => $request->centro_estudios,
+            'institucion_id' => $request->centro_estudios,
+            'centro_educativo' => $nombreCentro,
             'cv_pdf' => $cvFileName,
             'numero_seguridad_social' => $request->numero_seguridad_social,
             'titulo_id' => $request->titulo_id
@@ -281,35 +294,12 @@ class RegisterController extends Controller
             'imagen' => null
         ]);
         
-        // Tipo de institución basado en los niveles seleccionados
-        $tiposInstitucion = [
-            1 => 'Educación Primaria',
-            2 => 'Educación Secundaria',
-            3 => 'Formación Profesional',
-            4 => 'Universidad',
-            5 => 'Centro de Educación Especial',
-            6 => 'Centro de Educación de Adultos',
-            7 => 'Escuela de Idiomas',
-            8 => 'Escuela de Arte',
-            9 => 'Conservatorio',
-            10 => 'Otro'
-        ];
-        
-        // Determinar el tipo de institución según el primer nivel seleccionado
-        $tipoInstitucion = 'Centro Educativo';
-        $nivelesSeleccionados = $request->niveles_educativos;
-        if (count($nivelesSeleccionados) > 0) {
-            $primerNivelId = $nivelesSeleccionados[0];
-            $tipoInstitucion = $tiposInstitucion[$primerNivelId] ?? 'Centro Educativo';
-        }
-        
         // Crear el perfil de institución
         $institucion = Institucion::create([
             'user_id' => $user->id,
             'codigo_centro' => $request->codigo_centro,
-            'tipo_institucion' => $tipoInstitucion,
             'direccion' => $request->direccion,
-            'provincia' => $request->provincia,
+            'ciudad' => $request->provincia,
             'codigo_postal' => $request->codigo_postal,
             'representante_legal' => $request->representante_legal,
             'cargo_representante' => $request->cargo_representante,

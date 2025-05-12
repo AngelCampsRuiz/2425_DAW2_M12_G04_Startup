@@ -24,9 +24,8 @@ class Institucion extends Model
     protected $fillable = [
         'user_id',
         'codigo_centro',
-        'tipo_institucion',
         'direccion',
-        'provincia',
+        'ciudad',
         'codigo_postal',
         'representante_legal',
         'cargo_representante',
