@@ -110,122 +110,130 @@
     </div>
 
     <!-- Modal Crear/Editar Alumno -->
-    <div id="modal-alumno" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center hidden z-50">
-        <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-screen overflow-y-auto p-6">
-            <div class="flex justify-between items-center mb-6">
-                <h2 id="modal-titulo" class="text-xl font-semibold">Crear Nuevo Alumno</h2>
-                <button id="modal-close" class="text-gray-500 hover:text-gray-700 focus:outline-none">
-                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
+    <div id="modal-alumno" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-start justify-center p-4 z-50 hidden overflow-y-auto">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl my-8">
+            <div class="sticky top-0 bg-white px-6 py-4 border-b">
+                <div class="flex justify-between items-center">
+                    <h2 id="modal-titulo" class="text-xl font-semibold text-gray-800">Crear Nuevo Alumno</h2>
+                    <button id="modal-close" class="text-gray-500 hover:text-gray-700 focus:outline-none">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
             </div>
             
-            <!-- Mensajes de error del formulario -->
-            <div id="form-errors" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6 hidden" role="alert">
-                <strong class="font-bold">¡Hay errores en el formulario!</strong>
-                <ul id="error-list" class="mt-2 list-disc list-inside"></ul>
-            </div>
-            
-            <form id="form-alumno" method="POST" enctype="multipart/form-data">
-                @csrf
-                <input type="hidden" id="alumno_id" name="alumno_id" value="">
-                <input type="hidden" id="form_method" name="_method" value="POST">
+            <div class="p-6">
+                <!-- Mensajes de error del formulario -->
+                <div id="form-errors" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6 hidden" role="alert">
+                    <strong class="font-bold">¡Hay errores en el formulario!</strong>
+                    <ul id="error-list" class="mt-2 list-disc list-inside"></ul>
+                </div>
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label for="nombre" class="block text-sm font-medium text-gray-700 mb-1">Nombre <span class="text-red-500">*</span></label>
-                        <input type="text" name="nombre" id="nombre" 
-                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"
-                               required>
-                    </div>
+                <form id="form-alumno" method="POST" enctype="multipart/form-data" class="space-y-6">
+                    @csrf
+                    <input type="hidden" id="alumno_id" name="alumno_id" value="">
+                    <input type="hidden" id="form_method" name="_method" value="POST">
                     
-                    <div>
-                        <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email <span class="text-red-500">*</span></label>
-                        <input type="email" name="email" id="email" 
-                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"
-                               required>
-                    </div>
-                    
-                    <div>
-                        <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Contraseña <span class="password-required text-red-500">*</span></label>
-                        <input type="password" name="password" id="password" 
-                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"
-                               required>
-                        <p class="password-help text-xs text-gray-500 mt-1 hidden">Dejar en blanco para mantener la contraseña actual</p>
-                    </div>
-                    
-                    <div>
-                        <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-1">Confirmar Contraseña <span class="password-required text-red-500">*</span></label>
-                        <input type="password" name="password_confirmation" id="password_confirmation" 
-                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"
-                               required>
-                    </div>
-                    
-                    <div>
-                        <label for="dni" class="block text-sm font-medium text-gray-700 mb-1">DNI/NIE <span class="text-red-500">*</span></label>
-                        <input type="text" name="dni" id="dni" 
-                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"
-                               required>
-                    </div>
-                    
-                    <div>
-                        <label for="telefono" class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
-                        <input type="text" name="telefono" id="telefono" 
-                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50">
-                    </div>
-                    
-                    <div>
-                        <label for="ciudad" class="block text-sm font-medium text-gray-700 mb-1">Ciudad</label>
-                        <input type="text" name="ciudad" id="ciudad" 
-                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50">
-                    </div>
-                    
-                    <div>
-                        <label for="fecha_nacimiento" class="block text-sm font-medium text-gray-700 mb-1">Fecha de Nacimiento</label>
-                        <input type="date" name="fecha_nacimiento" id="fecha_nacimiento" 
-                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50">
-                    </div>
-                    
-                    <div>
-                        <label for="sitio_web" class="block text-sm font-medium text-gray-700 mb-1">Sitio Web</label>
-                        <input type="url" name="sitio_web" id="sitio_web" 
-                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"
-                               placeholder="https://...">
-                    </div>
-                    
-                    <div>
-                        <label for="imagen" class="block text-sm font-medium text-gray-700 mb-1">Fotografía</label>
-                        <input type="file" name="imagen" id="imagen" accept="image/*"
-                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50">
-                        <div id="imagen-preview" class="mt-2 hidden">
-                            <img id="imagen-preview-img" src="" alt="Vista previa" class="h-24 w-auto object-cover rounded">
-                            <button type="button" id="eliminar-imagen" class="text-xs text-red-600 mt-1">Eliminar imagen</button>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            <label for="nombre" class="block text-sm font-medium text-gray-700">Nombre <span class="text-red-500">*</span></label>
+                            <input type="text" name="nombre" id="nombre" 
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"
+                                   required>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <label for="email" class="block text-sm font-medium text-gray-700">Email <span class="text-red-500">*</span></label>
+                            <input type="email" name="email" id="email" 
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"
+                                   required>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <label for="password" class="block text-sm font-medium text-gray-700">Contraseña <span class="password-required text-red-500">*</span></label>
+                            <input type="password" name="password" id="password" 
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"
+                                   required>
+                            <p class="password-help text-xs text-gray-500 hidden">Dejar en blanco para mantener la contraseña actual</p>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <label for="password_confirmation" class="block text-sm font-medium text-gray-700">Confirmar Contraseña <span class="password-required text-red-500">*</span></label>
+                            <input type="password" name="password_confirmation" id="password_confirmation" 
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"
+                                   required>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <label for="dni" class="block text-sm font-medium text-gray-700">DNI/NIE <span class="text-red-500">*</span></label>
+                            <input type="text" name="dni" id="dni" 
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"
+                                   required>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <label for="telefono" class="block text-sm font-medium text-gray-700">Teléfono</label>
+                            <input type="text" name="telefono" id="telefono" 
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50">
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <label for="ciudad" class="block text-sm font-medium text-gray-700">Ciudad</label>
+                            <input type="text" name="ciudad" id="ciudad" 
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50">
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <label for="fecha_nacimiento" class="block text-sm font-medium text-gray-700">Fecha de Nacimiento</label>
+                            <input type="date" name="fecha_nacimiento" id="fecha_nacimiento" 
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50">
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <label for="sitio_web" class="block text-sm font-medium text-gray-700">Sitio Web</label>
+                            <input type="url" name="sitio_web" id="sitio_web" 
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"
+                                   placeholder="https://...">
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <label for="imagen" class="block text-sm font-medium text-gray-700">Fotografía</label>
+                            <input type="file" name="imagen" id="imagen" accept="image/*"
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50">
+                            <div id="imagen-preview" class="mt-2 hidden">
+                                <img id="imagen-preview-img" src="" alt="Vista previa" class="h-24 w-auto object-cover rounded">
+                                <button type="button" id="eliminar-imagen" class="text-xs text-red-600 mt-1">Eliminar imagen</button>
+                            </div>
                         </div>
                     </div>
                     
-                    <div id="activo-container" class="col-span-2 flex items-center hidden">
-                        <input type="checkbox" name="activo" id="activo" value="1"
-                               class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-300 focus:ring focus:ring-purple-200 focus:ring-opacity-50">
-                        <label for="activo" class="ml-2 text-sm font-medium text-gray-700">Cuenta Activa</label>
+                    <div id="activo-container" class="hidden">
+                        <div class="flex items-center">
+                            <input type="checkbox" name="activo" id="activo" value="1"
+                                   class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-300 focus:ring focus:ring-purple-200 focus:ring-opacity-50">
+                            <label for="activo" class="ml-2 text-sm font-medium text-gray-700">Cuenta Activa</label>
+                        </div>
                     </div>
-                </div>
-                
-                <div class="mt-6">
-                    <label for="descripcion" class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
-                    <textarea name="descripcion" id="descripcion" rows="4" 
-                              class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"></textarea>
-                </div>
-                
-                <div class="mt-6 flex justify-end">
-                    <button type="button" id="btn-cancelar" class="inline-flex items-center px-4 py-2 bg-gray-300 border border-transparent rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-400 active:bg-gray-500 focus:outline-none focus:border-gray-500 focus:ring ring-gray-300 disabled:opacity-25 transition ease-in-out duration-150 mr-3">
+                    
+                    <div class="space-y-2">
+                        <label for="descripcion" class="block text-sm font-medium text-gray-700">Descripción</label>
+                        <textarea name="descripcion" id="descripcion" rows="4" 
+                                  class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"></textarea>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="sticky bottom-0 bg-gray-50 px-6 py-4 border-t">
+                <div class="flex justify-end space-x-3">
+                    <button type="button" id="btn-cancelar" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors duration-150">
                         Cancelar
                     </button>
-                    <button type="submit" id="btn-guardar" class="inline-flex items-center px-4 py-2 bg-purple-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-purple-700 active:bg-purple-900 focus:outline-none focus:border-purple-900 focus:ring ring-purple-300 disabled:opacity-25 transition ease-in-out duration-150">
+                    <button type="submit" form="form-alumno" id="btn-guardar" class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors duration-150">
                         Guardar
                     </button>
                 </div>
-            </form>
+            </div>
         </div>
     </div>
 
