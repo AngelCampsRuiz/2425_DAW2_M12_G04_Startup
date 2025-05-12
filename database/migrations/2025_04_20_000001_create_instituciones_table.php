@@ -15,9 +15,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained('user')->onDelete('cascade');
             $table->string('codigo_centro', 20)->unique();
-            $table->string('tipo_institucion', 50); // universidad, instituto, centro formación profesional, etc.
             $table->string('direccion');
-            $table->string('provincia', 100);
+            $table->string('ciudad', 100);
             $table->string('codigo_postal', 10);
             $table->string('representante_legal');
             $table->string('cargo_representante');

@@ -496,6 +496,25 @@ window.validatePasswordConfirmation = function() {
 
 // Validación del formulario completo
 document.getElementById('institutionRegisterForm').addEventListener('submit', function(event) {
+    // Depuración: Mostrar las categorías seleccionadas en consola antes de enviar
+    const categoriaCheckboxes = document.querySelectorAll('input[name^="categorias["]');
+    const categoriasSeleccionadas = {};
+    
+    categoriaCheckboxes.forEach(checkbox => {
+        if (checkbox.checked) {
+            const match = checkbox.name.match(/\[(\d+)\]/);
+            if (match && match[1]) {
+                const nivelId = match[1];
+                if (!categoriasSeleccionadas[nivelId]) {
+                    categoriasSeleccionadas[nivelId] = [];
+                }
+                categoriasSeleccionadas[nivelId].push(checkbox.value);
+            }
+        }
+    });
+    
+    console.log('Categorías seleccionadas:', categoriasSeleccionadas);
+    
     // Validar todos los campos
     const isValid = 
         validateName() &&

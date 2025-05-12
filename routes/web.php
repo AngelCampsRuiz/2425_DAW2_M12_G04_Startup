@@ -1,6 +1,7 @@
 <?php
     // RUTAS DE LA APLICACIÓN
     use Illuminate\Support\Facades\Route;
+    use Illuminate\Support\Facades\DB;
         // CONTROLADORES
             // CONTROLADOR HOME
                 use App\Http\Controllers\HomeController;
@@ -51,6 +52,92 @@
 
         // API CATEGORÍAS POR NIVELES
             Route::post('/api/categorias-por-niveles', [APICategoriaController::class, 'getCategoriasPorNiveles']);
+
+        // Rutas para el registro de estudiantes
+        Route::get('/api/provincias', function() {
+            return response()->file(public_path('json/provincias.json'));
+        })->name('api.provincias');
+
+        Route::get('/api/ciudades/{provincia_id?}', function($provincia_id = null) {
+            $ciudades = json_decode(file_get_contents(public_path('json/ciudades.json')), true);
+            if ($provincia_id) {
+                $ciudades = array_filter($ciudades, function($ciudad) use ($provincia_id) {
+                    return $ciudad['provincia_id'] == $provincia_id;
+                });
+            }
+            return response()->json(array_values($ciudades));
+        })->name('api.ciudades');
+
+        Route::get('/api/instituciones/{ciudad?}', function($ciudad = null) {
+            $instituciones = App\Models\Institucion::whereHas('user')
+                            ->when($ciudad, function($query, $ciudad) {
+                                return $query->whereRaw('LOWER(ciudad) = LOWER(?)', [strtolower($ciudad)]);
+                            })
+                            ->with('user:id,nombre')
+                            ->get(['id', 'user_id']);
+            
+            return response()->json($instituciones);
+        })->name('api.instituciones');
+
+        Route::get('/api/niveles-educativos/{institucion_id?}', function($institucion_id = null) {
+            if ($institucion_id) {
+                // Si se proporciona ID de institución, devolver solo los niveles asociados a esa institución
+                $institucion = App\Models\Institucion::findOrFail($institucion_id);
+                $niveles = $institucion->nivelesEducativos()->select('niveles_educativos.id', 'nombre_nivel')->get();
+            } else {
+                // Si no, devolver todos los niveles
+                $niveles = App\Models\NivelEducativo::select('id', 'nombre_nivel')->get();
+            }
+            return response()->json($niveles);
+        })->name('api.niveles_educativos');
+
+        Route::get('/api/categorias/{nivel_id?}/{institucion_id?}', function($nivel_id = null, $institucion_id = null) {
+            // Log para depuración
+            \Log::info('API Categorias - Request params', [
+                'nivel_id' => $nivel_id,
+                'institucion_id' => $institucion_id
+            ]);
+            
+            // Si se proporciona tanto el ID de institución como el ID de nivel
+            if ($nivel_id && $institucion_id) {
+                // Obtener categorías asociadas a esta institución y nivel específico
+                $categorias = DB::table('institucion_categoria as ic')
+                    ->join('categorias as c', 'ic.categoria_id', '=', 'c.id')
+                    ->where('ic.institucion_id', $institucion_id)
+                    ->where('ic.nivel_educativo_id', $nivel_id)
+                    ->where('ic.activo', true)
+                    ->select('c.id', 'c.nombre_categoria')
+                    ->distinct()
+                    ->get();
+                
+                \Log::info('API Categorias - Resultados', [
+                    'count' => $categorias->count(),
+                    'data' => $categorias
+                ]);
+                
+                return response()->json($categorias);
+            }
+            
+            // Si solo se proporciona el nivel educativo
+            $query = App\Models\Categoria::select('categorias.id', 'categorias.nombre_categoria');
+            
+            if ($nivel_id) {
+                $query->where('nivel_educativo_id', $nivel_id);
+            }
+            
+            if ($institucion_id) {
+                $query->join('institucion_categoria', 'categorias.id', '=', 'institucion_categoria.categoria_id')
+                      ->where('institucion_categoria.institucion_id', $institucion_id)
+                      ->where('institucion_categoria.activo', true);
+                      
+                if ($nivel_id) {
+                    $query->where('institucion_categoria.nivel_educativo_id', $nivel_id);
+                }
+            }
+            
+            $categorias = $query->distinct()->get();
+            return response()->json($categorias);
+        })->name('api.categorias');
 
         // RUTAS DE DEMOSTRACIÓN
             Route::get('/demo/student', [DemoController::class, 'demoStudent'])->name('demo.student');

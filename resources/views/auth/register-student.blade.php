@@ -65,10 +65,25 @@
                     <span id="telefono-error" class="text-red-500 text-xs"></span>
                 </div>
 
+                <!-- Provincia -->
+                <div class="mb-4">
+                    <label for="provincia_id" class="block text-gray-700 text-sm font-medium mb-2">Provincia</label>
+                    <select id="provincia_id" name="provincia_id" class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary @error('provincia_id') border-red-500 @enderror">
+                        <option value="">Selecciona una provincia</option>
+                    </select>
+                    
+                    @error('provincia_id')
+                        <span class="text-red-500 text-xs">{{ $message }}</span>
+                    @enderror
+                    <span id="provincia_id-error" class="text-red-500 text-xs"></span>
+                </div>
+
                 <!-- Ciudad -->
                 <div class="mb-4">
                     <label for="ciudad" class="block text-gray-700 text-sm font-medium mb-2">Ciudad</label>
-                    <input id="ciudad" type="text" name="ciudad" class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary @error('ciudad') border-red-500 @enderror" placeholder="Ej: Barcelona">
+                    <select id="ciudad" name="ciudad" class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary @error('ciudad') border-red-500 @enderror">
+                        <option value="">Primero selecciona una provincia</option>
+                    </select>
                     
                     @error('ciudad')
                         <span class="text-red-500 text-xs">{{ $message }}</span>
@@ -79,7 +94,9 @@
                 <!-- Centro educativo -->
                 <div class="mb-4">
                     <label for="centro_estudios" class="block text-gray-700 text-sm font-medium mb-2">Centro Educativo</label>
-                    <input id="centro_estudios" type="text" name="centro_estudios" class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary @error('centro_estudios') border-red-500 @enderror" placeholder="Ej: IES Tecnológico">
+                    <select id="centro_estudios" name="centro_estudios" class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary @error('centro_estudios') border-red-500 @enderror">
+                        <option value="">Primero selecciona una ciudad</option>
+                    </select>
                     
                     @error('centro_estudios')
                         <span class="text-red-500 text-xs">{{ $message }}</span>
@@ -87,14 +104,24 @@
                     <span id="centro_estudios-error" class="text-red-500 text-xs"></span>
                 </div>
 
+                <!-- Nivel educativo -->
+                <div class="mb-4">
+                    <label for="nivel_educativo_id" class="block text-gray-700 text-sm font-medium mb-2">Nivel Educativo</label>
+                    <select id="nivel_educativo_id" name="nivel_educativo_id" class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary @error('nivel_educativo_id') border-red-500 @enderror">
+                        <option value="">Primero selecciona un centro</option>
+                    </select>
+                    
+                    @error('nivel_educativo_id')
+                        <span class="text-red-500 text-xs">{{ $message }}</span>
+                    @enderror
+                    <span id="nivel_educativo_id-error" class="text-red-500 text-xs"></span>
+                </div>
+
                 <!-- Título -->
                 <div class="mb-4">
                     <label for="titulo_id" class="block text-gray-700 text-sm font-medium mb-2">Título</label>
                     <select id="titulo_id" name="titulo_id" class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary @error('titulo_id') border-red-500 @enderror">
-                        <option value="">Selecciona un título</option>
-                        @foreach($titulos as $titulo)
-                            <option value="{{ $titulo->id }}">{{ $titulo->name_titulo }}</option>
-                        @endforeach
+                        <option value="">Primero selecciona un nivel educativo</option>
                     </select>
                     
                     @error('titulo_id')
@@ -276,18 +303,31 @@ window.validateTelefono = function() {
     return true;
 };
 
+// Validación de provincia
+window.validateProvincia = function() {
+    const provinciaField = document.getElementById('provincia_id');
+    if (!provinciaField) return true;
+    
+    const provinciaValue = provinciaField.value.trim();
+    
+    if (!provinciaValue) {
+        window.updateFieldStatus(provinciaField, false, 'Debes seleccionar una provincia');
+        return false;
+    }
+    
+    window.updateFieldStatus(provinciaField, true);
+    return true;
+};
+
 // Validación de ciudad
 window.validateCiudad = function() {
     const ciudadField = document.getElementById('ciudad');
     if (!ciudadField) return true;
     
-    const cityValue = ciudadField.value.trim();
+    const ciudadValue = ciudadField.value.trim();
     
-    if (!cityValue) {
-        window.updateFieldStatus(ciudadField, false, 'La ciudad es obligatoria');
-        return false;
-    } else if (cityValue.length < 3) {
-        window.updateFieldStatus(ciudadField, false, 'La ciudad debe tener al menos 3 caracteres');
+    if (!ciudadValue) {
+        window.updateFieldStatus(ciudadField, false, 'Debes seleccionar una ciudad');
         return false;
     }
     
@@ -303,14 +343,27 @@ window.validateCentroEstudios = function() {
     const centroValue = centroField.value.trim();
     
     if (!centroValue) {
-        window.updateFieldStatus(centroField, false, 'El centro educativo es obligatorio');
-        return false;
-    } else if (centroValue.length < 3) {
-        window.updateFieldStatus(centroField, false, 'El centro educativo debe tener al menos 3 caracteres');
+        window.updateFieldStatus(centroField, false, 'Debes seleccionar un centro educativo');
         return false;
     }
     
     window.updateFieldStatus(centroField, true);
+    return true;
+};
+
+// Validación de nivel educativo
+window.validateNivelEducativo = function() {
+    const nivelField = document.getElementById('nivel_educativo_id');
+    if (!nivelField) return true;
+    
+    const nivelValue = nivelField.value.trim();
+    
+    if (!nivelValue) {
+        window.updateFieldStatus(nivelField, false, 'Debes seleccionar un nivel educativo');
+        return false;
+    }
+    
+    window.updateFieldStatus(nivelField, true);
     return true;
 };
 
@@ -411,6 +464,107 @@ window.validateCV = function() {
     return true;
 };
 
+// Cargar provincias, ciudades, instituciones y niveles educativos
+window.loadProvincias = function() {
+    fetch('/api/provincias')
+        .then(response => response.json())
+        .then(data => {
+            const select = document.getElementById('provincia_id');
+            select.innerHTML = '<option value="">Selecciona una provincia</option>';
+            
+            data.forEach(provincia => {
+                const option = document.createElement('option');
+                option.value = provincia.id;
+                option.textContent = provincia.nombre;
+                select.appendChild(option);
+            });
+        })
+        .catch(error => console.error('Error cargando provincias:', error));
+};
+
+window.loadCiudades = function(provinciaId) {
+    fetch(`/api/ciudades/${provinciaId}`)
+        .then(response => response.json())
+        .then(data => {
+            const select = document.getElementById('ciudad');
+            select.innerHTML = '<option value="">Selecciona una ciudad</option>';
+            
+            data.forEach(ciudad => {
+                const option = document.createElement('option');
+                option.value = ciudad.nombre;
+                option.textContent = ciudad.nombre;
+                select.appendChild(option);
+            });
+        })
+        .catch(error => console.error('Error cargando ciudades:', error));
+};
+
+window.loadInstituciones = function(ciudad) {
+    fetch(`/api/instituciones/${encodeURIComponent(ciudad)}`)
+        .then(response => response.json())
+        .then(data => {
+            const select = document.getElementById('centro_estudios');
+            select.innerHTML = '<option value="">Selecciona un centro educativo</option>';
+            
+            data.forEach(institucion => {
+                const option = document.createElement('option');
+                option.value = institucion.id;
+                option.textContent = institucion.user.nombre;
+                select.appendChild(option);
+            });
+        })
+        .catch(error => console.error('Error cargando instituciones:', error));
+};
+
+window.loadNivelesEducativos = function(institucionId) {
+    fetch(`/api/niveles-educativos/${institucionId}`)
+        .then(response => response.json())
+        .then(data => {
+            const select = document.getElementById('nivel_educativo_id');
+            select.innerHTML = '<option value="">Selecciona un nivel educativo</option>';
+            
+            data.forEach(nivel => {
+                const option = document.createElement('option');
+                option.value = nivel.id;
+                option.textContent = nivel.nombre_nivel;
+                select.appendChild(option);
+            });
+        })
+        .catch(error => console.error('Error cargando niveles educativos:', error));
+};
+
+window.loadCategorias = function(nivelId, institucionId) {
+    console.log(`Cargando categorías para nivel ${nivelId} e institución ${institucionId}`);
+    
+    fetch(`/api/categorias/${nivelId}/${institucionId}`)
+        .then(response => {
+            console.log('Respuesta API status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Datos de categorías recibidos:', data);
+            const select = document.getElementById('titulo_id');
+            select.innerHTML = '<option value="">Selecciona un título</option>';
+            
+            if (data && data.length > 0) {
+                data.forEach(categoria => {
+                    const option = document.createElement('option');
+                    option.value = categoria.id;
+                    option.textContent = categoria.nombre_categoria;
+                    select.appendChild(option);
+                });
+            } else {
+                console.log('No se encontraron categorías para esta combinación de nivel e institución');
+                select.innerHTML = '<option value="">No hay títulos disponibles</option>';
+            }
+        })
+        .catch(error => {
+            console.error('Error cargando categorías:', error);
+            const select = document.getElementById('titulo_id');
+            select.innerHTML = '<option value="">Error al cargar títulos</option>';
+        });
+};
+
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('registerStudentForm');
     
@@ -419,20 +573,83 @@ document.addEventListener('DOMContentLoaded', function() {
     const email = document.getElementById('email');
     const dni = document.getElementById('dni');
     const telefono = document.getElementById('telefono');
+    const provincia_id = document.getElementById('provincia_id');
     const ciudad = document.getElementById('ciudad');
     const centro_estudios = document.getElementById('centro_estudios');
+    const nivel_educativo_id = document.getElementById('nivel_educativo_id');
     const titulo_id = document.getElementById('titulo_id');
     const numero_seguridad_social = document.getElementById('numero_seguridad_social');
     const password = document.getElementById('password');
     const password_confirmation = document.getElementById('password_confirmation');
     const cv_pdf = document.getElementById('cv_pdf');
     
+    // Cargar provincias al cargar la página
+    window.loadProvincias();
+    
+    // Eventos para selección en cascada
+    if (provincia_id) {
+        provincia_id.addEventListener('change', function() {
+            if (this.value) {
+                window.loadCiudades(this.value);
+                window.validateProvincia();
+                
+                // Reiniciar campos dependientes
+                ciudad.innerHTML = '<option value="">Selecciona una ciudad</option>';
+                centro_estudios.innerHTML = '<option value="">Primero selecciona una ciudad</option>';
+                nivel_educativo_id.innerHTML = '<option value="">Primero selecciona un centro</option>';
+                titulo_id.innerHTML = '<option value="">Primero selecciona un nivel educativo</option>';
+            }
+        });
+    }
+    
+    if (ciudad) {
+        ciudad.addEventListener('change', function() {
+            if (this.value) {
+                window.loadInstituciones(this.value);
+                window.validateCiudad();
+                
+                // Reiniciar campos dependientes
+                centro_estudios.innerHTML = '<option value="">Selecciona un centro educativo</option>';
+                nivel_educativo_id.innerHTML = '<option value="">Primero selecciona un centro</option>';
+                titulo_id.innerHTML = '<option value="">Primero selecciona un nivel educativo</option>';
+            }
+        });
+    }
+    
+    if (centro_estudios) {
+        centro_estudios.addEventListener('change', function() {
+            if (this.value) {
+                window.loadNivelesEducativos(this.value);
+                window.validateCentroEstudios();
+                
+                // Reiniciar campos dependientes
+                nivel_educativo_id.innerHTML = '<option value="">Selecciona un nivel educativo</option>';
+                titulo_id.innerHTML = '<option value="">Primero selecciona un nivel educativo</option>';
+            }
+        });
+    }
+    
+    if (nivel_educativo_id) {
+        nivel_educativo_id.addEventListener('change', function() {
+            if (this.value) {
+                const institucionId = centro_estudios.value;
+                window.loadCategorias(this.value, institucionId);
+                window.validateNivelEducativo();
+                
+                // Reiniciar campos dependientes
+                titulo_id.innerHTML = '<option value="">Selecciona un título</option>';
+            }
+        });
+    }
+    
     if (name) name.addEventListener('blur', window.validateName);
     if (email) email.addEventListener('blur', window.validateEmail);
     if (dni) dni.addEventListener('blur', window.validateDNI);
     if (telefono) telefono.addEventListener('blur', window.validateTelefono);
+    if (provincia_id) provincia_id.addEventListener('blur', window.validateProvincia);
     if (ciudad) ciudad.addEventListener('blur', window.validateCiudad);
     if (centro_estudios) centro_estudios.addEventListener('blur', window.validateCentroEstudios);
+    if (nivel_educativo_id) nivel_educativo_id.addEventListener('blur', window.validateNivelEducativo);
     if (titulo_id) titulo_id.addEventListener('change', window.validateTitulo);
     if (numero_seguridad_social) numero_seguridad_social.addEventListener('blur', window.validateNumeroSeguridadSocial);
     if (password) password.addEventListener('blur', window.validatePassword);
@@ -447,8 +664,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const isEmailValid = window.validateEmail();
             const isDNIValid = window.validateDNI();
             const isTelefonoValid = window.validateTelefono();
+            const isProvinciaValid = window.validateProvincia();
             const isCiudadValid = window.validateCiudad();
             const isCentroEstudiosValid = window.validateCentroEstudios();
+            const isNivelEducativoValid = window.validateNivelEducativo();
             const isTituloValid = window.validateTitulo();
             const isNumeroSeguridadSocialValid = window.validateNumeroSeguridadSocial();
             const isPasswordValid = window.validatePassword();
@@ -457,9 +676,9 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Si hay errores, prevenir el envío del formulario
             if (!isNameValid || !isEmailValid || !isDNIValid || !isTelefonoValid || 
-                !isCiudadValid || !isCentroEstudiosValid || !isTituloValid || 
-                !isNumeroSeguridadSocialValid || !isPasswordValid || 
-                !isPasswordConfirmationValid || !isCVValid) {
+                !isProvinciaValid || !isCiudadValid || !isCentroEstudiosValid || 
+                !isNivelEducativoValid || !isTituloValid || !isNumeroSeguridadSocialValid || 
+                !isPasswordValid || !isPasswordConfirmationValid || !isCVValid) {
                 e.preventDefault();
             }
         });

@@ -35,9 +35,8 @@ class InstitucionSeeder extends Seeder
         Institucion::create([
             'user_id' => $user->id,
             'codigo_centro' => '08012345',
-            'tipo_institucion' => 'Instituto de Educación Secundaria',
             'direccion' => 'Carrer de l\'Aviació, 2',
-            'provincia' => 'Barcelona',
+            'ciudad' => 'Barcelona',
             'codigo_postal' => '08940',
             'representante_legal' => 'José García Pérez',
             'cargo_representante' => 'Director',
@@ -65,9 +64,8 @@ class InstitucionSeeder extends Seeder
         Institucion::create([
             'user_id' => $user2->id,
             'codigo_centro' => '08098765',
-            'tipo_institucion' => 'Universidad',
             'direccion' => 'Campus Nord, C/Jordi Girona, 1-3',
-            'provincia' => 'Barcelona',
+            'ciudad' => 'Barcelona',
             'codigo_postal' => '08034',
             'representante_legal' => 'Daniel Crespo Artiaga',
             'cargo_representante' => 'Rector',
