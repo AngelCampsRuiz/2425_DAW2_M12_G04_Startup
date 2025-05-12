@@ -1,0 +1,29 @@
+name: Deploy Laravel to FTP
+
+on:
+  push:
+    branches:
+      - servidor
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Clonar el repositorio
+      - name: Clonar el repositorio
+        uses: actions/checkout@v4
+
+      # Subir archivos por FTP
+      - name: Subir archivos por FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: "./"
+          server-dir: "/"
+
+      # Ejecutar migraciones en el servidor
+#      - name: Ejecutar migraciones en el servidor
+#        run: curl -X GET "https://g03.daw2j23.es/run-migrations-safe?key=${{ secrets.DEPLOY_KEY }}"

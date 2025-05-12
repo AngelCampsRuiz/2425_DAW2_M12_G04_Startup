@@ -425,3 +425,20 @@
         Route::post('/solicitudes/{id}/aprobar', [App\Http\Controllers\DocenteController::class, 'aprobarSolicitud'])->name('solicitudes.aprobar');
         Route::post('/solicitudes/{id}/rechazar', [App\Http\Controllers\DocenteController::class, 'rechazarSolicitud'])->name('solicitudes.rechazar');
     });
+
+Route::get('/run-migrations-safe', function () {
+    // Verifica la clave proporcionada
+    if (request('key') !== env('DEPLOY_KEY')) {
+        abort(403, 'Acceso no autorizado');
+    }
+
+    try {
+        // Llama a las migraciones si la clave es correcta
+        $result = Artisan::call('migrate:fresh --seed --force');
+        $output = Artisan::output();
+
+        return response()->json(['message' => 'Migraciones ejecutadas correctamente', 'output' => $output]);
+    } catch (\Exception $e) {
+        return response()->json(['error' => 'Error al ejecutar migraciones: ' . $e->getMessage()], 500);
+    }
+});
