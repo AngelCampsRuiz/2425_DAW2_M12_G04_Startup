@@ -84,6 +84,12 @@
                                 </svg>
                                 Calendario
                             </a></li>
+                            <li><a href="javascript:void(0)" onclick="openSearchCandidatesModal()" class="flex items-center p-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                                Buscar candidatos
+                            </a></li>
                             <li><a href="javascript:void(0)" onclick="openModal()" class="flex items-center p-2 {{ Route::currentRouteName() == 'empresa.offers.create' ? 'bg-gradient-to-r from-purple-50 to-purple-100 text-purple-700 border-l-4 border-purple-600' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg transition-colors">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3 {{ Route::currentRouteName() == 'empresa.offers.create' ? 'text-purple-600' : 'text-gray-500' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -628,6 +634,192 @@
     </div>
 </div>
 
+<!-- Modal de Búsqueda de Candidatos -->
+<div id="modalSearchCandidates" class="fixed inset-0 bg-black bg-opacity-50 hidden overflow-y-auto h-full w-full z-50 backdrop-blur-sm transition-all duration-300">
+    <div class="relative top-20 mx-auto p-0 w-full max-w-5xl transform transition-all duration-300">
+        <div class="bg-white rounded-xl shadow-2xl overflow-hidden">
+            <div class="bg-gradient-to-r from-purple-600 to-indigo-600 py-4 px-6 flex justify-between items-center">
+                <h3 class="text-xl font-bold text-white flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    Búsqueda de Candidatos
+                </h3>
+                <button onclick="closeSearchCandidatesModal()" class="text-white hover:text-gray-200 focus:outline-none transition-colors">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="p-6">
+                <!-- Barra de búsqueda principal -->
+                <div class="mb-6">
+                    <div class="flex flex-col md:flex-row gap-4">
+                        <div class="flex-1">
+                            <div class="relative">
+                                <input type="text" id="searchCandidatesInput" placeholder="Buscar candidatos por nombre, habilidades, formación..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-primary focus:border-primary">
+                                <svg class="absolute left-3 top-2.5 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <button id="searchCandidatesButton" class="px-5 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                            Buscar
+                        </button>
+                        <button id="clearCandidateSearchButton" class="px-5 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                            Limpiar
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex flex-col md:flex-row gap-6">
+                    <!-- Filtros -->
+                    <div class="w-full md:w-1/4">
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <h3 class="text-lg font-medium text-gray-800 mb-4">Filtros</h3>
+                            
+                            <!-- Filtro de Nivel de Estudios (ahora primero) -->
+                            <div class="mb-4">
+                                <h4 class="text-sm font-medium text-gray-600 mb-2">Nivel de Estudios</h4>
+                                <div class="space-y-2">
+                                    @foreach($nivelesEducativos ?? [] as $nivel)
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="education_{{ $nivel->id }}" name="nivel_educativo[]" value="{{ $nivel->id }}" class="nivel-educativo-checkbox form-checkbox h-4 w-4 text-purple-600 rounded" onchange="filtrarCategoriasPorNivel()">
+                                        <label for="education_{{ $nivel->id }}" class="ml-2 text-sm text-gray-700">{{ $nivel->nombre_nivel }}</label>
+                                    </div>
+                                    @endforeach
+                                    
+                                    @if(empty($nivelesEducativos))
+                                    <div class="text-sm text-gray-500">No hay niveles educativos disponibles</div>
+                                    @endif
+                                </div>
+                            </div>
+                            
+                            <!-- Filtro de Habilidades (ahora muestra categorías filtradas por nivel) -->
+                            <div class="mb-4">
+                                <h4 class="text-sm font-medium text-gray-600 mb-2">Habilidades</h4>
+                                <div id="categorias-container" class="space-y-2">
+                                    @foreach($categorias ?? [] as $categoria)
+                                    <div class="flex items-center categoria-item" data-nivel-id="{{ $categoria->nivel_educativo_id }}">
+                                        <input type="checkbox" id="skill_{{ $categoria->id }}" name="categoria[]" value="{{ $categoria->id }}" class="form-checkbox h-4 w-4 text-purple-600 rounded">
+                                        <label for="skill_{{ $categoria->id }}" class="ml-2 text-sm text-gray-700">{{ $categoria->nombre_categoria }}</label>
+                                    </div>
+                                    @endforeach
+                                    
+                                    <div id="no-categorias-message" class="hidden text-sm text-gray-500">
+                                        Selecciona al menos un Nivel de Estudios para ver las categorías disponibles
+                                    </div>
+                                    
+                                    @if(empty($categorias))
+                                    <div class="text-sm text-gray-500">No hay categorías disponibles</div>
+                                    @endif
+                                </div>
+                            </div>
+                            
+                            <!-- Filtro de Disponibilidad -->
+                            <div class="mb-4">
+                                <h4 class="text-sm font-medium text-gray-600 mb-2">Disponibilidad</h4>
+                                <div class="space-y-2">
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="availability_morning" class="form-checkbox h-4 w-4 text-purple-600 rounded">
+                                        <label for="availability_morning" class="ml-2 text-sm text-gray-700">Mañana</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="availability_afternoon" class="form-checkbox h-4 w-4 text-purple-600 rounded">
+                                        <label for="availability_afternoon" class="ml-2 text-sm text-gray-700">Tarde</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="availability_flexible" class="form-checkbox h-4 w-4 text-purple-600 rounded">
+                                        <label for="availability_flexible" class="ml-2 text-sm text-gray-700">Flexible</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Filtro de Ubicación -->
+                            <div>
+                                <h4 class="text-sm font-medium text-gray-600 mb-2">Ubicación</h4>
+                                <select id="location_select" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-sm">
+                                    <option value="">Todas las ubicaciones</option>
+                                    @foreach($ciudades ?? [] as $ciudad)
+                                    <option value="{{ $ciudad->id }}">{{ $ciudad->nombre }}</option>
+                                    @endforeach
+                                    
+                                    @if(empty($ciudades))
+                                    <option value="barcelona">Barcelona</option>
+                                    <option value="madrid">Madrid</option>
+                                    <option value="valencia">Valencia</option>
+                                    <option value="sevilla">Sevilla</option>
+                                    @endif
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Resultados de búsqueda -->
+                    <div class="w-full md:w-3/4">
+                        <div id="searchResults" class="bg-white rounded-lg">
+                            <!-- Inicialmente mostrar mensaje de búsqueda -->
+                            <div id="initialSearchMessage" class="text-center py-12">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                                <h3 class="text-xl font-medium text-gray-800 mb-2">Busca candidatos para tus ofertas</h3>
+                                <p class="text-gray-500 max-w-md mx-auto">
+                                    Utiliza los filtros para encontrar estudiantes que se ajusten a tus necesidades
+                                </p>
+                            </div>
+
+                            <!-- Spinner de carga (oculto inicialmente) -->
+                            <div id="loadingResults" class="hidden text-center py-12">
+                                <svg class="animate-spin h-10 w-10 mx-auto text-purple-600 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <p class="text-gray-500">Buscando candidatos...</p>
+                            </div>
+
+                            <!-- Contenedor de resultados (oculto inicialmente) -->
+                            <div id="resultsContainer" class="hidden">
+                                <div class="mb-4 p-4 border-b border-gray-200">
+                                    <div class="flex justify-between items-center">
+                                        <h3 class="text-lg font-medium text-gray-800">Resultados de búsqueda</h3>
+                                        <div class="text-sm text-gray-500">
+                                            <span id="resultCount">0</span> candidatos encontrados
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Lista de candidatos -->
+                                <div id="candidatesList" class="divide-y divide-gray-200">
+                                    <!-- Los resultados se cargarán dinámicamente aquí -->
+                                </div>
+                            </div>
+
+                            <!-- Mensaje de no resultados (oculto inicialmente) -->
+                            <div id="noResults" class="hidden text-center py-12">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <h3 class="text-xl font-medium text-gray-800 mb-2">No se encontraron candidatos</h3>
+                                <p class="text-gray-500 max-w-md mx-auto">
+                                    Prueba a cambiar los filtros o utilizar otros términos de búsqueda
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Sweet Alert, Chart.js y Scripts -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-material-ui@5/material-ui.min.css">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -639,6 +831,18 @@
         // Renderizar gráficos si existen los elementos
         if (document.getElementById('solicitudesChart')) {
             initializeCharts();
+        }
+
+        // Inicialización del filtro de categorías (ocultar todas inicialmente)
+        const categoriasItems = document.querySelectorAll('.categoria-item');
+        categoriasItems.forEach(item => {
+            item.classList.add('hidden');
+        });
+        
+        // Mostrar mensaje de no categorías al inicio
+        const noCategoriasMensaje = document.getElementById('no-categorias-message');
+        if (noCategoriasMensaje) {
+            noCategoriasMensaje.classList.remove('hidden');
         }
 
         // Configuración para el modal
@@ -1294,6 +1498,347 @@
         function renderizarGraficos() {
             // Reemplazado por initializeCharts
         }
+
+        // Función para abrir el modal de búsqueda de candidatos
+        window.openSearchCandidatesModal = function() {
+            const modalSearchCandidates = document.getElementById('modalSearchCandidates');
+            if (modalSearchCandidates) {
+                modalSearchCandidates.classList.remove('hidden');
+                document.body.classList.add('overflow-hidden');
+
+                // Animación de entrada
+                setTimeout(() => {
+                    const modalContent = modalSearchCandidates.querySelector('.relative');
+                    if (modalContent) {
+                        modalContent.classList.add('animate-fadeIn');
+                    }
+                }, 10);
+
+                // Focus en el campo de búsqueda
+                setTimeout(() => {
+                    const searchInput = document.getElementById('searchCandidatesInput');
+                    if (searchInput) searchInput.focus();
+                }, 300);
+            }
+        };
+
+        // Función para cerrar el modal de búsqueda de candidatos
+        window.closeSearchCandidatesModal = function() {
+            const modalSearchCandidates = document.getElementById('modalSearchCandidates');
+            if (modalSearchCandidates) {
+                // Animación de salida
+                const modalContent = modalSearchCandidates.querySelector('.relative');
+                if (modalContent) {
+                    modalContent.classList.remove('animate-fadeIn');
+                    modalContent.classList.add('animate-fadeOut');
+                }
+
+                setTimeout(() => {
+                    modalSearchCandidates.classList.add('hidden');
+                    document.body.classList.remove('overflow-hidden');
+
+                    if (modalContent) {
+                        modalContent.classList.remove('animate-fadeOut');
+                    }
+                }, 200);
+            }
+        };
+
+        // Simulación de búsqueda de candidatos
+        const searchCandidatesButton = document.getElementById('searchCandidatesButton');
+        const clearCandidateSearchButton = document.getElementById('clearCandidateSearchButton');
+        
+        if (searchCandidatesButton) {
+            searchCandidatesButton.addEventListener('click', function() {
+                // Ocultar mensaje inicial
+                const initialSearchMessage = document.getElementById('initialSearchMessage');
+                if (initialSearchMessage) initialSearchMessage.classList.add('hidden');
+                
+                // Mostrar spinner de carga
+                const loadingResults = document.getElementById('loadingResults');
+                if (loadingResults) loadingResults.classList.remove('hidden');
+                
+                // Ocultar otros contenedores
+                const resultsContainer = document.getElementById('resultsContainer');
+                const noResults = document.getElementById('noResults');
+                if (resultsContainer) resultsContainer.classList.add('hidden');
+                if (noResults) noResults.classList.add('hidden');
+                
+                // Recoger valores de los filtros
+                const searchTerm = document.getElementById('searchCandidatesInput').value.trim();
+                const selectedNiveles = Array.from(document.querySelectorAll('input[name="nivel_educativo[]"]:checked')).map(cb => cb.value);
+                const selectedCategorias = Array.from(document.querySelectorAll('input[name="categoria[]"]:checked')).map(cb => cb.value);
+                const selectedDisponibilidad = Array.from(document.querySelectorAll('input[id^="availability_"]:checked')).map(cb => cb.id.replace('availability_', ''));
+                const ubicacion = document.getElementById('location_select').value;
+                
+                // Preparar datos para la petición
+                const searchData = {
+                    search: searchTerm,
+                    niveles: selectedNiveles,
+                    categorias: selectedCategorias,
+                    disponibilidad: selectedDisponibilidad,
+                    ubicacion: ubicacion,
+                    _token: '{{ csrf_token() }}'
+                };
+                
+                console.log('Buscando con los parámetros:', searchData);
+                
+                // Simular petición AJAX (en un entorno real, esto sería un fetch a un endpoint del servidor)
+                setTimeout(() => {
+                    // Ocultar spinner
+                    if (loadingResults) loadingResults.classList.add('hidden');
+                    
+                    // Simular respuesta del servidor
+                    const simulatedResponse = simulateServerResponse(searchData);
+                    
+                    if (simulatedResponse.estudiantes.length === 0) {
+                        // Mostrar mensaje de no resultados
+                        if (noResults) noResults.classList.remove('hidden');
+                    } else {
+                        // Mostrar resultados
+                        const candidatesList = document.getElementById('candidatesList');
+                        if (candidatesList) {
+                            // Limpiar resultados anteriores
+                            candidatesList.innerHTML = '';
+                            
+                            // Actualizar contador
+                            const resultCount = document.getElementById('resultCount');
+                            if (resultCount) resultCount.textContent = simulatedResponse.estudiantes.length;
+                            
+                            // Mostrar cada estudiante
+                            simulatedResponse.estudiantes.forEach(estudiante => {
+                                // Crear elemento HTML para el estudiante
+                                const estudianteElement = document.createElement('div');
+                                estudianteElement.className = 'p-4 hover:bg-gray-50 transition-colors';
+                                estudianteElement.innerHTML = `
+                                    <div class="flex items-start">
+                                        <div class="flex-shrink-0 mr-4">
+                                            ${estudiante.imagen 
+                                                ? `<img src="${estudiante.imagen}" class="h-12 w-12 rounded-full object-cover border-2 border-purple-100">` 
+                                                : `<div class="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-700 font-bold text-lg">
+                                                    ${estudiante.nombre.split(' ').map(n => n[0]).join('')}
+                                                  </div>`
+                                            }
+                                        </div>
+                                        <div class="flex-1">
+                                            <h4 class="text-lg font-medium text-gray-900">${estudiante.nombre}</h4>
+                                            <p class="text-sm text-gray-500">${estudiante.titulo} · ${estudiante.ubicacion}</p>
+                                            <div class="mt-2 flex flex-wrap gap-1">
+                                                ${estudiante.habilidades.map(habilidad => `
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                                        ${habilidad}
+                                                    </span>
+                                                `).join('')}
+                                            </div>
+                                        </div>
+                                        <div class="ml-4">
+                                            <button class="px-3 py-1 bg-purple-600 text-white text-sm rounded hover:bg-purple-700 transition-colors">
+                                                Ver perfil
+                                            </button>
+                                        </div>
+                                    </div>
+                                `;
+                                
+                                candidatesList.appendChild(estudianteElement);
+                            });
+                            
+                            // Mostrar contenedor de resultados
+                            if (resultsContainer) resultsContainer.classList.remove('hidden');
+                        }
+                    }
+                }, 1500); // Simular tiempo de carga
+            });
+        }
+        
+        // Función para simular una respuesta del servidor
+        function simulateServerResponse(searchData) {
+            // Base de datos simulada de estudiantes
+            const estudiantesDB = [
+                {
+                    id: 1,
+                    nombre: "Ana García Martínez",
+                    titulo: "Grado en Ingeniería Informática",
+                    ubicacion: "Barcelona",
+                    nivel_educativo_id: "1", // ID del nivel educativo
+                    habilidades: ["Java", "Python", "SQL", "Spring Boot"],
+                    disponibilidad: "morning",
+                    imagen: null
+                },
+                {
+                    id: 2,
+                    nombre: "Carlos Rodríguez López",
+                    titulo: "Ciclo Superior en DAW",
+                    ubicacion: "Madrid",
+                    nivel_educativo_id: "2", // ID del nivel educativo
+                    habilidades: ["JavaScript", "React", "Node.js", "MongoDB"],
+                    disponibilidad: "afternoon",
+                    imagen: null
+                },
+                {
+                    id: 3,
+                    nombre: "Laura Martínez Sánchez",
+                    titulo: "Máster en Ciberseguridad",
+                    ubicacion: "Valencia",
+                    nivel_educativo_id: "3", // ID del nivel educativo
+                    habilidades: ["Seguridad de redes", "Pentesting", "Análisis de malware"],
+                    disponibilidad: "flexible",
+                    imagen: null
+                },
+                {
+                    id: 4,
+                    nombre: "Miguel López Fernández",
+                    titulo: "Ciclo Superior en DAM",
+                    ubicacion: "Sevilla",
+                    nivel_educativo_id: "2", // ID del nivel educativo
+                    habilidades: ["Java", "Kotlin", "Android", "Firebase"],
+                    disponibilidad: "morning",
+                    imagen: null
+                },
+                {
+                    id: 5,
+                    nombre: "Elena Sánchez Ruiz",
+                    titulo: "Grado en Diseño",
+                    ubicacion: "Barcelona",
+                    nivel_educativo_id: "1", // ID del nivel educativo
+                    habilidades: ["Photoshop", "Illustrator", "Figma", "UI/UX"],
+                    disponibilidad: "flexible",
+                    imagen: null
+                },
+                {
+                    id: 6,
+                    nombre: "Javier Fernández González",
+                    titulo: "Máster en IA",
+                    ubicacion: "Madrid",
+                    nivel_educativo_id: "3", // ID del nivel educativo
+                    habilidades: ["Python", "TensorFlow", "Machine Learning", "NLP"],
+                    disponibilidad: "afternoon",
+                    imagen: null
+                }
+            ];
+            
+            // Filtrar estudiantes basados en los criterios de búsqueda
+            let resultados = estudiantesDB;
+            
+            // Filtrar por término de búsqueda
+            if (searchData.search) {
+                const searchLower = searchData.search.toLowerCase();
+                resultados = resultados.filter(est => 
+                    est.nombre.toLowerCase().includes(searchLower) || 
+                    est.titulo.toLowerCase().includes(searchLower) || 
+                    est.habilidades.some(h => h.toLowerCase().includes(searchLower))
+                );
+            }
+            
+            // Filtrar por niveles educativos
+            if (searchData.niveles && searchData.niveles.length > 0) {
+                resultados = resultados.filter(est => 
+                    searchData.niveles.includes(est.nivel_educativo_id)
+                );
+            }
+            
+            // Filtrar por disponibilidad
+            if (searchData.disponibilidad && searchData.disponibilidad.length > 0) {
+                resultados = resultados.filter(est => 
+                    searchData.disponibilidad.includes(est.disponibilidad)
+                );
+            }
+            
+            // Filtrar por ubicación
+            if (searchData.ubicacion) {
+                resultados = resultados.filter(est => 
+                    est.ubicacion.toLowerCase() === searchData.ubicacion.toLowerCase()
+                );
+            }
+            
+            // Devolver respuesta simulada
+            return {
+                success: true,
+                estudiantes: resultados,
+                total: resultados.length
+            };
+        }
+
+        // Limpiar búsqueda
+        if (clearCandidateSearchButton) {
+            clearCandidateSearchButton.addEventListener('click', function() {
+                // Limpiar campo de búsqueda
+                const searchInput = document.getElementById('searchCandidatesInput');
+                if (searchInput) searchInput.value = '';
+                
+                // Limpiar checkboxes de categorías y niveles educativos
+                const checkboxesCategorias = document.querySelectorAll('input[name="categoria[]"]');
+                const checkboxesNiveles = document.querySelectorAll('input[name="nivel_educativo[]"]');
+                checkboxesCategorias.forEach(checkbox => checkbox.checked = false);
+                checkboxesNiveles.forEach(checkbox => checkbox.checked = false);
+                
+                // Restaurar visibilidad de todas las categorías
+                const categoriasItems = document.querySelectorAll('.categoria-item');
+                categoriasItems.forEach(item => {
+                    item.classList.remove('hidden');
+                });
+                document.getElementById('no-categorias-message').classList.add('hidden');
+                
+                // Resetear selector de ubicación
+                const locationSelect = document.getElementById('location_select');
+                if (locationSelect) locationSelect.value = '';
+                
+                // Mostrar mensaje inicial
+                const initialSearchMessage = document.getElementById('initialSearchMessage');
+                const loadingResults = document.getElementById('loadingResults');
+                const resultsContainer = document.getElementById('resultsContainer');
+                const noResults = document.getElementById('noResults');
+                
+                if (initialSearchMessage) initialSearchMessage.classList.remove('hidden');
+                if (loadingResults) loadingResults.classList.add('hidden');
+                if (resultsContainer) resultsContainer.classList.add('hidden');
+                if (noResults) noResults.classList.add('hidden');
+            });
+        }
+
+        // Inicializar la función para filtrar categorías por nivel educativo
+        window.filtrarCategoriasPorNivel = function() {
+            const checkboxesNiveles = document.querySelectorAll('.nivel-educativo-checkbox:checked');
+            const categoriasItems = document.querySelectorAll('.categoria-item');
+            const noCategoriasMensaje = document.getElementById('no-categorias-message');
+            
+            // Si no hay niveles seleccionados, ocultar todas las categorías y mostrar mensaje
+            if (checkboxesNiveles.length === 0) {
+                categoriasItems.forEach(item => {
+                    item.classList.add('hidden');
+                });
+                noCategoriasMensaje.classList.remove('hidden');
+                return;
+            }
+            
+            // Crear array con los IDs de los niveles seleccionados
+            const nivelesSeleccionados = Array.from(checkboxesNiveles).map(checkbox => checkbox.value);
+            
+            // Contador para categorías visibles
+            let categoriasVisibles = 0;
+            
+            // Filtrar las categorías según los niveles seleccionados
+            categoriasItems.forEach(item => {
+                const nivelId = item.getAttribute('data-nivel-id');
+                
+                // Comprobamos si el ID está en el array - convertimos a string para asegurar comparación correcta
+                if (nivelesSeleccionados.includes(nivelId) || nivelesSeleccionados.includes(String(nivelId))) {
+                    item.classList.remove('hidden');
+                    categoriasVisibles++;
+                } else {
+                    item.classList.add('hidden');
+                }
+            });
+            
+            // Mostrar/ocultar mensaje si no hay categorías disponibles
+            if (categoriasVisibles === 0) {
+                noCategoriasMensaje.classList.remove('hidden');
+            } else {
+                noCategoriasMensaje.classList.add('hidden');
+            }
+            
+            console.log('Niveles seleccionados:', nivelesSeleccionados);
+            console.log('Categorías visibles:', categoriasVisibles);
+        };
     });
 </script>
 

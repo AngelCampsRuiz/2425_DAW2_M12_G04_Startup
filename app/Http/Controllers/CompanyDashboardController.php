@@ -38,8 +38,11 @@ class CompanyDashboardController extends Controller
             ->get();
 
         $categorias = Categoria::all();
+        
+        // Cargar los niveles educativos para el filtro de búsqueda de candidatos
+        $nivelesEducativos = \App\Models\NivelEducativo::all();
 
-        return view('empresa.dashboard', compact('activePublications', 'inactivePublications', 'categorias'));
+        return view('empresa.dashboard', compact('activePublications', 'inactivePublications', 'categorias', 'nivelesEducativos'));
     }
 
     public function createOffer()
