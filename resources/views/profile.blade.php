@@ -7,6 +7,11 @@
     <script src="{{ asset('js/profile.js') }}"></script>
     <script src="{{ asset('js/profile-functions.js') }}"></script>
     <script src="{{ asset('js/profile-edit.js') }}"></script>
+    <script src="{{ asset('js/profile-map.js') }}"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+
     @section('content')
         <div class="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-50">
             {{-- MIGAS DE PAN --}}

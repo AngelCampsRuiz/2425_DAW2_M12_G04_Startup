@@ -1,5 +1,5 @@
-let map = null;
-let marker = null;
+let editMap = null;
+let editMarker = null;
 
 // Mapa de solo lectura
 let viewMap = null;
@@ -14,13 +14,13 @@ function initializeMap() {
     const lng = document.getElementById('lng')?.value || 2.154007;
 
     // Si el mapa ya existe, lo destruimos
-    if (map) {
-        map.remove();
-        map = null;
+    if (editMap) {
+        editMap.remove();
+        editMap = null;
     }
 
     // Crear el mapa
-    map = L.map('locationMap', {
+    editMap = L.map('locationMap', {
         center: [lat, lng],
         zoom: 13,
         zoomControl: true
@@ -30,32 +30,32 @@ function initializeMap() {
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors',
         maxZoom: 19
-    }).addTo(map);
+    }).addTo(editMap);
 
     // Añadir marcador
-    marker = L.marker([lat, lng], {
+    editMarker = L.marker([lat, lng], {
         draggable: true
-    }).addTo(map);
+    }).addTo(editMap);
 
     // Evento cuando se arrastra el marcador
-    marker.on('dragend', function(e) {
-        const position = marker.getLatLng();
+    editMarker.on('dragend', function(e) {
+        const position = editMarker.getLatLng();
         updateLocationFields(position.lat, position.lng);
     });
 
     // Evento de clic en el mapa
-    map.on('click', function(e) {
-        marker.setLatLng(e.latlng);
+    editMap.on('click', function(e) {
+        editMarker.setLatLng(e.latlng);
         updateLocationFields(e.latlng.lat, e.latlng.lng);
     });
 
     // Invalidar el tamaño del mapa después de que sea visible
     setTimeout(() => {
-        map.invalidateSize();
+        editMap.invalidateSize();
         setTimeout(() => {
-            map.invalidateSize();
+            editMap.invalidateSize();
             setTimeout(() => {
-                map.invalidateSize();
+                editMap.invalidateSize();
             }, 500);
         }, 300);
     }, 100);
