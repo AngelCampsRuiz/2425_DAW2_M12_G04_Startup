@@ -6,6 +6,13 @@
         <span id="success-message-text" class="block sm:inline"></span>
     </div>
 
+    <div class="flex justify-between items-center mb-4">
+        <h1 class="text-2xl font-semibold text-gray-800">Profesores</h1>
+        <button id="btnCrearProfesor" class="btn-crear bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2">
+            Crear Profesor
+        </button>
+    </div>
+
     <!-- Filtros -->
     <div class="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl shadow-md p-6 mb-8 border border-purple-100">
         <div class="flex flex-col md:flex-row justify-between items-center mb-6">
@@ -105,7 +112,7 @@
     </div>
     
     <!-- Contenedor de la tabla -->
-    <div id="tabla-profesores" class="bg-white rounded-lg shadow overflow-hidden">
+    <div id="tabla-profesores">
         @include('admin.profesores.tabla')
     </div>
 
@@ -497,21 +504,7 @@
                 }
             });
             
-            fetch(`/admin/profesores?${params.toString()}`, {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.tabla) {
-                    document.getElementById('tabla-profesores').innerHTML = data.tabla;
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
+            refreshTable(params.toString());
         }
     }
     
@@ -614,20 +607,34 @@
         return true;
     }
     
+    function refreshTable(params = '') {
+        fetch(`/admin/profesores?${params}`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.text())
+        .then(html => {
+            document.getElementById('tabla-profesores').innerHTML = html;
+            setupEventListeners();
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
     async function actualizarTabla() {
         try {
-            const response = await fetch('/admin/profesores?ajax=1');
+            const response = await fetch('/admin/profesores', {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
             if (response.ok) {
                 const html = await response.text();
                 document.getElementById('tabla-profesores').innerHTML = html;
-            } else {
-                console.error('Error al actualizar la tabla');
-                // Si hay un error, recargamos la página completa
-                window.location.reload();
+                setupEventListeners();
             }
         } catch (error) {
             console.error('Error:', error);
-            // Si hay un error, recargamos la página completa
             window.location.reload();
         }
     }

@@ -17,29 +17,27 @@ class ProfesorController extends Controller
     {
         $query = User::where('role_id', 4);
 
-        // Aplicar filtro por nombre
-        if ($request->has('nombre') && !empty($request->nombre)) {
+        // Aplicar filtros
+        if ($request->filled('nombre')) {
             $query->where('nombre', 'like', '%' . $request->nombre . '%');
         }
-
-        // Aplicar filtro por email
-        if ($request->has('email') && !empty($request->email)) {
+        if ($request->filled('email')) {
             $query->where('email', 'like', '%' . $request->email . '%');
         }
-
-        // Aplicar filtro por DNI
-        if ($request->has('dni') && !empty($request->dni)) {
+        if ($request->filled('dni')) {
             $query->where('dni', 'like', '%' . $request->dni . '%');
         }
-
-        // Aplicar filtro por ciudad
-        if ($request->has('ciudad') && !empty($request->ciudad)) {
-            $query->where('ciudad', $request->ciudad);
+        if ($request->filled('ciudad')) {
+            $query->where('ciudad', 'like', '%' . $request->ciudad . '%');
+        }
+        if ($request->has('estado')) {
+            $query->where('activo', $request->estado);
         }
 
-        // Aplicar filtro por estado
-        if ($request->has('estado') && $request->estado !== '') {
-            $query->where('activo', $request->estado);
+        $profesores = $query->paginate(10);
+
+        if ($request->ajax()) {
+            return view('admin.profesores.tabla', compact('profesores'))->render();
         }
 
         // Obtener ciudades únicas para el selector
@@ -50,17 +48,6 @@ class ProfesorController extends Controller
                        ->pluck('ciudad')
                        ->sort()
                        ->values();
-
-        $profesores = $query->select('id', 'nombre', 'email', 'dni', 'telefono', 'ciudad', 'activo', 'imagen', 'created_at')
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
-
-        if ($request->ajax()) {
-            return response()->json([
-                'tabla' => view('admin.profesores.tabla', compact('profesores'))->render(),
-                'pagination' => $profesores->links()->toHtml()
-            ]);
-        }
 
         return view('admin.profesores.index', compact('profesores', 'ciudades'));
     }
