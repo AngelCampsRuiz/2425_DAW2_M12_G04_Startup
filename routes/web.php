@@ -2,6 +2,7 @@
     // RUTAS DE LA APLICACIÓN
     use Illuminate\Support\Facades\Route;
     use Illuminate\Support\Facades\DB;
+    use Illuminate\Support\Facades\Http;
         // CONTROLADORES
             // CONTROLADOR HOME
                 use App\Http\Controllers\HomeController;
@@ -440,5 +441,18 @@ Route::get('/run-migrations-safe', function () {
         return response()->json(['message' => 'Migraciones ejecutadas correctamente', 'output' => $output]);
     } catch (\Exception $e) {
         return response()->json(['error' => 'Error al ejecutar migraciones: ' . $e->getMessage()], 500);
+    }
+});
+
+Route::get('/run-composer', function () {
+    if (request('key') !== env('DEPLOY_KEY')) {
+        abort(403, 'Acceso no autorizado');
+    }
+
+    try {
+        exec('composer install --no-interaction --prefer-dist');
+        return response()->json(['message' => 'Composer ejecutado correctamente']);
+    } catch (\Exception $e) {
+        return response()->json(['error' => 'Error al ejecutar composer: ' . $e->getMessage()], 500);
     }
 });
