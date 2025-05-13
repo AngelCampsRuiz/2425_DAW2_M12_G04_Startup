@@ -95,7 +95,7 @@
                 </div>
                 <div class="grid grid-cols-2 gap-4 p-4 bg-gray-900 h-96">
                     <div id="local-video-container" class="bg-black rounded-lg overflow-hidden relative h-full shadow-lg">
-                        <div id="local-video" class="w-full h-full"></div>
+                        <video id="local-video" autoplay playsinline></video>
                         <div class="absolute bottom-2 left-2 text-white text-sm bg-black bg-opacity-50 px-2 py-1 rounded-md">
                             Tú
                         </div>
@@ -328,6 +328,108 @@
     window.csrfToken = '{{ csrf_token() }}';
     window.routeGetMessages = '{{ route('chat.messages', ['chat' => $chat->id]) }}';
     window.routeSendMessage = '{{ route('chat.message', ['chat' => $chat->id]) }}';
+
+    document.getElementById('video-call-btn').addEventListener('click', async function() {
+        console.log('Botón de videollamada presionado');
+        document.getElementById('video-container').style.display = 'flex';
+        
+        try {
+            // Solicitar permisos explícitamente
+            const stream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
+            
+            // Obtener referencia al elemento de video
+            const localVideo = document.getElementById('local-video');
+            console.log('Elemento de video local:', localVideo);
+            
+            if (localVideo) {
+                // Verificar que es un elemento de video HTML válido
+                console.log('¿Es elemento de video?', localVideo instanceof HTMLVideoElement);
+                
+                // Asignar el stream directamente
+                localVideo.srcObject = stream;
+                
+                // Verificar tracks de video
+                console.log('Tracks de video disponibles:', stream.getVideoTracks().length);
+                
+                // Agregar listener de carga
+                localVideo.onloadedmetadata = function() {
+                    console.log('Video local cargado correctamente');
+                    // Intentar reproducir automáticamente cuando los metadatos estén cargados
+                    localVideo.play().catch(e => console.log('Reproducción automática bloqueada, espera interacción del usuario'));
+                };
+            } else {
+                console.error('No se encontró el elemento de video local');
+                alert('Error: No se pudo encontrar el elemento de video en la página');
+            }
+            
+            // Inicializar los controles
+            initializeControls(stream);
+            
+            console.log('Cámara iniciada correctamente');
+        } catch (error) {
+            console.error('Error al acceder a la cámara:', error);
+            alert('No se pudo acceder a la cámara o micrófono. Por favor, verifica los permisos: ' + error.message);
+        }
+    });
+
+    function initializeControls(stream) {
+        // Mute/unmute audio
+        document.getElementById('toggle-audio').addEventListener('click', function() {
+            const audioTracks = stream.getAudioTracks();
+            if (audioTracks.length > 0) {
+                audioTracks[0].enabled = !audioTracks[0].enabled;
+                this.innerHTML = audioTracks[0].enabled ? 
+                    '<i class="fas fa-microphone"></i>' : 
+                    '<i class="fas fa-microphone-slash"></i>';
+            }
+        });
+        
+        // Enable/disable video
+        document.getElementById('toggle-video').addEventListener('click', function() {
+            const videoTracks = stream.getVideoTracks();
+            if (videoTracks.length > 0) {
+                videoTracks[0].enabled = !videoTracks[0].enabled;
+                this.innerHTML = videoTracks[0].enabled ? 
+                    '<i class="fas fa-video"></i>' : 
+                    '<i class="fas fa-video-slash"></i>';
+            }
+        });
+        
+        // End call
+        document.getElementById('end-call').addEventListener('click', function() {
+            stream.getTracks().forEach(track => track.stop());
+            document.getElementById('video-container').style.display = 'none';
+        });
+        
+        // Toggle chat
+        document.getElementById('toggle-chat').addEventListener('click', function() {
+            // Código para mostrar/ocultar el chat
+        });
+        
+        // Close video container
+        document.getElementById('close-video-container').addEventListener('click', function() {
+            document.getElementById('video-container').style.display = 'none';
+        });
+    }
+
+    // Añade esto después del código anterior
+    document.head.insertAdjacentHTML('beforeend', `
+        <style>
+        #local-video-container, #remote-video-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            overflow: hidden;
+        }
+        #local-video, #remote-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        </style>
+    `);
 </script>
 <script src="{{ asset('js/chat-detail.js') }}"></script>
 
