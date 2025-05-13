@@ -3,6 +3,7 @@
     use Illuminate\Support\Facades\Route;
     use Illuminate\Support\Facades\DB;
     use Illuminate\Support\Facades\Http;
+    use Illuminate\Support\Facades\Artisan;
         // CONTROLADORES
             // CONTROLADOR HOME
                 use App\Http\Controllers\HomeController;
@@ -46,6 +47,7 @@
                 use App\Http\Controllers\CalendarController;
             // CONTROLADOR DE RECORDATORIOS
                 use App\Http\Controllers\ReminderController;
+                use Illuminate\Http\Response;
 
     // RUTAS DE LA APLICACIÓN
         // RUTA PRINCIPAL HOME
