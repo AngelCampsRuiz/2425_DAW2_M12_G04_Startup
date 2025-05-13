@@ -1,106 +1,98 @@
-let editMap = null;
-let editMarker = null;
+let map = null;
+let marker = null;
 
 // Mapa de solo lectura
 let viewMap = null;
 
-// Función para actualizar los campos de ubicación
-async function updateLocationFields(lat, lng) {
-    try {
-        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
-        const data = await response.json();
-        
-        if (data.address) {
-            const direccionInput = document.getElementById('direccion');
-            const ciudadInput = document.getElementById('ciudad');
-            const latInput = document.getElementById('lat');
-            const lngInput = document.getElementById('lng');
-            
-            if (direccionInput) direccionInput.value = data.display_name;
-            if (ciudadInput) ciudadInput.value = data.address.city || data.address.town || data.address.village || '';
-            if (latInput) latInput.value = lat;
-            if (lngInput) lngInput.value = lng;
-        }
-    } catch (error) {
-        console.error('Error al obtener la información de ubicación:', error);
-    }
-}
-
 // Función para inicializar el mapa de edición
 function initializeMap() {
     const mapContainer = document.getElementById('locationMap');
-    if (!mapContainer) return;
+    if (!mapContainer) return; // Si no existe el contenedor, no inicializar
 
-    // Limpiar el mapa existente si lo hay
-    if (editMap) {
-        editMap.remove();
-        editMap = null;
-    }
-
-    // Obtener las coordenadas guardadas o usar coordenadas por defecto
+    // Obtener las coordenadas guardadas o usar coordenadas por defecto (Barcelona)
     const lat = document.getElementById('lat')?.value || 41.390205;
     const lng = document.getElementById('lng')?.value || 2.154007;
 
-    // Crear el mapa con opciones optimizadas
-    editMap = L.map('locationMap', {
+    // Si el mapa ya existe, lo destruimos
+    if (map) {
+        map.remove();
+        map = null;
+    }
+
+    // Crear el mapa
+    map = L.map('locationMap', {
         center: [lat, lng],
         zoom: 13,
-        zoomControl: true,
-        fadeAnimation: false,
-        markerZoomAnimation: false
+        zoomControl: true
     });
 
     // Añadir capa de OpenStreetMap
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors',
         maxZoom: 19
-    }).addTo(editMap);
+    }).addTo(map);
 
-    // Añadir marcador con icono personalizado
-    const customIcon = L.divIcon({
-        className: 'custom-div-icon',
-        html: `<div style="background-color: #7C3AED; width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 10px rgba(0,0,0,0.3);"></div>`,
-        iconSize: [16, 16],
-        iconAnchor: [8, 8]
-    });
-
-    editMarker = L.marker([lat, lng], {
-        icon: customIcon,
+    // Añadir marcador
+    marker = L.marker([lat, lng], {
         draggable: true
-    }).addTo(editMap);
+    }).addTo(map);
 
-    // Eventos del marcador y mapa
-    editMarker.on('dragend', function(e) {
-        const position = editMarker.getLatLng();
+    // Evento cuando se arrastra el marcador
+    marker.on('dragend', function(e) {
+        const position = marker.getLatLng();
         updateLocationFields(position.lat, position.lng);
     });
 
-    editMap.on('click', function(e) {
-        editMarker.setLatLng(e.latlng);
+    // Evento de clic en el mapa
+    map.on('click', function(e) {
+        marker.setLatLng(e.latlng);
         updateLocationFields(e.latlng.lat, e.latlng.lng);
     });
 
-    // Añadir botón de guardar
-    const saveButton = document.createElement('button');
-    saveButton.className = 'save-location-btn';
-    saveButton.innerHTML = 'Guardar Ubicación';
-    saveButton.onclick = saveLocation;
-    mapContainer.parentElement.appendChild(saveButton);
-
-    // Forzar actualización del mapa
+    // Invalidar el tamaño del mapa después de que sea visible
     setTimeout(() => {
-        editMap.invalidateSize();
+        map.invalidateSize();
+        setTimeout(() => {
+            map.invalidateSize();
+            setTimeout(() => {
+                map.invalidateSize();
+            }, 500);
+        }, 300);
     }, 100);
+}
+
+// Función para actualizar los campos de ubicación
+async function updateLocationFields(lat, lng) {
+    // Actualizar campos ocultos
+    document.getElementById('lat').value = lat;
+    document.getElementById('lng').value = lng;
+
+    try {
+        // Obtener dirección usando Nominatim
+        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+        const data = await response.json();
+        
+        if (data.address) {
+            // Actualizar campos de dirección y ciudad
+            const direccion = document.getElementById('direccion');
+            const ciudad = document.getElementById('ciudad');
+            
+            if (direccion) direccion.value = data.display_name;
+            if (ciudad) ciudad.value = data.address.city || data.address.town || data.address.village || '';
+        }
+    } catch (error) {
+        console.error('Error al obtener la información de ubicación:', error);
+    }
 }
 
 // Función para guardar la ubicación
 async function saveLocation() {
-    try {
-        const lat = document.getElementById('lat').value;
-        const lng = document.getElementById('lng').value;
-        const direccion = document.getElementById('direccion').value;
-        const ciudad = document.getElementById('ciudad').value;
+    const lat = document.getElementById('lat').value;
+    const lng = document.getElementById('lng').value;
+    const direccion = document.getElementById('direccion').value;
+    const ciudad = document.getElementById('ciudad').value;
 
+    try {
         const response = await fetch('/profile/update-location', {
             method: 'POST',
             headers: {
@@ -108,24 +100,22 @@ async function saveLocation() {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                 'Accept': 'application/json'
             },
-            body: JSON.stringify({ 
-                lat: parseFloat(lat), 
-                lng: parseFloat(lng), 
-                direccion, 
-                ciudad 
-            })
+            body: JSON.stringify({ lat, lng, direccion, ciudad })
         });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Error al actualizar la ubicación');
+        }
 
         const data = await response.json();
 
-        if (response.ok && data.success) {
+        if (data.success) {
             Swal.fire({
                 title: '¡Éxito!',
                 text: 'Ubicación actualizada correctamente',
                 icon: 'success',
                 confirmButtonColor: '#7C3AED'
-            }).then(() => {
-                window.location.reload();
             });
         } else {
             throw new Error(data.message || 'Error al actualizar la ubicación');
@@ -141,7 +131,7 @@ async function saveLocation() {
     }
 }
 
-// Función para inicializar el mapa de visualización
+// Función para inicializar el mapa de solo lectura
 function initializeViewMap() {
     const viewMapContainer = document.getElementById('viewLocationMap');
     if (!viewMapContainer) return;
@@ -158,7 +148,7 @@ function initializeViewMap() {
         viewMap = null;
     }
 
-    // Crear el mapa con un estilo más limpio
+    // Crear el mapa
     viewMap = L.map('viewLocationMap', {
         center: [lat, lng],
         zoom: 15,
@@ -167,41 +157,32 @@ function initializeViewMap() {
         scrollWheelZoom: false
     });
 
-    // Añadir capa de OpenStreetMap con estilo personalizado
+    // Añadir capa de OpenStreetMap
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors',
         maxZoom: 19
     }).addTo(viewMap);
 
-    // Añadir marcador personalizado
-    const customIcon = L.divIcon({
-        className: 'custom-div-icon',
-        html: `<div style="background-color: #DC2626; width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 10px rgba(0,0,0,0.3);"></div>`,
-        iconSize: [16, 16],
-        iconAnchor: [8, 8]
-    });
+    // Añadir marcador
+    L.marker([lat, lng]).addTo(viewMap);
 
-    L.marker([lat, lng], { icon: customIcon }).addTo(viewMap);
-
-    // Mejorar la carga del mapa
+    // Invalidar el tamaño del mapa después de que sea visible
     setTimeout(() => {
         viewMap.invalidateSize();
     }, 100);
 }
 
-// Mejorar la inicialización de los mapas
+// Inicializar los mapas cuando se carga la página
 document.addEventListener('DOMContentLoaded', function() {
-    // Retrasar la inicialización para asegurar que el DOM está listo
-    setTimeout(() => {
-        const editMapContainer = document.getElementById('locationMap');
-        const viewMapContainer = document.getElementById('viewLocationMap');
+    // Intentar inicializar el mapa de edición
+    const editMapContainer = document.getElementById('locationMap');
+    if (editMapContainer) {
+        initializeMap();
+    }
 
-        if (editMapContainer) {
-            initializeMap();
-        }
-
-        if (viewMapContainer) {
-            initializeViewMap();
-        }
-    }, 300);
+    // Intentar inicializar el mapa de visualización
+    const viewMapContainer = document.getElementById('viewLocationMap');
+    if (viewMapContainer) {
+        initializeViewMap();
+    }
 });

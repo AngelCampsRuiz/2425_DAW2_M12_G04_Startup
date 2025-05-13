@@ -26,10 +26,10 @@
                         <img src="{{ asset('assets/images/empresas.jpg') }}" alt="Empresas" class="rounded-lg shadow-xl w-full max-w-md">
                     </div>
                     <div class="md:w-1/2 space-y-6 md:pr-12 flex flex-col justify-center text-right">
-                        <div class="text-2xl font-semibold text-[#7705B6]">🏢 {{ $totalEmpresas }} empresas confían en nosotros</div>
+                        {{-- <div class="text-2xl font-semibold text-[#7705B6]">🏢 {{ $totalEmpresas }} empresas confían en nosotros</div> --}}
                         <div class="text-lg">💼 {{ $totalOfertas }} ofertas publicadas</div>
                         <div class="text-lg">🤝 {{ $porcentajeRepiten }}% de empresas repiten</div>
-                        <div class="text-lg">🌍 Presencia en {{ $totalProvincias }} provincias</div>
+                        {{-- <div class="text-lg">🌍 Presencia en {{ $totalProvincias }} provincias</div> --}}
                     </div>
                 </div>
 
