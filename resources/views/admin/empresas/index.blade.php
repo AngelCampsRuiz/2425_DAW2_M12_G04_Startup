@@ -770,6 +770,7 @@
                 if (modalEmpresa) {
                     modalEmpresa.classList.add('hidden');
                     modalEmpresa.classList.remove('flex');
+                    modalEmpresa.style.display = 'none';
                 }
                 
                 mostrarMensajeExito(data.message || 'Empresa guardada correctamente');
@@ -863,7 +864,7 @@
             
             if (data.success) {
                 mostrarMensajeExito(data.message || 'Operación realizada correctamente');
-                refreshEmpresasTable();
+                window.location.reload(); // Recargar la página para asegurar que se actualiza correctamente
             } else {
                 alert(data.message || 'Ha ocurrido un error');
             }
@@ -923,17 +924,20 @@
                 'X-Requested-With': 'XMLHttpRequest'
             }
         })
-        .then(response => response.text())
-        .then(html => {
+        .then(response => response.json())
+        .then(data => {
             const tablaContainer = document.getElementById('tabla-empresas') || document.getElementById('tabla-container');
-            if (tablaContainer) {
-                tablaContainer.innerHTML = html;
+            if (tablaContainer && data.tabla) {
+                tablaContainer.innerHTML = data.tabla;
+                setupEventListeners(); // Volver a configurar los event listeners
             } else {
-                console.error('No se encontró el contenedor de la tabla');
+                console.error('No se encontró el contenedor de la tabla o datos en la respuesta');
+                window.location.reload(); // Si hay algún problema, recargar la página
             }
         })
         .catch(error => {
             console.error('Error al actualizar la tabla:', error);
+            window.location.reload(); // En caso de error, recargar la página
         });
     }
 
@@ -974,14 +978,14 @@
             if (!response.ok) {
                 throw new Error(`Error del servidor: ${response.status}`);
             }
-            return response.text();
+            return response.json();
         })
-        .then(html => {
-            if (tablaContainer) {
-                // Intenta inyectar directamente el HTML
-                tablaContainer.innerHTML = html;
+        .then(data => {
+            if (tablaContainer && data.tabla) {
+                // Usar los datos formateados de la respuesta
+                tablaContainer.innerHTML = data.tabla;
             } else {
-                console.error('No se encontró el contenedor de la tabla');
+                console.error('No se encontró el contenedor o datos de la tabla');
             }
         })
         .catch(error => {
