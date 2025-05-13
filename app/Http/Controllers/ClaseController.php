@@ -21,17 +21,29 @@ class ClaseController extends Controller
         $docentes = $institucion->docentes()->with('user')->get();
         $estudiantes = $institucion->estudiantes()->count();
         
-        return view('institucion.clases.index', compact('clases', 'departamentos', 'docentes', 'estudiantes'));
+        // Obtener niveles educativos de la institución
+        $nivelesEducativos = $institucion->nivelesEducativos;
+        
+        // Obtener categorías (cursos) organizadas por nivel educativo
+        $categoriasPorNivel = [];
+        foreach ($nivelesEducativos as $nivel) {
+            $categoriasPorNivel[$nivel->id] = $institucion->categoriasPorNivel($nivel->id)->get();
+        }
+        
+        return view('institucion.clases.index', compact(
+            'clases', 
+            'departamentos', 
+            'docentes', 
+            'estudiantes', 
+            'nivelesEducativos', 
+            'categoriasPorNivel'
+        ));
     }
 
     // Formulario crear clase
     public function create()
     {
-        $institucion = Auth::user()->institucion;
-        $departamentos = $institucion->departamentos;
-        $docentes = $institucion->docentes()->with('user')->where('activo', true)->get();
-        
-        return view('institucion.clases.create', compact('departamentos', 'docentes'));
+        return redirect()->route('institucion.clases.index', ['openModal' => true]);
     }
 
     // Guardar clase
@@ -42,13 +54,32 @@ class ClaseController extends Controller
         $request->validate([
             'nombre' => 'required|string|max:255',
             'codigo' => 'required|string|max:255|unique:clases,codigo',
-            'nivel' => 'required|string|max:255',
-            'curso' => 'required|string|max:255',
+            'nivel_educativo_id' => 'required|exists:niveles_educativos,id',
+            'categoria_id' => 'required|exists:categorias,id',
             'grupo' => 'nullable|string|max:255',
             'descripcion' => 'nullable|string',
-            'departamento_id' => 'required|exists:departamentos,id',
+            'departamento_id' => 'nullable|exists:departamentos,id',
             'docente_id' => 'nullable|exists:docentes,id',
         ]);
+
+        // Obtener el nivel educativo
+        $nivelEducativo = $institucion->nivelesEducativos()
+            ->where('niveles_educativos.id', $request->nivel_educativo_id)
+            ->first();
+        
+        // Obtener la categoría (curso)
+        $categoria = $institucion->categorias()
+            ->where('categorias.id', $request->categoria_id)
+            ->where('institucion_categoria.nivel_educativo_id', $request->nivel_educativo_id)
+            ->first();
+        
+        if (!$nivelEducativo || !$categoria) {
+            return redirect()->back()->with('error', 'El nivel educativo o curso seleccionado no es válido para esta institución.');
+        }
+        
+        // Usar nombres de nivel y categoría almacenados
+        $nombreNivel = $nivelEducativo->nombre_nivel;
+        $nombreCurso = $categoria->pivot->nombre_personalizado ?: $categoria->nombre_categoria;
 
         // Crear clase
         $clase = Clase::create([
@@ -57,11 +88,13 @@ class ClaseController extends Controller
             'docente_id' => $request->docente_id,
             'nombre' => $request->nombre,
             'codigo' => $request->codigo,
-            'nivel' => $request->nivel,
-            'curso' => $request->curso,
+            'nivel' => $nombreNivel,
+            'curso' => $nombreCurso,
             'grupo' => $request->grupo,
             'descripcion' => $request->descripcion,
             'activa' => true,
+            'nivel_educativo_id' => $request->nivel_educativo_id,
+            'categoria_id' => $request->categoria_id,
         ]);
 
         return redirect()->route('institucion.clases.index')
@@ -80,12 +113,19 @@ class ClaseController extends Controller
     // Editar clase
     public function edit($id)
     {
+        return redirect()->route('institucion.clases.index', ['editModal' => true, 'id' => $id]);
+    }
+
+    // Obtener datos de la clase para edición por AJAX
+    public function getData($id)
+    {
         $institucion = Auth::user()->institucion;
         $clase = $institucion->clases()->findOrFail($id);
-        $departamentos = $institucion->departamentos;
-        $docentes = $institucion->docentes()->with('user')->where('activo', true)->get();
         
-        return view('institucion.clases.edit', compact('clase', 'departamentos', 'docentes'));
+        return response()->json([
+            'success' => true,
+            'clase' => $clase
+        ]);
     }
 
     // Actualizar clase
@@ -97,13 +137,32 @@ class ClaseController extends Controller
         $request->validate([
             'nombre' => 'required|string|max:255',
             'codigo' => 'required|string|max:255|unique:clases,codigo,' . $clase->id,
-            'nivel' => 'required|string|max:255',
-            'curso' => 'required|string|max:255',
+            'nivel_educativo_id' => 'required|exists:niveles_educativos,id',
+            'categoria_id' => 'required|exists:categorias,id',
             'grupo' => 'nullable|string|max:255',
             'descripcion' => 'nullable|string',
-            'departamento_id' => 'required|exists:departamentos,id',
+            'departamento_id' => 'nullable|exists:departamentos,id',
             'docente_id' => 'nullable|exists:docentes,id',
         ]);
+
+        // Obtener el nivel educativo
+        $nivelEducativo = $institucion->nivelesEducativos()
+            ->where('niveles_educativos.id', $request->nivel_educativo_id)
+            ->first();
+        
+        // Obtener la categoría (curso)
+        $categoria = $institucion->categorias()
+            ->where('categorias.id', $request->categoria_id)
+            ->where('institucion_categoria.nivel_educativo_id', $request->nivel_educativo_id)
+            ->first();
+        
+        if (!$nivelEducativo || !$categoria) {
+            return redirect()->back()->with('error', 'El nivel educativo o curso seleccionado no es válido para esta institución.');
+        }
+        
+        // Usar nombres de nivel y categoría almacenados
+        $nombreNivel = $nivelEducativo->nombre_nivel;
+        $nombreCurso = $categoria->pivot->nombre_personalizado ?: $categoria->nombre_categoria;
 
         // Actualizar clase
         $clase->update([
@@ -111,10 +170,12 @@ class ClaseController extends Controller
             'docente_id' => $request->docente_id,
             'nombre' => $request->nombre,
             'codigo' => $request->codigo,
-            'nivel' => $request->nivel,
-            'curso' => $request->curso,
+            'nivel' => $nombreNivel,
+            'curso' => $nombreCurso,
             'grupo' => $request->grupo,
             'descripcion' => $request->descripcion,
+            'nivel_educativo_id' => $request->nivel_educativo_id,
+            'categoria_id' => $request->categoria_id,
         ]);
 
         return redirect()->route('institucion.clases.index')

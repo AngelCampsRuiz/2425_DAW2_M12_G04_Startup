@@ -143,7 +143,7 @@
                         <a href="{{ route('institucion.solicitudes.show', $solicitud->id) }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-colors">
                             <i class="fas fa-arrow-left mr-2"></i>Volver a la Solicitud
                         </a>
-                        <a href="{{ route('institucion.clases.create') }}" class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50 transition-colors">
+                        <a href="{{ route('institucion.clases.index', ['openModal' => true]) }}" class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50 transition-colors">
                             <i class="fas fa-plus mr-2"></i>Crear Nueva Clase
                         </a>
                     </div>

@@ -69,7 +69,6 @@ class DocenteController extends Controller
             'user_id' => $user->id,
             'institucion_id' => $institucion->id,
             'departamento_id' => $request->departamento_id,
-            'departamento' => $request->departamento_id ? null : $request->departamento,
             'especialidad' => $request->especialidad,
             'cargo' => $request->cargo,
             'activo' => true,
@@ -86,9 +85,19 @@ class DocenteController extends Controller
     public function show($id)
     {
         $institucion = Auth::user()->institucion;
-        $docente = $institucion->docentes()->with(['user', 'departamentoObj', 'clases', 'estudiantes'])->findOrFail($id);
+        $docente = $institucion->docentes()->with(['user', 'clases', 'estudiantes.user', 'departamentoObj'])->findOrFail($id);
+        $departamentos = $institucion->departamentos;
         
-        return view('institucion.docentes.show', compact('docente'));
+        // Obtener niveles educativos de la institución
+        $nivelesEducativos = $institucion->nivelesEducativos;
+        
+        // Obtener categorías (cursos) organizadas por nivel educativo
+        $categoriasPorNivel = [];
+        foreach ($nivelesEducativos as $nivel) {
+            $categoriasPorNivel[$nivel->id] = $institucion->categoriasPorNivel($nivel->id)->get();
+        }
+        
+        return view('institucion.docentes.show', compact('docente', 'departamentos', 'nivelesEducativos', 'categoriasPorNivel'));
     }
 
     // Editar docente
@@ -129,7 +138,6 @@ class DocenteController extends Controller
         // Actualizar docente
         $docente->update([
             'departamento_id' => $request->departamento_id,
-            'departamento' => $request->departamento_id ? null : $request->departamento,
             'especialidad' => $request->especialidad,
             'cargo' => $request->cargo,
         ]);

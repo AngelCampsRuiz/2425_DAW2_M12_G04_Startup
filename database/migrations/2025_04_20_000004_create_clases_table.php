@@ -14,10 +14,10 @@ return new class extends Migration
         Schema::create('clases', function (Blueprint $table) {
             $table->id();
             $table->foreignId('institucion_id')->constrained('instituciones')->onDelete('cascade');
-            $table->foreignId('departamento_id')->constrained('departamentos')->onDelete('cascade');
+            $table->foreignId('departamento_id')->nullable()->constrained('departamentos')->onDelete('cascade');
             $table->foreignId('docente_id')->nullable()->constrained('docentes')->onDelete('set null');
             $table->string('nombre');
-            $table->string('codigo')->unique();
+            $table->string('codigo');
             $table->string('nivel'); // ESO, Bachillerato, FP, etc.
             $table->string('curso'); // 1º, 2º, etc.
             $table->string('grupo')->nullable(); // A, B, C, etc.

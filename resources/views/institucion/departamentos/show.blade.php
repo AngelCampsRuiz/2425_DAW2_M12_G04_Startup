@@ -119,7 +119,7 @@
 <div class="mt-6 bg-white rounded-lg shadow p-6">
     <div class="flex justify-between items-center mb-6">
         <h2 class="text-xl font-semibold">Clases del Departamento</h2>
-        <a href="{{ route('institucion.clases.create') }}" class="text-primary hover:text-primary-dark">
+        <a href="{{ route('institucion.clases.index', ['openModal' => true]) }}" class="text-primary hover:text-primary-dark">
             <i class="fas fa-plus-circle mr-1"></i> Crear Nueva Clase
         </a>
     </div>
@@ -180,7 +180,7 @@
         <div class="text-center py-8 border rounded-lg bg-gray-50">
             <i class="fas fa-graduation-cap text-gray-400 text-4xl mb-3"></i>
             <p class="text-gray-500">No hay clases asociadas a este departamento.</p>
-            <a href="{{ route('institucion.clases.create') }}" class="mt-2 inline-block text-primary hover:underline">
+            <a href="{{ route('institucion.clases.index', ['openModal' => true]) }}" class="mt-2 inline-block text-primary hover:underline">
                 <i class="fas fa-plus-circle mr-1"></i> Crear una nueva clase
             </a>
         </div>

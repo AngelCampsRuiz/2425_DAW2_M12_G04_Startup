@@ -144,7 +144,7 @@
             @endif
             
             <div class="mt-4 pt-4 border-t">
-                <a href="{{ route('institucion.clases.create') }}" class="text-primary hover:text-primary-dark font-medium flex items-center justify-center">
+                <a href="javascript:void(0)" onclick="openModalClase()" class="text-primary hover:text-primary-dark font-medium flex items-center justify-center">
                     <i class="fas fa-plus-circle mr-2"></i> Asignar una nueva clase
                 </a>
             </div>
@@ -233,8 +233,183 @@
 </div>
 @endsection
 
+<!-- Modal de Nueva Clase -->
+<div id="modalNuevaClase" class="fixed inset-0 bg-black bg-opacity-50 hidden overflow-y-auto h-full w-full z-50 backdrop-blur-sm transition-all duration-300">
+    <div class="relative top-20 mx-auto p-0 w-full max-w-4xl transform transition-all duration-300">
+        <div class="bg-white rounded-xl shadow-2xl overflow-hidden">
+            <div class="bg-gradient-to-r from-blue-600 to-indigo-600 py-4 px-6 flex justify-between items-center">
+                <h3 class="text-xl font-bold text-white flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                    Crear Nueva Clase
+                </h3>
+                <button onclick="closeModalClase()" class="text-white hover:text-gray-200 focus:outline-none transition-colors">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            <form id="formNuevaClase" action="{{ route('institucion.clases.store') }}" method="POST" class="p-6">
+                @csrf
+                <input type="hidden" name="docente_id" value="{{ $docente->id }}">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <!-- Información básica de la clase -->
+                        <div class="mb-5">
+                            <h4 class="text-md font-medium text-gray-800 mb-3 flex items-center">
+                                <div class="w-8 h-8 flex items-center justify-center bg-blue-100 rounded-full mr-2 text-blue-600">1</div>
+                                Información General
+                            </h4>
+                            <div class="bg-gray-50 p-4 rounded-lg space-y-4">
+                                <div>
+                                    <label for="nombre" class="block text-sm font-medium text-gray-700 mb-1">Nombre de la Clase *</label>
+                                    <input type="text" name="nombre" id="nombre" required 
+                                        class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                    <p class="mt-1 text-xs text-gray-500">Ej: Matemáticas Avanzadas</p>
+                                </div>
+
+                                <div>
+                                    <label for="codigo" class="block text-sm font-medium text-gray-700 mb-1">Código de la Clase *</label>
+                                    <input type="text" name="codigo" id="codigo" required 
+                                        class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                    <p class="mt-1 text-xs text-gray-500">Ej: MAT-101 o MATE2023</p>
+                                </div>
+
+                                <div>
+                                    <label for="descripcion" class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                                    <textarea name="descripcion" id="descripcion" rows="3" 
+                                        class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"></textarea>
+                                    <p class="mt-1 text-xs text-gray-500">Descripción breve de la clase y sus objetivos</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <!-- Información académica de la clase -->
+                        <div class="mb-5">
+                            <h4 class="text-md font-medium text-gray-800 mb-3 flex items-center">
+                                <div class="w-8 h-8 flex items-center justify-center bg-blue-100 rounded-full mr-2 text-blue-600">2</div>
+                                Información Académica
+                            </h4>
+                            <div class="bg-gray-50 p-4 rounded-lg space-y-4">
+                                <div>
+                                    <label for="departamento_id" class="block text-sm font-medium text-gray-700 mb-1">Departamento</label>
+                                    <select name="departamento_id" id="departamento_id"
+                                        class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                        <option value="">-- Seleccionar Departamento --</option>
+                                        @foreach($departamentos ?? [] as $departamento)
+                                            <option value="{{ $departamento->id }}">
+                                                {{ $departamento->nombre }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <p class="mt-1 text-xs text-gray-500">Opcional - Puede asignarlo más tarde</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Información del curso -->
+                        <div class="mb-5">
+                            <h4 class="text-md font-medium text-gray-800 mb-3 flex items-center">
+                                <div class="w-8 h-8 flex items-center justify-center bg-blue-100 rounded-full mr-2 text-blue-600">3</div>
+                                Información del Curso
+                            </h4>
+                            <div class="bg-gray-50 p-4 rounded-lg space-y-4">
+                                <div>
+                                    <label for="nivel" class="block text-sm font-medium text-gray-700 mb-1">Nivel *</label>
+                                    <select name="nivel_educativo_id" id="nivel_educativo_id" required onchange="actualizarCategorias()"
+                                        class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                        <option value="">-- Seleccionar Nivel --</option>
+                                        @foreach($nivelesEducativos as $nivel)
+                                            <option value="{{ $nivel->id }}">{{ $nivel->nombre_nivel }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label for="categoria_id" class="block text-sm font-medium text-gray-700 mb-1">Curso/Ciclo *</label>
+                                        <select name="categoria_id" id="categoria_id" required
+                                            class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                            <option value="">-- Seleccionar Curso --</option>
+                                            <!-- Las opciones se cargarán dinámicamente con JavaScript -->
+                                        </select>
+                                        <p class="mt-1 text-xs text-gray-500">Ej: 1º ESO, CFGM, etc.</p>
+                                    </div>
+                                    
+                                    <div>
+                                        <label for="grupo" class="block text-sm font-medium text-gray-700 mb-1">Grupo</label>
+                                        <input type="text" name="grupo" id="grupo" 
+                                            class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                        <p class="mt-1 text-xs text-gray-500">Ej: A, B, C, etc.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-3 pt-4 border-t mt-4">
+                    <button type="button" onclick="closeModalClase()"
+                            class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all">
+                        Cancelar
+                    </button>
+                    <button type="submit" id="submitButtonClase"
+                            class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 border border-transparent rounded-lg hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all shadow-lg">
+                        <div class="flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                            Crear Clase
+                        </div>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
 <script>
+    // Categorías organizadas por nivel educativo
+    const categoriasPorNivel = {
+        @foreach($nivelesEducativos as $nivel)
+            {{ $nivel->id }}: [
+                @foreach($categoriasPorNivel[$nivel->id] ?? [] as $categoria)
+                    {
+                        id: {{ $categoria->id }},
+                        nombre: '{{ $categoria->pivot->nombre_personalizado ?: $categoria->nombre_categoria }}'
+                    },
+                @endforeach
+            ],
+        @endforeach
+    };
+
+    // Función para actualizar las categorías según el nivel seleccionado
+    function actualizarCategorias() {
+        const nivelId = document.getElementById('nivel_educativo_id').value;
+        const categoriaSelect = document.getElementById('categoria_id');
+        
+        // Limpiar select
+        categoriaSelect.innerHTML = '<option value="">-- Seleccionar Curso --</option>';
+        
+        // Si no hay nivel seleccionado, salir
+        if (!nivelId) return;
+        
+        // Añadir las categorías del nivel seleccionado
+        const categorias = categoriasPorNivel[nivelId] || [];
+        categorias.forEach(categoria => {
+            const option = document.createElement('option');
+            option.value = categoria.id;
+            option.textContent = categoria.nombre;
+            categoriaSelect.appendChild(option);
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         // Confirmación de eliminación
         const deleteForm = document.querySelector('.delete-form');
@@ -245,6 +420,72 @@
                 
                 if (confirm('¿Estás seguro de que deseas eliminar este docente? Esta acción no se puede deshacer y eliminará toda la información asociada.')) {
                     this.submit();
+                }
+            });
+        }
+
+        // Funciones para el modal de clase
+        window.openModalClase = function() {
+            const modal = document.getElementById('modalNuevaClase');
+            if (modal) {
+                modal.classList.remove('hidden');
+                document.body.classList.add('overflow-hidden');
+                
+                // Animación de entrada
+                setTimeout(() => {
+                    const modalContent = modal.querySelector('.relative');
+                    if (modalContent) {
+                        modalContent.classList.add('animate-fadeIn');
+                    }
+                }, 10);
+                
+                // Scroll al inicio del modal y focus primer input
+                setTimeout(() => {
+                    const firstInput = modal.querySelector('input, select, textarea');
+                    if (firstInput) firstInput.focus();
+                }, 300);
+            }
+        };
+        
+        window.closeModalClase = function() {
+            const modal = document.getElementById('modalNuevaClase');
+            if (modal) {
+                // Animación de salida
+                const modalContent = modal.querySelector('.relative');
+                if (modalContent) {
+                    modalContent.classList.remove('animate-fadeIn');
+                    modalContent.classList.add('animate-fadeOut');
+                }
+                
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                    document.body.classList.remove('overflow-hidden');
+                    
+                    if (modalContent) {
+                        modalContent.classList.remove('animate-fadeOut');
+                    }
+                    
+                    const form = document.getElementById('formNuevaClase');
+                    if (form) {
+                        form.reset();
+                    }
+                }, 200);
+            }
+        };
+
+        // Configuración modal de clase
+        const modalNuevaClase = document.getElementById('modalNuevaClase');
+        if (modalNuevaClase) {
+            modalNuevaClase.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeModalClase();
+                }
+            });
+
+            // Cerrar con tecla Escape
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && !modalNuevaClase.classList.contains('hidden')) {
+                    closeModalClase();
                 }
             });
         }

@@ -195,19 +195,13 @@
                     <div class="bg-gray-50 p-4 rounded-lg space-y-4">
                         <div>
                             <label for="departamento_id" class="block text-sm font-medium text-gray-700 mb-1">Departamento</label>
-                            <select name="departamento_id" id="departamento_id" onchange="toggleDepartamentoManual()"
+                            <select name="departamento_id" id="departamento_id"
                                     class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-sm transition-all">
                                 <option value="">-- Seleccionar Departamento --</option>
                                 @foreach($departamentos as $departamento)
                                     <option value="{{ $departamento->id }}">{{ $departamento->nombre }}</option>
                                 @endforeach
                             </select>
-                        </div>
-                        
-                        <div id="departamento_manual_container">
-                            <label for="departamento" class="block text-sm font-medium text-gray-700 mb-1">Nombre del Departamento (si no está en la lista)</label>
-                            <input type="text" name="departamento" id="departamento" 
-                                   class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-sm transition-all">
                         </div>
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
