@@ -434,8 +434,11 @@
                                                 </div>
                                             </div>
                                             <div class="ml-4">
-                                                <p class="text-sm font-medium text-gray-500">{{ __('messages.website') }}</p>
-                                                <p class="text-lg font-semibold text-gray-900" data-valor="web">{{ $user->web ?? 'No especificado' }}</p>
+                                                <p class="text-sm font-medium text-gray-500">Sitio Web</p>
+                                                <input type="url" name="sitio_web" id="sitio_web" value="{{ $user->sitio_web }}"
+                                                       class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                                                       placeholder="https://ejemplo.com">
+                                                <span id="error-sitio_web" class="error-message text-xs text-red-500 mt-1 hidden"></span>
                                             </div>
                                         </div>
                                     </div>
@@ -680,8 +683,11 @@
                                                 </svg>
                                             </div>
                                             <div class="ml-4">
-                                                <p class="text-sm text-gray-500">Sitio Web</p>
-                                                <p class="font-medium text-gray-900" data-valor="web">{{ $user->web ?? 'No especificado' }}</p>
+                                                <p class="text-sm font-medium text-gray-500">Sitio Web</p>
+                                                <input type="url" name="sitio_web" id="sitio_web" value="{{ $user->sitio_web }}"
+                                                       class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                                                       placeholder="https://ejemplo.com">
+                                                <span id="error-sitio_web" class="error-message text-xs text-red-500 mt-1 hidden"></span>
                                             </div>
                                         </div>
                                     </div>
@@ -1010,6 +1016,17 @@
                                     </div>
 
                                     <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                                        <input type="email" name="email" id="email" value="{{ $user->email }}"
+                                               class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 transition-all duration-200"
+                                               onblur="validarEmail(this)">
+                                        <span id="error-email" class="error-message text-xs text-red-500 mt-1 hidden"></span>
+                                        @error('email')
+                                            <span class="error-message text-xs text-red-500 mt-1">{{ $message }}</span>
+                                        @enderror
+                                    </div>
+
+                                    <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
                                         <textarea name="descripcion" id="descripcion" rows="3"
                                                   class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 transition-all duration-200"
@@ -1115,7 +1132,7 @@
                                     @endif
 
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Ciudad</label>
+                                        <label for="ciudad" class="block text-sm font-medium text-gray-700 mb-2">Ciudad</label>
                                         <input type="text" name="ciudad" id="ciudad" value="{{ $user->ciudad }}"
                                                class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 transition-all duration-200"
                                                onblur="validarCiudad(this)">
@@ -1245,8 +1262,8 @@
                                                    readonly>
                                         </div>
                                         <div>
-                                            <label for="ciudad" class="block text-sm font-medium text-gray-700 mb-1">Ciudad</label>
-                                            <input type="text" name="ciudad" id="ciudad" value="{{ $user->ciudad }}"
+                                            <label for="ciudad_mapa" class="block text-sm font-medium text-gray-700 mb-1">Ciudad</label>
+                                            <input type="text" name="ciudad_mapa" id="ciudad_mapa" value="{{ $user->ciudad }}"
                                                    class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
                                                    readonly>
                                         </div>
@@ -1736,28 +1753,13 @@
     @endsection
 
 @push('scripts')
-    {{-- Primero cargar las dependencias --}}
+    {{-- Cargar las dependencias --}}
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
-    {{-- Luego cargar tus scripts en orden --}}
-    <script src="{{ asset('js/profile-functions.js') }}"></script>
-    <script src="{{ asset('js/profile.js') }}"></script>
-
-    <script>
-        // Eliminar todas las funciones de validación de aquí
-        // Solo dejar la inicialización del formulario
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('profileForm');
-            if (form) {
-                // Remover cualquier event listener existente
-                form.replaceWith(form.cloneNode(true));
-                
-                // Añadir el nuevo event listener
-                document.getElementById('profileForm').addEventListener('submit', handleFormSubmit);
-            }
-        });
-    </script>
+    {{-- Cargar los scripts en orden --}}
+    <script src="{{ asset('js/profile-validaciones.js') }}?v={{ time() }}"></script>
+    <script src="{{ asset('js/profile.js') }}?v={{ time() }}"></script>
 @endpush
 
 @prepend('scripts')
@@ -1766,22 +1768,99 @@
     
     {{-- SweetAlert2 CSS --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-    
-    {{-- Leaflet JS --}}
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    
-    {{-- SweetAlert2 JS --}}
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-    {{-- Profile JS --}}
-    <script src="{{ asset('js/profile.js') }}?v={{ time() }}"></script>
 @endprepend
 
 @if(auth()->user()->role_id == 2)
     <div data-role="empresa" class="hidden"></div>
 @endif
 
-{{-- Al final del archivo blade, justo antes de cerrar el body --}}
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-<script src="{{ asset('js/profile.js') }}?v={{ time() }}"></script>
+<script>
+    function handleFormSubmit(e) {
+        e.preventDefault();
+
+        if (window.isFormSubmitting) return;
+
+        const form = e.target;
+        
+        const emailInput = form.querySelector('input[name="email"]') || 
+                          form.querySelector('#email') ||
+                          form.querySelector('input[type="email"]');
+                          
+        const nombreInput = form.querySelector('input[name="nombre"]') ||
+                           form.querySelector('#nombre') ||
+                           form.querySelector('input[name="name"]');
+
+        if (!emailInput) {
+            Swal.fire({
+                title: 'Error',
+                text: 'No se encontró el campo de email en el formulario',
+                icon: 'error',
+                confirmButtonColor: '#7C3AED'
+            });
+            return;
+        }
+
+        if (!nombreInput) {
+            Swal.fire({
+                title: 'Error',
+                text: 'No se encontró el campo de nombre en el formulario',
+                icon: 'error',
+                confirmButtonColor: '#7C3AED'
+            });
+            return;
+        }
+
+        const formData = new FormData(form);
+
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire({
+                    title: '¡Éxito!',
+                    text: 'Los cambios se han guardado correctamente',
+                    icon: 'success',
+                    confirmButtonColor: '#7C3AED'
+                }).then(() => {
+                    window.location.reload();
+                });
+            } else {
+                throw new Error(data.message || 'Error al guardar los cambios');
+            }
+        })
+        .catch(error => {
+            Swal.fire({
+                title: 'Error',
+                text: error.message || 'Ha ocurrido un error al guardar los cambios',
+                icon: 'error',
+                confirmButtonColor: '#7C3AED'
+            });
+        })
+        .finally(() => {
+            const submitButton = form.querySelector('button[type="submit"]');
+            if (submitButton) {
+                submitButton.disabled = false;
+                submitButton.innerHTML = 'Guardar cambios';
+            }
+            window.isFormSubmitting = false;
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const profileForm = document.getElementById('profileForm');
+        
+        if (profileForm) {
+            const newForm = profileForm.cloneNode(true);
+            profileForm.parentNode.replaceChild(newForm, profileForm);
+            newForm.addEventListener('submit', handleFormSubmit);
+        }
+    });
+</script>
