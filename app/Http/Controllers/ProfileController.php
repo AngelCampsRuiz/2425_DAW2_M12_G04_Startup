@@ -49,14 +49,13 @@ class ProfileController extends Controller
     public function update(Request $request)
     {
         $user = auth()->user();
-
-        $request->validate([
+        
+        $rules = [
             'nombre' => 'required|string|max:255',
             'email' => 'required|email|unique:user,email,' . $user->id,
             'descripcion' => 'nullable|string|max:1000',
             'telefono' => 'nullable|string|max:20',
-            'ciudad' => 'nullable|string|max:100',
-            'dni' => 'nullable|string|max:20',
+            'ciudad' => 'nullable|string|max:255',
             'sitio_web' => 'nullable|url|max:255',
             'imagen' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'banner' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:4096',
@@ -65,10 +64,19 @@ class ProfileController extends Controller
             'show_ciudad' => 'boolean',
             'show_direccion' => 'boolean',
             'show_web' => 'boolean',
-        ]);
+        ];
+
+        // Añadir reglas específicas según el rol
+        if ($user->role_id == 2) {
+            $rules['cif'] = 'required|string|max:9'; // Para empresas
+        } else {
+            $rules['dni'] = 'required|string|max:9'; // Para otros roles
+        }
+
+        $validatedData = $request->validate($rules);
 
         // Manejar la subida de la imagen de perfil
-            if ($request->hasFile('imagen')) {
+        if ($request->hasFile('imagen')) {
             $imageName = time() . '_' . $request->file('imagen')->getClientOriginalName();
             $request->file('imagen')->move(public_path('profile_images'), $imageName);
 
@@ -81,7 +89,7 @@ class ProfileController extends Controller
             }
 
             $user->imagen = $imageName;
-                }
+        }
 
         // Manejar la subida del banner
         if ($request->hasFile('banner')) {
@@ -93,20 +101,20 @@ class ProfileController extends Controller
                 $oldBannerPath = public_path('profile_banners/' . $user->banner);
                 if (file_exists($oldBannerPath)) {
                     unlink($oldBannerPath);
-            }
+                }
             }
 
             $user->banner = $bannerName;
         }
 
+        // Actualizar datos básicos del usuario
         $user->update([
-            'nombre' => $request->nombre,
-            'email' => $request->email,
-            'descripcion' => $request->descripcion,
-            'telefono' => $request->telefono,
-            'ciudad' => $request->ciudad,
-            'dni' => $request->dni,
-            'sitio_web' => $request->sitio_web,
+            'nombre' => $validatedData['nombre'],
+            'email' => $validatedData['email'],
+            'descripcion' => $validatedData['descripcion'],
+            'telefono' => $validatedData['telefono'],
+            'ciudad' => $validatedData['ciudad'],
+            'sitio_web' => $validatedData['sitio_web'],
             'show_telefono' => $request->has('show_telefono'),
             'show_dni' => $request->has('show_dni'),
             'show_ciudad' => $request->has('show_ciudad'),
@@ -114,28 +122,42 @@ class ProfileController extends Controller
             'show_web' => $request->has('show_web'),
         ]);
 
-        if ($request->ajax()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Perfil actualizado correctamente',
-                'user' => $user,
-                // Puedes agregar más datos si tu JS los necesita
+        // Si es una empresa, actualizar el CIF
+        if ($user->role_id == 2 && isset($validatedData['cif'])) {
+            $user->empresa()->update([
+                'cif' => $validatedData['cif']
             ]);
-        } else {
-            return redirect()->back()->with('success', 'Perfil actualizado correctamente');
+        } elseif (isset($validatedData['dni'])) {
+            $user->update([
+                'dni' => $validatedData['dni']
+            ]);
         }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Perfil actualizado correctamente',
+            'user' => $user->load('empresa') // Cargar la relación empresa si existe
+        ]);
     }
 
     public function updateLocation(Request $request)
     {
         try {
+            $validated = $request->validate([
+                'lat' => 'required|numeric',
+                'lng' => 'required|numeric',
+                'direccion' => 'required|string|max:255',
+                'ciudad' => 'required|string|max:255',
+            ]);
+
             $user = auth()->user();
             
+            // Actualizar los campos de ubicación
             $user->update([
-                'lat' => $request->lat,
-                'lng' => $request->lng,
-                'direccion' => $request->direccion,
-                'ciudad' => $request->ciudad
+                'lat' => $validated['lat'],
+                'lng' => $validated['lng'],
+                'direccion' => $validated['direccion'],
+                'ciudad' => $validated['ciudad'],
             ]);
 
             return response()->json([

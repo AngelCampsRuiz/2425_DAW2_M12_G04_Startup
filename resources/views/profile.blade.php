@@ -4,9 +4,7 @@
 {{-- CONTENIDO --}}
     <link rel="stylesheet" href="{{ asset('css/profile.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="{{ asset('js/profile.js') }}"></script>
-    <script src="{{ asset('js/profile-functions.js') }}"></script>
-    <script src="{{ asset('js/profile-edit.js') }}"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     @section('content')
         <div class="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-50">
             {{-- MIGAS DE PAN --}}
@@ -394,8 +392,20 @@
                                                 </div>
                                             </div>
                                             <div class="ml-4">
-                                                <p class="text-sm font-medium text-gray-500">{{ __('messages.dni') }}</p>
-                                                <p class="text-lg font-semibold text-gray-900" data-valor="dni">{{ $user->dni ?? 'No especificado' }}</p>
+                                                <p class="text-sm font-medium text-gray-500">
+                                                    @if($user->role_id == 2)
+                                                        {{ __('messages.cif') }}
+                                                    @else
+                                                        {{ __('messages.dni') }}
+                                                    @endif
+                                                </p>
+                                                <p class="text-lg font-semibold text-gray-900" data-valor="dni">
+                                                    @if($user->role_id == 2)
+                                                        {{ $user->empresa->cif ?? 'No especificado' }}
+                                                    @else
+                                                        {{ $user->dni ?? 'No especificado' }}
+                                                    @endif
+                                                </p>
                                             </div>
                                         </div>
                                     </div>
@@ -969,7 +979,10 @@
 
                     {{-- Contenido del Modal --}}
                     <div class="p-8">
-                        <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data" id="profileForm" class="space-y-8">
+                        <form id="profileForm" 
+                              action="{{ route('profile.update') }}" 
+                              method="POST" 
+                              enctype="multipart/form-data">
                             @csrf
                             @method('PUT')
 
@@ -1081,16 +1094,25 @@
                                         @enderror
                                     </div>
 
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">DNI</label>
-                                        <input type="text" name="dni" id="dni" value="{{ $user->dni }}"
-                                               class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 transition-all duration-200"
-                                               onblur="validarDNI(this)">
-                                        <span id="error-dni" class="error-message text-xs text-red-500 mt-1 hidden"></span>
-                                        @error('dni')
-                                            <span class="error-message text-xs text-red-500 mt-1">{{ $message }}</span>
-                                        @enderror
-                                    </div>
+                                    @if(auth()->user()->role_id == 2)
+                                        {{-- Campo CIF para empresas --}}
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">CIF</label>
+                                            <input type="text" name="cif" id="cif" value="{{ $user->empresa->cif ?? '' }}"
+                                                   class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 transition-all duration-200"
+                                                   onblur="validarCIF(this)">
+                                            <span id="error-cif" class="error-message text-xs text-red-500 mt-1 hidden"></span>
+                                        </div>
+                                    @else
+                                        {{-- Campo DNI para otros usuarios --}}
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">DNI</label>
+                                            <input type="text" name="dni" id="dni" value="{{ $user->dni ?? '' }}"
+                                                   class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 transition-all duration-200"
+                                                   onblur="validarDNI(this)">
+                                            <span id="error-dni" class="error-message text-xs text-red-500 mt-1 hidden"></span>
+                                        </div>
+                                    @endif
 
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">Ciudad</label>
@@ -1210,7 +1232,7 @@
                                     </div>
 
                                     {{-- Contenedor del mapa --}}
-                                    <div class="w-full h-[400px] rounded-xl overflow-hidden shadow-md mb-4">
+                                    <div class="w-full rounded-xl overflow-hidden shadow-md mb-4" style="height: 400px;">
                                         <div id="locationMap" class="w-full h-full"></div>
                                     </div>
 
@@ -1356,20 +1378,27 @@
 
             function validarDNI(field) {
                 if (field.value.trim()) {
-                    const dniRegex = /^[0-9]{8}[A-Za-z]$/;
-                    const nieRegex = /^[XYZxyz][0-9]{7}[A-Za-z]$/;
-
-                    if (!dniRegex.test(field.value.trim()) && !nieRegex.test(field.value.trim())) {
-                        showError(field, "Formato de DNI/NIE no válido");
-                        return false;
-                    } else {
-                        hideError(field);
-                        return true;
-                    }
-                } else {
+                    @if(auth()->user()->role_id == 2)
+                        // Validación de CIF
+                        const cifRegex = /^[A-HJNP-SUVW][0-9]{7}[0-9A-J]$/;
+                        if (!cifRegex.test(field.value.trim().toUpperCase())) {
+                            showError(field, "Formato de CIF no válido");
+                            return false;
+                        }
+                    @else
+                        // Validación de DNI/NIE
+                        const dniRegex = /^[0-9]{8}[A-Za-z]$/;
+                        const nieRegex = /^[XYZxyz][0-9]{7}[A-Za-z]$/;
+                        if (!dniRegex.test(field.value.trim()) && !nieRegex.test(field.value.trim())) {
+                            showError(field, "Formato de DNI/NIE no válido");
+                            return false;
+                        }
+                    @endif
                     hideError(field);
                     return true;
                 }
+                hideError(field);
+                return true;
             }
 
             function validarCiudad(field) {
@@ -1678,7 +1707,6 @@
         </script>
 
         @if(auth()->user()->role_id == 2)
-            <script src="{{ asset('js/profile-map.js') }}"></script>
         @endif
 
         <!-- Sección del Mapa de Solo Lectura -->
@@ -1706,3 +1734,54 @@
             </div>
         @endif
     @endsection
+
+@push('scripts')
+    {{-- Primero cargar las dependencias --}}
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    {{-- Luego cargar tus scripts en orden --}}
+    <script src="{{ asset('js/profile-functions.js') }}"></script>
+    <script src="{{ asset('js/profile.js') }}"></script>
+
+    <script>
+        // Eliminar todas las funciones de validación de aquí
+        // Solo dejar la inicialización del formulario
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('profileForm');
+            if (form) {
+                // Remover cualquier event listener existente
+                form.replaceWith(form.cloneNode(true));
+                
+                // Añadir el nuevo event listener
+                document.getElementById('profileForm').addEventListener('submit', handleFormSubmit);
+            }
+        });
+    </script>
+@endpush
+
+@prepend('scripts')
+    {{-- Leaflet CSS --}}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    
+    {{-- SweetAlert2 CSS --}}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    
+    {{-- Leaflet JS --}}
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    
+    {{-- SweetAlert2 JS --}}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    {{-- Profile JS --}}
+    <script src="{{ asset('js/profile.js') }}?v={{ time() }}"></script>
+@endprepend
+
+@if(auth()->user()->role_id == 2)
+    <div data-role="empresa" class="hidden"></div>
+@endif
+
+{{-- Al final del archivo blade, justo antes de cerrar el body --}}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script src="{{ asset('js/profile.js') }}?v={{ time() }}"></script>
