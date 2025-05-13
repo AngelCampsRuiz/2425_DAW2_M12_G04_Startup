@@ -9,63 +9,73 @@ function initializeMap() {
     const mapContainer = document.getElementById('locationMap');
     if (!mapContainer) return; // Si no existe el contenedor, no inicializar
 
-    // Obtener las coordenadas guardadas o usar coordenadas por defecto (Barcelona)
-    const lat = document.getElementById('lat')?.value || 41.390205;
-    const lng = document.getElementById('lng')?.value || 2.154007;
-
-    // Si el mapa ya existe, lo destruimos
+    // Si ya existe un mapa, destruirlo
     if (map) {
         map.remove();
         map = null;
     }
 
-    // Crear el mapa
-    map = L.map('locationMap', {
-        center: [lat, lng],
-        zoom: 13,
-        zoomControl: true
-    });
+    try {
+        // Obtener las coordenadas guardadas o usar coordenadas por defecto (Barcelona)
+        const lat = document.getElementById('lat')?.value || 41.390205;
+        const lng = document.getElementById('lng')?.value || 2.154007;
 
-    // Añadir capa de OpenStreetMap
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors',
-        maxZoom: 19
-    }).addTo(map);
+        // Crear el mapa
+        map = L.map('locationMap', {
+            center: [lat, lng],
+            zoom: 13,
+            zoomControl: true
+        });
 
-    // Añadir marcador
-    marker = L.marker([lat, lng], {
-        draggable: true
-    }).addTo(map);
+        // Añadir capa de OpenStreetMap
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19
+        }).addTo(map);
 
-    // Evento cuando se arrastra el marcador
-    marker.on('dragend', function(e) {
-        const position = marker.getLatLng();
-        updateLocationFields(position.lat, position.lng);
-    });
+        // Añadir marcador
+        marker = L.marker([lat, lng], {
+            draggable: true
+        }).addTo(map);
 
-    // Evento de clic en el mapa
-    map.on('click', function(e) {
-        marker.setLatLng(e.latlng);
-        updateLocationFields(e.latlng.lat, e.latlng.lng);
-    });
+        // Evento cuando se arrastra el marcador
+        marker.on('dragend', function(e) {
+            const position = marker.getLatLng();
+            updateLocationFields(position.lat, position.lng);
+        });
 
-    // Invalidar el tamaño del mapa después de que sea visible
-    setTimeout(() => {
-        map.invalidateSize();
+        // Evento de clic en el mapa
+        map.on('click', function(e) {
+            marker.setLatLng(e.latlng);
+            updateLocationFields(e.latlng.lat, e.latlng.lng);
+        });
+
+        // Forzar múltiples actualizaciones del tamaño del mapa
         setTimeout(() => {
             map.invalidateSize();
             setTimeout(() => {
                 map.invalidateSize();
-            }, 500);
-        }, 300);
-    }, 100);
+                setTimeout(() => {
+                    map.invalidateSize();
+                    map.setView([lat, lng], 13);
+                }, 500);
+            }, 300);
+        }, 100);
+    } catch (error) {
+        console.error('Error al inicializar el mapa:', error);
+    }
 }
 
 // Función para actualizar los campos de ubicación
 async function updateLocationFields(lat, lng) {
     // Actualizar campos ocultos
-    document.getElementById('lat').value = lat;
-    document.getElementById('lng').value = lng;
+    const latInput = document.getElementById('lat');
+    const lngInput = document.getElementById('lng');
+    
+    if (latInput && lngInput) {
+        latInput.value = lat;
+        lngInput.value = lng;
+    }
 
     try {
         // Obtener dirección usando Nominatim
@@ -116,6 +126,8 @@ async function saveLocation() {
                 text: 'Ubicación actualizada correctamente',
                 icon: 'success',
                 confirmButtonColor: '#7C3AED'
+            }).then(() => {
+                window.location.reload();
             });
         } else {
             throw new Error(data.message || 'Error al actualizar la ubicación');
@@ -177,7 +189,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Intentar inicializar el mapa de edición
     const editMapContainer = document.getElementById('locationMap');
     if (editMapContainer) {
-        initializeMap();
+        // Retrasar la inicialización para asegurar que el contenedor esté visible
+        setTimeout(initializeMap, 500);
     }
 
     // Intentar inicializar el mapa de visualización
