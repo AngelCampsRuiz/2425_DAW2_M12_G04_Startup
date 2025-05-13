@@ -6,19 +6,20 @@ let viewMap = null;
 
 // Función para actualizar los campos de ubicación
 async function updateLocationFields(lat, lng) {
-    document.getElementById('lat').value = lat;
-    document.getElementById('lng').value = lng;
-
     try {
         const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
         const data = await response.json();
         
         if (data.address) {
-            const direccion = document.getElementById('direccion');
-            const ciudad = document.getElementById('ciudad');
+            const direccionInput = document.getElementById('direccion');
+            const ciudadInput = document.getElementById('ciudad');
+            const latInput = document.getElementById('lat');
+            const lngInput = document.getElementById('lng');
             
-            if (direccion) direccion.value = data.display_name;
-            if (ciudad) ciudad.value = data.address.city || data.address.town || data.address.village || '';
+            if (direccionInput) direccionInput.value = data.display_name;
+            if (ciudadInput) ciudadInput.value = data.address.city || data.address.town || data.address.village || '';
+            if (latInput) latInput.value = lat;
+            if (lngInput) lngInput.value = lng;
         }
     } catch (error) {
         console.error('Error al obtener la información de ubicación:', error);
@@ -30,20 +31,15 @@ function initializeMap() {
     const mapContainer = document.getElementById('locationMap');
     if (!mapContainer) return;
 
-    // Establecer dimensiones explícitas
-    mapContainer.style.height = '300px'; // Reducir altura
-    mapContainer.style.width = '100%';
-    mapContainer.style.maxHeight = '400px';
-
-    // Obtener las coordenadas guardadas o usar coordenadas por defecto
-    const lat = document.getElementById('lat')?.value || 41.390205;
-    const lng = document.getElementById('lng')?.value || 2.154007;
-
     // Limpiar el mapa existente si lo hay
     if (editMap) {
         editMap.remove();
         editMap = null;
     }
+
+    // Obtener las coordenadas guardadas o usar coordenadas por defecto
+    const lat = document.getElementById('lat')?.value || 41.390205;
+    const lng = document.getElementById('lng')?.value || 2.154007;
 
     // Crear el mapa con opciones optimizadas
     editMap = L.map('locationMap', {
@@ -84,21 +80,17 @@ function initializeMap() {
         updateLocationFields(e.latlng.lat, e.latlng.lng);
     });
 
-    // Serie de actualizaciones programadas para asegurar la carga correcta
-    const refreshMap = () => {
-        if (editMap) {
-            editMap.invalidateSize({
-                animate: false,
-                pan: false
-            });
-        }
-    };
+    // Añadir botón de guardar
+    const saveButton = document.createElement('button');
+    saveButton.className = 'save-location-btn';
+    saveButton.innerHTML = 'Guardar Ubicación';
+    saveButton.onclick = saveLocation;
+    mapContainer.parentElement.appendChild(saveButton);
 
-    // Múltiples intentos de actualización
-    refreshMap();
-    [100, 300, 500, 1000].forEach(delay => {
-        setTimeout(refreshMap, delay);
-    });
+    // Forzar actualización del mapa
+    setTimeout(() => {
+        editMap.invalidateSize();
+    }, 100);
 }
 
 // Función para guardar la ubicación
@@ -127,19 +119,20 @@ async function saveLocation() {
         const data = await response.json();
 
         if (response.ok && data.success) {
-            await Swal.fire({
+            Swal.fire({
                 title: '¡Éxito!',
                 text: 'Ubicación actualizada correctamente',
                 icon: 'success',
                 confirmButtonColor: '#7C3AED'
+            }).then(() => {
+                window.location.reload();
             });
-            window.location.reload();
         } else {
             throw new Error(data.message || 'Error al actualizar la ubicación');
         }
     } catch (error) {
         console.error('Error:', error);
-        await Swal.fire({
+        Swal.fire({
             title: 'Error',
             text: error.message || 'Error al guardar la ubicación',
             icon: 'error',
@@ -210,5 +203,5 @@ document.addEventListener('DOMContentLoaded', function() {
         if (viewMapContainer) {
             initializeViewMap();
         }
-    }, 100);
+    }, 300);
 });

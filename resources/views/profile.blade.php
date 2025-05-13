@@ -1678,11 +1678,7 @@
             </div>
             
             <div class="w-full aspect-[4/3] rounded-xl overflow-hidden shadow-md">
-                        <div id="viewLocationMap"
-                             class="w-full h-full"
-                     data-lat="{{ $user->lat }}"
-                     data-lng="{{ $user->lng }}">
-                        </div>
+                        <div id="locationMap" class="w-full h-full"></div>
                     </div>
             
                     @if($user->direccion)
