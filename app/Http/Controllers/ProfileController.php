@@ -130,6 +130,7 @@ class ProfileController extends Controller
     {
         try {
             $user = auth()->user();
+            
             $user->update([
                 'lat' => $request->lat,
                 'lng' => $request->lng,

@@ -87,12 +87,12 @@ async function updateLocationFields(lat, lng) {
 
 // Función para guardar la ubicación
 async function saveLocation() {
-    const lat = document.getElementById('lat').value;
-    const lng = document.getElementById('lng').value;
-    const direccion = document.getElementById('direccion').value;
-    const ciudad = document.getElementById('ciudad').value;
-
     try {
+        const lat = document.getElementById('lat').value;
+        const lng = document.getElementById('lng').value;
+        const direccion = document.getElementById('direccion').value;
+        const ciudad = document.getElementById('ciudad').value;
+
         const response = await fetch('/profile/update-location', {
             method: 'POST',
             headers: {
@@ -100,29 +100,30 @@ async function saveLocation() {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                 'Accept': 'application/json'
             },
-            body: JSON.stringify({ lat, lng, direccion, ciudad })
+            body: JSON.stringify({ 
+                lat: parseFloat(lat), 
+                lng: parseFloat(lng), 
+                direccion, 
+                ciudad 
+            })
         });
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || 'Error al actualizar la ubicación');
-        }
 
         const data = await response.json();
 
-        if (data.success) {
-            Swal.fire({
+        if (response.ok && data.success) {
+            await Swal.fire({
                 title: '¡Éxito!',
                 text: 'Ubicación actualizada correctamente',
                 icon: 'success',
                 confirmButtonColor: '#7C3AED'
             });
+            window.location.reload();
         } else {
             throw new Error(data.message || 'Error al actualizar la ubicación');
         }
     } catch (error) {
         console.error('Error:', error);
-        Swal.fire({
+        await Swal.fire({
             title: 'Error',
             text: error.message || 'Error al guardar la ubicación',
             icon: 'error',

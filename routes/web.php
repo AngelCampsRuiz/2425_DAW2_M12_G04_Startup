@@ -45,6 +45,8 @@
                 use App\Http\Controllers\CalendarController;
             // CONTROLADOR DE RECORDATORIOS
                 use App\Http\Controllers\ReminderController;
+            // CONTROLADOR USUARIOS
+                use App\Http\Controllers\UserController;
 
     // RUTAS DE LA APLICACIÓN
         // RUTA PRINCIPAL HOME
