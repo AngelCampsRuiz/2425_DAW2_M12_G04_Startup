@@ -230,7 +230,7 @@
     <div id="modal-eliminar" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
         <div class="bg-white rounded-lg p-8 max-w-md w-full">
             <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-semibold text-gray-800">Confirmar Eliminación</h3>
+                <h3 class="text-xl font-semibold text-gray-800" id="action-title">Confirmar Desactivación</h3>
                 <button id="modal-eliminar-close" class="text-gray-500 hover:text-gray-700">
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -238,19 +238,20 @@
                 </button>
             </div>
             
-            <p class="text-gray-600 mb-6">¿Estás seguro de que deseas eliminar esta oferta? Esta acción no se puede deshacer.</p>
+            <p class="text-gray-600 mb-6" id="action-message">¿Estás seguro de que deseas desactivar esta oferta? Las ofertas desactivadas no serán visibles para los usuarios.</p>
             
-            <form id="form-eliminar" method="POST">
+            <form id="form-activar" method="POST">
                 @csrf
-                @method('DELETE')
-                <input type="hidden" name="eliminar_id" id="eliminar_id">
+                @method('PUT')
+                <input type="hidden" name="publicacion_id" id="publicacion_id_activar">
+                <input type="hidden" name="is_active" id="is_active" value="1">
                 
                 <div class="flex justify-end space-x-3">
                     <button type="button" id="btn-cancelar-eliminar" class="px-4 py-2 text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200">
                         Cancelar
                     </button>
-                    <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
-                        Eliminar
+                    <button type="submit" id="action-button" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
+                        Desactivar
                     </button>
                 </div>
             </form>
@@ -289,9 +290,9 @@
         });
         
         // Manejar eliminación
-        document.getElementById('form-eliminar').addEventListener('submit', function(e) {
+        document.getElementById('form-activar').addEventListener('submit', function(e) {
             e.preventDefault();
-            eliminarPublicacion();
+            activarPublicacion();
         });
         
         // Resetear filtros
@@ -336,14 +337,13 @@
                     cargarPublicacion(id);
                 }
                 
-                // Botón eliminar
-                if (e.target.closest('.btn-eliminar')) {
+                // Botón activar/desactivar
+                if (e.target.closest('.btn-activar')) {
                     e.preventDefault();
-                    const id = e.target.closest('.btn-eliminar').getAttribute('data-id');
-                    document.getElementById('eliminar_id').value = id;
-                    document.getElementById('form-eliminar').setAttribute('action', `{{ route("admin.publicaciones.destroy", ":id") }}`.replace(':id', id));
-                    document.getElementById('modal-eliminar').classList.remove('hidden');
-                    document.getElementById('modal-eliminar').classList.add('flex');
+                    const button = e.target.closest('.btn-activar');
+                    const id = button.getAttribute('data-id');
+                    const isActive = button.getAttribute('data-active');
+                    showActivateModal(id, isActive);
                 }
                 
                 // Botones cerrar y cancelar
@@ -523,33 +523,52 @@
             });
         }
         
-        function eliminarPublicacion() {
-            const form = document.getElementById('form-eliminar');
-            const url = form.getAttribute('action');
+        function activarPublicacion() {
+            // Obtener el ID y estado de la publicación del formulario
+            const id = document.getElementById('publicacion_id_activar').value;
+            const isActive = document.getElementById('is_active').value === '1';
             
-            fetch(url, {
+            // Validar ID
+            if (!id || id === 'null') {
+                console.error('ID de publicación no válido');
+                alert('Error: La publicación no tiene un ID válido');
+                return;
+            }
+            
+            // Enviar solicitud para activar/desactivar
+            fetch(`/admin/publicaciones/${id}`, {
                 method: 'POST',
-                body: new FormData(form),
                 headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                }
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    _method: 'PUT',
+                    activo: isActive ? 0 : 1
+                })
             })
             .then(response => response.json())
             .then(data => {
+                // Cerrar modal
                 document.getElementById('modal-eliminar').classList.remove('flex');
                 document.getElementById('modal-eliminar').classList.add('hidden');
                 
                 if (data.success) {
-                    mostrarMensajeExito(data.message || 'Oferta eliminada exitosamente');
-                    actualizarTabla();
+                    // Mostrar mensaje de éxito
+                    const mensaje = isActive ? 'Publicación desactivada correctamente' : 'Publicación activada correctamente';
+                    mostrarMensajeExito(data.message || mensaje);
+                    
+                    // Actualizar tabla
+                    refreshPublicacionesTable();
                 } else {
-                    mostrarMensajeError(data.message || 'Error al eliminar la oferta');
+                    // Mostrar mensaje de error
+                    alert(data.message || 'Ha ocurrido un error al procesar la solicitud');
                 }
             })
             .catch(error => {
-                console.error('Error:', error);
-                mostrarMensajeError('Error al eliminar la oferta');
+                console.error('Error al activar/desactivar publicación:', error);
+                alert('Ha ocurrido un error al procesar la solicitud');
             });
         }
         
@@ -672,6 +691,39 @@
         .catch(error => {
                 console.error('Error:', error);
         });
+    }
+
+    // Actualizar la función que abre el modal de activar/desactivar
+    function showActivateModal(id, isActive) {
+        const modal = document.getElementById('modal-eliminar');
+        const actionTitle = document.getElementById('action-title');
+        const actionMessage = document.getElementById('action-message');
+        const actionButton = document.getElementById('action-button');
+        const isActiveInput = document.getElementById('is_active');
+        const publicacionIdInput = document.getElementById('publicacion_id_activar');
+        
+        // Actualizar los valores según el estado
+        publicacionIdInput.value = id;
+        isActiveInput.value = isActive;
+        
+        // Actualizar el aspecto según si se va a activar o desactivar
+        if (isActive === '1') {
+            actionTitle.textContent = 'Confirmar Desactivación';
+            actionMessage.textContent = '¿Estás seguro de que deseas desactivar esta oferta? Las ofertas desactivadas no serán visibles para los usuarios.';
+            actionButton.textContent = 'Desactivar';
+            actionButton.classList.remove('bg-green-600', 'hover:bg-green-700');
+            actionButton.classList.add('bg-red-600', 'hover:bg-red-700');
+        } else {
+            actionTitle.textContent = 'Confirmar Activación';
+            actionMessage.textContent = '¿Estás seguro de que deseas activar esta oferta? Las ofertas activas serán visibles para los usuarios.';
+            actionButton.textContent = 'Activar';
+            actionButton.classList.remove('bg-red-600', 'hover:bg-red-700');
+            actionButton.classList.add('bg-green-600', 'hover:bg-green-700');
+        }
+        
+        // Mostrar el modal
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
     }
     });
 </script>

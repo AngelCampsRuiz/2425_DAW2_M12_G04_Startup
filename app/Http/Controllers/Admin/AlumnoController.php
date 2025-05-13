@@ -151,22 +151,34 @@ class AlumnoController extends Controller
      */
     public function edit($id)
     {
-        $alumno = User::where('role_id', 3)->findOrFail($id);
-
-        return response()->json([
-            'alumno' => [
-                'id' => $alumno->id,
-                'nombre' => $alumno->nombre,
-                'email' => $alumno->email,
-                'dni' => $alumno->dni,
-                'telefono' => $alumno->telefono,
-                'ciudad' => $alumno->ciudad,
-                'fecha_nacimiento' => $alumno->fecha_nacimiento,
-                'sitio_web' => $alumno->sitio_web,
-                'descripcion' => $alumno->descripcion,
-                'activo' => $alumno->activo
-            ]
-        ]);
+        try {
+            $user = User::with(['estudiante'])->where('role_id', 3)->findOrFail($id);
+            
+            return response()->json([
+                'estudiante' => [
+                    'id' => $user->id,
+                    'user' => [
+                        'id' => $user->id,
+                        'nombre' => $user->nombre,
+                        'email' => $user->email,
+                        'dni' => $user->dni,
+                        'telefono' => $user->telefono,
+                        'ciudad' => $user->ciudad,
+                        'fecha_nacimiento' => $user->fecha_nacimiento,
+                        'sitio_web' => $user->sitio_web,
+                        'descripcion' => $user->descripcion,
+                        'imagen' => $user->imagen,
+                        'activo' => $user->activo
+                    ]
+                ],
+                'success' => true
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al cargar datos del alumno: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

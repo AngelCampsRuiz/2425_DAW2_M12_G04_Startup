@@ -320,11 +320,13 @@
 
                 // RUTAS PARA GESTIONAR LOS ALUMNOS
                 Route::get('alumnos', [App\Http\Controllers\Admin\AlumnoController::class, 'index'])->name('alumnos.index');
+                Route::get('alumnos/tabla', [App\Http\Controllers\Admin\AlumnoController::class, 'index'])->name('alumnos.tabla');
                 Route::post('alumnos', [App\Http\Controllers\Admin\AlumnoController::class, 'store'])->name('alumnos.store');
                 Route::get('alumnos/{alumno}/edit', [App\Http\Controllers\Admin\AlumnoController::class, 'edit'])->name('alumnos.edit');
                 Route::put('alumnos/{alumno}', [App\Http\Controllers\Admin\AlumnoController::class, 'update'])->name('alumnos.update');
                 Route::delete('alumnos/{alumno}', [App\Http\Controllers\Admin\AlumnoController::class, 'destroy'])->name('alumnos.destroy');
                 Route::delete('alumnos/eliminar-sql/{alumno}', [App\Http\Controllers\Admin\AlumnoController::class, 'destroySQL'])->name('alumnos.destroySQL');
+                Route::put('estudiantes/{estudiante}', [App\Http\Controllers\Admin\AlumnoController::class, 'update'])->name('estudiantes.update');
             });
 
         // Footer resource pages

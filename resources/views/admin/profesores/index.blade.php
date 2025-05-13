@@ -5,7 +5,7 @@
     <div id="success-message" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-6" role="alert" style="display: none;">
         <span id="success-message-text" class="block sm:inline"></span>
     </div>
-
+    
     <div class="flex justify-end mb-4">
         <button id="btnCrearProfesor" class="btn-crear bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2">
             Crear Profesor
@@ -229,31 +229,32 @@
         </div>
     </div>
 
-    <!-- Modal Confirmación Eliminar -->
-    <div id="modal-eliminar" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center hidden z-50">
-        <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+    <!-- Modal Confirmación Activar/Desactivar -->
+    <div id="modal-eliminar" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-8 max-w-md w-full">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-semibold">Confirmar Eliminación</h2>
-                <button id="modal-eliminar-close" class="text-gray-500 hover:text-gray-700 focus:outline-none">
+                <h3 class="text-xl font-semibold text-gray-800" id="action-title">Confirmar Desactivación</h3>
+                <button id="modal-eliminar-close" class="text-gray-500 hover:text-gray-700">
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
             </div>
             
-            <p class="mb-6">¿Estás seguro de que deseas eliminar este profesor? Esta acción no se puede deshacer.</p>
+            <p class="text-gray-600 mb-6" id="action-message">¿Estás seguro de que deseas desactivar este profesor? Los profesores desactivados no serán visibles para los usuarios.</p>
             
-            <form id="form-eliminar" method="POST">
+            <form id="form-activar" method="POST">
                 @csrf
-                @method('DELETE')
-                <input type="hidden" id="eliminar_id" name="eliminar_id" value="">
+                @method('PUT')
+                <input type="hidden" name="profesor_id" id="profesor_id_activar">
+                <input type="hidden" name="is_active" id="is_active" value="1">
                 
-                <div class="flex justify-end">
-                    <button type="button" id="btn-cancelar-eliminar" class="inline-flex items-center px-4 py-2 bg-gray-300 border border-transparent rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-400 active:bg-gray-500 focus:outline-none focus:border-gray-500 focus:ring ring-gray-300 disabled:opacity-25 transition ease-in-out duration-150 mr-3">
+                <div class="flex justify-end space-x-3">
+                    <button type="button" id="btn-cancelar-eliminar" class="px-4 py-2 text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200">
                         Cancelar
                     </button>
-                    <button type="submit" class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700 active:bg-red-800 focus:outline-none focus:border-red-800 focus:ring ring-red-300 disabled:opacity-25 transition ease-in-out duration-150">
-                        Eliminar
+                    <button type="submit" id="action-button" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
+                        Desactivar
                     </button>
                 </div>
             </form>
@@ -275,208 +276,120 @@
 
 @push('scripts')
 <script>
-    // Variable de control para evitar duplicación
+    // Variable global para control de envíos
     let isSubmitting = false;
     
     document.addEventListener('DOMContentLoaded', function() {
+        // Variables de control
+        let timeoutId = null;
+
+        // Inicializar event listeners
         setupEventListeners();
-        setupFiltros();
-    });
+        setupFilterListeners();
     
     function setupEventListeners() {
-        // Delegación de eventos para los botones dinámicos
-        document.addEventListener('click', function(e) {
-            // Botón Crear
-            if (e.target.closest('.btn-crear')) {
+            // Botón crear profesor
+            const btnCrearProfesor = document.getElementById('btnCrearProfesor');
+            if (btnCrearProfesor) {
+                btnCrearProfesor.addEventListener('click', function() {
                 mostrarFormularioCrear();
+                });
             }
             
-            // Botones Editar
+            // Delegación de eventos para botones dinámicos
+            document.addEventListener('click', function(e) {
+                // Botón editar profesor
             if (e.target.closest('.btn-editar')) {
-                const btn = e.target.closest('.btn-editar');
-                const id = btn.getAttribute('data-id');
+                    const button = e.target.closest('.btn-editar');
+                    const id = button.getAttribute('data-id');
                 mostrarFormularioEditar(id);
             }
             
-            // Botones Eliminar
-            if (e.target.closest('.btn-eliminar')) {
-                const btn = e.target.closest('.btn-eliminar');
-                const id = btn.getAttribute('data-id');
-                mostrarModalEliminar(id);
-            }
+                // Botón activar/desactivar
+                if (e.target.closest('.btn-activar')) {
+                    const button = e.target.closest('.btn-activar');
+                    const id = button.getAttribute('data-id');
+                    const isActive = button.getAttribute('data-active');
+                    
+                    openActivateModal(id, isActive);
+                }
+            });
             
             // Cerrar modales
-            if (e.target.closest('#modal-close') || e.target.closest('#btn-cancelar')) {
+            const modalClose = document.getElementById('modal-close');
+            const btnCancelar = document.getElementById('btn-cancelar');
+            
+            if (modalClose) {
+                modalClose.addEventListener('click', function() {
+                    document.getElementById('modal-profesor').classList.add('hidden');
+                    document.getElementById('modal-profesor').classList.remove('flex');
+                });
+            }
+            
+            if (btnCancelar) {
+                btnCancelar.addEventListener('click', function() {
                 document.getElementById('modal-profesor').classList.add('hidden');
+                    document.getElementById('modal-profesor').classList.remove('flex');
+                });
             }
             
-            if (e.target.closest('#modal-eliminar-close') || e.target.closest('#btn-cancelar-eliminar')) {
-                document.getElementById('modal-eliminar').classList.add('hidden');
+            // Formulario
+            const formProfesor = document.getElementById('form-profesor');
+            if (formProfesor) {
+                formProfesor.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    enviarFormulario(this);
+                });
             }
             
-            // Eliminar foto
-            if (e.target.closest('#eliminar-imagen')) {
-                document.getElementById('imagen').value = '';
-                document.getElementById('imagen-preview').classList.add('hidden');
-                document.getElementById('imagen-preview-img').src = '';
-                // Agregar campo oculto para indicar que se debe eliminar la foto existente
-                const inputEliminarImagen = document.getElementById('eliminar_imagen_actual') || document.createElement('input');
-                inputEliminarImagen.type = 'hidden';
-                inputEliminarImagen.id = 'eliminar_imagen_actual';
-                inputEliminarImagen.name = 'eliminar_imagen_actual';
-                inputEliminarImagen.value = '1';
-                document.getElementById('form-profesor').appendChild(inputEliminarImagen);
+            // Modal confirmación
+            const modalEliminarClose = document.getElementById('modal-eliminar-close');
+            const btnCancelarEliminar = document.getElementById('btn-cancelar-eliminar');
+            const formActivar = document.getElementById('form-activar');
+            
+            if (modalEliminarClose) {
+                modalEliminarClose.addEventListener('click', closeDeleteModal);
             }
             
-            // Cerrar modal de eliminar SQL
-            if (e.target.closest('.cerrar-modal')) {
-                document.getElementById('eliminarSqlModal').classList.add('hidden');
+            if (btnCancelarEliminar) {
+                btnCancelarEliminar.addEventListener('click', closeDeleteModal);
             }
             
-            // Confirmar eliminación SQL
-            if (e.target.closest('.confirmar-eliminar-sql')) {
-                eliminarProfesorSQL();
+            if (formActivar) {
+                formActivar.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    handleActivateSubmit();
+                });
             }
-        });
-        
-        // Manejo de la previsualización de la foto
-        const inputImagen = document.getElementById('imagen');
-        if (inputImagen) {
-            inputImagen.addEventListener('change', function(e) {
-                const file = this.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        document.getElementById('imagen-preview-img').src = e.target.result;
-                        document.getElementById('imagen-preview').classList.remove('hidden');
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
         }
         
-        // Manejar envío del formulario
-        const formProfesor = document.getElementById('form-profesor');
-        if (formProfesor) {
-            formProfesor.addEventListener('submit', async function(e) {
-                e.preventDefault();
-                
-                if (isSubmitting) return;
-                
-                // Validar contraseñas
-                if (!validarContrasenas()) return;
-                
-                isSubmitting = true;
-                const btnGuardar = document.getElementById('btn-guardar');
-                btnGuardar.disabled = true;
-                btnGuardar.textContent = 'Guardando...';
-                
-                try {
-                    const formData = new FormData(this);
-                    const profesorId = document.getElementById('profesor_id').value;
-                    const method = document.getElementById('form_method').value;
-                    const url = profesorId ? `/admin/profesores/${profesorId}` : '/admin/profesores';
-                    
-                    console.log(`Enviando formulario a ${url} con método ${method}, ID: ${profesorId || 'nuevo'}`);
-                    
-                    const response = await fetch(url, {
-                        method: 'POST', // Siempre POST, el método real va en _method
-                        body: formData,
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                        }
-                    });
-                    
-                    const data = await response.json();
-                    
-                    if (response.ok) {
-                        mostrarMensajeExito(data.message || 'Profesor guardado correctamente');
-                        document.getElementById('modal-profesor').classList.add('hidden');
-                        limpiarFormulario();
-                        
-                        // Recargamos la tabla de profesores después de guardar
-                        actualizarTabla();
-                    } else {
-                        if (data.errors) {
-                            mostrarErroresFormulario(data.errors);
-                        } else {
-                            mostrarMensajeError(data.message || 'Error al procesar la solicitud');
-                        }
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    mostrarMensajeError('Error al procesar la solicitud');
-                } finally {
-                    isSubmitting = false;
-                    btnGuardar.disabled = false;
-                    btnGuardar.textContent = 'Guardar';
-                }
-            });
+        function setupFilterListeners() {
+            // Eventos para filtrado automático
+            const filtroNombre = document.getElementById('filtro_nombre');
+            const filtroEmail = document.getElementById('filtro_email');
+            const filtroDni = document.getElementById('filtro_dni');
+            const filtroEstado = document.getElementById('filtro_estado');
+            const filtroCiudad = document.getElementById('filtro_ciudad');
+            const resetFiltros = document.getElementById('reset-filtros');
+            
+            if (filtroNombre) filtroNombre.addEventListener('input', debounceFilter);
+            if (filtroEmail) filtroEmail.addEventListener('input', debounceFilter);
+            if (filtroDni) filtroDni.addEventListener('input', debounceFilter);
+            if (filtroEstado) filtroEstado.addEventListener('change', aplicarFiltros);
+            if (filtroCiudad) filtroCiudad.addEventListener('change', aplicarFiltros);
+            
+            if (resetFiltros) {
+                resetFiltros.addEventListener('click', function() {
+                    if (filtroNombre) filtroNombre.value = '';
+                    if (filtroEmail) filtroEmail.value = '';
+                    if (filtroDni) filtroDni.value = '';
+                    if (filtroEstado) filtroEstado.value = '';
+                    if (filtroCiudad) filtroCiudad.value = '';
+                    aplicarFiltros();
+                });
+            }
         }
         
-        // Manejar envío del formulario de eliminación
-        const formEliminar = document.getElementById('form-eliminar');
-        if (formEliminar) {
-            formEliminar.addEventListener('submit', async function(e) {
-                e.preventDefault();
-                
-                if (isSubmitting) return;
-                isSubmitting = true;
-                
-                try {
-                    const profesorId = document.getElementById('eliminar_id').value;
-                    const url = `/admin/profesores/${profesorId}`;
-                    
-                    const response = await fetch(url, {
-                        method: 'DELETE',
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json'
-                        }
-                    });
-                    
-                    const data = await response.json();
-                    
-                    if (response.ok) {
-                        mostrarMensajeExito(data.message || 'Profesor eliminado correctamente');
-                        document.getElementById('modal-eliminar').classList.add('hidden');
-                        
-                        // Recargamos la tabla de profesores después de eliminar
-                        actualizarTabla();
-                    } else {
-                        mostrarMensajeError(data.message || 'Error al eliminar el profesor');
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    mostrarMensajeError('Error al eliminar el profesor');
-                } finally {
-                    isSubmitting = false;
-                }
-            });
-        }
-    }
-    
-    function setupFiltros() {
-        let timeoutId = null;
-
-        // Eventos para filtrado automático
-        document.getElementById('filtro_nombre').addEventListener('input', debounceFilter);
-        document.getElementById('filtro_email').addEventListener('input', debounceFilter);
-        document.getElementById('filtro_dni').addEventListener('input', debounceFilter);
-        document.getElementById('filtro_ciudad').addEventListener('change', aplicarFiltros);
-        document.getElementById('filtro_estado').addEventListener('change', aplicarFiltros);
-        
-        // Resetear filtros
-        document.getElementById('reset-filtros').addEventListener('click', function() {
-            document.getElementById('filtro_nombre').value = '';
-            document.getElementById('filtro_email').value = '';
-            document.getElementById('filtro_dni').value = '';
-            document.getElementById('filtro_ciudad').value = '';
-            document.getElementById('filtro_estado').value = '';
-            aplicarFiltros();
-        });
-
         // Función para debounce en campos de texto
         function debounceFilter() {
             if (timeoutId) {
@@ -486,128 +399,392 @@
                 aplicarFiltros();
             }, 300);
         }
-
-        function aplicarFiltros() {
-            const filtros = {
-                nombre: document.getElementById('filtro_nombre').value,
-                email: document.getElementById('filtro_email').value,
-                dni: document.getElementById('filtro_dni').value,
-                ciudad: document.getElementById('filtro_ciudad').value,
-                estado: document.getElementById('filtro_estado').value
-            };
-            
-            const params = new URLSearchParams();
-            Object.entries(filtros).forEach(([key, value]) => {
-                if (value) {
-                    params.append(key, value);
-                }
-            });
-            
-            refreshTable(params.toString());
-        }
-    }
+    });
     
-    // Funciones auxiliares
+    // Funciones para crear/editar profesores
     function mostrarFormularioCrear() {
-        limpiarFormulario();
-        document.getElementById('modal-title').textContent = 'Crear Nuevo Profesor';
-        document.getElementById('form_method').value = 'POST';
-        document.getElementById('profesor_id').value = '';
-        document.querySelector('.password-required').classList.remove('hidden');
-        document.querySelector('.password-help').classList.add('hidden');
-        document.getElementById('password').required = true;
-        document.getElementById('password_confirmation').required = true;
-        // Ocultar el checkbox de activo para crear
-        document.getElementById('activo-container').classList.add('hidden');
-        document.getElementById('modal-profesor').classList.remove('hidden');
-    }
-    
-    async function mostrarFormularioEditar(id) {
-        try {
-            const response = await fetch(`/admin/profesores/${id}/edit`);
-            const data = await response.json();
+        // Resetear el formulario
+        const form = document.getElementById('form-profesor');
+        if (form) {
+            form.reset();
+            form.setAttribute('action', '/admin/profesores');
             
-            if (response.ok) {
-                const profesor = data.profesor;
-                document.getElementById('profesor_id').value = profesor.id;
-                document.getElementById('nombre').value = profesor.nombre;
-                document.getElementById('email').value = profesor.email;
-                document.getElementById('dni').value = profesor.dni;
-                document.getElementById('telefono').value = profesor.telefono || '';
-                document.getElementById('ciudad').value = profesor.ciudad || '';
-                document.getElementById('fecha_nacimiento').value = profesor.fecha_nacimiento || '';
-                document.getElementById('sitio_web').value = profesor.sitio_web || '';
-                document.getElementById('descripcion').value = profesor.descripcion || '';
-                
-                // Manejar la imagen
-                if (profesor.imagen) {
-                    document.getElementById('imagen-preview-img').src = `/public/profile_images/${profesor.imagen}`;
-                    document.getElementById('imagen-preview').classList.remove('hidden');
-                } else {
-                    document.getElementById('imagen-preview').classList.add('hidden');
-                }
-                
-                // Configurar el formulario para edición
-                document.getElementById('modal-title').textContent = 'Editar Profesor';
-                document.getElementById('form_method').value = 'PUT';
-                document.querySelector('.password-required').classList.add('hidden');
-                document.querySelector('.password-help').classList.remove('hidden');
-                document.getElementById('password').required = false;
-                document.getElementById('password_confirmation').required = false;
-                
-                // Mostrar el checkbox de activo y configurar estado
-                document.getElementById('activo-container').classList.remove('hidden');
-                document.getElementById('activo').checked = profesor.activo;
-                
-                document.getElementById('modal-profesor').classList.remove('hidden');
-            } else {
-                mostrarMensajeError('Error al cargar los datos del profesor');
+            // Ocultar errores previos
+            const formErrors = document.getElementById('form-errors');
+            if (formErrors) {
+                formErrors.classList.add('hidden');
+                document.getElementById('error-list').innerHTML = '';
             }
-        } catch (error) {
-            console.error('Error:', error);
-            mostrarMensajeError('Error al cargar los datos del profesor');
+            
+            // Configurar campos
+            document.getElementById('profesor_id').value = '';
+            document.getElementById('form_method').value = 'POST';
+            document.getElementById('modal-title').textContent = 'Crear Nuevo Profesor';
+            
+            // Configurar campos de contraseña como obligatorios
+            const passwordRequired = document.querySelector('.password-required');
+            const passwordHelp = document.querySelector('.password-help');
+            
+            if (passwordRequired) passwordRequired.classList.remove('hidden');
+            if (passwordHelp) passwordHelp.classList.add('hidden');
+            
+            const password = document.getElementById('password');
+            const passwordConfirmation = document.getElementById('password_confirmation');
+            
+            if (password) password.setAttribute('required', 'required');
+            if (passwordConfirmation) passwordConfirmation.setAttribute('required', 'required');
+            
+            // Ocultar campo de activo para nuevas cuentas
+            const activoContainer = document.getElementById('activo-container');
+            if (activoContainer) activoContainer.classList.add('hidden');
+            
+            // Mostrar el modal
+            const modalProfesor = document.getElementById('modal-profesor');
+            if (modalProfesor) {
+                modalProfesor.classList.remove('hidden');
+                modalProfesor.classList.add('flex');
+            }
         }
     }
     
-    function mostrarModalEliminar(id) {
-        document.getElementById('eliminar_id').value = id;
-        document.getElementById('modal-eliminar').classList.remove('hidden');
-    }
-    
-    function limpiarFormulario() {
-        document.getElementById('form-profesor').reset();
-        document.getElementById('profesor_id').value = '';
-        document.getElementById('imagen-preview').classList.add('hidden');
-        document.getElementById('imagen-preview-img').src = '';
-        document.getElementById('form-errors').classList.add('hidden');
-        document.getElementById('error-list').innerHTML = '';
+    function mostrarFormularioEditar(id) {
+        if (!id) {
+            console.error('ID de profesor no válido');
+            return;
+        }
         
-        // Eliminar campo oculto de eliminar imagen si existe
-        const inputEliminarImagen = document.getElementById('eliminar_imagen_actual');
-        if (inputEliminarImagen) {
-            inputEliminarImagen.remove();
+        // Configurar el formulario
+        const form = document.getElementById('form-profesor');
+        if (form) {
+            form.reset();
+            form.setAttribute('action', `/admin/profesores/${id}`);
+            
+            // Ocultar errores previos
+            const formErrors = document.getElementById('form-errors');
+            if (formErrors) {
+                formErrors.classList.add('hidden');
+                document.getElementById('error-list').innerHTML = '';
+            }
+            
+            // Configurar campos
+            document.getElementById('profesor_id').value = id;
+            document.getElementById('form_method').value = 'PUT';
+            document.getElementById('modal-title').textContent = 'Editar Profesor';
+            
+            // Configurar campos de contraseña como opcionales
+            const passwordRequired = document.querySelector('.password-required');
+            const passwordHelp = document.querySelector('.password-help');
+            
+            if (passwordRequired) passwordRequired.classList.add('hidden');
+            if (passwordHelp) passwordHelp.classList.remove('hidden');
+            
+            const password = document.getElementById('password');
+            const passwordConfirmation = document.getElementById('password_confirmation');
+            
+            if (password) password.removeAttribute('required');
+            if (passwordConfirmation) passwordConfirmation.removeAttribute('required');
+            
+            // Mostrar campo de activo para cuentas existentes
+            const activoContainer = document.getElementById('activo-container');
+            if (activoContainer) activoContainer.classList.remove('hidden');
+            
+            // Cargar datos del profesor
+            fetch(`/admin/profesores/${id}/edit`, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Error del servidor: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Datos recibidos del servidor:', data);
+                
+                // Comprobar si se recibieron datos y su estructura
+                if (data && (data.profesor || data.docente)) {
+                    // Usar la estructura correcta según lo que devuelva el servidor
+                    const docente = data.profesor || data.docente;
+                    
+                    // Asegurarnos de que tenemos el objeto user
+                    if (!docente.user) {
+                        console.error('Error: No se encontró la propiedad user en los datos del profesor');
+                        alert('Error: Faltan datos del usuario asociado al profesor');
+                        return;
+                    }
+                    
+                    const user = docente.user;
+                    
+                    // Datos de usuario
+                    if (document.getElementById('nombre')) {
+                        document.getElementById('nombre').value = user.nombre || '';
+                    }
+                    if (document.getElementById('email')) {
+                        document.getElementById('email').value = user.email || '';
+                    }
+                    if (document.getElementById('password')) {
+                        document.getElementById('password').value = '';
+                    }
+                    if (document.getElementById('password_confirmation')) {
+                        document.getElementById('password_confirmation').value = '';
+                    }
+                    if (document.getElementById('dni')) {
+                        document.getElementById('dni').value = user.dni || '';
+                    }
+                    if (document.getElementById('telefono')) {
+                        document.getElementById('telefono').value = user.telefono || '';
+                    }
+                    if (document.getElementById('ciudad')) {
+                        document.getElementById('ciudad').value = user.ciudad || '';
+                    }
+                    
+                    // Formatear fecha de nacimiento
+                    if (user.fecha_nacimiento && document.getElementById('fecha_nacimiento')) {
+                        document.getElementById('fecha_nacimiento').value = user.fecha_nacimiento.split('T')[0];
+                    }
+                    
+                    if (document.getElementById('sitio_web')) {
+                        document.getElementById('sitio_web').value = user.sitio_web || '';
+                    }
+                    if (document.getElementById('descripcion')) {
+                        document.getElementById('descripcion').value = user.descripcion || '';
+                    }
+                    
+                    const activo = document.getElementById('activo');
+                    if (activo) {
+                        activo.checked = user.activo ? true : false;
+                    }
+                    
+                    // Cargar imagen
+                    const imagenPreview = document.getElementById('imagen-preview');
+                    const imagenPreviewImg = document.getElementById('imagen-preview-img');
+                    
+                    if (user.imagen) {
+                        if (imagenPreviewImg) {
+                            imagenPreviewImg.src = `/public/profile_images/${user.imagen}`;
+                        }
+                        if (imagenPreview) {
+                            imagenPreview.classList.remove('hidden');
+                        }
+                    } else {
+                        if (imagenPreview) {
+                            imagenPreview.classList.add('hidden');
+                        }
+                    }
+                    
+                    // Mostrar el modal
+                    const modalProfesor = document.getElementById('modal-profesor');
+                    if (modalProfesor) {
+                        modalProfesor.classList.remove('hidden');
+                        modalProfesor.classList.add('flex');
+                    }
+                } else {
+                    console.error('No se recibieron datos del profesor o formato incorrecto:', data);
+                    alert('Error: No se pudieron cargar los datos del profesor correctamente');
+                }
+            })
+            .catch(error => {
+                console.error('Error al obtener datos del profesor:', error);
+                alert(`Error al obtener los datos del profesor: ${error.message}`);
+            });
         }
     }
     
-    function validarContrasenas() {
+    function enviarFormulario(form) {
+        // Evitar envíos duplicados
+        if (isSubmitting) return;
+        isSubmitting = true;
+        
+        // Validar contraseñas
         const password = document.getElementById('password').value;
         const passwordConfirmation = document.getElementById('password_confirmation').value;
         
-        if (password || passwordConfirmation) {
-            if (password !== passwordConfirmation) {
-                mostrarMensajeError('Las contraseñas no coinciden');
-                return false;
-            }
-            if (password && password.length < 8) {
-                mostrarMensajeError('La contraseña debe tener al menos 8 caracteres');
-                return false;
-            }
+        if (password && password !== passwordConfirmation) {
+            mostrarErrores({
+                'password_confirmation': ['Las contraseñas no coinciden']
+            });
+            isSubmitting = false;
+            return;
         }
-        return true;
+        
+        const formData = new FormData(form);
+        const method = document.getElementById('form_method').value;
+        const url = form.getAttribute('action');
+        
+        if (method === 'PUT') {
+            formData.append('_method', 'PUT');
+        }
+        
+        // Deshabilitar botón de guardar
+        const btnGuardar = document.getElementById('btn-guardar');
+        if (btnGuardar) btnGuardar.disabled = true;
+        
+        fetch(url, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Cerrar modal y mostrar mensaje de éxito
+                document.getElementById('modal-profesor').classList.add('hidden');
+                document.getElementById('modal-profesor').classList.remove('flex');
+                
+                mostrarMensajeExito(data.message || 'Profesor guardado correctamente');
+                
+                // Actualizar tabla
+                refreshProfesoresTable();
+            } else if (data.errors) {
+                mostrarErrores(data.errors);
+            } else {
+                alert(data.message || 'Ha ocurrido un error');
+            }
+        })
+        .catch(error => {
+            console.error('Error al procesar el formulario:', error);
+            alert('Ha ocurrido un error al procesar la solicitud');
+        })
+        .finally(() => {
+            isSubmitting = false;
+            if (btnGuardar) btnGuardar.disabled = false;
+        });
     }
     
-    function refreshTable(params = '') {
-        fetch(`/admin/profesores?${params}`, {
+    // Funciones para activar/desactivar
+    function openActivateModal(id, isActive) {
+        const profesorIdInput = document.getElementById('profesor_id_activar');
+        const isActiveInput = document.getElementById('is_active');
+        const actionTitle = document.getElementById('action-title');
+        const actionMessage = document.getElementById('action-message');
+        const actionButton = document.getElementById('action-button');
+        const modal = document.getElementById('modal-eliminar');
+        
+        if (!profesorIdInput || !isActiveInput || !actionTitle || !actionMessage || !actionButton || !modal) {
+            console.error('No se encontraron elementos necesarios para el modal');
+            return;
+        }
+        
+        profesorIdInput.value = id;
+        isActiveInput.value = isActive;
+        
+        if (isActive === '1') {
+            actionTitle.textContent = 'Confirmar Desactivación';
+            actionMessage.textContent = '¿Estás seguro de que deseas desactivar este profesor? Los profesores desactivados no serán visibles para los usuarios.';
+            actionButton.textContent = 'Desactivar';
+            actionButton.classList.remove('bg-green-600', 'hover:bg-green-700');
+            actionButton.classList.add('bg-red-600', 'hover:bg-red-700');
+        } else {
+            actionTitle.textContent = 'Confirmar Activación';
+            actionMessage.textContent = '¿Estás seguro de que deseas activar este profesor? Los profesores activos serán visibles para los usuarios.';
+            actionButton.textContent = 'Activar';
+            actionButton.classList.remove('bg-red-600', 'hover:bg-red-700');
+            actionButton.classList.add('bg-green-600', 'hover:bg-green-700');
+        }
+        
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+    
+    function closeDeleteModal() {
+        const modal = document.getElementById('modal-eliminar');
+        if (modal) {
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+        }
+    }
+    
+    function handleActivateSubmit() {
+        const id = document.getElementById('profesor_id_activar').value;
+        const isActive = document.getElementById('is_active').value === '1';
+        
+        if (!id) {
+            console.error('ID de profesor no encontrado');
+            alert('Error: ID de profesor no válido');
+            return;
+        }
+        
+        fetch(`/admin/profesores/${id}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                _method: 'PUT',
+                activo: isActive ? 0 : 1
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            closeDeleteModal();
+            
+            if (data.success) {
+                mostrarMensajeExito(data.message || 'Operación realizada correctamente');
+                refreshProfesoresTable();
+            } else {
+                alert(data.message || 'Ha ocurrido un error');
+            }
+        })
+        .catch(error => {
+            console.error('Error al activar/desactivar profesor:', error);
+            alert('Ha ocurrido un error al procesar la solicitud');
+        });
+    }
+    
+    // Funciones utilitarias
+    function mostrarMensajeExito(mensaje) {
+        const messageElement = document.getElementById('success-message');
+        const messageText = document.getElementById('success-message-text');
+        
+        if (messageElement && messageText) {
+            messageText.textContent = mensaje;
+            messageElement.style.display = 'block';
+            
+            window.scrollTo(0, 0);
+            
+            setTimeout(function() {
+                messageElement.style.display = 'none';
+        }, 5000);
+        }
+    }
+    
+    function mostrarErrores(errores) {
+        const errorsDiv = document.getElementById('form-errors');
+        const errorsList = document.getElementById('error-list');
+        
+        if (!errorsDiv || !errorsList) return;
+        
+        errorsList.innerHTML = '';
+        
+        for (const key in errores) {
+            errores[key].forEach(error => {
+                const li = document.createElement('li');
+                li.textContent = error;
+                errorsList.appendChild(li);
+            });
+            
+            // Resaltar campo con error
+            const campo = document.getElementById(key);
+            if (campo) {
+                campo.classList.add('border-red-500');
+            }
+        }
+        
+        errorsDiv.classList.remove('hidden');
+    }
+    
+    function refreshProfesoresTable() {
+        fetch('/admin/profesores', {
+            method: 'GET',
             headers: {
                 'X-Requested-With': 'XMLHttpRequest'
             }
@@ -615,115 +792,47 @@
         .then(response => response.text())
         .then(html => {
             document.getElementById('tabla-profesores').innerHTML = html;
-            setupEventListeners();
         })
-        .catch(error => console.error('Error:', error));
+        .catch(error => {
+            console.error('Error al actualizar la tabla:', error);
+        });
     }
-
-    async function actualizarTabla() {
-        try {
-            const response = await fetch('/admin/profesores', {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            });
-            if (response.ok) {
-                const html = await response.text();
-                document.getElementById('tabla-profesores').innerHTML = html;
-                setupEventListeners();
+    
+    function aplicarFiltros() {
+        const filtros = {
+            nombre: document.getElementById('filtro_nombre')?.value || '',
+            email: document.getElementById('filtro_email')?.value || '',
+            dni: document.getElementById('filtro_dni')?.value || '',
+            estado: document.getElementById('filtro_estado')?.value || '',
+            ciudad: document.getElementById('filtro_ciudad')?.value || ''
+        };
+        
+        const params = new URLSearchParams();
+        Object.entries(filtros).forEach(([key, value]) => {
+            if (value) {
+                params.append(key, value);
             }
-        } catch (error) {
-            console.error('Error:', error);
-            window.location.reload();
-        }
-    }
-    
-    async function eliminarProfesorSQL() {
-        const profesorId = document.getElementById('eliminar_id').value;
-        try {
-            const response = await fetch(`/admin/profesores/eliminar-sql/${profesorId}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                    'Accept': 'application/json'
-                }
-            });
-            
-            const data = await response.json();
-            
-            if (response.ok) {
-                mostrarMensajeExito(data.message || 'Profesor eliminado correctamente (SQL)');
-                document.getElementById('eliminarSqlModal').classList.add('hidden');
-                document.getElementById('modal-eliminar').classList.add('hidden');
-                
-                // Recargamos la tabla de profesores después de eliminar
-                actualizarTabla();
-            } else {
-                mostrarMensajeError(data.message || 'Error al eliminar el profesor');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            mostrarMensajeError('Error al eliminar el profesor mediante SQL');
-        }
-    }
-    
-    function mostrarMensajeExito(mensaje) {
-        const successMessage = document.getElementById('success-message');
-        const successMessageText = document.getElementById('success-message-text');
-        successMessageText.textContent = mensaje;
-        successMessage.style.display = 'block';
-        
-        // Nos aseguramos de que el mensaje sea visible
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        
-        // Ocultar el mensaje después de 5 segundos
-        setTimeout(() => {
-            successMessage.style.display = 'none';
-        }, 5000);
-    }
-    
-    function mostrarMensajeError(mensaje) {
-        // Crear un elemento fijo en la parte superior de la pantalla
-        const errorAlert = document.createElement('div');
-        errorAlert.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded-lg shadow-lg z-50';
-        errorAlert.innerHTML = `
-            <div class="flex items-center">
-                <svg class="w-6 h-6 text-red-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                <strong class="font-bold mr-1">¡Error!</strong>
-                <span class="block">${mensaje}</span>
-            </div>
-        `;
-        document.body.appendChild(errorAlert);
-        
-        // Nos aseguramos de que el mensaje sea visible
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        
-        setTimeout(() => {
-            errorAlert.remove();
-        }, 5000);
-    }
-    
-    function mostrarErroresFormulario(errores) {
-        const errorList = document.getElementById('error-list');
-        errorList.innerHTML = '';
-        
-        Object.values(errores).forEach(mensajes => {
-            mensajes.forEach(mensaje => {
-                const li = document.createElement('li');
-                li.textContent = mensaje;
-                errorList.appendChild(li);
-            });
         });
         
-        document.getElementById('form-errors').classList.remove('hidden');
+        fetch(`/admin/profesores?${params.toString()}`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.text())
+        .then(html => {
+            document.getElementById('tabla-profesores').innerHTML = html;
+        })
+        .catch(error => {
+            console.error('Error al aplicar filtros:', error);
+        });
     }
 </script>
 
 <style>
 /* Asegurar que los botones de acción siempre estén visibles */
-.btn-editar, .btn-eliminar {
+.btn-editar, .btn-activar {
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -739,7 +848,7 @@
 /* Estilos para las tarjetas en móvil */
 @media (max-width: 768px) {
     .md\:hidden .btn-editar,
-    .md\:hidden .btn-eliminar {
+    .md\:hidden .btn-activar {
         width: 40px !important;
         height: 40px !important;
     }

@@ -5,7 +5,7 @@
     <div id="success-message" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-6" role="alert" style="display: none;">
         <span id="success-message-text" class="block sm:inline"></span>
     </div>
-
+    
     <!-- Filtros -->
     <div class="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl shadow-md p-6 mb-8 border border-purple-100">
         <div class="flex flex-col md:flex-row justify-between items-center mb-6">
@@ -94,7 +94,152 @@
     
     <!-- Contenedor de la tabla -->
     <div id="tabla-container" class="bg-white rounded-lg shadow overflow-hidden">
-        @include('admin.empresas.tabla')
+        <!-- Tabla para desktop -->
+        <div class="hidden md:block overflow-x-auto mt-6 bg-white rounded-lg shadow">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Nombre
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Email
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            CIF
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Ciudad
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Teléfono
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Estado
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Acciones
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200" id="tabla-body">
+                    @forelse ($empresas as $empresa)
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">{{ $empresa->nombre_comercial ?? $empresa->user->nombre }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-500">{{ $empresa->user->email }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-500">{{ $empresa->cif }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-500">{{ $empresa->user->ciudad }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-500">{{ $empresa->user->telefono }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $empresa->user->activo ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                    {{ $empresa->user->activo ? 'Activa' : 'Inactiva' }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium flex space-x-2">
+                                <button class="btn-editar text-indigo-600 hover:text-indigo-900" data-id="{{ $empresa->id }}">
+                                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                </button>
+                                <button class="btn-activar {{ $empresa->user->activo ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900' }}" 
+                                        data-id="{{ $empresa->id }}" 
+                                        data-active="{{ $empresa->user->activo ? '1' : '0' }}">
+                                    @if($empresa->user->activo)
+                                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    @else
+                                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    @endif
+                                </button>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7" class="px-6 py-4 text-center text-gray-500">
+                                No hay empresas para mostrar
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Tabla para móvil (diseño en tarjetas) -->
+        <div class="md:hidden mt-6" id="tabla-mobile">
+            @forelse ($empresas as $empresa)
+                <div class="bg-white rounded-lg shadow mb-4 p-4">
+                    <div class="flex justify-between items-center border-b pb-2 mb-2">
+                        <div class="font-semibold text-lg">{{ $empresa->nombre_comercial ?? $empresa->user->nombre }}</div>
+                        <div class="flex space-x-1">
+                            <button class="btn-editar text-indigo-600 hover:text-indigo-900 bg-indigo-100 p-2 rounded-full" data-id="{{ $empresa->id }}">
+                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                            </button>
+                            <button class="btn-activar {{ $empresa->user->activo ? 'text-red-600 hover:text-red-900 bg-red-100' : 'text-green-600 hover:text-green-900 bg-green-100' }} p-2 rounded-full" 
+                                    data-id="{{ $empresa->id }}" 
+                                    data-active="{{ $empresa->user->activo ? '1' : '0' }}">
+                                @if($empresa->user->activo)
+                                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                @else
+                                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                @endif
+                            </button>
+                        </div>
+                    </div>
+                    <div class="space-y-1">
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Email:</span>
+                            <span>{{ $empresa->user->email }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">CIF:</span>
+                            <span>{{ $empresa->cif }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Ciudad:</span>
+                            <span>{{ $empresa->user->ciudad }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Teléfono:</span>
+                            <span>{{ $empresa->user->telefono }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-500">Estado:</span>
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $empresa->user->activo ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                {{ $empresa->user->activo ? 'Activa' : 'Inactiva' }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            @empty
+                <div class="bg-white rounded-lg shadow p-6 text-center text-gray-500">
+                    No hay empresas para mostrar
+                </div>
+            @endforelse
+        </div>
+
+        <!-- Paginación -->
+        <div class="mt-4">
+            {{ $empresas->links() }}
+        </div>
     </div>
 
     <!-- Modal Crear/Editar Empresa -->
@@ -260,31 +405,32 @@
         </div>
     </div>
 
-    <!-- Modal Confirmación Eliminar -->
-    <div id="modal-eliminar" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center hidden z-50">
-        <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+    <!-- Modal de Confirmación de Eliminación/Activación -->
+    <div id="modal-eliminar" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-8 max-w-md w-full">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-semibold">Confirmar Eliminación</h2>
-                <button id="modal-eliminar-close" class="text-gray-500 hover:text-gray-700 focus:outline-none">
+                <h3 class="text-xl font-semibold text-gray-800" id="action-title">Confirmar Desactivación</h3>
+                <button onclick="closeDeleteModal()" class="text-gray-500 hover:text-gray-700">
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
             </div>
             
-            <p class="mb-6">¿Estás seguro de que deseas eliminar esta empresa? Esta acción no se puede deshacer y eliminará también el usuario asociado.</p>
+            <p class="text-gray-600 mb-6" id="action-message">¿Estás seguro de que deseas desactivar esta empresa? Las empresas desactivadas no serán visibles para los usuarios.</p>
             
-            <form id="form-eliminar" method="POST">
+            <form id="form-activar" onsubmit="handleActivar(event)">
                 @csrf
-                @method('DELETE')
-                <input type="hidden" id="eliminar_id" name="eliminar_id" value="">
+                @method('PUT')
+                <input type="hidden" name="empresa_id" id="empresa_id_activar">
+                <input type="hidden" name="is_active" id="is_active" value="1">
                 
-                <div class="flex justify-end">
-                    <button type="button" id="btn-cancelar-eliminar" class="inline-flex items-center px-4 py-2 bg-gray-300 border border-transparent rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-400 active:bg-gray-500 focus:outline-none focus:border-gray-500 focus:ring ring-gray-300 disabled:opacity-25 transition ease-in-out duration-150 mr-3">
+                <div class="flex justify-end space-x-3">
+                    <button type="button" onclick="closeDeleteModal()" class="px-4 py-2 text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200">
                         Cancelar
                     </button>
-                    <button type="submit" class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700 active:bg-red-800 focus:outline-none focus:border-red-800 focus:ring ring-red-300 disabled:opacity-25 transition ease-in-out duration-150">
-                        Eliminar
+                    <button type="submit" id="action-button" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
+                        Desactivar
                     </button>
                 </div>
             </form>
@@ -306,396 +452,450 @@
 
 @push('scripts')
 <script>
-    // Variable de control para evitar duplicación
+    // Variable global para control de envíos
     let isSubmitting = false;
-    let initialized = false;
     
     document.addEventListener('DOMContentLoaded', function() {
-        console.log('DOMContentLoaded evento disparado');
-        
-        // Esperar un poco para que todo se cargue completamente
-        setTimeout(() => {
-            console.log('Iniciando configuración de elementos');
-            
-            // Inicialización de botones solo una vez
-            if (!initialized) {
-                try {
+        // Variables de control
+        let timeoutId = null;
+
+        // Inicializar event listeners
                     setupEventListeners();
-                    initialized = true;
-                } catch (error) {
-                    console.error('Error durante la inicialización:', error);
-                }
-            }
-        }, 100);
-    });
-    
-    // Configura todos los listeners una sola vez
+        setupFilterListeners();
+        
     function setupEventListeners() {
-        // Cerrar modales
-        document.getElementById('modal-close').addEventListener('click', function() {
-            document.getElementById('modal-empresa').classList.add('hidden');
-        });
-        
-        document.getElementById('btn-cancelar').addEventListener('click', function() {
-            document.getElementById('modal-empresa').classList.add('hidden');
-        });
-        
-        document.getElementById('modal-eliminar-close').addEventListener('click', function() {
-            document.getElementById('modal-eliminar').classList.add('hidden');
-        });
-        
-        document.getElementById('btn-cancelar-eliminar').addEventListener('click', function() {
-            document.getElementById('modal-eliminar').classList.add('hidden');
-        });
-        
-        // Manejo de la previsualización de la foto
-        document.getElementById('imagen').addEventListener('change', function(e) {
-            const file = this.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('imagen-preview-img').src = e.target.result;
-                    document.getElementById('imagen-preview').classList.remove('hidden');
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-        
-        // Eliminar foto
-        document.getElementById('eliminar-imagen').addEventListener('click', function() {
-            document.getElementById('imagen').value = '';
-            document.getElementById('imagen-preview').classList.add('hidden');
-            document.getElementById('imagen-preview-img').src = '';
-            // Agregar campo oculto para indicar que se debe eliminar la foto existente
-            const inputEliminarImagen = document.getElementById('eliminar_imagen_actual') || document.createElement('input');
-            inputEliminarImagen.type = 'hidden';
-            inputEliminarImagen.id = 'eliminar_imagen_actual';
-            inputEliminarImagen.name = 'eliminar_imagen_actual';
-            inputEliminarImagen.value = '1';
-            document.getElementById('form-empresa').appendChild(inputEliminarImagen);
-        });
-        
-        // Delegación de eventos para los botones dinámicos
-        document.addEventListener('click', function(e) {
-            // Botón Crear
-            if (e.target.closest('.btn-crear')) {
-                mostrarFormularioCrear();
+            // Botón crear empresa
+            const btnCrearEmpresa = document.getElementById('btnCrearEmpresa');
+            if (btnCrearEmpresa) {
+                btnCrearEmpresa.addEventListener('click', function() {
+                    mostrarFormularioCrear();
+                });
             }
             
-            // Botones Editar
+            // Delegación de eventos para botones dinámicos
+        document.addEventListener('click', function(e) {
+                // Botón editar empresa
             if (e.target.closest('.btn-editar')) {
-                const btn = e.target.closest('.btn-editar');
-                const id = btn.getAttribute('data-id');
+                    const button = e.target.closest('.btn-editar');
+                    const id = button.getAttribute('data-id');
                 mostrarFormularioEditar(id);
             }
             
-            // Botones Eliminar
-            if (e.target.closest('.btn-eliminar')) {
-                const btn = e.target.closest('.btn-eliminar');
-                const id = btn.getAttribute('data-id');
-                mostrarModalEliminar(id);
-            }
-            
-            // Enlaces de paginación
-            if (e.target.closest('.pagination-link')) {
-                e.preventDefault();
-                const link = e.target.closest('.pagination-link');
-                actualizarTablaEmpresas(link.getAttribute('href'));
-            }
-        });
-        
-        // Validation function for password match
-        function validatePasswords() {
-            const passwordInput = document.getElementById('password');
-            const confirmInput = document.getElementById('password_confirmation');
-            
-            if (passwordInput && confirmInput && passwordInput.value && confirmInput.value) {
-                if (passwordInput.value !== confirmInput.value) {
-                    // Create an error object in the format expected by mostrarErrores
-                    const errors = {
-                        'password_confirmation': ['Las contraseñas no coinciden']
-                    };
-                    mostrarErrores(errors);
-                    confirmInput.classList.add('border-red-500');
-                    return false;
-                } else {
-                    confirmInput.classList.remove('border-red-500');
+                // Botón activar/desactivar
+                if (e.target.closest('.btn-activar')) {
+                    const button = e.target.closest('.btn-activar');
+                    const id = button.getAttribute('data-id');
+                    const isActive = button.getAttribute('data-active');
+                    
+                    openActivateModal(id, isActive);
                 }
-            }
-            return true;
-        }
-
-        // Add validation to form submission
-        document.getElementById('form-empresa').addEventListener('submit', function(e) {
-            e.preventDefault();
+            });
             
-            if (!validatePasswords()) {
-                return false;
-            }
+            // Cerrar modales
+            const modalClose = document.getElementById('modal-close');
+            const btnCancelar = document.getElementById('btn-cancelar');
             
-            // Evitar envíos duplicados
-            if (isSubmitting) return;
-            
-            isSubmitting = true;
-            
-            const formData = new FormData(this);
-            const url = this.getAttribute('action');
-            const method = document.getElementById('form_method').value;
-            
-            // Incluir método PUT para ediciones
-            if (method === 'PUT') {
-                formData.append('_method', 'PUT');
-            }
-            
-            // Deshabilitar botones durante la petición
-            document.getElementById('btn-guardar').disabled = true;
-            
-            fetch(url, {
-                method: 'POST', // Siempre POST para enviar archivos
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                    // No incluir Content-Type para permitir que el navegador establezca el boundary correcto para FormData
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
+            if (modalClose) {
+                modalClose.addEventListener('click', function() {
                     document.getElementById('modal-empresa').classList.add('hidden');
-                    mostrarMensajeExito(data.message);
-                    actualizarTablaEmpresas();
-                } else if (data.errors) {
-                    mostrarErrores(data.errors);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            })
-            .finally(() => {
-                isSubmitting = false;
-                document.getElementById('btn-guardar').disabled = false;
-            });
-        });
-        
-        // Envío del formulario de eliminar - Una sola vez
-        document.getElementById('form-eliminar').addEventListener('submit', function(e) {
+                    document.getElementById('modal-empresa').classList.remove('flex');
+                });
+            }
+            
+            if (btnCancelar) {
+                btnCancelar.addEventListener('click', function() {
+                    document.getElementById('modal-empresa').classList.add('hidden');
+                    document.getElementById('modal-empresa').classList.remove('flex');
+                });
+            }
+            
+            // Formulario
+            const formEmpresa = document.getElementById('form-empresa');
+            if (formEmpresa) {
+                formEmpresa.addEventListener('submit', function(e) {
             e.preventDefault();
+                    enviarFormulario(this);
+                });
+            }
             
-            // Evitar envíos duplicados
-            if (isSubmitting) return;
-            isSubmitting = true;
+            // Modal confirmación
+            const modalEliminarClose = document.getElementById('modal-eliminar-close');
+            const btnCancelarEliminar = document.getElementById('btn-cancelar-eliminar');
+            const formActivar = document.getElementById('form-activar');
             
-            const url = this.getAttribute('action');
+            if (modalEliminarClose) {
+                modalEliminarClose.addEventListener('click', closeDeleteModal);
+            }
             
-            fetch(url, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    document.getElementById('modal-eliminar').classList.add('hidden');
-                    mostrarMensajeExito(data.message);
-                    actualizarTablaEmpresas();
-                } else {
-                    alert(data.message || 'Error al eliminar la empresa');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            })
-            .finally(() => {
-                isSubmitting = false;
-            });
-        });
-    }
+            if (btnCancelarEliminar) {
+                btnCancelarEliminar.addEventListener('click', closeDeleteModal);
+            }
+            
+            if (formActivar) {
+                formActivar.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    handleActivateSubmit();
+                });
+            }
+        }
+        
+        function setupFilterListeners() {
+            // Eventos para filtrado automático
+            const filtroNombre = document.getElementById('filtro_nombre');
+            const filtroEmail = document.getElementById('filtro_email');
+            const filtroCif = document.getElementById('filtro_cif');
+            const filtroEstado = document.getElementById('filtro_estado');
+            const filtroCiudad = document.getElementById('filtro_ciudad');
+            const resetFiltros = document.getElementById('reset-filtros');
+            
+            if (filtroNombre) filtroNombre.addEventListener('input', debounceFilter);
+            if (filtroEmail) filtroEmail.addEventListener('input', debounceFilter);
+            if (filtroCif) filtroCif.addEventListener('input', debounceFilter);
+            if (filtroEstado) filtroEstado.addEventListener('change', aplicarFiltros);
+            if (filtroCiudad) filtroCiudad.addEventListener('change', aplicarFiltros);
+            
+            if (resetFiltros) {
+                resetFiltros.addEventListener('click', function() {
+                    if (filtroNombre) filtroNombre.value = '';
+                    if (filtroEmail) filtroEmail.value = '';
+                    if (filtroCif) filtroCif.value = '';
+                    if (filtroEstado) filtroEstado.value = '';
+                    if (filtroCiudad) filtroCiudad.value = '';
+                    aplicarFiltros();
+                });
+            }
+        }
+        
+        // Función para debounce en campos de texto
+        function debounceFilter() {
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
+            timeoutId = setTimeout(() => {
+                aplicarFiltros();
+            }, 300);
+        }
+    });
     
-    // Funciones principales
+    // Funciones para crear/editar empresas
     function mostrarFormularioCrear() {
         // Resetear el formulario
-        document.getElementById('form-empresa').reset();
-        document.getElementById('form-errors').classList.add('hidden');
+        const form = document.getElementById('form-empresa');
+        if (form) {
+            form.reset();
+            form.setAttribute('action', '/admin/empresas');
+            
+            // Ocultar errores previos
+            const formErrors = document.getElementById('form-errors');
+            if (formErrors) {
+                formErrors.classList.add('hidden');
+                document.getElementById('error-list').innerHTML = '';
+            }
+            
+            // Configurar campos
         document.getElementById('empresa_id').value = '';
         document.getElementById('form_method').value = 'POST';
-        
-        // Configurar la acción del formulario
-        document.getElementById('form-empresa').setAttribute('action', '{{ route("admin.empresas.store") }}');
-        
-        // Configurar campo de contraseña como obligatorio
-        document.querySelector('.password-required').classList.remove('hidden');
-        document.querySelector('.password-help').classList.add('hidden');
-        document.getElementById('password').setAttribute('required', 'required');
-        document.getElementById('password_confirmation').setAttribute('required', 'required');
-        
-        // Resetear campo de foto
-        document.getElementById('imagen-preview').classList.add('hidden');
-        document.getElementById('imagen-preview-img').src = '';
-        
-        // Eliminar campo oculto de eliminar foto si existe
-        const eliminarImagenInput = document.getElementById('eliminar_imagen_actual');
-        if (eliminarImagenInput) {
-            eliminarImagenInput.remove();
-        }
-        
-        // Ocultar el checkbox de activo para nuevas empresas
-        document.getElementById('activo-container').classList.add('hidden');
-        
-        // Cambiar el título del modal
-        document.getElementById('modal-titulo').textContent = 'Crear Nueva Empresa';
+            document.getElementById('modal-titulo').textContent = 'Crear Nueva Empresa';
+            
+            // Configurar campos de contraseña como obligatorios
+            const passwordRequired = document.querySelector('.password-required');
+            const passwordHelp = document.querySelector('.password-help');
+            
+            if (passwordRequired) passwordRequired.classList.remove('hidden');
+            if (passwordHelp) passwordHelp.classList.add('hidden');
+            
+            const password = document.getElementById('password');
+            const passwordConfirmation = document.getElementById('password_confirmation');
+            
+            if (password) password.setAttribute('required', 'required');
+            if (passwordConfirmation) passwordConfirmation.setAttribute('required', 'required');
+            
+            // Ocultar campo de activo para nuevas cuentas
+            const activoContainer = document.getElementById('activo-container');
+            if (activoContainer) activoContainer.classList.add('hidden');
         
         // Mostrar el modal
-        document.getElementById('modal-empresa').classList.remove('hidden');
+            const modalEmpresa = document.getElementById('modal-empresa');
+            if (modalEmpresa) {
+                modalEmpresa.style.display = 'flex';
+                modalEmpresa.classList.remove('hidden');
+                modalEmpresa.classList.add('flex');
+            }
+        }
     }
     
-    /**
-     * Obtiene los datos de una empresa para editar
-     */
     function mostrarFormularioEditar(id) {
-        document.getElementById('modal-titulo').textContent = 'Editar Empresa';
-        document.getElementById('empresa_id').value = id;
-        document.getElementById('form_method').value = 'PUT';
-        document.getElementById('form-empresa').action = `/admin/empresas/${id}`;
-        
-        // Configurar campo de contraseña como opcional
-        document.querySelector('.password-required').classList.add('hidden');
-        document.querySelector('.password-help').classList.remove('hidden');
-        document.querySelector('.password-confirmation-help').classList.remove('hidden');
-        document.getElementById('password').removeAttribute('required');
-        document.getElementById('password_confirmation').removeAttribute('required');
-        
-        // Mostrar el checkbox de activo para empresas existentes
-        document.getElementById('activo-container').classList.remove('hidden');
-        
-        // Eliminar campo oculto de eliminar foto si existe
-        const eliminarImagenInput = document.getElementById('eliminar_imagen_actual');
-        if (eliminarImagenInput) {
-            eliminarImagenInput.remove();
+        if (!id) {
+            console.error('ID de empresa no válido');
+            return;
         }
         
+        // Configurar el formulario
+        const form = document.getElementById('form-empresa');
+        if (form) {
+            form.reset();
+            form.setAttribute('action', `/admin/empresas/${id}`);
+            
+            // Ocultar errores previos
+            const formErrors = document.getElementById('form-errors');
+            if (formErrors) {
+                formErrors.classList.add('hidden');
+                document.getElementById('error-list').innerHTML = '';
+            }
+            
+            // Configurar campos
+        document.getElementById('empresa_id').value = id;
+        document.getElementById('form_method').value = 'PUT';
+            document.getElementById('modal-titulo').textContent = 'Editar Empresa';
+            
+            // Configurar campos de contraseña como opcionales
+            const passwordRequired = document.querySelector('.password-required');
+            const passwordHelp = document.querySelector('.password-help');
+            
+            if (passwordRequired) passwordRequired.classList.add('hidden');
+            if (passwordHelp) passwordHelp.classList.remove('hidden');
+            
+            const password = document.getElementById('password');
+            const passwordConfirmation = document.getElementById('password_confirmation');
+            
+            if (password) password.removeAttribute('required');
+            if (passwordConfirmation) passwordConfirmation.removeAttribute('required');
+            
+            // Mostrar campo de activo para cuentas existentes
+            const activoContainer = document.getElementById('activo-container');
+            if (activoContainer) activoContainer.classList.remove('hidden');
+            
+            // Cargar datos de la empresa
         fetch(`/admin/empresas/${id}/edit`, {
+                method: 'GET',
             headers: {
                 'X-Requested-With': 'XMLHttpRequest'
             }
         })
         .then(response => response.json())
         .then(data => {
+                if (data.empresa) {
             const empresa = data.empresa;
             
             // Datos de usuario
             document.getElementById('nombre').value = empresa.user.nombre || '';
             document.getElementById('email').value = empresa.user.email || '';
-            document.getElementById('password').value = ''; // No mostrar contraseña
-            document.getElementById('dni').value = empresa.user.dni || '';
+                    document.getElementById('password').value = '';
+                    document.getElementById('password_confirmation').value = '';
             document.getElementById('telefono').value = empresa.user.telefono || '';
             document.getElementById('ciudad').value = empresa.user.ciudad || '';
-            document.getElementById('fecha_nacimiento').value = empresa.user.fecha_nacimiento ? empresa.user.fecha_nacimiento.split('T')[0] : '';
-            document.getElementById('sitio_web').value = empresa.user.sitio_web || '';
-            document.getElementById('descripcion').value = empresa.user.descripcion || '';
-            document.getElementById('activo').checked = empresa.user.activo ? true : false;
-            
-            // Cargar y mostrar foto si existe
-            if (empresa.user.imagen) {
-                document.getElementById('imagen-preview-img').src = `/public/profile_images/${empresa.user.imagen}`;
-                document.getElementById('imagen-preview').classList.remove('hidden');
-            } else {
-                document.getElementById('imagen-preview').classList.add('hidden');
-                document.getElementById('imagen-preview-img').src = '';
-            }
-            
-            // Datos de empresa
+                    
+                    // Datos específicos de empresa
             document.getElementById('cif').value = empresa.cif || '';
             document.getElementById('direccion').value = empresa.direccion || '';
             document.getElementById('provincia').value = empresa.provincia || '';
             document.getElementById('latitud').value = empresa.latitud || '';
             document.getElementById('longitud').value = empresa.longitud || '';
             
-            document.getElementById('modal-empresa').classList.remove('hidden');
+                    const activo = document.getElementById('activo');
+                    if (activo) activo.checked = empresa.user.activo ? true : false;
+                    
+                    // Cargar imagen
+                    const imagenPreview = document.getElementById('imagen-preview');
+                    const imagenPreviewImg = document.getElementById('imagen-preview-img');
+                    
+                    if (empresa.user.imagen) {
+                        if (imagenPreviewImg) imagenPreviewImg.src = `/public/profile_images/${empresa.user.imagen}`;
+                        if (imagenPreview) imagenPreview.classList.remove('hidden');
+                    } else {
+                        if (imagenPreview) imagenPreview.classList.add('hidden');
+                    }
+                    
+                    // Mostrar el modal
+                    const modalEmpresa = document.getElementById('modal-empresa');
+                    if (modalEmpresa) {
+                        modalEmpresa.style.display = 'flex';
+                        modalEmpresa.classList.remove('hidden');
+                        modalEmpresa.classList.add('flex');
+                    }
+                } else {
+                    console.error('No se recibieron datos de la empresa');
+                    alert('Error al cargar los datos de la empresa');
+                }
         })
         .catch(error => {
-            console.error('Error:', error);
+                console.error('Error al obtener datos de la empresa:', error);
             alert('Error al obtener los datos de la empresa');
         });
+        }
     }
     
-    function mostrarModalEliminar(id) {
-        // Configurar el formulario
-        document.getElementById('eliminar_id').value = id;
-        document.getElementById('form-eliminar').setAttribute('action', `/admin/empresas/${id}`);
-        
-        // Mostrar el modal
-        document.getElementById('modal-eliminar').classList.remove('hidden');
-    }
-    
-    function mostrarModalEliminarSQL(id) {
-        const modal = document.getElementById('eliminarSqlModal');
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-        
-        const btnConfirmar = modal.querySelector('.confirmar-eliminar-sql');
-        btnConfirmar.onclick = function() {
-            eliminarEmpresaSQL(id);
-        };
-        
-        const btnCerrar = modal.querySelector('.cerrar-modal');
-        btnCerrar.onclick = function() {
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        };
-    }
-    
-    function eliminarEmpresaSQL(id) {
+    function enviarFormulario(form) {
+        // Evitar envíos duplicados
         if (isSubmitting) return;
         isSubmitting = true;
         
-        fetch(`/admin/empresas/eliminar-sql/${id}`, {
-            method: 'DELETE',
+        // Validar contraseñas
+        const password = document.getElementById('password').value;
+        const passwordConfirmation = document.getElementById('password_confirmation').value;
+        
+        if (password && password !== passwordConfirmation) {
+            mostrarErrores({
+                'password_confirmation': ['Las contraseñas no coinciden']
+            });
+            isSubmitting = false;
+            return;
+        }
+        
+        const formData = new FormData(form);
+        const method = document.getElementById('form_method').value;
+        const url = form.getAttribute('action');
+        
+        if (method === 'PUT') {
+            formData.append('_method', 'PUT');
+        }
+        
+        // Deshabilitar botón de guardar
+        const btnGuardar = document.getElementById('btn-guardar');
+        if (btnGuardar) btnGuardar.disabled = true;
+        
+        fetch(url, {
+            method: 'POST',
+            body: formData,
             headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
                 'X-Requested-With': 'XMLHttpRequest',
-                'Content-Type': 'application/json'
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
             }
         })
         .then(response => response.json())
         .then(data => {
-            document.getElementById('eliminarSqlModal').classList.add('hidden');
-            document.getElementById('eliminarSqlModal').classList.remove('flex');
-            
             if (data.success) {
-                mostrarMensajeExito(data.message);
-                actualizarTablaEmpresas();
+                // Cerrar modal y mostrar mensaje de éxito
+                const modalEmpresa = document.getElementById('modal-empresa');
+                if (modalEmpresa) {
+                    modalEmpresa.classList.add('hidden');
+                    modalEmpresa.classList.remove('flex');
+                }
+                
+                mostrarMensajeExito(data.message || 'Empresa guardada correctamente');
+                
+                // Actualizar tabla
+                refreshEmpresasTable();
+            } else if (data.errors) {
+                mostrarErrores(data.errors);
             } else {
-                alert(data.message || 'Error al eliminar la empresa mediante SQL');
+                alert(data.message || 'Ha ocurrido un error');
             }
         })
         .catch(error => {
-            console.error('Error:', error);
-            alert('Error al procesar la solicitud');
+            console.error('Error al procesar el formulario:', error);
+            alert('Ha ocurrido un error al procesar la solicitud');
         })
         .finally(() => {
             isSubmitting = false;
+            if (btnGuardar) btnGuardar.disabled = false;
         });
     }
     
-    // Funciones auxiliares para mostrar mensajes y errores
+    // Funciones para activar/desactivar
+    function openActivateModal(id, isActive) {
+        const empresaIdInput = document.getElementById('empresa_id_activar');
+        const isActiveInput = document.getElementById('is_active');
+        const actionTitle = document.getElementById('action-title');
+        const actionMessage = document.getElementById('action-message');
+        const actionButton = document.getElementById('action-button');
+        const modal = document.getElementById('modal-eliminar');
+        
+        if (!empresaIdInput || !isActiveInput || !actionTitle || !actionMessage || !actionButton || !modal) {
+            console.error('No se encontraron elementos necesarios para el modal');
+            return;
+        }
+        
+        empresaIdInput.value = id;
+        isActiveInput.value = isActive;
+        
+        if (isActive === '1') {
+            actionTitle.textContent = 'Confirmar Desactivación';
+            actionMessage.textContent = '¿Estás seguro de que deseas desactivar esta empresa? Las empresas desactivadas no serán visibles para los usuarios.';
+            actionButton.textContent = 'Desactivar';
+            actionButton.classList.remove('bg-green-600', 'hover:bg-green-700');
+            actionButton.classList.add('bg-red-600', 'hover:bg-red-700');
+        } else {
+            actionTitle.textContent = 'Confirmar Activación';
+            actionMessage.textContent = '¿Estás seguro de que deseas activar esta empresa? Las empresas activas serán visibles para los usuarios.';
+            actionButton.textContent = 'Activar';
+            actionButton.classList.remove('bg-red-600', 'hover:bg-red-700');
+            actionButton.classList.add('bg-green-600', 'hover:bg-green-700');
+        }
+        
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+    
+    function closeDeleteModal() {
+        const modal = document.getElementById('modal-eliminar');
+        if (modal) {
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+        }
+    }
+    
+    function handleActivateSubmit() {
+        const id = document.getElementById('empresa_id_activar').value;
+        const isActive = document.getElementById('is_active').value === '1';
+        
+        if (!id) {
+            console.error('ID de empresa no encontrado');
+            alert('Error: ID de empresa no válido');
+            return;
+        }
+        
+        fetch(`/admin/empresas/${id}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({
+                _method: 'PUT',
+                activo: isActive ? 0 : 1
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            closeDeleteModal();
+            
+            if (data.success) {
+                mostrarMensajeExito(data.message || 'Operación realizada correctamente');
+                refreshEmpresasTable();
+            } else {
+                alert(data.message || 'Ha ocurrido un error');
+            }
+        })
+        .catch(error => {
+            console.error('Error al activar/desactivar empresa:', error);
+            alert('Ha ocurrido un error al procesar la solicitud');
+        });
+    }
+    
+    // Funciones utilitarias
     function mostrarMensajeExito(mensaje) {
         const messageElement = document.getElementById('success-message');
         const messageText = document.getElementById('success-message-text');
         
+        if (messageElement && messageText) {
         messageText.textContent = mensaje;
         messageElement.style.display = 'block';
+            
+            window.scrollTo(0, 0);
         
         setTimeout(function() {
             messageElement.style.display = 'none';
         }, 5000);
+        }
     }
     
     function mostrarErrores(errores) {
         const errorsDiv = document.getElementById('form-errors');
         const errorsList = document.getElementById('error-list');
+        
+        if (!errorsDiv || !errorsList) return;
         
         errorsList.innerHTML = '';
         
@@ -716,19 +916,20 @@
         errorsDiv.classList.remove('hidden');
     }
     
-    // Función de actualización de tabla
-    function actualizarTablaEmpresas(url = '{{ route("admin.empresas.index") }}') {
-        fetch(url, {
+    function refreshEmpresasTable() {
+        fetch('/admin/empresas', {
+            method: 'GET',
             headers: {
                 'X-Requested-With': 'XMLHttpRequest'
             }
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.tabla) {
-                document.getElementById('tabla-container').innerHTML = data.tabla;
+        .then(response => response.text())
+        .then(html => {
+            const tablaContainer = document.getElementById('tabla-empresas') || document.getElementById('tabla-container');
+            if (tablaContainer) {
+                tablaContainer.innerHTML = html;
             } else {
-                console.error('No se recibió contenido HTML para la tabla');
+                console.error('No se encontró el contenedor de la tabla');
             }
         })
         .catch(error => {
@@ -736,15 +937,65 @@
         });
     }
 
-    // Cerrar modales al hacer clic fuera de ellos
-    document.querySelectorAll('#eliminarSqlModal').forEach(modal => {
-        modal.addEventListener('click', function(e) {
-            if (e.target === this) {
-                this.classList.add('hidden');
-                this.classList.remove('flex');
+    // Función para aplicar filtros
+    function aplicarFiltros() {
+        // Mostrar un indicador de carga
+        const tablaContainer = document.getElementById('tabla-container');
+        if (tablaContainer) {
+            tablaContainer.innerHTML = '<div class="flex justify-center items-center p-8"><svg class="animate-spin h-10 w-10 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>';
+        }
+
+        const filtros = {
+            nombre: document.getElementById('filtro_nombre')?.value || '',
+            email: document.getElementById('filtro_email')?.value || '',
+            cif: document.getElementById('filtro_cif')?.value || '',
+            ciudad: document.getElementById('filtro_ciudad')?.value || '',
+            estado: document.getElementById('filtro_estado')?.value || ''
+        };
+        
+        // Construir los parámetros de la consulta
+        const params = new URLSearchParams();
+        Object.entries(filtros).forEach(([key, value]) => {
+            if (value) {
+                params.append(key, value);
             }
         });
-    });
+        
+        // Añadir parámetro para indicar que es una solicitud AJAX
+        params.append('ajax', '1');
+        
+        fetch(`/admin/empresas?${params.toString()}`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Error del servidor: ${response.status}`);
+            }
+            return response.text();
+        })
+        .then(html => {
+            if (tablaContainer) {
+                // Intenta inyectar directamente el HTML
+                tablaContainer.innerHTML = html;
+            } else {
+                console.error('No se encontró el contenedor de la tabla');
+            }
+        })
+        .catch(error => {
+            console.error('Error al aplicar filtros:', error);
+            if (tablaContainer) {
+                tablaContainer.innerHTML = `
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                        <strong class="font-bold">Error:</strong>
+                        <span class="block sm:inline">No se pudieron cargar los datos. Intente nuevamente.</span>
+                    </div>
+                `;
+            }
+        });
+    }
 </script>
 
 <style>
@@ -771,67 +1022,4 @@
     }
 }
 </style>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        let timeoutId = null;
-
-        // Eventos para filtrado automático
-        document.getElementById('filtro_nombre').addEventListener('input', debounceFilter);
-        document.getElementById('filtro_cif').addEventListener('input', debounceFilter);
-        document.getElementById('filtro_estado').addEventListener('change', aplicarFiltros);
-        document.getElementById('filtro_ciudad').addEventListener('change', aplicarFiltros);
-        
-        // Resetear filtros
-        document.getElementById('reset-filtros').addEventListener('click', function() {
-            document.getElementById('filtro_nombre').value = '';
-            document.getElementById('filtro_cif').value = '';
-            document.getElementById('filtro_estado').value = '';
-            document.getElementById('filtro_ciudad').value = '';
-            aplicarFiltros();
-        });
-
-        // Función para debounce en campos de texto
-        function debounceFilter() {
-            if (timeoutId) {
-                clearTimeout(timeoutId);
-            }
-            timeoutId = setTimeout(() => {
-                aplicarFiltros();
-            }, 300);
-        }
-
-        function aplicarFiltros() {
-            const filtros = {
-                nombre: document.getElementById('filtro_nombre').value,
-                cif: document.getElementById('filtro_cif').value,
-                estado: document.getElementById('filtro_estado').value,
-                ciudad: document.getElementById('filtro_ciudad').value
-            };
-            
-            const params = new URLSearchParams();
-            Object.entries(filtros).forEach(([key, value]) => {
-                if (value) {
-                    params.append(key, value);
-                }
-            });
-            
-            fetch(`/admin/empresas?${params.toString()}`, {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.tabla) {
-                    document.getElementById('tabla-container').innerHTML = data.tabla;
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-        }
-    });
-</script>
 @endpush 

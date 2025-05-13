@@ -119,6 +119,26 @@ class CategoriaController extends Controller
      */
     public function update(Request $request, Categoria $categoria)
     {
+        // Si la solicitud solo contiene el campo 'activo', es una operación de activar/desactivar
+        if ($request->has('activo') && count($request->all()) <= 3) {
+            $categoria->update([
+                'activo' => $request->activo
+            ]);
+
+            $mensaje = $request->activo ? 'Categoría activada exitosamente' : 'Categoría desactivada exitosamente';
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => $mensaje
+                ]);
+            }
+
+            return redirect()->route('admin.categorias.index')
+                ->with('success', $mensaje);
+        }
+
+        // Si no, es una actualización normal del nombre
         $request->validate([
             'nombre_categoria' => 'required|string|max:255|unique:categorias,nombre_categoria,' . $categoria->id
         ]);
@@ -145,59 +165,31 @@ class CategoriaController extends Controller
     public function destroy(Categoria $categoria)
     {
         try {
-            // Iniciar transacción para asegurar que todo se elimine correctamente
-            DB::beginTransaction();
+            // Desactivar la categoría en lugar de eliminarla
+            $categoria->update(['activo' => false]);
             
-            // Verificar si hay publicaciones asociadas a alguna subcategoría de esta categoría
-            $subcategoriasIds = $categoria->subcategorias()->pluck('id')->toArray();
+            // También podríamos desactivar todas sus subcategorías
+            $categoria->subcategorias()->update(['activo' => false]);
             
-            if (!empty($subcategoriasIds)) {
-                $publicacionesAsociadas = Publication::whereIn('subcategoria_id', $subcategoriasIds)->exists();
-                
-                if ($publicacionesAsociadas) {
-                    DB::rollBack();
-                    if (request()->ajax()) {
-                        return response()->json([
-                            'success' => false,
-                            'message' => 'No se puede eliminar la categoría porque tiene publicaciones asociadas a sus subcategorías'
-                        ], 422);
-                    }
-                    return redirect()->route('admin.categorias.index')
-                        ->with('error', 'No se puede eliminar la categoría porque tiene publicaciones asociadas a sus subcategorías');
-                }
-                
-                // Si no hay publicaciones, eliminar todas las subcategorías
-                $categoria->subcategorias()->delete();
-            }
-            
-            // Eliminar la categoría
-            $categoria->delete();
-            
-            // Confirmar la transacción
-            DB::commit();
-
             if (request()->ajax()) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'Categoría y sus subcategorías eliminadas exitosamente'
+                    'message' => 'Categoría desactivada exitosamente'
                 ]);
             }
 
             return redirect()->route('admin.categorias.index')
-                ->with('success', 'Categoría y sus subcategorías eliminadas exitosamente');
+                ->with('success', 'Categoría desactivada exitosamente');
         } catch (\Exception $e) {
-            // Si hay algún error, hacer rollback
-            DB::rollBack();
-            
             if (request()->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Error al eliminar la categoría: ' . $e->getMessage()
+                    'message' => 'Error al desactivar la categoría: ' . $e->getMessage()
                 ], 500);
             }
             
             return redirect()->route('admin.categorias.index')
-                ->with('error', 'Error al eliminar la categoría: ' . $e->getMessage());
+                ->with('error', 'Error al desactivar la categoría: ' . $e->getMessage());
         }
     }
     

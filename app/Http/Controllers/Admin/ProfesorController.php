@@ -151,6 +151,44 @@ class ProfesorController extends Controller
     {
         $user = User::where('role_id', 4)->findOrFail($id);
 
+        // Si la solicitud solo contiene el campo 'activo', es una operación de activar/desactivar
+        if ($request->has('activo') && count(array_filter($request->except(['_method', '_token']))) <= 1) {
+            try {
+                DB::beginTransaction();
+                
+                $user->update([
+                    'activo' => $request->activo
+                ]);
+                
+                DB::commit();
+                
+                $mensaje = $request->activo ? 'Profesor activado exitosamente' : 'Profesor desactivado exitosamente';
+                
+                if ($request->ajax()) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => $mensaje
+                    ]);
+                }
+                
+                return redirect()->route('admin.profesores.index')
+                    ->with('success', $mensaje);
+            } catch (\Exception $e) {
+                DB::rollBack();
+                
+                if ($request->ajax()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Error al actualizar el estado del profesor: ' . $e->getMessage()
+                    ], 500);
+                }
+                
+                return redirect()->back()
+                    ->with('error', 'Error al actualizar el estado del profesor: ' . $e->getMessage())
+                    ->withInput();
+            }
+        }
+
         $validator = Validator::make($request->all(), [
             'nombre' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('user')->ignore($user->id)],
@@ -211,7 +249,7 @@ class ProfesorController extends Controller
             $user->fecha_nacimiento = $request->fecha_nacimiento;
             $user->sitio_web = $request->sitio_web;
             $user->descripcion = $request->descripcion;
-            $user->activo = true;
+            $user->activo = $request->has('activo');
             $user->save();
 
             DB::commit();
@@ -237,28 +275,22 @@ class ProfesorController extends Controller
             
             $profesor = User::where('role_id', 4)->findOrFail($id);
             
-            // Eliminar imagen si existe
-            if ($profesor->imagen) {
-                $imagenPath = public_path('public/profile_images/' . $profesor->imagen);
-                if (file_exists($imagenPath)) {
-                    unlink($imagenPath);
-                }
-            }
-            
-            $profesor->delete();
+            // Desactivar el profesor en lugar de eliminarlo
+            $profesor->update(['activo' => false]);
             
             DB::commit();
             
             return response()->json([
                 'success' => true,
-                'message' => 'Profesor eliminado correctamente'
+                'message' => 'Profesor desactivado correctamente'
             ]);
             
         } catch (\Exception $e) {
             DB::rollBack();
+            
             return response()->json([
                 'success' => false,
-                'message' => 'Error al eliminar el profesor: ' . $e->getMessage()
+                'message' => 'Error al desactivar el profesor: ' . $e->getMessage()
             ], 500);
         }
     }
