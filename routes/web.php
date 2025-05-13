@@ -248,6 +248,10 @@
                         ->name('empresa.subcategorias');
                 // RUTA CALENDARIO
                     Route::get('/empresa/calendar', [CalendarController::class, 'index'])->name('empresa.calendar');
+                // RUTA OFERTAS ACTIVAS
+                    Route::get('/empresa/ofertas/activas', [CompanyDashboardController::class, 'activeOffers'])->name('empresa.offers.active');
+                // RUTA OFERTAS INACTIVAS
+                    Route::get('/empresa/ofertas/inactivas', [CompanyDashboardController::class, 'inactiveOffers'])->name('empresa.offers.inactive');
                     Route::prefix('empresa/calendar')->group(function () {
                         Route::get('/reminders', [CalendarController::class, 'getReminders']);
                         Route::post('/reminders', [CalendarController::class, 'store']);
