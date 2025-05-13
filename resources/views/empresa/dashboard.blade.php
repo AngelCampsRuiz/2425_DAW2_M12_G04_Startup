@@ -135,7 +135,7 @@
                             <div class="flex items-center justify-between">
                                 <div>
                                     <h3 class="font-medium text-purple-800 mb-1">Ofertas activas</h3>
-                                    <p class="text-3xl font-bold text-purple-900">{{ $activePublications->count() }}</p>
+                                    <p class="text-3xl font-bold text-purple-900" id="activePublicationsCount">{{ $activePublications->count() }}</p>
                                 </div>
                                 <div class="bg-white p-3 rounded-lg shadow-sm">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -156,7 +156,7 @@
                             <div class="flex items-center justify-between">
                                 <div>
                                     <h3 class="font-medium text-green-800 mb-1">Total solicitudes</h3>
-                                    <p class="text-3xl font-bold text-green-900">{{ $activePublications->sum('solicitudes_count') + $inactivePublications->sum('solicitudes_count') }}</p>
+                                    <p class="text-3xl font-bold text-green-900" id="totalSolicitudesCount">{{ $activePublications->sum('solicitudes_count') + $inactivePublications->sum('solicitudes_count') }}</p>
                                 </div>
                                 <div class="bg-white p-3 rounded-lg shadow-sm">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -177,7 +177,7 @@
                             <div class="flex items-center justify-between">
                                 <div>
                                     <h3 class="font-medium text-blue-800 mb-1">Solicitudes pendientes</h3>
-                                    <p class="text-3xl font-bold text-blue-900">{{ $activePublications->sum('solicitudes_count') }}</p>
+                                    <p class="text-3xl font-bold text-blue-900" id="activeSolicitudesCount">{{ $activePublications->sum('solicitudes_count') }}</p>
                                 </div>
                                 <div class="bg-white p-3 rounded-lg shadow-sm">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -195,7 +195,7 @@
                             <div class="flex items-center justify-between">
                                 <div>
                                     <h3 class="font-medium text-amber-800 mb-1">Ofertas inactivas</h3>
-                                    <p class="text-3xl font-bold text-amber-900">{{ $inactivePublications->count() }}</p>
+                                    <p class="text-3xl font-bold text-amber-900" id="inactivePublicationsCount">{{ $inactivePublications->count() }}</p>
                                 </div>
                                 <div class="bg-white p-3 rounded-lg shadow-sm">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -211,38 +211,42 @@
                         </div>
                     </div>
 
-                    <!-- Gráfico de Actividad -->
-                    <div class="bg-white rounded-xl shadow-md p-6 mb-8 border border-gray-100 transform transition-all duration-300 hover:shadow-lg">
-                        <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                            </svg>
-                            Resumen de Actividad
-                        </h2>
-
-                        <div class="flex flex-col md:flex-row gap-6">
-                            <!-- Gráfico de solicitudes por oferta -->
-                            <div class="w-full md:w-1/2 bg-gradient-to-br from-white to-purple-50 p-5 rounded-xl border border-purple-100 shadow-sm transition-all duration-300 hover:shadow-md">
-                                <h3 class="text-sm font-semibold text-purple-800 mb-4 flex items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
-                                    </svg>
-                                    Distribución de Ofertas
-                                </h3>
-                                <div class="relative h-64 md:h-72 lg:h-80">
-                                    <canvas id="solicitudesChart"></canvas>
+                    <!-- Resumen de Actividad -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                        <!-- Gráfico de distribución de ofertas -->
+                        <div class="bg-white p-6 rounded-xl shadow-md">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Distribución de Ofertas</h3>
+                            <div class="relative" style="height: 300px;">
+                                <canvas id="solicitudesChart"></canvas>
+                            </div>
+                            <!-- Estadísticas detalladas -->
+                            <div class="mt-6 grid grid-cols-2 gap-4">
+                                <div class="p-4 bg-purple-50 rounded-lg">
+                                    <p class="text-sm text-purple-600 font-medium">Ofertas Activas</p>
+                                    <p class="text-2xl font-bold text-purple-900" id="activePublicationsDetail">0</p>
+                                </div>
+                                <div class="p-4 bg-amber-50 rounded-lg">
+                                    <p class="text-sm text-amber-600 font-medium">Ofertas Inactivas</p>
+                                    <p class="text-2xl font-bold text-amber-900" id="inactivePublicationsDetail">0</p>
                                 </div>
                             </div>
-                            <!-- Distribución de estados -->
-                            <div class="w-full md:w-1/2 bg-gradient-to-br from-white to-blue-50 p-5 rounded-xl border border-blue-100 shadow-sm transition-all duration-300 hover:shadow-md">
-                                <h3 class="text-sm font-semibold text-blue-800 mb-4 flex items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                                    </svg>
-                                    Distribución de Solicitudes
-                                </h3>
-                                <div class="relative h-64 md:h-72 lg:h-80">
-                                    <canvas id="estadosChart"></canvas>
+                        </div>
+
+                        <!-- Gráfico de distribución de solicitudes -->
+                        <div class="bg-white p-6 rounded-xl shadow-md">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Distribución de Solicitudes</h3>
+                            <div class="relative" style="height: 300px;">
+                                <canvas id="estadosChart"></canvas>
+                            </div>
+                            <!-- Estadísticas detalladas -->
+                            <div class="mt-6 grid grid-cols-2 gap-4">
+                                <div class="p-4 bg-green-50 rounded-lg">
+                                    <p class="text-sm text-green-600 font-medium">Solicitudes Aceptadas</p>
+                                    <p class="text-2xl font-bold text-green-900" id="activeSolicitudesDetail">0</p>
+                                </div>
+                                <div class="p-4 bg-blue-50 rounded-lg">
+                                    <p class="text-sm text-blue-600 font-medium">Solicitudes Rechazadas</p>
+                                    <p class="text-2xl font-bold text-blue-900" id="inactiveSolicitudesDetail">0</p>
                                 </div>
                             </div>
                         </div>
@@ -485,7 +489,7 @@
                     <div class="w-full md:w-1/4">
                         <div class="bg-gray-50 rounded-lg p-4">
                             <h3 class="text-lg font-medium text-gray-800 mb-4">Filtros</h3>
-                            
+
                             <!-- Filtro de Nivel de Estudios (ahora primero) -->
                             <div class="mb-4">
                                 <h4 class="text-sm font-medium text-gray-600 mb-2">Nivel de Estudios</h4>
@@ -496,13 +500,13 @@
                                         <label for="education_{{ $nivel->id }}" class="ml-2 text-sm text-gray-700">{{ $nivel->nombre_nivel }}</label>
                                     </div>
                                     @endforeach
-                                    
+
                                     @if(empty($nivelesEducativos))
                                     <div class="text-sm text-gray-500">No hay niveles educativos disponibles</div>
                                     @endif
                                 </div>
                             </div>
-                            
+
                             <!-- Filtro de Habilidades (ahora muestra categorías filtradas por nivel) -->
                             <div class="mb-4">
                                 <h4 class="text-sm font-medium text-gray-600 mb-2">Habilidades</h4>
@@ -513,17 +517,17 @@
                                         <label for="skill_{{ $categoria->id }}" class="ml-2 text-sm text-gray-700">{{ $categoria->nombre_categoria }}</label>
                                     </div>
                                     @endforeach
-                                    
+
                                     <div id="no-categorias-message" class="hidden text-sm text-gray-500">
                                         Selecciona al menos un Nivel de Estudios para ver las categorías disponibles
                                     </div>
-                                    
+
                                     @if(empty($categorias))
                                     <div class="text-sm text-gray-500">No hay categorías disponibles</div>
                                     @endif
                                 </div>
                             </div>
-                            
+
                             <!-- Filtro de Disponibilidad -->
                             <div class="mb-4">
                                 <h4 class="text-sm font-medium text-gray-600 mb-2">Disponibilidad</h4>
@@ -551,7 +555,7 @@
                                     @foreach($ciudades ?? [] as $ciudad)
                                     <option value="{{ $ciudad->id }}">{{ $ciudad->nombre }}</option>
                                     @endforeach
-                                    
+
                                     @if(empty($ciudades))
                                     <option value="barcelona">Barcelona</option>
                                     <option value="madrid">Madrid</option>
@@ -562,7 +566,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Resultados de búsqueda -->
                     <div class="w-full md:w-3/4">
                         <div id="searchResults" class="bg-white rounded-lg">
@@ -639,7 +643,7 @@
         categoriasItems.forEach(item => {
             item.classList.add('hidden');
         });
-        
+
         // Mostrar mensaje de no categorías al inicio
         const noCategoriasMensaje = document.getElementById('no-categorias-message');
         if (noCategoriasMensaje) {
@@ -893,20 +897,34 @@
                                         icon: 'success',
                                         confirmButtonText: 'Continuar',
                                         confirmButtonColor: '#7E22CE'
-                                    }).then(() => {
-                                        window.location.reload();
                                     });
+
+                                    // Actualizar los contadores y gráficos sin recargar
+                                    if (document.getElementById('solicitudesChart')) {
+                                        initializeCharts();
+                                    }
                                 } else {
                                     alert(data.message || 'Oferta creada exitosamente');
-                                    window.location.reload();
                                 }
                             } else {
                                 throw new Error(data.message || 'Error al crear la oferta');
                             }
                         });
                     } else {
-                        console.log(`[${uniqueId}] Respuesta no es JSON, recargando página`);
-                        window.location.reload();
+                        console.log(`[${uniqueId}] Respuesta no es JSON`);
+                        closeModal();
+                        Swal.fire({
+                            title: '¡Éxito!',
+                            text: 'Oferta creada exitosamente',
+                            icon: 'success',
+                            confirmButtonText: 'Continuar',
+                            confirmButtonColor: '#7E22CE'
+                        });
+
+                        // Actualizar los contadores y gráficos sin recargar
+                        if (document.getElementById('solicitudesChart')) {
+                            initializeCharts();
+                        }
                     }
                 })
                 .catch(error => {
@@ -945,355 +963,165 @@
 
         // Inicializar gráficos con estilos mejorados y animaciones
         function initializeCharts() {
-            // Obtener datos para los gráficos
-            const activas = {{ $activePublications->count() }};
-            const inactivas = {{ $inactivePublications->count() }};
-            const solicitudesActivas = {{ $activePublications->sum('solicitudes_count') }};
-            const solicitudesInactivas = {{ $inactivePublications->sum('solicitudes_count') }};
-
-            // Paleta de colores personalizada con degradados
-            const chartPalette = {
-                purple: {
-                    primary: 'rgba(124, 58, 237, 0.9)',
-                    secondary: 'rgba(139, 92, 246, 0.6)',
-                    gradient: createGradient('solicitudesChart', [
-                        'rgba(124, 58, 237, 0.7)',
-                        'rgba(139, 92, 246, 0.3)'
-                    ])
-                },
-                amber: {
-                    primary: 'rgba(217, 119, 6, 0.9)',
-                    secondary: 'rgba(245, 158, 11, 0.6)',
-                    gradient: createGradient('solicitudesChart', [
-                        'rgba(217, 119, 6, 0.7)',
-                        'rgba(251, 191, 36, 0.3)'
-                    ])
-                },
-                blue: {
-                    primary: 'rgba(59, 130, 246, 0.9)',
-                    secondary: 'rgba(96, 165, 250, 0.6)',
-                    gradient: createGradient('estadosChart', [
-                        'rgba(59, 130, 246, 0.7)',
-                        'rgba(96, 165, 250, 0.3)'
-                    ])
-                },
-                gray: {
-                    primary: 'rgba(107, 114, 128, 0.9)',
-                    secondary: 'rgba(156, 163, 175, 0.6)',
-                    gradient: createGradient('estadosChart', [
-                        'rgba(107, 114, 128, 0.7)',
-                        'rgba(156, 163, 175, 0.3)'
-                    ])
-                }
-            };
-
-            // Crear degradados para los gráficos
-            function createGradient(chartId, colorStops) {
-                const ctx = document.getElementById(chartId).getContext('2d');
-                const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-
-                colorStops.forEach((color, index) => {
-                    gradient.addColorStop(index / (colorStops.length - 1), color);
-                });
-
-                return gradient;
+            // Destruir gráficos existentes si existen
+            const existingSolicitudesChart = Chart.getChart('solicitudesChart');
+            if (existingSolicitudesChart) {
+                existingSolicitudesChart.destroy();
             }
 
-            // Configurar Chart.js con defaults globales
-            Chart.defaults.font.family = "'Inter', 'Helvetica', 'Arial', sans-serif";
-            Chart.defaults.color = '#6B7280';
-            Chart.defaults.elements.arc.borderWidth = 0;
-            Chart.defaults.elements.arc.hoverBorderWidth = 3;
-            Chart.defaults.elements.arc.hoverBorderColor = '#FFF';
-            Chart.defaults.elements.arc.borderRadius = 4;
-
-            // Gráfico de distribución de ofertas
-            const solicitudesChart = new Chart(
-                document.getElementById('solicitudesChart').getContext('2d'),
-                {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Ofertas Activas', 'Ofertas Inactivas'],
-                        datasets: [{
-                            data: [activas, inactivas],
-                            backgroundColor: [
-                                chartPalette.purple.gradient,
-                                chartPalette.amber.gradient
-                            ],
-                            borderColor: [
-                                chartPalette.purple.primary,
-                                chartPalette.amber.primary
-                            ],
-                            hoverBackgroundColor: [
-                                chartPalette.purple.primary,
-                                chartPalette.amber.primary
-                            ],
-                            hoverOffset: 10,
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        layout: {
-                            padding: 20
-                        },
-                        plugins: {
-                            legend: {
-                                position: 'bottom',
-                                labels: {
-                                    boxWidth: 12,
-                                    padding: 15,
-                                    font: {
-                                        size: 12,
-                                        weight: '500'
-                                    }
-                                }
-                            },
-                            title: {
-                                display: false
-                            },
-                            tooltip: {
-                                enabled: true,
-                                backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                                titleColor: '#1F2937',
-                                bodyColor: '#4B5563',
-                                padding: 12,
-                                cornerRadius: 8,
-                                boxWidth: 10,
-                                boxHeight: 10,
-                                boxPadding: 3,
-                                usePointStyle: true,
-                                borderColor: 'rgba(229, 231, 235, 1)',
-                                borderWidth: 1,
-                                titleFont: {
-                                    size: 14,
-                                    weight: 'bold'
-                                },
-                                bodyFont: {
-                                    size: 13
-                                },
-                                callbacks: {
-                                    label: function(context) {
-                                        const total = context.dataset.data.reduce((acc, val) => acc + val, 0);
-                                        const value = context.raw;
-                                        const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
-                                        return `${context.label}: ${value} (${percentage}%)`;
-                                    }
-                                },
-                                displayColors: false
-                            }
-                        },
-                        cutout: '70%',
-                        animation: {
-                            animateScale: true,
-                            animateRotate: true,
-                            duration: 1500,
-                            easing: 'easeOutCirc',
-                            delay: function(context) {
-                                return context.dataIndex * 100;
-                            }
-                        }
-                    },
-                    plugins: [{
-                        id: 'centreTitlePlugin',
-                        beforeDraw: function(chart) {
-                            // Si no hay datos, no dibujar nada
-                            if (chart.data.datasets[0].data.length === 0) return;
-
-                            const width = chart.width;
-                            const height = chart.height;
-                            const ctx = chart.ctx;
-                            const centerX = width / 2;
-                            const centerY = height / 2;
-                            const total = chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
-
-                            // Configuración del texto
-                            ctx.textAlign = 'center';
-                            ctx.textBaseline = 'middle';
-
-                            // Dibujar el valor total
-                            ctx.font = 'bold 30px Inter';
-                            ctx.fillStyle = '#1F2937';
-                            ctx.fillText(total, centerX, centerY - 10);
-
-                            // Texto "Total" debajo
-                            ctx.font = '14px Inter';
-                            ctx.fillStyle = '#6B7280';
-                            ctx.fillText('Total', centerX, centerY + 15);
-                        }
-                    }]
-                }
-            );
-
-            // Gráfico de distribución de solicitudes
-            const estadosChart = new Chart(
-                document.getElementById('estadosChart').getContext('2d'),
-                {
-                    type: 'bar',
-                    data: {
-                        labels: ['Solicitudes Activas', 'Solicitudes Inactivas'],
-                        datasets: [{
-                            label: 'Solicitudes',
-                            data: [solicitudesActivas, solicitudesInactivas],
-                            backgroundColor: [
-                                chartPalette.blue.gradient,
-                                chartPalette.gray.gradient
-                            ],
-                            borderColor: [
-                                chartPalette.blue.primary,
-                                chartPalette.gray.primary
-                            ],
-                            borderWidth: 1,
-                            borderRadius: 8,
-                            borderSkipped: false,
-                            hoverBackgroundColor: [
-                                chartPalette.blue.primary,
-                                chartPalette.gray.primary
-                            ]
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        indexAxis: 'y',
-                        layout: {
-                            padding: {
-                                top: 20,
-                                bottom: 20,
-                                left: 20,
-                                right: 20
-                            }
-                        },
-                        plugins: {
-                            legend: {
-                                display: false
-                            },
-                            title: {
-                                display: false
-                            },
-                            tooltip: {
-                                enabled: true,
-                                backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                                titleColor: '#1F2937',
-                                bodyColor: '#4B5563',
-                                padding: 12,
-                                cornerRadius: 8,
-                                boxWidth: 10,
-                                boxHeight: 10,
-                                boxPadding: 3,
-                                usePointStyle: true,
-                                borderColor: 'rgba(229, 231, 235, 1)',
-                                borderWidth: 1,
-                                callbacks: {
-                                    label: function(context) {
-                                        const total = context.dataset.data.reduce((acc, val) => acc + val, 0);
-                                        const value = context.raw;
-                                        const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
-                                        return `${value} solicitudes (${percentage}%)`;
-                                    }
-                                },
-                                displayColors: false
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                grid: {
-                                    display: false,
-                                    drawBorder: false
-                                },
-                                ticks: {
-                                    font: {
-                                        size: 12,
-                                        weight: '500'
-                                    },
-                                    color: '#4B5563',
-                                    padding: 8
-                                }
-                            },
-                            x: {
-                                beginAtZero: true,
-                                grid: {
-                                    color: 'rgba(243, 244, 246, 0.8)',
-                                    drawBorder: false
-                                },
-                                ticks: {
-                                    font: {
-                                        size: 11
-                                    },
-                                    color: '#9CA3AF',
-                                    padding: 8,
-                                    callback: function(value) {
-                                        return value % 1 === 0 ? value : '';
-                                    }
-                                }
-                            }
-                        },
-                        animation: {
-                            delay: function(context) {
-                                return context.dataIndex * 200;
-                            },
-                            easing: 'easeOutQuart',
-                            duration: 1500
-                        }
-                    },
-                    plugins: [{
-                        id: 'valueLabels',
-                        afterDatasetsDraw: function(chart) {
-                            const ctx = chart.ctx;
-
-                            chart.data.datasets.forEach((dataset, datasetIndex) => {
-                                const meta = chart.getDatasetMeta(datasetIndex);
-
-                                if (!meta.hidden) {
-                                    meta.data.forEach((element, index) => {
-                                        const value = dataset.data[index];
-                                        if (value === 0) return;
-
-                                        // Obtener posición para el texto
-                                        const position = element.getCenterPoint();
-                                        const xPos = position.x + 20;
-                                        const yPos = position.y;
-
-                                        // Configuración del texto
-                                        ctx.fillStyle = '#1F2937';
-                                        ctx.textAlign = 'left';
-                                        ctx.textBaseline = 'middle';
-                                        ctx.font = 'bold 14px Inter';
-
-                                        // Dibujar valor
-                                        ctx.fillText(value, xPos, yPos);
-                                    });
-                                }
-                            });
-                        }
-                    }]
-                }
-            );
-
-            // Añadir animación a los gráficos cuando están visibles en la pantalla
-            const chartsSection = document.querySelector('.bg-white.rounded-xl.shadow-md.p-6.mb-8');
-            if (chartsSection) {
-                const observer = new IntersectionObserver((entries) => {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) {
-                            // Reiniciar gráficos cuando son visibles
-                            solicitudesChart.reset();
-                            estadosChart.reset();
-                            setTimeout(() => {
-                                solicitudesChart.update();
-                                estadosChart.update();
-                            }, 100);
-
-                            // Dejar de observar una vez que se han animado
-                            observer.unobserve(entry.target);
-                        }
-                    });
-                }, { threshold: 0.2 });
-
-                observer.observe(chartsSection);
+            const existingEstadosChart = Chart.getChart('estadosChart');
+            if (existingEstadosChart) {
+                existingEstadosChart.destroy();
             }
+
+            // Obtener datos actualizados mediante AJAX
+            fetch('/empresa/get-dashboard-stats', {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Actualizar los contadores en la interfaz
+                document.getElementById('activePublicationsCount').textContent = data.activePublications;
+                document.getElementById('totalSolicitudesCount').textContent = data.activeSolicitudes + data.inactiveSolicitudes;
+                document.getElementById('activeSolicitudesCount').textContent = data.activeSolicitudes;
+                document.getElementById('inactivePublicationsCount').textContent = data.inactivePublications;
+
+                // Actualizar los números detallados
+                document.getElementById('activePublicationsDetail').textContent = data.activePublications;
+                document.getElementById('inactivePublicationsDetail').textContent = data.inactivePublications;
+                document.getElementById('activeSolicitudesDetail').textContent = data.activeSolicitudes;
+                document.getElementById('inactiveSolicitudesDetail').textContent = data.inactiveSolicitudes;
+
+                // Paleta de colores personalizada con degradados
+                const chartPalette = {
+                    purple: {
+                        primary: 'rgba(124, 58, 237, 0.9)',
+                        secondary: 'rgba(139, 92, 246, 0.6)',
+                        gradient: createGradient('solicitudesChart', [
+                            'rgba(124, 58, 237, 0.7)',
+                            'rgba(139, 92, 246, 0.3)'
+                        ])
+                    },
+                    amber: {
+                        primary: 'rgba(217, 119, 6, 0.9)',
+                        secondary: 'rgba(245, 158, 11, 0.6)',
+                        gradient: createGradient('solicitudesChart', [
+                            'rgba(217, 119, 6, 0.7)',
+                            'rgba(251, 191, 36, 0.3)'
+                        ])
+                    }
+                };
+
+                // Crear gráfico de distribución de ofertas
+                const solicitudesChart = new Chart(
+                    document.getElementById('solicitudesChart'),
+                    {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Ofertas Activas', 'Ofertas Inactivas'],
+                            datasets: [{
+                                data: [data.activePublications, data.inactivePublications],
+                                backgroundColor: [
+                                    chartPalette.purple.gradient,
+                                    chartPalette.amber.gradient
+                                ],
+                                borderWidth: 0,
+                                borderRadius: 4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            layout: {
+                                padding: 20
+                            },
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                        usePointStyle: true,
+                                        padding: 20
+                                    }
+                                }
+                            }
+                        }
+                    }
+                );
+
+                // Crear gráfico de distribución de solicitudes
+                const estadosChart = new Chart(
+                    document.getElementById('estadosChart'),
+                    {
+                        type: 'bar',
+                        data: {
+                            labels: ['Solicitudes Aceptadas', 'Solicitudes Rechazadas'],
+                            datasets: [{
+                                data: [data.activeSolicitudes, data.inactiveSolicitudes],
+                                backgroundColor: [
+                                    'rgba(34, 197, 94, 0.7)',
+                                    'rgba(239, 68, 68, 0.7)'
+                                ],
+                                borderWidth: 0,
+                                borderRadius: 4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            layout: {
+                                padding: 20
+                            },
+                            plugins: {
+                                legend: {
+                                    display: false
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    grid: {
+                                        display: true,
+                                        color: 'rgba(0, 0, 0, 0.1)'
+                                    }
+                                },
+                                x: {
+                                    grid: {
+                                        display: false
+                                    }
+                                }
+                            }
+                        }
+                    }
+                );
+            })
+            .catch(error => {
+                console.error('Error al obtener las estadísticas:', error);
+            });
         }
+
+        // Crear degradados para los gráficos
+        function createGradient(chartId, colorStops) {
+            const ctx = document.getElementById(chartId).getContext('2d');
+            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+
+            colorStops.forEach((color, index) => {
+                gradient.addColorStop(index / (colorStops.length - 1), color);
+            });
+
+            return gradient;
+        }
+
+        // Inicializar los gráficos cuando se carga la página
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts();
+        });
+
+        // Actualizar los gráficos cada 5 minutos
+        setInterval(initializeCharts, 300000);
 
         // Estas funciones ya no se usan
         function renderizarGraficos() {
@@ -1348,30 +1176,30 @@
         // Simulación de búsqueda de candidatos
         const searchCandidatesButton = document.getElementById('searchCandidatesButton');
         const clearCandidateSearchButton = document.getElementById('clearCandidateSearchButton');
-        
+
         if (searchCandidatesButton) {
             searchCandidatesButton.addEventListener('click', function() {
                 // Ocultar mensaje inicial
                 const initialSearchMessage = document.getElementById('initialSearchMessage');
                 if (initialSearchMessage) initialSearchMessage.classList.add('hidden');
-                
+
                 // Mostrar spinner de carga
                 const loadingResults = document.getElementById('loadingResults');
                 if (loadingResults) loadingResults.classList.remove('hidden');
-                
+
                 // Ocultar otros contenedores
                 const resultsContainer = document.getElementById('resultsContainer');
                 const noResults = document.getElementById('noResults');
                 if (resultsContainer) resultsContainer.classList.add('hidden');
                 if (noResults) noResults.classList.add('hidden');
-                
+
                 // Recoger valores de los filtros
                 const searchTerm = document.getElementById('searchCandidatesInput').value.trim();
                 const selectedNiveles = Array.from(document.querySelectorAll('input[name="nivel_educativo[]"]:checked')).map(cb => cb.value);
                 const selectedCategorias = Array.from(document.querySelectorAll('input[name="categoria[]"]:checked')).map(cb => cb.value);
                 const selectedDisponibilidad = Array.from(document.querySelectorAll('input[id^="availability_"]:checked')).map(cb => cb.id.replace('availability_', ''));
                 const ubicacion = document.getElementById('location_select').value;
-                
+
                 // Preparar datos para la petición
                 const searchData = {
                     search: searchTerm,
@@ -1381,17 +1209,17 @@
                     ubicacion: ubicacion,
                     _token: '{{ csrf_token() }}'
                 };
-                
+
                 console.log('Buscando con los parámetros:', searchData);
-                
+
                 // Simular petición AJAX (en un entorno real, esto sería un fetch a un endpoint del servidor)
                 setTimeout(() => {
                     // Ocultar spinner
                     if (loadingResults) loadingResults.classList.add('hidden');
-                    
+
                     // Simular respuesta del servidor
                     const simulatedResponse = simulateServerResponse(searchData);
-                    
+
                     if (simulatedResponse.estudiantes.length === 0) {
                         // Mostrar mensaje de no resultados
                         if (noResults) noResults.classList.remove('hidden');
@@ -1401,11 +1229,11 @@
                         if (candidatesList) {
                             // Limpiar resultados anteriores
                             candidatesList.innerHTML = '';
-                            
+
                             // Actualizar contador
                             const resultCount = document.getElementById('resultCount');
                             if (resultCount) resultCount.textContent = simulatedResponse.estudiantes.length;
-                            
+
                             // Mostrar cada estudiante
                             simulatedResponse.estudiantes.forEach(estudiante => {
                                 // Crear elemento HTML para el estudiante
@@ -1414,8 +1242,8 @@
                                 estudianteElement.innerHTML = `
                                     <div class="flex items-start">
                                         <div class="flex-shrink-0 mr-4">
-                                            ${estudiante.imagen 
-                                                ? `<img src="${estudiante.imagen}" class="h-12 w-12 rounded-full object-cover border-2 border-purple-100">` 
+                                            ${estudiante.imagen
+                                                ? `<img src="${estudiante.imagen}" class="h-12 w-12 rounded-full object-cover border-2 border-purple-100">`
                                                 : `<div class="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-700 font-bold text-lg">
                                                     ${estudiante.nombre.split(' ').map(n => n[0]).join('')}
                                                   </div>`
@@ -1439,10 +1267,10 @@
                                         </div>
                                     </div>
                                 `;
-                                
+
                                 candidatesList.appendChild(estudianteElement);
                             });
-                            
+
                             // Mostrar contenedor de resultados
                             if (resultsContainer) resultsContainer.classList.remove('hidden');
                         }
@@ -1450,7 +1278,7 @@
                 }, 1500); // Simular tiempo de carga
             });
         }
-        
+
         // Función para simular una respuesta del servidor
         function simulateServerResponse(searchData) {
             // Base de datos simulada de estudiantes
@@ -1516,41 +1344,41 @@
                     imagen: null
                 }
             ];
-            
+
             // Filtrar estudiantes basados en los criterios de búsqueda
             let resultados = estudiantesDB;
-            
+
             // Filtrar por término de búsqueda
             if (searchData.search) {
                 const searchLower = searchData.search.toLowerCase();
-                resultados = resultados.filter(est => 
-                    est.nombre.toLowerCase().includes(searchLower) || 
-                    est.titulo.toLowerCase().includes(searchLower) || 
+                resultados = resultados.filter(est =>
+                    est.nombre.toLowerCase().includes(searchLower) ||
+                    est.titulo.toLowerCase().includes(searchLower) ||
                     est.habilidades.some(h => h.toLowerCase().includes(searchLower))
                 );
             }
-            
+
             // Filtrar por niveles educativos
             if (searchData.niveles && searchData.niveles.length > 0) {
-                resultados = resultados.filter(est => 
+                resultados = resultados.filter(est =>
                     searchData.niveles.includes(est.nivel_educativo_id)
                 );
             }
-            
+
             // Filtrar por disponibilidad
             if (searchData.disponibilidad && searchData.disponibilidad.length > 0) {
-                resultados = resultados.filter(est => 
+                resultados = resultados.filter(est =>
                     searchData.disponibilidad.includes(est.disponibilidad)
                 );
             }
-            
+
             // Filtrar por ubicación
             if (searchData.ubicacion) {
-                resultados = resultados.filter(est => 
+                resultados = resultados.filter(est =>
                     est.ubicacion.toLowerCase() === searchData.ubicacion.toLowerCase()
                 );
             }
-            
+
             // Devolver respuesta simulada
             return {
                 success: true,
@@ -1565,30 +1393,30 @@
                 // Limpiar campo de búsqueda
                 const searchInput = document.getElementById('searchCandidatesInput');
                 if (searchInput) searchInput.value = '';
-                
+
                 // Limpiar checkboxes de categorías y niveles educativos
                 const checkboxesCategorias = document.querySelectorAll('input[name="categoria[]"]');
                 const checkboxesNiveles = document.querySelectorAll('input[name="nivel_educativo[]"]');
                 checkboxesCategorias.forEach(checkbox => checkbox.checked = false);
                 checkboxesNiveles.forEach(checkbox => checkbox.checked = false);
-                
+
                 // Restaurar visibilidad de todas las categorías
                 const categoriasItems = document.querySelectorAll('.categoria-item');
                 categoriasItems.forEach(item => {
                     item.classList.remove('hidden');
                 });
                 document.getElementById('no-categorias-message').classList.add('hidden');
-                
+
                 // Resetear selector de ubicación
                 const locationSelect = document.getElementById('location_select');
                 if (locationSelect) locationSelect.value = '';
-                
+
                 // Mostrar mensaje inicial
                 const initialSearchMessage = document.getElementById('initialSearchMessage');
                 const loadingResults = document.getElementById('loadingResults');
                 const resultsContainer = document.getElementById('resultsContainer');
                 const noResults = document.getElementById('noResults');
-                
+
                 if (initialSearchMessage) initialSearchMessage.classList.remove('hidden');
                 if (loadingResults) loadingResults.classList.add('hidden');
                 if (resultsContainer) resultsContainer.classList.add('hidden');
@@ -1601,7 +1429,7 @@
             const checkboxesNiveles = document.querySelectorAll('.nivel-educativo-checkbox:checked');
             const categoriasItems = document.querySelectorAll('.categoria-item');
             const noCategoriasMensaje = document.getElementById('no-categorias-message');
-            
+
             // Si no hay niveles seleccionados, ocultar todas las categorías y mostrar mensaje
             if (checkboxesNiveles.length === 0) {
                 categoriasItems.forEach(item => {
@@ -1610,17 +1438,17 @@
                 noCategoriasMensaje.classList.remove('hidden');
                 return;
             }
-            
+
             // Crear array con los IDs de los niveles seleccionados
             const nivelesSeleccionados = Array.from(checkboxesNiveles).map(checkbox => checkbox.value);
-            
+
             // Contador para categorías visibles
             let categoriasVisibles = 0;
-            
+
             // Filtrar las categorías según los niveles seleccionados
             categoriasItems.forEach(item => {
                 const nivelId = item.getAttribute('data-nivel-id');
-                
+
                 // Comprobamos si el ID está en el array - convertimos a string para asegurar comparación correcta
                 if (nivelesSeleccionados.includes(nivelId) || nivelesSeleccionados.includes(String(nivelId))) {
                     item.classList.remove('hidden');
@@ -1629,14 +1457,14 @@
                     item.classList.add('hidden');
                 }
             });
-            
+
             // Mostrar/ocultar mensaje si no hay categorías disponibles
             if (categoriasVisibles === 0) {
                 noCategoriasMensaje.classList.remove('hidden');
             } else {
                 noCategoriasMensaje.classList.add('hidden');
             }
-            
+
             console.log('Niveles seleccionados:', nivelesSeleccionados);
             console.log('Categorías visibles:', categoriasVisibles);
         };

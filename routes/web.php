@@ -75,7 +75,7 @@
                             })
                             ->with('user:id,nombre')
                             ->get(['id', 'user_id']);
-            
+
             return response()->json($instituciones);
         })->name('api.instituciones');
 
@@ -97,7 +97,7 @@
                 'nivel_id' => $nivel_id,
                 'institucion_id' => $institucion_id
             ]);
-            
+
             // Si se proporciona tanto el ID de institución como el ID de nivel
             if ($nivel_id && $institucion_id) {
                 // Obtener categorías asociadas a esta institución y nivel específico
@@ -109,32 +109,32 @@
                     ->select('c.id', 'c.nombre_categoria')
                     ->distinct()
                     ->get();
-                
+
                 \Log::info('API Categorias - Resultados', [
                     'count' => $categorias->count(),
                     'data' => $categorias
                 ]);
-                
+
                 return response()->json($categorias);
             }
-            
+
             // Si solo se proporciona el nivel educativo
             $query = App\Models\Categoria::select('categorias.id', 'categorias.nombre_categoria');
-            
+
             if ($nivel_id) {
                 $query->where('nivel_educativo_id', $nivel_id);
             }
-            
+
             if ($institucion_id) {
                 $query->join('institucion_categoria', 'categorias.id', '=', 'institucion_categoria.categoria_id')
                       ->where('institucion_categoria.institucion_id', $institucion_id)
                       ->where('institucion_categoria.activo', true);
-                      
+
                 if ($nivel_id) {
                     $query->where('institucion_categoria.nivel_educativo_id', $nivel_id);
                 }
             }
-            
+
             $categorias = $query->distinct()->get();
             return response()->json($categorias);
         })->name('api.categorias');
@@ -233,6 +233,8 @@
             Route::middleware(['auth', \App\Http\Middleware\CheckRole::class.':empresa'])->group(function () {
                 // RUTA DASHBOARD EMPRESA
                     Route::get('/empresa/dashboard', [CompanyDashboardController::class, 'index'])->name('empresa.dashboard');
+                // RUTA OBTENER ESTADÍSTICAS DEL DASHBOARD
+                    Route::get('/empresa/get-dashboard-stats', [CompanyDashboardController::class, 'getDashboardStats'])->name('empresa.dashboard.stats');
                 // RUTA CREAR OFERTA
                     Route::get('/empresa/ofertas/crear', [CompanyDashboardController::class, 'createOffer'])->name('empresa.offers.create');
                 // RUTA CREAR OFERTA
@@ -290,7 +292,7 @@
                         Route::delete('empresas/eliminar-sql/{empresa}', [App\Http\Controllers\Admin\EmpresaController::class, 'destroySQL'])->name('empresas.destroySQL');
                     // RUTA GESTIONAR EMPRESAS
                         Route::resource('empresas', App\Http\Controllers\Admin\EmpresaController::class);
-                        
+
                 // RUTAS PARA GESTIONAR LAS INSTITUCIONES
                     // RUTA CAMBIAR VERIFICACIÓN
                         Route::post('instituciones/cambiar-verificacion/{id}', [App\Http\Controllers\Admin\InstitucionController::class, 'cambiarVerificacion'])->name('instituciones.cambiar-verificacion');

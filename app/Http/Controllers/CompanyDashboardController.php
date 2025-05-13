@@ -38,7 +38,7 @@ class CompanyDashboardController extends Controller
             ->paginate(4);
 
         $categorias = Categoria::all();
-        
+
         // Cargar los niveles educativos para el filtro de búsqueda de candidatos
         $nivelesEducativos = \App\Models\NivelEducativo::all();
 
@@ -368,39 +368,39 @@ class CompanyDashboardController extends Controller
         $query = Publicacion::where('empresa_id', $company->id)
             ->where('activa', true)
             ->withCount('solicitudes');
-            
+
         // Apply filters if present
         if ($request->has('titulo') && !empty($request->titulo)) {
             $query->where('titulo', 'like', '%' . $request->titulo . '%');
         }
-        
+
         if ($request->has('horario') && !empty($request->horario)) {
             $query->where('horario', $request->horario);
         }
-        
+
         if ($request->has('categoria_id') && !empty($request->categoria_id)) {
             $query->where('categoria_id', $request->categoria_id);
         }
-        
+
         // Apply sorting
         $sortField = $request->input('sort_field', 'created_at');
         $sortDirection = $request->input('sort_direction', 'desc');
-        
+
         // Validate sort field to prevent SQL injection
         $allowedSortFields = [
             'titulo', 'horario', 'created_at', 'horas_totales', 'solicitudes_count'
         ];
-        
+
         if (in_array($sortField, $allowedSortFields)) {
             $query->orderBy($sortField, $sortDirection);
         } else {
             $query->orderBy('created_at', 'desc');
         }
-        
+
         // Paginate results - use per_page from request or default to 4 items
         $perPage = $request->input('per_page', 4);
         $activePublications = $query->paginate($perPage);
-        
+
         // Return JSON for Ajax requests
         if ($request->ajax()) {
             return response()->json([
@@ -416,10 +416,10 @@ class CompanyDashboardController extends Controller
                 ]
             ]);
         }
-        
+
         // For regular page load
         $categorias = Categoria::all();
-        
+
         return view('empresa.active-offers', compact('activePublications', 'categorias'));
     }
 
@@ -434,35 +434,35 @@ class CompanyDashboardController extends Controller
         $query = Publicacion::where('empresa_id', $company->id)
             ->where('activa', false)
             ->withCount('solicitudes');
-            
+
         // Apply filters if present
         if ($request->has('titulo') && !empty($request->titulo)) {
             $query->where('titulo', 'like', '%' . $request->titulo . '%');
         }
-        
+
         if ($request->has('horario') && !empty($request->horario)) {
             $query->where('horario', $request->horario);
         }
-        
+
         if ($request->has('categoria_id') && !empty($request->categoria_id)) {
             $query->where('categoria_id', $request->categoria_id);
         }
-        
+
         // Apply sorting
         $sortField = $request->input('sort_field', 'created_at');
         $sortDirection = $request->input('sort_direction', 'desc');
-        
+
         // Validate sort field to prevent SQL injection
         $allowedSortFields = [
             'titulo', 'horario', 'created_at', 'horas_totales', 'solicitudes_count'
         ];
-        
+
         if (in_array($sortField, $allowedSortFields)) {
             $query->orderBy($sortField, $sortDirection);
         } else {
             $query->orderBy('created_at', 'desc');
         }
-        
+
         // Paginate with 4 items per page
         $perPage = $request->input('per_page', 4);
         $inactivePublications = $query->paginate($perPage);
@@ -484,8 +484,35 @@ class CompanyDashboardController extends Controller
         }
 
         $categorias = Categoria::all();
-        
+
         return view('empresa.inactive-offers', compact('inactivePublications', 'categorias'));
+    }
+
+    public function getDashboardStats()
+    {
+        $company = Auth::user();
+
+        // Obtener las solicitudes aceptadas y rechazadas
+        $solicitudesAceptadas = Solicitud::whereHas('publicacion', function($query) use ($company) {
+            $query->where('empresa_id', $company->id);
+        })->where('estado', 'aceptada')->count();
+
+        $solicitudesRechazadas = Solicitud::whereHas('publicacion', function($query) use ($company) {
+            $query->where('empresa_id', $company->id);
+        })->where('estado', 'rechazada')->count();
+
+        $stats = [
+            'activePublications' => Publicacion::where('empresa_id', $company->id)
+                ->where('activa', true)
+                ->count(),
+            'inactivePublications' => Publicacion::where('empresa_id', $company->id)
+                ->where('activa', false)
+                ->count(),
+            'activeSolicitudes' => $solicitudesAceptadas,
+            'inactiveSolicitudes' => $solicitudesRechazadas
+        ];
+
+        return response()->json($stats);
     }
 }
 
