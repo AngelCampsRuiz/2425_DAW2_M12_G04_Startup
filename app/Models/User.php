@@ -39,14 +39,10 @@ class User extends Authenticatable
         'show_ciudad',
         'show_direccion',
         'show_web',
-<<<<<<< HEAD
-        'web'
-=======
         'lat',
         'lng',
         'direccion',
         'ciudad'
->>>>>>> test
     ];
 
     protected $casts = [

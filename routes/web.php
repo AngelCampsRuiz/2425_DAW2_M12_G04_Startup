@@ -1,7 +1,23 @@
 <?php
     // RUTAS DE LA APLICACIÓN
     use Illuminate\Support\Facades\Route;
-        // CONTROLADORES
+    use App\Http\Controllers\Controller;
+    use App\Http\Controllers\HomeController;
+    use App\Http\Controllers\ProfileController;
+    use App\Http\Controllers\CalendarController;
+    use App\Http\Controllers\CompanyDashboardController;
+    use App\Http\Controllers\StudentDashboardController;
+    use App\Http\Controllers\TeacherDashboardController;
+    use App\Http\Controllers\InstitutionDashboardController;
+    use App\Http\Controllers\DemoController;
+    use App\Http\Controllers\PublicacionController;
+    use App\Http\Controllers\SolicitudController;
+    use App\Http\Controllers\DepartamentoController;
+    use App\Http\Controllers\ChatController;
+    use App\Http\Controllers\ValoracionController;
+
+    // CONTROLADORES
+        // CONTROLADOR HOME
             // CONTROLADOR HOME
                 use App\Http\Controllers\HomeController;
             // CONTROLADOR DE AUTENTICACIÓN INICIO DE SESIÓN
@@ -28,8 +44,6 @@
                 use App\Http\Controllers\SolicitudController;
             // CONTROLADOR CHAT
                 use App\Http\Controllers\ChatController;
-            // CONTROLADOR PERFIL
-                use App\Http\Controllers\ProfileController;
             // CONTROLADOR VALORACIONES
                 use App\Http\Controllers\ValoracionController;
             // CONTROLADOR NOTIFICACIONES
@@ -38,6 +52,8 @@
                 use App\Http\Controllers\DocenteController;
             // CONTROLADOR DEPARTAMENTOS
                 use App\Http\Controllers\DepartamentoController;
+            // CONTROLADOR CALENDARIO
+                use App\Http\Controllers\CalendarController;
 
     // RUTAS DE LA APLICACIÓN
         // RUTA PRINCIPAL HOME
@@ -145,6 +161,14 @@
                     Route::get('/empresa/get-subcategorias/{categoria}', [CompanyDashboardController::class, 'getSubcategorias'])
                         ->name('empresa.subcategorias');
                
+                // RUTAS DEL CALENDARIO
+                    Route::get('/empresa/calendar', [CalendarController::class, 'index'])->name('empresa.calendar');
+                    Route::get('/empresa/calendar/reminders/{reminder}', [CalendarController::class, 'show'])->name('empresa.reminder.show');
+                    Route::post('/empresa/calendar/reminders', [CalendarController::class, 'store'])->name('empresa.reminder.store');
+                    Route::put('/empresa/calendar/reminders/{reminder}', [CalendarController::class, 'update'])->name('empresa.reminder.update');
+                    Route::delete('/empresa/calendar/reminders/{reminder}', [CalendarController::class, 'destroy'])->name('empresa.reminder.destroy');
+                    Route::post('/empresa/calendar/reminders/{reminder}/toggle', [CalendarController::class, 'toggleComplete'])->name('empresa.reminder.toggle');
+
             });
 
         // RUTAS PROTEGIDAS PARA ADMINISTRADORES
