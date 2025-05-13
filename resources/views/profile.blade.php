@@ -1,13 +1,12 @@
 {{-- HEADER --}}
 @extends('layouts.app')
 
-@push('styles')
+{{-- CONTENIDO --}}
     <link rel="stylesheet" href="{{ asset('css/profile.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-@endpush
-
-{{-- CONTENIDO --}}
+    <script src="{{ asset('js/profile.js') }}"></script>
+    <script src="{{ asset('js/profile-functions.js') }}"></script>
+    <script src="{{ asset('js/profile-edit.js') }}"></script>
     @section('content')
         <div class="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-50">
             {{-- MIGAS DE PAN --}}
@@ -224,17 +223,12 @@
                             </div>
                 @if(auth()->id() == $user->id)
                                 <div class="flex space-x-4">
-                                    <a href={{ route('publication.index') }} class="chat-button px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors duration-200 flex items-center space-x-2 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 21l7-5 7 5V5a2 2 0 00-2-2H7a2 2 0 00-2 2z"/>
-                                        </svg>
-                                    </a>
                                     <button onclick="openEditModal()"
                                             class="edit-button px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors duration-200 flex items-center space-x-2 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                         </svg>
-                                        <span>Editar Perfil</span>
+                                        <span>{{ __('messages.edit_profile') }}</span>
                         </button>
 
                                     <a href="{{ route('chat.index') }}"
@@ -242,7 +236,7 @@
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
                                         </svg>
-                                        <span>Ir al Chat</span>
+                                        <span>{{ __('messages.go_to_chat') }}</span>
                                     </a>
                                 </div>
                             @endif
@@ -265,7 +259,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
                                         </svg>
                                     </div>
-                                    <h2 class="text-2xl font-bold text-gray-900">Información Académica</h2>
+                                    <h2 class="text-2xl font-bold text-gray-900">{{ __('messages.academic_information') }}</h2>
                                 </div>
                                 <div class="space-y-4">
                                     @if($user->estudiante)
@@ -273,7 +267,7 @@
                                             <svg class="w-5 h-5 text-purple-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                             </svg>
-                                            <span class="text-gray-700">Ciclo: {{ $user->estudiante->ciclo }}</span>
+                                            <span class="text-gray-700">{{ __('messages.cycle') }}: {{ $user->estudiante->ciclo }}</span>
                                         </div>
                                         @if($user->estudiante->cv_pdf)
                                             <div class="flex items-center">
@@ -283,7 +277,7 @@
                                                 <a href="{{ asset('public/cv_pdfs/' . $user->estudiante->cv_pdf) }}"
                                                    class="text-purple-600 hover:text-purple-800"
                                                    target="_blank">
-                                                    Ver CV
+                                                    {{ __('messages.view_cv') }}
                                                 </a>
                                             </div>
                                         @endif
@@ -300,17 +294,17 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                                             </svg>
                                         </div>
-                                        <h2 class="text-2xl font-bold text-gray-900">Experiencias de Estudiantes</h2>
+                                        <h2 class="text-2xl font-bold text-gray-900">{{ __('messages.student_experiences') }}</h2>
                                     </div>
                                     <div class="overflow-x-auto">
                                         <table class="min-w-full divide-y divide-gray-200">
                                             <thead class="bg-gray-50">
                                                 <tr>
-                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estudiante</th>
-                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Puesto</th>
-                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha de Inicio</th>
-                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha de Fin</th>
-                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descripción</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('messages.student') }}</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('messages.position') }}</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('messages.start_date') }}</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('messages.end_date') }}</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('messages.description') }}</th>
                                                 </tr>
                                             </thead>
                                             <tbody class="bg-white divide-y divide-gray-200">
@@ -367,7 +361,7 @@
                                                 </div>
                                             </div>
                                             <div class="ml-4">
-                                                <p class="text-sm font-medium text-gray-500">Ciudad</p>
+                                                <p class="text-sm font-medium text-gray-500">{{ __('messages.city_profile') }}</p>
                                                 <p class="text-lg font-semibold text-gray-900" data-valor="ciudad">{{ $user->ciudad ?? 'No especificada' }}</p>
                                             </div>
                                         </div>
@@ -381,7 +375,7 @@
                                                 </div>
                                             </div>
                                             <div class="ml-4">
-                                                <p class="text-sm font-medium text-gray-500">Teléfono</p>
+                                                <p class="text-sm font-medium text-gray-500">{{ __('messages.phone') }}</p>
                                                 <p class="text-lg font-semibold text-gray-900" data-valor="telefono">{{ $user->telefono ?? 'No especificado' }}</p>
                                             </div>
                                         </div>
@@ -395,7 +389,7 @@
                                                 </div>
                                             </div>
                                             <div class="ml-4">
-                                                <p class="text-sm font-medium text-gray-500">DNI</p>
+                                                <p class="text-sm font-medium text-gray-500">{{ __('messages.dni') }}</p>
                                                 <p class="text-lg font-semibold text-gray-900" data-valor="dni">{{ $user->dni ?? 'No especificado' }}</p>
                                             </div>
                                         </div>
@@ -411,12 +405,12 @@
                                                 </div>
                                             </div>
                                             <div class="ml-4">
-                                                <p class="text-sm font-medium text-gray-500">Dirección</p>
+                                                <p class="text-sm font-medium text-gray-500">{{ __('messages.address_profile') }}</p>
                                                 <p class="text-lg font-semibold text-gray-900" data-valor="direccion">{{ $user->direccion ?? 'No especificada' }}</p>
                                             </div>
                                         </div>
 
-                                        <div class="flex items-start" data-campo="sitio_web" style="display: {{ $user->show_web ? 'flex' : 'none' }}">
+                                        <div class="flex items-start" data-campo="web" style="display: {{ $user->show_web ? 'flex' : 'none' }}">
                                             <div class="flex-shrink-0">
                                                 <div class="bg-purple-100 p-2 rounded-lg">
                                                     <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -425,8 +419,8 @@
                                                 </div>
                                             </div>
                                             <div class="ml-4">
-                                                <p class="text-sm font-medium text-gray-500">Página Web</p>
-                                                <p class="text-lg font-semibold text-gray-900" data-valor="sitio_web">{{ $user->sitio_web ?? 'No especificado' }}</p>
+                                                <p class="text-sm font-medium text-gray-500">{{ __('messages.website') }}</p>
+                                                <p class="text-lg font-semibold text-gray-900" data-valor="web">{{ $user->web ?? 'No especificado' }}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -664,17 +658,15 @@
                                             </div>
                                         </div>
 
-                                        <div class="flex items-start" data-campo="sitio_web" style="display: {{ $user->show_web ? 'flex' : 'none' }}">
+                                        <div class="flex items-start" data-campo="web" style="display: {{ $user->show_web ? 'flex' : 'none' }}">
                                             <div class="flex-shrink-0">
-                                                <div class="bg-purple-100 p-2 rounded-lg">
-                                                    <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
-                                                    </svg>
-                                                </div>
+                                                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
+                                                </svg>
                                             </div>
                                             <div class="ml-4">
-                                                <p class="text-sm font-medium text-gray-500">Página Web</p>
-                                                <p class="text-lg font-semibold text-gray-900" data-valor="sitio_web">{{ $user->sitio_web ?? 'No especificado' }}</p>
+                                                <p class="text-sm text-gray-500">Sitio Web</p>
+                                                <p class="font-medium text-gray-900" data-valor="web">{{ $user->web ?? 'No especificado' }}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -1000,16 +992,6 @@
                                     </div>
 
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Correo electrónico</label>
-                                        <input type="email" name="email" id="email" value="{{ old('email', $user->email) }}"
-                                               class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 transition-all duration-200"
-                                               required>
-                                        @error('email')
-                                            <span class="error-message text-xs text-red-500 mt-1">{{ $message }}</span>
-                                        @enderror
-                                    </div>
-
-                                    <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
                                         <textarea name="descripcion" id="descripcion" rows="3"
                                                   class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 transition-all duration-200"
@@ -1171,8 +1153,9 @@
                                             <span class="error-message text-xs text-red-500 mt-1">{{ $message }}</span>
                                         @enderror
                                     </div>
-                            </div>
+                                {{-- iffjujf --}}
 
+                                    
                                     {{-- CV --}}
                                     @if($user->role_id == 3)
                                         <div>
@@ -1200,23 +1183,52 @@
                                             @enderror
                                         </div>
                                     @endif
+                                </div>
                             </div>
 
                             {{-- Sección del Mapa (solo para empresas) --}}
                             @if(auth()->user()->role_id == 2)
                                 <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
-                                <div class="flex items-center mb-4">
-                                    <div class="bg-gradient-to-br from-purple-100 to-indigo-100 p-3 rounded-xl shadow-sm">
-                                        <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <div class="flex items-center justify-between mb-6">
+                                        <h3 class="text-xl font-semibold text-gray-900 flex items-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
                                             </svg>
-                                    </div>
-                                    <h3 class="text-xl font-bold text-gray-900 ml-4">Ubicación</h3>
+                                            Ubicación
+                                        </h3>
+                                        <button onclick="saveLocation()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                            </svg>
+                                            Guardar ubicación
+                                        </button>
                                     </div>
 
-                                <div class="w-full aspect-[4/3] rounded-xl overflow-hidden shadow-md">
+                                    {{-- Contenedor del mapa --}}
+                                    <div class="w-full h-[400px] rounded-xl overflow-hidden shadow-md mb-4">
                                         <div id="locationMap" class="w-full h-full"></div>
                                     </div>
+
+                                    {{-- Campos de ubicación --}}
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                        <div>
+                                            <label for="direccion" class="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
+                                            <input type="text" name="direccion" id="direccion" value="{{ $user->direccion }}"
+                                                   class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                                                   readonly>
+                                        </div>
+                                        <div>
+                                            <label for="ciudad" class="block text-sm font-medium text-gray-700 mb-1">Ciudad</label>
+                                            <input type="text" name="ciudad" id="ciudad" value="{{ $user->ciudad }}"
+                                                   class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                                                   readonly>
+                                        </div>
+                                    </div>
+
+                                    {{-- Campos ocultos para las coordenadas --}}
+                                    <input type="hidden" id="lat" name="lat" value="{{ $user->lat ?? '41.390205' }}">
+                                    <input type="hidden" id="lng" name="lng" value="{{ $user->lng ?? '2.154007' }}">
                                 </div>
                             @endif
 
@@ -1501,7 +1513,7 @@
                             'dni': user.show_dni,
                             'ciudad': user.show_ciudad,
                             'direccion': user.show_direccion,
-                            'sitio_web': user.show_web
+                            'web': user.show_web
                         };
 
                         // Actualizar la visibilidad de cada campo
@@ -1518,7 +1530,7 @@
                             'dni': user.dni,
                             'ciudad': user.ciudad,
                             'direccion': user.direccion,
-                            'sitio_web': user.sitio_web
+                            'web': user.web
                         };
 
                         Object.entries(camposValores).forEach(([campo, valor]) => {
@@ -1666,35 +1678,27 @@
         @endif
 
         <!-- Sección del Mapa de Solo Lectura -->
-    @if($user->lat && $user->lng)
-        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
-            <div class="flex items-center mb-4">
-                <div class="bg-gradient-to-br from-purple-100 to-indigo-100 p-3 rounded-xl shadow-sm">
-                    <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                    </svg>
-                </div>
-                <h3 class="text-xl font-bold text-gray-900 ml-4">Ubicación</h3>
-            </div>
-            
-            <div class="w-full aspect-[4/3] rounded-xl overflow-hidden shadow-md">
-                        <div id="locationMap" class="w-full h-full"></div>
+        @if($user->role_id == 2 && !is_null($user->lat) && !is_null($user->lng))
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Ubicación</h2>
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <div class="w-full h-[300px] rounded-xl overflow-hidden shadow-md">
+                        <div id="viewLocationMap" 
+                             class="w-full h-full" 
+                             data-lat="{{ number_format($user->lat, 8, '.', '') }}" 
+                             data-lng="{{ number_format($user->lng, 8, '.', '') }}">
+                        </div>
                     </div>
-            
                     @if($user->direccion)
                         <div class="mt-4 flex items-center text-gray-700">
                             <svg class="w-5 h-5 text-purple-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
                             </svg>
                             <span>{{ $user->direccion }}</span>
                         </div>
                     @endif
+                </div>
             </div>
         @endif
     @endsection
-
-@push('scripts')
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="{{ asset('js/profile.js') }}"></script>
-@endpush
