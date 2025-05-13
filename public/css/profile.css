@@ -380,3 +380,37 @@ textarea.form-control {
         justify-content: center;
     }
 }
+
+.custom-div-icon {
+    background: transparent;
+    border: none;
+}
+
+.custom-div-icon div {
+    transition: transform 0.3s ease;
+}
+
+.custom-div-icon div:hover {
+    transform: scale(1.2);
+}
+
+#viewLocationMap {
+    transition: all 0.3s ease;
+}
+
+#viewLocationMap:hover {
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+#locationMap {
+    min-height: 400px;
+    width: 100%;
+    background: #f8fafc;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.leaflet-container {
+    background: #f8fafc !important;
+}

@@ -125,13 +125,62 @@ document.addEventListener('DOMContentLoaded', function() {
         })
     }
 
+    // Función para manejar el envío del formulario
+    function handleFormSubmit(event) {
+        event.preventDefault();
+        const form = event.target;
+        const formData = new FormData(form);
+        
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                console.error('Error:', data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+
+    // Añadir el event listener al formulario
     const form = document.getElementById('profileForm');
     if (form) {
         form.addEventListener('submit', handleFormSubmit);
     }
 })
 
-function handleFormSubmit(event) {
-    event.preventDefault();
-    // Aquí puedes añadir la lógica del formulario si es necesaria
+function openEditModal() {
+    document.getElementById('editModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    
+    // Esperar a que el modal esté visible y luego inicializar el mapa
+    setTimeout(() => {
+        if (editMap) {
+            editMap.remove();
+            editMap = null;
+        }
+        initializeMap();
+        
+        // Forzar múltiples actualizaciones del tamaño del mapa
+        const refreshMap = () => {
+            if (editMap) {
+                editMap.invalidateSize();
+            }
+        };
+
+        // Actualizar el mapa varias veces durante los primeros segundos
+        setTimeout(refreshMap, 100);
+        setTimeout(refreshMap, 300);
+        setTimeout(refreshMap, 500);
+        setTimeout(refreshMap, 1000);
+    }, 100);
 }
