@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Validator;
+use App\Models\Publication;
+use Illuminate\Support\Facades\Auth;
 
 class EmpresaController extends Controller
 {
@@ -59,13 +61,13 @@ class EmpresaController extends Controller
                        ->values();
 
         $empresas = $query->orderBy('id', 'asc')->paginate(10);
-        
+
         if (request()->ajax()) {
             return response()->json([
                 'tabla' => view('admin.empresas.tabla', compact('empresas'))->render()
             ]);
         }
-        
+
         return view('admin.empresas.index', compact('empresas', 'ciudades'));
     }
 
@@ -90,15 +92,15 @@ class EmpresaController extends Controller
 
         // Iniciar transacción
         DB::beginTransaction();
-        
+
         try {
             // Obtener ID del rol Empresa
             $rolEmpresa = Rol::where('nombre_rol', 'Empresa')->first();
-            
+
             if (!$rolEmpresa) {
                 throw new \Exception('El rol Empresa no existe en el sistema');
             }
-            
+
             // Procesar imagen si se proporciona
             $imagenPath = null;
             if ($request->hasFile('imagen')) {
@@ -107,7 +109,7 @@ class EmpresaController extends Controller
                 $imagen->move(public_path('public/profile_images'), $nombreImagen);
                 $imagenPath = $nombreImagen;
             }
-            
+
             // Crear usuario
             $user = User::create([
                 'nombre' => $request->input('nombre'),
@@ -123,7 +125,7 @@ class EmpresaController extends Controller
                 'role_id' => $rolEmpresa->id,
                 'imagen' => $imagenPath,
             ]);
-            
+
             // Crear empresa
             $empresa = Empresa::create([
                 'id' => $user->id,
@@ -133,9 +135,9 @@ class EmpresaController extends Controller
                 'latitud' => $request->input('latitud') ?? 0,
                 'longitud' => $request->input('longitud') ?? 0,
             ]);
-            
+
             DB::commit();
-            
+
             if ($request->ajax()) {
                 return response()->json([
                     'success' => true,
@@ -143,14 +145,14 @@ class EmpresaController extends Controller
                     'empresa' => $empresa
                 ]);
             }
-            
+
             return redirect()->route('admin.empresas.index')
                 ->with('success', 'Empresa creada correctamente');
-                
+
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error al crear empresa: ' . $e->getMessage());
-            
+
             if ($request->ajax()) {
                 return response()->json([
                     'success' => false,
@@ -158,7 +160,7 @@ class EmpresaController extends Controller
                     'errors' => ['general' => ['Error al crear la empresa: ' . $e->getMessage()]]
                 ], 500);
             }
-            
+
             return redirect()->back()
                 ->withErrors(['general' => 'Error al crear la empresa: ' . $e->getMessage()])
                 ->withInput();
@@ -171,13 +173,13 @@ class EmpresaController extends Controller
     public function edit($id)
     {
         $empresa = Empresa::with('user')->findOrFail($id);
-        
+
         if (request()->ajax()) {
             return response()->json([
                 'empresa' => $empresa
             ]);
         }
-        
+
         return view('admin.empresas.edit', compact('empresa'));
     }
 
@@ -210,7 +212,7 @@ class EmpresaController extends Controller
 
         // Iniciar transacción
         DB::beginTransaction();
-        
+
         try {
             // Actualizar usuario
             $userData = [
@@ -224,7 +226,7 @@ class EmpresaController extends Controller
                 'telefono' => $request->input('telefono') ?? null,
                 'descripcion' => $request->input('descripcion') ?? null,
             ];
-            
+
             // Procesamiento de imagen
             if ($request->hasFile('imagen')) {
                 // Eliminar imagen anterior si existe
@@ -234,7 +236,7 @@ class EmpresaController extends Controller
                         unlink($imagenPath);
                     }
                 }
-                
+
                 // Guardar nueva imagen
                 $imagen = $request->file('imagen');
                 $nombreImagen = time() . '_' . $imagen->getClientOriginalName();
@@ -249,14 +251,14 @@ class EmpresaController extends Controller
                 }
                 $userData['imagen'] = null;
             }
-            
+
             // Si se proporcionó una nueva contraseña, actualizarla
             if ($request->filled('password')) {
                 $userData['password'] = Hash::make($request->input('password'));
             }
-            
+
             $user->update($userData);
-            
+
             // Actualizar empresa
             $empresa->update([
                 'cif' => $request->input('cif'),
@@ -265,23 +267,23 @@ class EmpresaController extends Controller
                 'latitud' => $request->input('latitud') ?? $empresa->latitud,
                 'longitud' => $request->input('longitud') ?? $empresa->longitud,
             ]);
-            
+
             DB::commit();
-            
+
             if ($request->ajax()) {
                 return response()->json([
                     'success' => true,
                     'message' => 'Empresa actualizada correctamente'
                 ]);
             }
-            
+
             return redirect()->route('admin.empresas.index')
                 ->with('success', 'Empresa actualizada correctamente');
-                
+
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error al actualizar empresa: ' . $e->getMessage());
-            
+
             if ($request->ajax()) {
                 return response()->json([
                     'success' => false,
@@ -289,7 +291,7 @@ class EmpresaController extends Controller
                     'errors' => ['general' => ['Error al actualizar la empresa: ' . $e->getMessage()]]
                 ], 500);
             }
-            
+
             return redirect()->back()
                 ->withErrors(['general' => 'Error al actualizar la empresa: ' . $e->getMessage()])
                 ->withInput();
@@ -303,16 +305,16 @@ class EmpresaController extends Controller
     {
         // Buscar la empresa con relaciones
         $empresa = Empresa::with(['user', 'publicaciones'])->findOrFail($id);
-        
+
         // Iniciar transacción
         DB::beginTransaction();
-        
+
         try {
             // Verificar si tiene publicaciones
             if ($empresa->publicaciones->count() > 0) {
                 throw new \Exception('No se puede eliminar la empresa porque tiene publicaciones asociadas');
             }
-            
+
             // Eliminar la imagen si existe
             if ($empresa->user->imagen) {
                 $imagenPath = public_path('public/profile_images/' . $empresa->user->imagen);
@@ -320,34 +322,34 @@ class EmpresaController extends Controller
                     unlink($imagenPath);
                 }
             }
-            
+
             // Eliminar primero la empresa y luego el usuario
             $empresa->delete();
             $empresa->user->delete();
-            
+
             DB::commit();
-            
+
             if (request()->ajax()) {
                 return response()->json([
                     'success' => true,
                     'message' => 'Empresa eliminada correctamente'
                 ]);
             }
-            
+
             return redirect()->route('admin.empresas.index')
                 ->with('success', 'Empresa eliminada correctamente');
-                
+
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error al eliminar empresa: ' . $e->getMessage());
-            
+
             if (request()->ajax()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Error al eliminar la empresa: ' . $e->getMessage()
                 ], 500);
             }
-            
+
             return redirect()->back()
                 ->withErrors(['general' => 'Error al eliminar la empresa: ' . $e->getMessage()]);
         }
@@ -361,13 +363,13 @@ class EmpresaController extends Controller
         try {
             // Registrar la solicitud para debug
             \Log::info('Intento de eliminación SQL para empresa ID: ' . $id);
-            
+
             // Iniciar transacción
             DB::beginTransaction();
-            
+
             // Buscar la empresa para obtener la imagen antes de eliminarla
             $empresa = Empresa::with('user')->find($id);
-            
+
             // Eliminar la imagen si existe
             if ($empresa && $empresa->user && $empresa->user->imagen) {
                 $imagenPath = public_path('public/profile_images/' . $empresa->user->imagen);
@@ -375,57 +377,104 @@ class EmpresaController extends Controller
                     unlink($imagenPath);
                 }
             }
-            
+
             // Primero eliminar registros relacionados en empresa
             $affectedEmpresa = DB::delete('DELETE FROM empresas WHERE id = ?', [$id]);
-            
+
             if ($affectedEmpresa > 0) {
                 // Luego eliminar el usuario
                 $affectedUser = DB::delete('DELETE FROM user WHERE id = ?', [$id]);
-                
+
                 if ($affectedUser == 0) {
                     throw new \Exception('Se eliminó la empresa pero no se encontró el usuario asociado');
                 }
-                
+
                 DB::commit();
                 \Log::info('Empresa y usuario eliminados correctamente mediante SQL directo. ID: ' . $id);
-                
+
                 if (request()->ajax()) {
                     return response()->json([
                         'success' => true,
                         'message' => 'Empresa eliminada correctamente mediante SQL directo'
                     ]);
                 }
-                
+
                 return redirect()->route('admin.empresas.index')
                     ->with('success', 'Empresa eliminada correctamente mediante SQL directo');
             } else {
                 DB::rollBack();
                 \Log::warning('No se encontró la empresa para eliminar. ID: ' . $id);
-                
+
                 if (request()->ajax()) {
                     return response()->json([
                         'success' => false,
                         'message' => 'No se encontró la empresa para eliminar'
                     ]);
                 }
-                
+
                 return redirect()->route('admin.empresas.index')
                     ->with('error', 'No se encontró la empresa para eliminar');
             }
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::error('Error al eliminar empresa mediante SQL: ' . $e->getMessage());
-            
+
             if (request()->ajax()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Error al eliminar: ' . $e->getMessage()
                 ]);
             }
-            
+
             return redirect()->route('admin.empresas.index')
                 ->with('error', 'Error al eliminar: ' . $e->getMessage());
         }
     }
-} 
+
+    public function getActiveOffers(Request $request)
+    {
+        $query = Publication::where('activa', true)
+            ->where('empresa_id', Auth::user()->empresa->id);
+
+        // Aplicar filtros
+        if ($request->titulo) {
+            $query->where('titulo', 'like', '%' . $request->titulo . '%');
+        }
+
+        if ($request->horario) {
+            $query->where('horario', $request->horario);
+        }
+
+        if ($request->categoria_id) {
+            $query->where('categoria_id', $request->categoria_id);
+        }
+
+        // Ordenar
+        $sortField = $request->sort_field ?? 'created_at';
+        $sortDirection = $request->sort_direction ?? 'desc';
+        $query->orderBy($sortField, $sortDirection);
+
+        // Paginar
+        $perPage = $request->per_page ?? 4;
+        $publications = $query->with('categoria')
+            ->withCount('solicitudes')
+            ->paginate($perPage);
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'data' => $publications->items(),
+                'pagination' => [
+                    'total' => $publications->total(),
+                    'per_page' => $publications->perPage(),
+                    'current_page' => $publications->currentPage(),
+                    'last_page' => $publications->lastPage(),
+                    'from' => $publications->firstItem(),
+                    'to' => $publications->lastItem()
+                ]
+            ]);
+        }
+
+        return view('empresa.active-offers', compact('publications'));
+    }
+}

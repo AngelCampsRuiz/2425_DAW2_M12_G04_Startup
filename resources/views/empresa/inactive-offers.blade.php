@@ -140,7 +140,7 @@
                                 Limpiar filtros
                             </button>
                         </div>
-                        
+
                         <div class="bg-gray-50 p-4 rounded-lg border border-gray-100 mb-4">
                             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                                 <div class="col-span-2">
@@ -191,32 +191,8 @@
                                 </div>
                             </div>
                         </div>
-                        
-                        <div class="flex justify-between items-center">
-                            <p class="text-sm text-gray-600" id="offersCount">Gestiona tus ofertas de prácticas inactivas</p>
-                            <div class="flex items-center space-x-3">
-                                <button id="btnApplyFilters" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm flex items-center shadow-sm hover:shadow-md transition-all duration-200">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                                    </svg>
-                                    Aplicar filtros
-                                </button>
-                            </div>
-                        </div>
                     </div>
-
-                    <div class="flex justify-between items-center mb-6">
-                        <p class="text-gray-600" id="offersCount">Consulta y reactiva tus ofertas inactivas</p>
-                        <button id="btnNuevaOferta" onclick="openModal()" class="group flex items-center text-white bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg text-sm font-medium shadow-md hover:shadow-lg transition-all duration-300">
-                            <span class="flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1.5 group-hover:animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                                </svg>
-                                Publicar nueva
-                            </span>
-                        </button>
-                    </div>
-
+                    
                     <!-- Contenedor para la tabla de ofertas cargada por Ajax -->
                     <div id="offersTableContainer">
                         <!-- Spinner de carga -->
@@ -273,7 +249,7 @@
                                                                 <p class="text-sm text-gray-600 mt-1 line-clamp-2">{{ $publication->descripcion }}</p>
                                                             </div>
                                                         </div>
-                                                        
+
                                                         <!-- Detalles y meta información -->
                                                         <div class="flex flex-wrap gap-3 mt-3 ml-13">
                                                             <div class="inline-flex items-center px-3 py-1 rounded-md bg-gray-100 text-sm text-gray-700">
@@ -282,14 +258,14 @@
                                                                 </svg>
                                                                 {{ ucfirst($publication->horario) }} • {{ $publication->horas_totales }} horas
                                                             </div>
-                                                            
+
                                                             <div class="inline-flex items-center px-3 py-1 rounded-md bg-blue-50 text-sm text-blue-700">
                                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                                                                 </svg>
                                                                 {{ $publication->solicitudes_count }} {{ $publication->solicitudes_count == 1 ? 'solicitud' : 'solicitudes' }}
                                                             </div>
-                                                            
+
                                                             @if($publication->categoria)
                                                             <div class="inline-flex items-center px-3 py-1 rounded-md bg-purple-50 text-sm text-purple-700">
                                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -300,7 +276,7 @@
                                                             @endif
                                                         </div>
                                                     </div>
-                                                    
+
                                                     <!-- Acciones -->
                                                     <div class="flex flex-row md:flex-col gap-2 mt-2 md:mt-0 justify-end md:min-w-[120px]">
                                                         <a href="{{ route('empresa.applications.view', $publication->id) }}" class="inline-flex items-center justify-center px-4 py-2 bg-white border border-purple-300 rounded-lg text-purple-600 hover:bg-purple-50 hover:border-purple-400 transition-colors shadow-sm">
@@ -325,13 +301,13 @@
                                         @endforeach
                                     </div>
                                 </div>
-                                
+
                                 <!-- Paginación -->
                                 <div class="mt-6 bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
                                     <div class="flex flex-col sm:flex-row justify-between items-center">
                                         <div class="text-sm text-gray-600 mb-3 sm:mb-0" id="paginationInfo">
-                                            Mostrando <span class="font-medium text-gray-900" id="paginationFrom">{{ $inactivePublications->firstItem() ?? 0 }}</span> a 
-                                            <span class="font-medium text-gray-900" id="paginationTo">{{ $inactivePublications->lastItem() ?? 0 }}</span> de 
+                                            Mostrando <span class="font-medium text-gray-900" id="paginationFrom">{{ $inactivePublications->firstItem() ?? 0 }}</span> a
+                                            <span class="font-medium text-gray-900" id="paginationTo">{{ $inactivePublications->lastItem() ?? 0 }}</span> de
                                             <span class="font-medium text-gray-900" id="paginationTotal">{{ $inactivePublications->total() }}</span> ofertas
                                         </div>
                                         <div class="flex space-x-2" id="paginationControls">
@@ -391,14 +367,14 @@
                 fetchData();
                 return;
             }
-            
+
             // Botón "Siguiente"
             if (e.target.closest('#nextPageBtn') && !e.target.closest('#nextPageBtn').disabled) {
                 currentPage++;
                 fetchData();
                 return;
             }
-            
+
             // Botones de número de página
             const pageBtn = e.target.closest('.pagination-page-btn');
             if (pageBtn) {
@@ -409,7 +385,7 @@
                 }
                 return;
             }
-            
+
             // Botones de toggle para activar publicación
             const toggleButton = e.target.closest('.toggle-button');
             if (toggleButton) {
@@ -419,31 +395,31 @@
                 return;
             }
         });
-        
+
         // Función principal para cargar datos mediante fetch
         function fetchData() {
             showLoading();
-            
+
             const params = new URLSearchParams({
                 page: currentPage,
                 per_page: itemsPerPage,
                 sort_field: sortField,
                 sort_direction: sortDirection
             });
-            
+
             // Add filter values if they exist and have values
             if (filterTitulo && filterTitulo.value.trim() !== '') {
                 params.append('titulo', filterTitulo.value.trim());
             }
-            
+
             if (filterHorario && filterHorario.value !== '') {
                 params.append('horario', filterHorario.value);
             }
-            
+
             if (filterCategoria && filterCategoria.value !== '') {
                 params.append('categoria_id', filterCategoria.value);
             }
-            
+
             fetch(`/empresa/ofertas/inactivas?${params.toString()}`, {
                 method: 'GET',
                 headers: {
@@ -475,22 +451,22 @@
                 hideLoading();
             });
         }
-        
+
         // Función para renderizar la tabla con los datos
         function renderTable(data) {
             const tableBody = document.getElementById('offersTableBody');
             tableBody.innerHTML = '';
-            
+
             if (!data || data.length === 0) {
                 renderEmptyTable();
                 return;
             }
-            
+
             // Renderizar filas de datos como cards
             data.forEach(offer => {
                 const offerCard = document.createElement('div');
                 offerCard.className = 'offer-card p-5 hover:bg-gray-50 transition-all duration-200';
-                
+
                 offerCard.innerHTML = `
                     <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                         <!-- Información principal -->
@@ -516,7 +492,7 @@
                                     <p class="text-sm text-gray-600 mt-1 line-clamp-2">${offer.descripcion}</p>
                                 </div>
                             </div>
-                            
+
                             <!-- Detalles y meta información -->
                             <div class="flex flex-wrap gap-3 mt-3 ml-13">
                                 <div class="inline-flex items-center px-3 py-1 rounded-md bg-gray-100 text-sm text-gray-700">
@@ -525,15 +501,15 @@
                                     </svg>
                                     ${capitalizeFirstLetter(offer.horario)} • ${offer.horas_totales} horas
                                 </div>
-                                
+
                                 <div class="inline-flex items-center px-3 py-1 rounded-md bg-blue-50 text-sm text-blue-700">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                                     </svg>
                                     ${offer.solicitudes_count} ${offer.solicitudes_count == 1 ? 'solicitud' : 'solicitudes'}
                                 </div>
-                                
-                                ${offer.categoria ? 
+
+                                ${offer.categoria ?
                                     `<div class="inline-flex items-center px-3 py-1 rounded-md bg-purple-50 text-sm text-purple-700">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
@@ -543,7 +519,7 @@
                                 }
                             </div>
                         </div>
-                        
+
                         <!-- Acciones -->
                         <div class="flex flex-row md:flex-col gap-2 mt-2 md:mt-0 justify-end md:min-w-[120px]">
                             <a href="/empresa/ofertas/${offer.id}/solicitudes" class="inline-flex items-center justify-center px-4 py-2 bg-white border border-purple-300 rounded-lg text-purple-600 hover:bg-purple-50 hover:border-purple-400 transition-colors shadow-sm">
@@ -565,11 +541,11 @@
                         </div>
                     </div>
                 `;
-                
+
                 tableBody.appendChild(offerCard);
             });
         }
-        
+
         // Función para renderizar un mensaje cuando no hay datos
         function renderEmptyTable() {
             const offersTableContent = document.getElementById('offersTableContent');
@@ -585,14 +561,14 @@
                 </div>
             `;
         }
-        
+
         // Función para renderizar la paginación
         function renderPagination(pagination) {
             const paginationInfo = document.getElementById('paginationInfo');
             const paginationPages = document.getElementById('paginationPages');
             const prevButton = document.getElementById('prevPageBtn');
             const nextButton = document.getElementById('nextPageBtn');
-            
+
             if (!pagination || pagination.total === 0) {
                 paginationInfo.innerHTML = 'No hay ofertas que mostrar';
                 prevButton.disabled = true;
@@ -600,44 +576,44 @@
                 paginationPages.innerHTML = '';
                 return;
             }
-            
+
             // Actualizar información de paginación
-            paginationInfo.innerHTML = `Mostrando <span class="font-medium text-gray-900">${pagination.from}</span> a 
-                <span class="font-medium text-gray-900">${pagination.to}</span> de 
+            paginationInfo.innerHTML = `Mostrando <span class="font-medium text-gray-900">${pagination.from}</span> a
+                <span class="font-medium text-gray-900">${pagination.to}</span> de
                 <span class="font-medium text-gray-900">${pagination.total}</span> ofertas`;
-            
+
             // Actualizar estado de botones
             prevButton.disabled = pagination.current_page <= 1;
             nextButton.disabled = pagination.current_page >= pagination.last_page;
-            
+
             // Actualizar clases visuales para los botones de navegación
             if (pagination.current_page <= 1) {
                 prevButton.classList.add('opacity-50', 'cursor-not-allowed');
             } else {
                 prevButton.classList.remove('opacity-50', 'cursor-not-allowed');
             }
-            
+
             if (pagination.current_page >= pagination.last_page) {
                 nextButton.classList.add('opacity-50', 'cursor-not-allowed');
             } else {
                 nextButton.classList.remove('opacity-50', 'cursor-not-allowed');
             }
-            
+
             // Actualizar atributos data-page para los botones de navegación
             prevButton.setAttribute('data-page', pagination.current_page - 1);
             nextButton.setAttribute('data-page', pagination.current_page + 1);
-            
+
             // Generar botones de páginas
             paginationPages.innerHTML = '';
-            
+
             // Estrategia para mostrar páginas (máximo 5 botones)
             let startPage = Math.max(1, pagination.current_page - 2);
             let endPage = Math.min(pagination.last_page, startPage + 4);
-            
+
             if (endPage - startPage < 4 && pagination.last_page > 5) {
                 startPage = Math.max(1, endPage - 4);
             }
-            
+
             // Añadir botones de páginas
             for (let i = startPage; i <= endPage; i++) {
                 const pageButton = document.createElement('button');
@@ -652,7 +628,7 @@
                 paginationPages.appendChild(pageButton);
             }
         }
-        
+
         // Función para actualizar el contador de ofertas
         function updateOffersCount(total) {
             const offersCount = document.getElementById('offersCount');
@@ -666,16 +642,16 @@
                 }
             }
         }
-        
+
         // Función para cambiar estado de publicación con Ajax
         function togglePublicationStatus(publicationId) {
             showLoading();
-            
+
             // Crear FormData para enviar el token CSRF correctamente
             const formData = new FormData();
             const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
             formData.append('_token', csrfToken);
-            
+
             fetch(`/empresa/ofertas/${publicationId}/toggle`, {
                 method: 'POST',
                 headers: {
@@ -695,7 +671,7 @@
                 if (data.success) {
                     // Mostrar notificación de éxito
                     showNotification('Oferta activada correctamente', 'success');
-                    
+
                     // Volver a cargar los datos
                     fetchData();
                 } else {
@@ -710,43 +686,43 @@
                 hideLoading();
             });
         }
-        
+
         // Funciones auxiliares
         function limitText(text, length) {
             return text.length > length ? text.substring(0, length) + '...' : text;
         }
-        
+
         function capitalizeFirstLetter(string) {
             return string.charAt(0).toUpperCase() + string.slice(1);
         }
-        
+
         function showLoading() {
             document.getElementById('loadingSpinner').classList.remove('hidden');
         }
-        
+
         function hideLoading() {
             document.getElementById('loadingSpinner').classList.add('hidden');
         }
-        
+
         function showNotification(message, type = 'success') {
             // Crear elemento de notificación
             const notification = document.createElement('div');
             notification.className = `fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-lg text-white ${
                 type === 'success' ? 'bg-green-600' : 'bg-red-600'
             } transition-opacity duration-500 flex items-center z-50`;
-            
+
             // Icono según tipo
-            const iconSvg = type === 'success' 
+            const iconSvg = type === 'success'
                 ? `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                    </svg>`
                 : `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                    </svg>`;
-            
+
             notification.innerHTML = iconSvg + message;
             document.body.appendChild(notification);
-            
+
             // Ocultar después de 3 segundos
             setTimeout(() => {
                 notification.classList.add('opacity-0');
@@ -813,4 +789,4 @@
         }, 300);
     }
 </script>
-@endsection 
+@endsection

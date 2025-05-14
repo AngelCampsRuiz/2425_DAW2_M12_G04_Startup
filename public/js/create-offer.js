@@ -305,9 +305,34 @@ const initializeForm = () => {
                     });
                     localStorage.setItem('ofertasEnviadas', JSON.stringify(ofertasRecientes));
 
-                    // Mostrar mensaje y redirigir
-                    alert('✅ Oferta creada exitosamente');
-                    window.location.href = '/empresa/dashboard';
+                    // Mostrar mensaje de éxito
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Éxito!',
+                        text: result.data.message || 'Oferta creada correctamente',
+                        showConfirmButton: false,
+                        timer: 1500
+                    }).then(() => {
+                        // Emitir evento de creación exitosa
+                        window.dispatchEvent(new CustomEvent('publicationCreated'));
+                    });
+
+                    // Registrar en localStorage
+                    localStorage.setItem('formSubmittedTimestamp', Date.now().toString());
+                    const oferta = {
+                        titulo: formData.get('titulo'),
+                        descripcion: formData.get('descripcion'),
+                        timestamp: Date.now()
+                    };
+                    ofertasRecientes.push(oferta);
+                    localStorage.setItem('ofertasEnviadas', JSON.stringify(ofertasRecientes));
+
+                    // Cerrar el modal
+                    closeModal();
+
+                    // Limpiar el formulario
+                    newForm.reset();
+                    resetSelect(subcategoriaSelect, 'Selecciona una subcategoría');
                 } else {
                     // Error: Mostrar mensaje y restaurar el formulario
                     let errorMessage = 'Error al crear la oferta';
@@ -612,6 +637,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Cerrar el modal
                     closeModal();
 
+                    // Emitir evento de creación exitosa inmediatamente
+                    window.dispatchEvent(new CustomEvent('publicationCreated'));
+
                     // Mostrar alerta de éxito
                     Swal.fire({
                         title: '¡Éxito!',
@@ -620,11 +648,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         confirmButtonText: 'Continuar',
                         confirmButtonColor: '#7E22CE'
                     });
-
-                    // Actualizar la tabla de ofertas si existe la función
-                    if (typeof updateOffersTable === 'function') {
-                        updateOffersTable();
-                    }
 
                     // Limpiar el formulario
                     formNuevaOferta.reset();
