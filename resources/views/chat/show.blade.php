@@ -91,6 +91,9 @@
                         <button id="share-screen" class="p-2 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 text-white transition-colors">
                             <i class="fas fa-desktop"></i>
                         </button>
+                        <button id="open-whiteboard" class="p-2 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 text-white transition-colors">
+                            <i class="fas fa-pen"></i>
+                        </button>
                         <button id="open-settings" class="p-2 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 text-white transition-colors">
                             <i class="fas fa-cog"></i>
                         </button>
@@ -472,6 +475,126 @@
             </div>
         </div>
     </div>
+
+    <!-- Panel de pizarra virtual (oculto por defecto) -->
+    <div id="whiteboard-panel" class="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center hidden backdrop-blur-sm">
+        <div class="bg-white rounded-xl w-full max-w-5xl mx-4 h-[85vh] overflow-hidden shadow-2xl animate-fadeIn flex flex-col">
+            <div class="flex justify-between items-center p-4 border-b bg-gradient-to-r from-[#5e0490] to-[#4a0370] text-white">
+                <h3 class="text-lg font-bold">Pizarra virtual compartida</h3>
+                <div class="flex items-center space-x-3">
+                    <span id="whiteboard-status" class="text-xs bg-green-500 px-2 py-1 rounded-full flex items-center">
+                        <i class="fas fa-circle text-[5px] mr-1"></i> Conectado
+                    </span>
+                    <button id="close-whiteboard" class="p-2 rounded-full hover:bg-white hover:bg-opacity-20 text-white transition-colors">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="flex flex-1 overflow-hidden">
+                <!-- Área principal de la pizarra -->
+                <div class="flex-1 flex flex-col h-full">
+                    <div class="relative flex-1 bg-white overflow-hidden">
+                        <canvas id="whiteboard-canvas" class="absolute inset-0 w-full h-full cursor-crosshair"></canvas>
+                        
+                        <!-- Indicador de otro usuario dibujando -->
+                        <div id="remote-cursor" class="absolute w-4 h-4 rounded-full border-2 border-red-500 hidden pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div>
+                    </div>
+                </div>
+                
+                <!-- Barra lateral de herramientas -->
+                <div class="w-20 border-l border-gray-200 flex flex-col bg-gray-50 py-4">
+                    <div class="flex flex-col items-center space-y-6">
+                        <!-- Herramienta de lápiz -->
+                        <button class="whiteboard-tool active" data-tool="pen">
+                            <div class="w-12 h-12 rounded-lg flex items-center justify-center bg-white shadow-sm border border-gray-200 hover:bg-purple-50 hover:border-purple-200 transition-colors">
+                                <i class="fas fa-pencil-alt text-[#5e0490]"></i>
+                            </div>
+                        </button>
+                        
+                        <!-- Herramienta de línea -->
+                        <button class="whiteboard-tool" data-tool="line">
+                            <div class="w-12 h-12 rounded-lg flex items-center justify-center bg-white shadow-sm border border-gray-200 hover:bg-purple-50 hover:border-purple-200 transition-colors">
+                                <i class="fas fa-slash text-gray-600"></i>
+                            </div>
+                        </button>
+                        
+                        <!-- Herramienta de rectángulo -->
+                        <button class="whiteboard-tool" data-tool="rectangle">
+                            <div class="w-12 h-12 rounded-lg flex items-center justify-center bg-white shadow-sm border border-gray-200 hover:bg-purple-50 hover:border-purple-200 transition-colors">
+                                <i class="far fa-square text-gray-600"></i>
+                            </div>
+                        </button>
+                        
+                        <!-- Herramienta de círculo -->
+                        <button class="whiteboard-tool" data-tool="circle">
+                            <div class="w-12 h-12 rounded-lg flex items-center justify-center bg-white shadow-sm border border-gray-200 hover:bg-purple-50 hover:border-purple-200 transition-colors">
+                                <i class="far fa-circle text-gray-600"></i>
+                            </div>
+                        </button>
+                        
+                        <!-- Herramienta de texto -->
+                        <button class="whiteboard-tool" data-tool="text">
+                            <div class="w-12 h-12 rounded-lg flex items-center justify-center bg-white shadow-sm border border-gray-200 hover:bg-purple-50 hover:border-purple-200 transition-colors">
+                                <i class="fas fa-font text-gray-600"></i>
+                            </div>
+                        </button>
+                        
+                        <!-- Herramienta de borrador -->
+                        <button class="whiteboard-tool" data-tool="eraser">
+                            <div class="w-12 h-12 rounded-lg flex items-center justify-center bg-white shadow-sm border border-gray-200 hover:bg-purple-50 hover:border-purple-200 transition-colors">
+                                <i class="fas fa-eraser text-gray-600"></i>
+                            </div>
+                        </button>
+                        
+                        <!-- Selector de color -->
+                        <div class="mt-4 text-center">
+                            <div class="color-picker flex flex-wrap justify-center gap-2 w-16 mx-auto">
+                                <button class="color-option active w-6 h-6 rounded-full bg-black border-2 border-gray-300" data-color="#000000"></button>
+                                <button class="color-option w-6 h-6 rounded-full bg-red-500 border-2 border-gray-300" data-color="#ef4444"></button>
+                                <button class="color-option w-6 h-6 rounded-full bg-blue-500 border-2 border-gray-300" data-color="#3b82f6"></button>
+                                <button class="color-option w-6 h-6 rounded-full bg-green-500 border-2 border-gray-300" data-color="#22c55e"></button>
+                                <button class="color-option w-6 h-6 rounded-full bg-yellow-500 border-2 border-gray-300" data-color="#eab308"></button>
+                                <button class="color-option w-6 h-6 rounded-full bg-purple-500 border-2 border-gray-300" data-color="#8b5cf6"></button>
+                            </div>
+                        </div>
+                        
+                        <!-- Selector de tamaño -->
+                        <div class="mt-4 text-center">
+                            <div class="line-width-picker flex flex-col items-center gap-2">
+                                <button class="line-width-option w-12 h-6 rounded-md flex items-center justify-center bg-white active" data-width="2">
+                                    <div class="w-8 h-2 bg-black rounded-full"></div>
+                                </button>
+                                <button class="line-width-option w-12 h-6 rounded-md flex items-center justify-center bg-white" data-width="4">
+                                    <div class="w-8 h-4 bg-black rounded-full"></div>
+                                </button>
+                                <button class="line-width-option w-12 h-6 rounded-md flex items-center justify-center bg-white" data-width="6">
+                                    <div class="w-8 h-6 bg-black rounded-full"></div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Barra inferior con acciones -->
+            <div class="p-3 border-t bg-gray-50 flex justify-between items-center">
+                <div class="flex space-x-2">
+                    <button id="undo-whiteboard" class="px-3 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md text-sm flex items-center">
+                        <i class="fas fa-undo mr-1"></i> Deshacer
+                    </button>
+                    <button id="clear-whiteboard" class="px-3 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md text-sm flex items-center">
+                        <i class="fas fa-trash-alt mr-1"></i> Limpiar
+                    </button>
+                </div>
+                <div class="flex space-x-2">
+                    <button id="save-whiteboard" class="px-3 py-1.5 bg-[#5e0490] hover:bg-[#4a0370] text-white rounded-md text-sm flex items-center">
+                        <i class="fas fa-download mr-1"></i> Guardar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Añadir Font Awesome -->
@@ -482,6 +605,9 @@
 
 <!-- Agregar socket.io para la señalización -->
 <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+
+<!-- Añadir SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <!-- Añadir CSS personalizado -->
 <link rel="stylesheet" href="{{ asset('css/chat-detail.css') }}">
@@ -517,6 +643,20 @@
     let analyzer;
     let audioLevelInterval;
     
+    // Variables para la pizarra virtual
+    let canvas;
+    let ctx;
+    let isDrawing = false;
+    let lastX = 0;
+    let lastY = 0;
+    let currentColor = '#000000';
+    let currentLineWidth = 2;
+    let currentTool = 'pen';
+    let drawingHistory = [];
+    let historyIndex = -1;
+    let textInputActive = false;
+    let startX, startY;
+    
     // Configuración por defecto
     const defaultSettings = {
         audioInput: '',
@@ -543,7 +683,43 @@
         document.getElementById('open-settings').addEventListener('click', openSettings);
         document.getElementById('close-settings').addEventListener('click', closeSettings);
         
-        // Gestión de pestañas
+        // Botón de pizarra virtual
+        document.getElementById('open-whiteboard').addEventListener('click', openWhiteboard);
+        document.getElementById('close-whiteboard').addEventListener('click', closeWhiteboard);
+        
+        // Botones de la pizarra
+        document.getElementById('undo-whiteboard').addEventListener('click', undoWhiteboard);
+        document.getElementById('clear-whiteboard').addEventListener('click', clearWhiteboard);
+        document.getElementById('save-whiteboard').addEventListener('click', saveWhiteboard);
+        
+        // Herramientas de la pizarra
+        const toolButtons = document.querySelectorAll('.whiteboard-tool');
+        toolButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const tool = button.getAttribute('data-tool');
+                selectTool(tool);
+            });
+        });
+        
+        // Opciones de color
+        const colorButtons = document.querySelectorAll('.color-option');
+        colorButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const color = button.getAttribute('data-color');
+                selectColor(color);
+            });
+        });
+        
+        // Opciones de grosor de línea
+        const lineWidthButtons = document.querySelectorAll('.line-width-option');
+        lineWidthButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const width = button.getAttribute('data-width');
+                selectLineWidth(parseInt(width));
+            });
+        });
+        
+        // Gestión de pestañas de configuración
         const tabButtons = document.querySelectorAll('.settings-tab');
         tabButtons.forEach(button => {
             button.addEventListener('click', () => {
@@ -552,7 +728,7 @@
             });
         });
         
-        // Botones de acción
+        // Botones de acción de configuración
         document.getElementById('save-settings').addEventListener('click', saveSettings);
         document.getElementById('reset-settings').addEventListener('click', resetSettings);
         document.getElementById('test-audio').addEventListener('click', testAudio);
@@ -665,9 +841,459 @@
         document.getElementById('close-video-container').addEventListener('click', function() {
             document.getElementById('video-container').style.display = 'none';
         });
+
+        // Añadir manejador para el botón de pizarra
+        document.getElementById('open-whiteboard').addEventListener('click', openWhiteboard);
     }
 
-    // ---- FUNCIONES DE CONFIGURACIÓN DE DISPOSITIVOS ----
+    // ---- FUNCIONES PARA LA PIZARRA VIRTUAL ----
+    
+    // Inicializar la pizarra virtual
+    function initializeWhiteboard() {
+        canvas = document.getElementById('whiteboard-canvas');
+        ctx = canvas.getContext('2d');
+        
+        // Establecer tamaño del canvas
+        resizeCanvas();
+        
+        // Listener para redimensionar el canvas cuando cambie el tamaño de la ventana
+        window.addEventListener('resize', resizeCanvas);
+        
+        // Manejar eventos de ratón/táctil
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+        
+        // Soporte táctil
+        canvas.addEventListener('touchstart', handleTouchStart);
+        canvas.addEventListener('touchmove', handleTouchMove);
+        canvas.addEventListener('touchend', handleTouchEnd);
+        
+        // Guardar el estado inicial (lienzo en blanco)
+        saveState();
+    }
+    
+    // Redimensionar el canvas para que se ajuste al contenedor
+    function resizeCanvas() {
+        const container = canvas.parentElement;
+        canvas.width = container.offsetWidth;
+        canvas.height = container.offsetHeight;
+        
+        // Restaurar el último estado guardado
+        if (drawingHistory.length > 0 && historyIndex >= 0) {
+            const img = new Image();
+            img.onload = function() {
+                ctx.drawImage(img, 0, 0);
+            };
+            img.src = drawingHistory[historyIndex];
+        }
+        
+        // Restaurar configuración del contexto
+        updateContextSettings();
+    }
+    
+    // Actualizar la configuración del contexto de canvas
+    function updateContextSettings() {
+        ctx.strokeStyle = currentColor;
+        ctx.lineWidth = currentLineWidth;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        
+        if (currentTool === 'eraser') {
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.lineWidth = currentLineWidth * 5; // Borrador más grande
+        } else {
+            ctx.globalCompositeOperation = 'source-over';
+        }
+    }
+    
+    // Iniciar el dibujo
+    function startDrawing(e) {
+        if (textInputActive) return;
+        
+        isDrawing = true;
+        
+        const rect = canvas.getBoundingClientRect();
+        lastX = e.clientX - rect.left;
+        lastY = e.clientY - rect.top;
+        startX = lastX;
+        startY = lastY;
+        
+        if (currentTool === 'text') {
+            createTextInput(startX, startY);
+            return;
+        }
+        
+        // Si estamos usando una herramienta de forma, solo guardamos el punto inicial
+        if (['line', 'rectangle', 'circle'].includes(currentTool)) {
+            return;
+        }
+        
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(lastX, lastY);
+        ctx.stroke();
+    }
+    
+    // Dibujar mientras se mueve el ratón
+    function draw(e) {
+        if (!isDrawing) return;
+        
+        const rect = canvas.getBoundingClientRect();
+        const currentX = e.clientX - rect.left;
+        const currentY = e.clientY - rect.top;
+        
+        // Si estamos usando una herramienta de forma, dibujamos una vista previa temporal
+        if (['line', 'rectangle', 'circle'].includes(currentTool)) {
+            // Restaurar el estado anterior para borrar la vista previa anterior
+            if (drawingHistory.length > 0 && historyIndex >= 0) {
+                const img = new Image();
+                img.onload = function() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(img, 0, 0);
+                    
+                    // Dibujar la forma actual
+                    drawShape(startX, startY, currentX, currentY);
+                };
+                img.src = drawingHistory[historyIndex];
+            }
+            return;
+        }
+        
+        // Para el lápiz y borrador, dibujar de forma continua
+        if (['pen', 'eraser'].includes(currentTool)) {
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(currentX, currentY);
+            ctx.stroke();
+        }
+        
+        lastX = currentX;
+        lastY = currentY;
+    }
+    
+    // Detener el dibujo
+    function stopDrawing(e) {
+        if (!isDrawing) return;
+        
+        if (['line', 'rectangle', 'circle'].includes(currentTool)) {
+            const rect = canvas.getBoundingClientRect();
+            const currentX = (e.clientX || e.changedTouches[0].clientX) - rect.left;
+            const currentY = (e.clientY || e.changedTouches[0].clientY) - rect.top;
+            
+            // Dibujar la forma final
+            drawShape(startX, startY, currentX, currentY);
+            
+            // Guardar el estado después de dibujar la forma
+            saveState();
+        } else if (['pen', 'eraser'].includes(currentTool)) {
+            // Para lápiz y borrador, ya hemos estado dibujando, solo guardamos el estado
+            saveState();
+        }
+        
+        isDrawing = false;
+    }
+    
+    // Manejar eventos táctiles
+    function handleTouchStart(e) {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const mouseEvent = new MouseEvent('mousedown', {
+            clientX: touch.clientX,
+            clientY: touch.clientY
+        });
+        canvas.dispatchEvent(mouseEvent);
+    }
+    
+    function handleTouchMove(e) {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const mouseEvent = new MouseEvent('mousemove', {
+            clientX: touch.clientX,
+            clientY: touch.clientY
+        });
+        canvas.dispatchEvent(mouseEvent);
+    }
+    
+    function handleTouchEnd(e) {
+        e.preventDefault();
+        const mouseEvent = new MouseEvent('mouseup', {});
+        canvas.dispatchEvent(mouseEvent);
+    }
+    
+    // Dibujar formas (línea, rectángulo, círculo)
+    function drawShape(x1, y1, x2, y2) {
+        updateContextSettings();
+        
+        switch (currentTool) {
+            case 'line':
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+                break;
+                
+            case 'rectangle':
+                const width = x2 - x1;
+                const height = y2 - y1;
+                ctx.beginPath();
+                ctx.rect(x1, y1, width, height);
+                ctx.stroke();
+                break;
+                
+            case 'circle':
+                const radius = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+                ctx.beginPath();
+                ctx.arc(x1, y1, radius, 0, 2 * Math.PI);
+                ctx.stroke();
+                break;
+        }
+    }
+    
+    // Crear un campo de texto
+    function createTextInput(x, y) {
+        // Eliminar cualquier input de texto existente
+        const existingInput = document.getElementById('whiteboard-text-input');
+        if (existingInput) {
+            existingInput.remove();
+        }
+        
+        // Crear un nuevo input
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.id = 'whiteboard-text-input';
+        input.className = 'absolute bg-transparent border border-blue-400 px-1 outline-none';
+        input.style.left = x + 'px';
+        input.style.top = y + 'px';
+        input.style.color = currentColor;
+        input.style.fontSize = (currentLineWidth * 8) + 'px';
+        input.style.fontFamily = 'Arial, sans-serif';
+        
+        // Añadir al contenedor del canvas
+        canvas.parentElement.appendChild(input);
+        
+        // Enfocar el input
+        input.focus();
+        textInputActive = true;
+        
+        // Manejar cambio de tamaño del input mientras se escribe
+        input.addEventListener('input', function() {
+            this.style.width = (this.value.length * 0.7 + 1) + 'em';
+        });
+        
+        // Confirmar el texto cuando se presiona Enter o se pierde el foco
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                commitText(input);
+            }
+        });
+        
+        input.addEventListener('blur', function() {
+            commitText(input);
+        });
+    }
+    
+    // Añadir el texto escrito al canvas
+    function commitText(input) {
+        if (input.value.trim() !== '') {
+            const x = parseInt(input.style.left);
+            const y = parseInt(input.style.top);
+            
+            // Dibujar el texto en el canvas
+            ctx.fillStyle = currentColor;
+            ctx.font = input.style.fontSize + ' Arial, sans-serif';
+            ctx.fillText(input.value, x, y + parseInt(input.style.fontSize));
+            
+            // Guardar el estado después de añadir texto
+            saveState();
+        }
+        
+        // Eliminar el input
+        input.remove();
+        textInputActive = false;
+    }
+    
+    // Seleccionar herramienta
+    function selectTool(tool) {
+        currentTool = tool;
+        
+        // Desactivar todas las herramientas
+        document.querySelectorAll('.whiteboard-tool').forEach(btn => {
+            btn.classList.remove('active');
+            btn.querySelector('div').classList.remove('bg-purple-50', 'border-purple-200');
+            btn.querySelector('i').classList.remove('text-[#5e0490]');
+            btn.querySelector('i').classList.add('text-gray-600');
+        });
+        
+        // Activar la herramienta seleccionada
+        const selectedButton = document.querySelector(`.whiteboard-tool[data-tool="${tool}"]`);
+        selectedButton.classList.add('active');
+        selectedButton.querySelector('div').classList.add('bg-purple-50', 'border-purple-200');
+        selectedButton.querySelector('i').classList.remove('text-gray-600');
+        selectedButton.querySelector('i').classList.add('text-[#5e0490]');
+        
+        // Actualizar estilo del cursor
+        if (tool === 'eraser') {
+            canvas.classList.remove('cursor-crosshair');
+            canvas.classList.add('cursor-cell');
+        } else if (tool === 'text') {
+            canvas.classList.remove('cursor-crosshair', 'cursor-cell');
+            canvas.classList.add('cursor-text');
+        } else {
+            canvas.classList.remove('cursor-cell', 'cursor-text');
+            canvas.classList.add('cursor-crosshair');
+        }
+        
+        // Actualizar la configuración del contexto
+        if (ctx) {
+            updateContextSettings();
+        }
+    }
+    
+    // Seleccionar color
+    function selectColor(color) {
+        currentColor = color;
+        
+        // Desactivar todos los colores
+        document.querySelectorAll('.color-option').forEach(btn => {
+            btn.classList.remove('active');
+            btn.classList.remove('border-purple-500');
+            btn.classList.add('border-gray-300');
+        });
+        
+        // Activar el color seleccionado
+        const selectedButton = document.querySelector(`.color-option[data-color="${color}"]`);
+        selectedButton.classList.add('active', 'border-purple-500');
+        selectedButton.classList.remove('border-gray-300');
+        
+        // Actualizar los colores en los selectores de grosor
+        document.querySelectorAll('.line-width-option div').forEach(div => {
+            div.style.backgroundColor = color;
+        });
+        
+        // Actualizar la configuración del contexto
+        if (ctx) {
+            updateContextSettings();
+        }
+    }
+    
+    // Seleccionar grosor de línea
+    function selectLineWidth(width) {
+        currentLineWidth = width;
+        
+        // Desactivar todos los grosores
+        document.querySelectorAll('.line-width-option').forEach(btn => {
+            btn.classList.remove('active');
+            btn.classList.remove('bg-gray-100');
+        });
+        
+        // Activar el grosor seleccionado
+        const selectedButton = document.querySelector(`.line-width-option[data-width="${width}"]`);
+        selectedButton.classList.add('active', 'bg-gray-100');
+        
+        // Actualizar la configuración del contexto
+        if (ctx) {
+            updateContextSettings();
+        }
+    }
+    
+    // Guardar el estado actual de la pizarra
+    function saveState() {
+        // Truncar el historial si hemos hecho deshacer y luego dibujamos algo nuevo
+        if (historyIndex < drawingHistory.length - 1) {
+            drawingHistory = drawingHistory.slice(0, historyIndex + 1);
+        }
+        
+        // Guardar el estado actual
+        drawingHistory.push(canvas.toDataURL());
+        historyIndex = drawingHistory.length - 1;
+        
+        // Habilitar/deshabilitar el botón de deshacer
+        document.getElementById('undo-whiteboard').disabled = historyIndex <= 0;
+    }
+    
+    // Deshacer último cambio
+    function undoWhiteboard() {
+        if (historyIndex <= 0) return;
+        
+        historyIndex--;
+        const img = new Image();
+        img.onload = function() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0);
+        };
+        img.src = drawingHistory[historyIndex];
+        
+        // Deshabilitar el botón de deshacer si ya no podemos deshacer más
+        document.getElementById('undo-whiteboard').disabled = historyIndex <= 0;
+    }
+    
+    // Limpiar la pizarra
+    function clearWhiteboard() {
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: 'Se borrará todo el contenido de la pizarra',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#5e0490',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, borrar todo',
+            cancelButtonText: 'Cancelar',
+            background: '#fff',
+            backdrop: 'rgba(0,0,0,0.4)',
+            customClass: {
+                confirmButton: 'px-4 py-2 rounded-md text-white',
+                cancelButton: 'px-4 py-2 rounded-md text-white'
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                saveState();
+                
+                Swal.fire({
+                    title: '¡Borrado!',
+                    text: 'La pizarra ha sido limpiada',
+                    icon: 'success',
+                    confirmButtonColor: '#5e0490',
+                    confirmButtonText: 'Continuar',
+                    timer: 1500,
+                    timerProgressBar: true,
+                    customClass: {
+                        confirmButton: 'px-4 py-2 rounded-md text-white'
+                    }
+                });
+            }
+        });
+    }
+    
+    // Guardar la pizarra como imagen
+    function saveWhiteboard() {
+        const link = document.createElement('a');
+        link.download = 'pizarra_' + new Date().toISOString().slice(0, 19).replace(/[:.]/g, '-') + '.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+    }
+    
+    // Abrir la pizarra virtual
+    function openWhiteboard() {
+        document.getElementById('whiteboard-panel').style.display = 'flex';
+        
+        // Inicializar la pizarra si no se ha hecho ya
+        if (!canvas) {
+            initializeWhiteboard();
+        } else {
+            // Redimensionar el canvas por si ha cambiado el tamaño del contenedor
+            resizeCanvas();
+        }
+    }
+    
+    // Cerrar la pizarra virtual
+    function closeWhiteboard() {
+        document.getElementById('whiteboard-panel').style.display = 'none';
+    }
+    
+    // ---- FUNCIONES DE CONFIGURACIÓN DE DISPOSITIVOS Y OTRAS EXISTENTES ----
     
     // Enumerar dispositivos disponibles
     async function enumerateDevices() {
@@ -1274,6 +1900,13 @@
                 transform: scale(1.5);
                 opacity: 0;
             }
+        }
+        
+        /* Estilos para el input de texto en la pizarra */
+        #whiteboard-text-input {
+            position: absolute;
+            background: transparent;
+            min-width: 50px;
         }
         </style>
     `);
