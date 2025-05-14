@@ -303,7 +303,7 @@
                                 </div>
 
                                 <!-- Paginación -->
-                                <div class="mt-6 bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+                                <div id="paginationBlock" class="mt-6 bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
                                     <div class="flex flex-col sm:flex-row justify-between items-center">
                                         <div class="text-sm text-gray-600 mb-3 sm:mb-0" id="paginationInfo">
                                             Mostrando <span class="font-medium text-gray-900" id="paginationFrom">{{ $activePublications->firstItem() ?? 1 }}</span> a
@@ -590,6 +590,12 @@
                     <p class="text-gray-500 max-w-md mx-auto">No se encontraron ofertas activas que cumplan con los criterios de búsqueda.</p>
                 </div>
             `;
+
+            // OCULTAR paginación
+            const paginationBlock = document.getElementById('paginationBlock');
+            if (paginationBlock) {
+                paginationBlock.style.display = 'none';
+            }
         }
 
         // Función para renderizar la paginación
@@ -600,12 +606,13 @@
             const nextButton = document.getElementById('nextPageBtn');
 
             if (!pagination || pagination.total === 0) {
-                paginationInfo.innerHTML = 'No hay ofertas que mostrar';
-                prevButton.disabled = true;
-                nextButton.disabled = true;
-                paginationPages.innerHTML = '';
+                // OCULTAR paginación
+                if (paginationBlock) paginationBlock.style.display = 'none';
                 return;
             }
+
+            // MOSTRAR paginación
+            if (paginationBlock) paginationBlock.style.display = 'block';
 
             // Actualizar información de paginación
             paginationInfo.innerHTML = `Mostrando <span class="font-medium text-gray-900">${pagination.from}</span> a
@@ -732,10 +739,12 @@
 
         function showLoading() {
             document.getElementById('loadingSpinner').classList.remove('hidden');
+            document.getElementById('offersTableContent').classList.add('hidden');
         }
 
         function hideLoading() {
             document.getElementById('loadingSpinner').classList.add('hidden');
+            document.getElementById('offersTableContent').classList.remove('hidden');
         }
 
         function showNotification(message, type = 'success') {
