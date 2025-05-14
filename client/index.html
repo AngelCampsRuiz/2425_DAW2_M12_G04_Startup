@@ -37,6 +37,11 @@
         
         <!-- Panel de video -->
         <div class="video-panel">
+            <!-- Barra superior con título de la llamada -->
+            <div class="call-header" id="call-header">
+                <h3 id="call-title">Videollamada con <span id="call-name"></span></h3>
+            </div>
+            
             <!-- Videos -->
             <div class="video-container">
                 <div class="video-wrapper">
@@ -60,6 +65,12 @@
                 </button>
                 <button id="disable-video" class="control-btn">
                     <i class="fas fa-video"></i>
+                </button>
+                <button id="share-screen" class="control-btn">
+                    <i class="fas fa-desktop"></i>
+                </button>
+                <button id="chat-btn" class="control-btn">
+                    <i class="fas fa-comment"></i>
                 </button>
                 <button id="end-call" class="control-btn danger">
                     <i class="fas fa-phone-slash"></i>
@@ -85,7 +96,7 @@
     <div class="notifications"></div>
     
     <!-- Scripts -->
-    <script src="http://localhost:3000/socket.io/socket.io.js"></script>
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js" integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+" crossorigin="anonymous"></script>
     <script src="js/app.js"></script>
 </body>
 </html> 

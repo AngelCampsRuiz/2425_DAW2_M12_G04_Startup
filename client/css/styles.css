@@ -195,6 +195,25 @@ body {
     position: relative;
 }
 
+/* Barra de título de la llamada */
+.call-header {
+    background-color: #4B0082; /* Violeta oscuro como en la imagen */
+    color: white;
+    padding: 12px 20px;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    z-index: 50;
+}
+
+.call-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+/* Video container */
 .video-container {
     flex: 1;
     display: flex;
@@ -202,6 +221,44 @@ body {
     justify-content: center;
     position: relative;
     overflow: hidden;
+    background-color: #1a1a2e; /* Fondo oscuro para los videos */
+}
+
+/* Indicador de estado */
+.status-indicator {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: var(--success-color);
+    color: white;
+    border-radius: 20px;
+    padding: 5px 10px;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    z-index: 10;
+}
+
+.status-indicator::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    background-color: currentColor;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+/* Estilos para botones extra */
+.minimizar-btn, .chat-btn {
+    border-radius: 5px;
+    padding: 8px 15px;
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.9rem;
 }
 
 .video-wrapper {
@@ -248,13 +305,16 @@ video {
 .call-controls {
     display: none;
     position: absolute;
-    bottom: 30px;
+    bottom: 20px;
     left: 50%;
     transform: translateX(-50%);
-    background-color: rgba(0, 0, 0, 0.5);
-    padding: 10px 20px;
-    border-radius: 30px;
-    z-index: 20;
+    background-color: rgba(0, 0, 0, 0.8);
+    border-radius: 50px;
+    padding: 15px 25px;
+    display: flex;
+    gap: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
 }
 
 .incoming-call-controls {
@@ -287,7 +347,7 @@ video {
     height: 50px;
     border-radius: 50%;
     border: none;
-    background-color: rgba(255, 255, 255, 0.2);
+    background-color: rgba(255, 255, 255, 0.3);
     color: white;
     font-size: 1.2rem;
     cursor: pointer;
@@ -299,7 +359,7 @@ video {
 }
 
 .control-btn:hover {
-    background-color: rgba(255, 255, 255, 0.3);
+    background-color: rgba(255, 255, 255, 0.4);
 }
 
 .control-btn.success {
@@ -316,6 +376,15 @@ video {
 
 .control-btn.danger:hover {
     background-color: #c82333;
+}
+
+.control-btn.active {
+    background-color: var(--success-color);
+    color: white;
+}
+
+.control-btn.active:hover {
+    background-color: #218838;
 }
 
 /* Notificaciones */
