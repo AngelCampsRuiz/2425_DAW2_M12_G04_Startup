@@ -2,6 +2,7 @@
     // RUTAS DE LA APLICACIÓN
     use Illuminate\Support\Facades\Route;
     use Illuminate\Support\Facades\DB;
+    use Illuminate\Support\Facades\Log;
         // CONTROLADORES
             // CONTROLADOR HOME
                 use App\Http\Controllers\HomeController;
@@ -45,6 +46,8 @@
                 use App\Http\Controllers\CalendarController;
             // CONTROLADOR DE RECORDATORIOS
                 use App\Http\Controllers\ReminderController;
+            // CONTROLADOR ESTUDIANTE (EMPRESA)
+                use App\Http\Controllers\Empresa\EstudianteController;
 
     // RUTAS DE LA APLICACIÓN
         // RUTA PRINCIPAL HOME
@@ -93,7 +96,7 @@
 
         Route::get('/api/categorias/{nivel_id?}/{institucion_id?}', function($nivel_id = null, $institucion_id = null) {
             // Log para depuración
-            \Log::info('API Categorias - Request params', [
+            Log::info('API Categorias - Request params', [
                 'nivel_id' => $nivel_id,
                 'institucion_id' => $institucion_id
             ]);
@@ -110,7 +113,7 @@
                     ->distinct()
                     ->get();
 
-                \Log::info('API Categorias - Resultados', [
+                Log::info('API Categorias - Resultados', [
                     'count' => $categorias->count(),
                     'data' => $categorias
                 ]);
@@ -260,7 +263,15 @@
                         Route::put('/reminders/{reminder}', [CalendarController::class, 'update']);
                         Route::delete('/reminders/{reminder}', [CalendarController::class, 'destroy']);
                     });
+                // Ruta para ver perfil de estudiante
+                Route::get('/estudiante/{id}', [App\Http\Controllers\Empresa\EstudianteController::class, 'show'])
+                    ->name('estudiante.perfil');
             });
+
+            // Ruta para búsqueda de estudiantes (API) - Fuera del grupo para evitar el prefijo 'empresa.'
+            Route::middleware(['auth', \App\Http\Middleware\CheckRole::class.':empresa'])->post('/empresa/api/estudiantes/search', 
+                [App\Http\Controllers\Empresa\EstudianteController::class, 'search'])
+                ->name('api.estudiantes.search');
 
         // RUTAS PROTEGIDAS PARA ADMINISTRADORES
             Route::middleware(['auth', \App\Http\Middleware\CheckRole::class.':admin'])->prefix('admin')->name('admin.')->group(function () {
@@ -430,4 +441,11 @@
         Route::get('/solicitudes/{id}', [App\Http\Controllers\DocenteController::class, 'showSolicitud'])->name('solicitudes.show');
         Route::post('/solicitudes/{id}/aprobar', [App\Http\Controllers\DocenteController::class, 'aprobarSolicitud'])->name('solicitudes.aprobar');
         Route::post('/solicitudes/{id}/rechazar', [App\Http\Controllers\DocenteController::class, 'rechazarSolicitud'])->name('solicitudes.rechazar');
+    });
+
+    // Rutas de chat
+    Route::middleware(['auth'])->prefix('chat')->name('chat.')->group(function () {
+        Route::get('/', [App\Http\Controllers\ChatController::class, 'index'])->name('index');
+        Route::get('/create/{receiver_id}', [App\Http\Controllers\ChatController::class, 'create'])->name('create');
+        Route::post('/send', [App\Http\Controllers\ChatController::class, 'send'])->name('send');
     });

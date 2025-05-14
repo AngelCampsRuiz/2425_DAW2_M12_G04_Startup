@@ -1148,9 +1148,12 @@
                     const searchInput = document.getElementById('searchCandidatesInput');
                     if (searchInput) searchInput.focus();
                 }, 300);
+                
+                // Cargar automáticamente todos los candidatos al abrir el modal
+                buscarCandidatos();
             }
         };
-
+        
         // Función para cerrar el modal de búsqueda de candidatos
         window.closeSearchCandidatesModal = function() {
             const modalSearchCandidates = document.getElementById('modalSearchCandidates');
@@ -1172,6 +1175,199 @@
                 }, 200);
             }
         };
+        
+        // Nueva función para buscar candidatos
+        function buscarCandidatos(page = 1) {
+            // Ocultar mensaje inicial
+            const initialSearchMessage = document.getElementById('initialSearchMessage');
+            if (initialSearchMessage) initialSearchMessage.classList.add('hidden');
+
+            // Mostrar spinner de carga
+            const loadingResults = document.getElementById('loadingResults');
+            if (loadingResults) loadingResults.classList.remove('hidden');
+
+            // Ocultar otros contenedores
+            const resultsContainer = document.getElementById('resultsContainer');
+            const noResults = document.getElementById('noResults');
+            if (resultsContainer) resultsContainer.classList.add('hidden');
+            if (noResults) noResults.classList.add('hidden');
+
+            // Recoger valores de los filtros
+            const searchTerm = document.getElementById('searchCandidatesInput')?.value.trim() || '';
+            const selectedNiveles = Array.from(document.querySelectorAll('input[name="nivel_educativo[]"]:checked')).map(cb => cb.value);
+            const selectedCategorias = Array.from(document.querySelectorAll('input[name="categoria[]"]:checked')).map(cb => cb.value);
+            const selectedDisponibilidad = Array.from(document.querySelectorAll('input[id^="availability_"]:checked')).map(cb => cb.id.replace('availability_', ''));
+            const ubicacion = document.getElementById('location_select')?.value || '';
+
+            // Preparar datos para la petición
+            const searchData = {
+                search: searchTerm,
+                niveles: selectedNiveles,
+                categorias: selectedCategorias,
+                disponibilidad: selectedDisponibilidad,
+                ubicacion: ubicacion,
+                page: page,
+                _token: '{{ csrf_token() }}'
+            };
+
+            console.log('Buscando con los parámetros:', searchData);
+
+            // Realizar petición AJAX a la API
+            fetch('{{ route("api.estudiantes.search") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(searchData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Error en la respuesta: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Ocultar spinner
+                if (loadingResults) loadingResults.classList.add('hidden');
+
+                if (!data.estudiantes || data.estudiantes.length === 0) {
+                    // Mostrar mensaje de no resultados
+                    if (noResults) noResults.classList.remove('hidden');
+                } else {
+                    // Mostrar resultados
+                    const candidatesList = document.getElementById('candidatesList');
+                    if (candidatesList) {
+                        // Limpiar resultados anteriores
+                        candidatesList.innerHTML = '';
+
+                        // Actualizar contador
+                        const resultCount = document.getElementById('resultCount');
+                        if (resultCount) resultCount.textContent = data.total || data.estudiantes.length;
+
+                        // Mostrar cada estudiante
+                        data.estudiantes.forEach(estudiante => {
+                            // Verificar si hay habilidades disponibles
+                            const habilidadesHTML = estudiante.habilidades && estudiante.habilidades.length > 0
+                                ? estudiante.habilidades.map(habilidad => `
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                        ${habilidad}
+                                    </span>
+                                `).join('')
+                                : '<span class="text-xs text-gray-500">No se han especificado habilidades</span>';
+
+                            // Crear elemento HTML para el estudiante
+                            const estudianteElement = document.createElement('div');
+                            estudianteElement.className = 'p-4 hover:bg-gray-50 transition-colors';
+                            estudianteElement.innerHTML = `
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0 mr-4">
+                                        ${estudiante.imagen
+                                            ? `<img src="{{ asset('public/profile_images/') }}/${estudiante.imagen}" class="h-12 w-12 rounded-full object-cover border-2 border-purple-100">`
+                                            : `<div class="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-700 font-bold text-lg">
+                                                ${estudiante.nombre ? estudiante.nombre.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase() : 'N/A'}
+                                              </div>`
+                                        }
+                                    </div>
+                                    <div class="flex-1">
+                                        <h4 class="text-lg font-medium text-gray-900">${estudiante.nombre || 'Sin nombre'}</h4>
+                                        <p class="text-sm text-gray-500">${estudiante.titulo || 'Sin formación'} ${estudiante.ubicacion ? '· ' + estudiante.ubicacion : ''}</p>
+                                        <div class="mt-2 flex flex-wrap gap-1">
+                                            ${habilidadesHTML}
+                                        </div>
+                                    </div>
+                                    <div class="ml-4">
+                                        <button class="px-3 py-1 bg-purple-600 text-white text-sm rounded hover:bg-purple-700 transition-colors" 
+                                                onclick="verPerfilEstudiante(${estudiante.id})">
+                                            Ver perfil
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+
+                            candidatesList.appendChild(estudianteElement);
+                        });
+                        
+                        // Añadir paginación si existe
+                        if (data.last_page && data.last_page > 1) {
+                            const paginationContainer = document.createElement('div');
+                            paginationContainer.className = 'flex justify-center items-center mt-6 mb-4 space-x-1';
+                            
+                            // Botón anterior
+                            if (data.current_page > 1) {
+                                const prevButton = document.createElement('button');
+                                prevButton.className = 'px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors';
+                                prevButton.textContent = 'Anterior';
+                                prevButton.onclick = function() {
+                                    buscarCandidatos(data.current_page - 1);
+                                };
+                                paginationContainer.appendChild(prevButton);
+                            }
+                            
+                            // Números de página
+                            for (let i = 1; i <= data.last_page; i++) {
+                                const pageButton = document.createElement('button');
+                                if (i === data.current_page) {
+                                    pageButton.className = 'px-3 py-1 bg-purple-600 text-white rounded';
+                                } else {
+                                    pageButton.className = 'px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors';
+                                }
+                                pageButton.textContent = i;
+                                pageButton.onclick = function() {
+                                    buscarCandidatos(i);
+                                };
+                                paginationContainer.appendChild(pageButton);
+                            }
+                            
+                            // Botón siguiente
+                            if (data.current_page < data.last_page) {
+                                const nextButton = document.createElement('button');
+                                nextButton.className = 'px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors';
+                                nextButton.textContent = 'Siguiente';
+                                nextButton.onclick = function() {
+                                    buscarCandidatos(data.current_page + 1);
+                                };
+                                paginationContainer.appendChild(nextButton);
+                            }
+                            
+                            candidatesList.appendChild(paginationContainer);
+                        }
+
+                        // Mostrar contenedor de resultados
+                        if (resultsContainer) resultsContainer.classList.remove('hidden');
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error en la búsqueda de estudiantes:', error);
+                
+                // Ocultar spinner
+                if (loadingResults) loadingResults.classList.add('hidden');
+                
+                // Mostrar mensaje de error
+                if (noResults) {
+                    noResults.classList.remove('hidden');
+                    
+                    // Actualizar el mensaje para indicar que hubo un error
+                    const errorTitle = noResults.querySelector('h3');
+                    const errorMsg = noResults.querySelector('p');
+                    
+                    if (errorTitle) errorTitle.textContent = '¡Ha ocurrido un error!';
+                    if (errorMsg) errorMsg.textContent = 'No se pudo completar la búsqueda. Intente de nuevo más tarde.';
+                }
+                
+                // Mostrar una alerta al usuario
+                if (window.Swal) {
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'No se pudieron obtener los resultados: ' + error.message,
+                        icon: 'error',
+                        confirmButtonColor: '#7E22CE'
+                    });
+                }
+            });
+        }
 
         // Simulación de búsqueda de candidatos
         const searchCandidatesButton = document.getElementById('searchCandidatesButton');
@@ -1179,213 +1375,15 @@
 
         if (searchCandidatesButton) {
             searchCandidatesButton.addEventListener('click', function() {
-                // Ocultar mensaje inicial
-                const initialSearchMessage = document.getElementById('initialSearchMessage');
-                if (initialSearchMessage) initialSearchMessage.classList.add('hidden');
-
-                // Mostrar spinner de carga
-                const loadingResults = document.getElementById('loadingResults');
-                if (loadingResults) loadingResults.classList.remove('hidden');
-
-                // Ocultar otros contenedores
-                const resultsContainer = document.getElementById('resultsContainer');
-                const noResults = document.getElementById('noResults');
-                if (resultsContainer) resultsContainer.classList.add('hidden');
-                if (noResults) noResults.classList.add('hidden');
-
-                // Recoger valores de los filtros
-                const searchTerm = document.getElementById('searchCandidatesInput').value.trim();
-                const selectedNiveles = Array.from(document.querySelectorAll('input[name="nivel_educativo[]"]:checked')).map(cb => cb.value);
-                const selectedCategorias = Array.from(document.querySelectorAll('input[name="categoria[]"]:checked')).map(cb => cb.value);
-                const selectedDisponibilidad = Array.from(document.querySelectorAll('input[id^="availability_"]:checked')).map(cb => cb.id.replace('availability_', ''));
-                const ubicacion = document.getElementById('location_select').value;
-
-                // Preparar datos para la petición
-                const searchData = {
-                    search: searchTerm,
-                    niveles: selectedNiveles,
-                    categorias: selectedCategorias,
-                    disponibilidad: selectedDisponibilidad,
-                    ubicacion: ubicacion,
-                    _token: '{{ csrf_token() }}'
-                };
-
-                console.log('Buscando con los parámetros:', searchData);
-
-                // Simular petición AJAX (en un entorno real, esto sería un fetch a un endpoint del servidor)
-                setTimeout(() => {
-                    // Ocultar spinner
-                    if (loadingResults) loadingResults.classList.add('hidden');
-
-                    // Simular respuesta del servidor
-                    const simulatedResponse = simulateServerResponse(searchData);
-
-                    if (simulatedResponse.estudiantes.length === 0) {
-                        // Mostrar mensaje de no resultados
-                        if (noResults) noResults.classList.remove('hidden');
-                    } else {
-                        // Mostrar resultados
-                        const candidatesList = document.getElementById('candidatesList');
-                        if (candidatesList) {
-                            // Limpiar resultados anteriores
-                            candidatesList.innerHTML = '';
-
-                            // Actualizar contador
-                            const resultCount = document.getElementById('resultCount');
-                            if (resultCount) resultCount.textContent = simulatedResponse.estudiantes.length;
-
-                            // Mostrar cada estudiante
-                            simulatedResponse.estudiantes.forEach(estudiante => {
-                                // Crear elemento HTML para el estudiante
-                                const estudianteElement = document.createElement('div');
-                                estudianteElement.className = 'p-4 hover:bg-gray-50 transition-colors';
-                                estudianteElement.innerHTML = `
-                                    <div class="flex items-start">
-                                        <div class="flex-shrink-0 mr-4">
-                                            ${estudiante.imagen
-                                                ? `<img src="${estudiante.imagen}" class="h-12 w-12 rounded-full object-cover border-2 border-purple-100">`
-                                                : `<div class="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-700 font-bold text-lg">
-                                                    ${estudiante.nombre.split(' ').map(n => n[0]).join('')}
-                                                  </div>`
-                                            }
-                                        </div>
-                                        <div class="flex-1">
-                                            <h4 class="text-lg font-medium text-gray-900">${estudiante.nombre}</h4>
-                                            <p class="text-sm text-gray-500">${estudiante.titulo} · ${estudiante.ubicacion}</p>
-                                            <div class="mt-2 flex flex-wrap gap-1">
-                                                ${estudiante.habilidades.map(habilidad => `
-                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                                                        ${habilidad}
-                                                    </span>
-                                                `).join('')}
-                                            </div>
-                                        </div>
-                                        <div class="ml-4">
-                                            <button class="px-3 py-1 bg-purple-600 text-white text-sm rounded hover:bg-purple-700 transition-colors">
-                                                Ver perfil
-                                            </button>
-                                        </div>
-                                    </div>
-                                `;
-
-                                candidatesList.appendChild(estudianteElement);
-                            });
-
-                            // Mostrar contenedor de resultados
-                            if (resultsContainer) resultsContainer.classList.remove('hidden');
-                        }
-                    }
-                }, 1500); // Simular tiempo de carga
+                buscarCandidatos();
             });
         }
 
-        // Función para simular una respuesta del servidor
-        function simulateServerResponse(searchData) {
-            // Base de datos simulada de estudiantes
-            const estudiantesDB = [
-                {
-                    id: 1,
-                    nombre: "Ana García Martínez",
-                    titulo: "Grado en Ingeniería Informática",
-                    ubicacion: "Barcelona",
-                    nivel_educativo_id: "1", // ID del nivel educativo
-                    habilidades: ["Java", "Python", "SQL", "Spring Boot"],
-                    disponibilidad: "morning",
-                    imagen: null
-                },
-                {
-                    id: 2,
-                    nombre: "Carlos Rodríguez López",
-                    titulo: "Ciclo Superior en DAW",
-                    ubicacion: "Madrid",
-                    nivel_educativo_id: "2", // ID del nivel educativo
-                    habilidades: ["JavaScript", "React", "Node.js", "MongoDB"],
-                    disponibilidad: "afternoon",
-                    imagen: null
-                },
-                {
-                    id: 3,
-                    nombre: "Laura Martínez Sánchez",
-                    titulo: "Máster en Ciberseguridad",
-                    ubicacion: "Valencia",
-                    nivel_educativo_id: "3", // ID del nivel educativo
-                    habilidades: ["Seguridad de redes", "Pentesting", "Análisis de malware"],
-                    disponibilidad: "flexible",
-                    imagen: null
-                },
-                {
-                    id: 4,
-                    nombre: "Miguel López Fernández",
-                    titulo: "Ciclo Superior en DAM",
-                    ubicacion: "Sevilla",
-                    nivel_educativo_id: "2", // ID del nivel educativo
-                    habilidades: ["Java", "Kotlin", "Android", "Firebase"],
-                    disponibilidad: "morning",
-                    imagen: null
-                },
-                {
-                    id: 5,
-                    nombre: "Elena Sánchez Ruiz",
-                    titulo: "Grado en Diseño",
-                    ubicacion: "Barcelona",
-                    nivel_educativo_id: "1", // ID del nivel educativo
-                    habilidades: ["Photoshop", "Illustrator", "Figma", "UI/UX"],
-                    disponibilidad: "flexible",
-                    imagen: null
-                },
-                {
-                    id: 6,
-                    nombre: "Javier Fernández González",
-                    titulo: "Máster en IA",
-                    ubicacion: "Madrid",
-                    nivel_educativo_id: "3", // ID del nivel educativo
-                    habilidades: ["Python", "TensorFlow", "Machine Learning", "NLP"],
-                    disponibilidad: "afternoon",
-                    imagen: null
-                }
-            ];
-
-            // Filtrar estudiantes basados en los criterios de búsqueda
-            let resultados = estudiantesDB;
-
-            // Filtrar por término de búsqueda
-            if (searchData.search) {
-                const searchLower = searchData.search.toLowerCase();
-                resultados = resultados.filter(est =>
-                    est.nombre.toLowerCase().includes(searchLower) ||
-                    est.titulo.toLowerCase().includes(searchLower) ||
-                    est.habilidades.some(h => h.toLowerCase().includes(searchLower))
-                );
-            }
-
-            // Filtrar por niveles educativos
-            if (searchData.niveles && searchData.niveles.length > 0) {
-                resultados = resultados.filter(est =>
-                    searchData.niveles.includes(est.nivel_educativo_id)
-                );
-            }
-
-            // Filtrar por disponibilidad
-            if (searchData.disponibilidad && searchData.disponibilidad.length > 0) {
-                resultados = resultados.filter(est =>
-                    searchData.disponibilidad.includes(est.disponibilidad)
-                );
-            }
-
-            // Filtrar por ubicación
-            if (searchData.ubicacion) {
-                resultados = resultados.filter(est =>
-                    est.ubicacion.toLowerCase() === searchData.ubicacion.toLowerCase()
-                );
-            }
-
-            // Devolver respuesta simulada
-            return {
-                success: true,
-                estudiantes: resultados,
-                total: resultados.length
-            };
-        }
+        // Función para ver el perfil de un estudiante
+        window.verPerfilEstudiante = function(estudianteId) {
+            // Redireccionar a la página de perfil del estudiante
+            window.location.href = `{{ url('/empresa/estudiante') }}/${estudianteId}`;
+        };
 
         // Limpiar búsqueda
         if (clearCandidateSearchButton) {
