@@ -848,8 +848,23 @@
             }
         });
 
-        // Compartir pantalla
-        document.getElementById('share-screen').addEventListener('click', toggleScreenSharing);
+        // Compartir pantalla - Asegurar que funcione correctamente
+        const shareScreenBtn = document.getElementById('share-screen');
+        if (shareScreenBtn) {
+            // Asegurarse que solo se añada un listener
+            shareScreenBtn.removeEventListener('click', toggleScreenSharing);
+            shareScreenBtn.addEventListener('click', toggleScreenSharing);
+            
+            console.log('Evento de compartir pantalla asignado correctamente');
+            
+            // Verificar si el navegador soporta compartir pantalla
+            if (!navigator.mediaDevices || typeof navigator.mediaDevices.getDisplayMedia !== 'function') {
+                console.warn('Este navegador no soporta compartir pantalla');
+                shareScreenBtn.style.display = 'none';
+            }
+        } else {
+            console.error('No se encontró el botón de compartir pantalla');
+        }
         
         // End call
         document.getElementById('end-call').addEventListener('click', function() {
@@ -1335,6 +1350,19 @@
         // Transferir el stream local
         if (mainLocalVideo && mainLocalVideo.srcObject && whiteboardLocalVideo) {
             whiteboardLocalVideo.srcObject = mainLocalVideo.srcObject;
+            
+            // Si estamos compartiendo pantalla, agregar indicador
+            if (isScreenSharing) {
+                const whiteboardContainer = whiteboardLocalVideo.parentElement;
+                let screenShareIndicator = whiteboardContainer.querySelector('.wb-screen-share-indicator');
+                
+                if (!screenShareIndicator) {
+                    screenShareIndicator = document.createElement('div');
+                    screenShareIndicator.className = 'wb-screen-share-indicator absolute top-1 right-1 bg-red-500 text-white text-xs px-1 py-0.5 rounded-full flex items-center animate-pulse';
+                    screenShareIndicator.innerHTML = '<i class="fas fa-desktop text-xs mr-1"></i><span class="text-[10px]">Compartiendo</span>';
+                    whiteboardContainer.appendChild(screenShareIndicator);
+                }
+            }
         }
         
         // Transferir el stream remoto
@@ -1938,13 +1966,19 @@
     async function toggleScreenSharing() {
         if (!localStream) {
             console.error('No hay stream local disponible');
+            alert('Primero necesitas iniciar la videollamada para compartir tu pantalla');
             return;
         }
 
-        if (isScreenSharing) {
-            await stopScreenSharing();
-        } else {
-            await startScreenSharing();
+        try {
+            if (isScreenSharing) {
+                await stopScreenSharing();
+            } else {
+                await startScreenSharing();
+            }
+        } catch (error) {
+            console.error('Error al alternar compartir pantalla:', error);
+            alert('No se pudo compartir pantalla: ' + error.message);
         }
     }
 
@@ -1953,22 +1987,42 @@
         try {
             console.log('Iniciando compartición de pantalla...');
             
-            // Solicitar acceso a la pantalla
+            // Cambiar estado visual del botón para indicar que está procesando
+            const shareButton = document.getElementById('share-screen');
+            shareButton.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
+            
+            // Solicitar acceso a la pantalla con opciones mejoradas
             screenStream = await navigator.mediaDevices.getDisplayMedia({
                 video: {
                     cursor: 'always',
-                    displaySurface: 'monitor'
-                }
+                    displaySurface: 'monitor',
+                    logicalSurface: true,
+                    frameRate: 30
+                },
+                audio: false
             });
             
-            // Guardar la referencia al video local original
+            // Guardar la referencia al video local original para restaurar después
             const localVideo = document.getElementById('local-video');
+            const localContainer = document.getElementById('local-video-container');
             
             // Mostrar la pantalla compartida en el video local
             localVideo.srcObject = screenStream;
             
+            // Agregar un indicador visual de compartir pantalla
+            let screenShareIndicator = document.getElementById('screen-share-indicator');
+            if (!screenShareIndicator) {
+                screenShareIndicator = document.createElement('div');
+                screenShareIndicator.id = 'screen-share-indicator';
+                screenShareIndicator.className = 'absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full flex items-center animate-pulse';
+                screenShareIndicator.innerHTML = '<i class="fas fa-desktop mr-1"></i> Compartiendo pantalla';
+                localContainer.appendChild(screenShareIndicator);
+            } else {
+                screenShareIndicator.style.display = 'flex';
+            }
+            
             // Marcar el botón como activo
-            const shareButton = document.getElementById('share-screen');
+            shareButton.innerHTML = '<i class="fas fa-desktop"></i>';
             shareButton.classList.add('bg-green-500');
             shareButton.classList.remove('bg-white', 'bg-opacity-20');
             
@@ -1980,10 +2034,38 @@
                 stopScreenSharing();
             };
             
+            // Mostrar una notificación
+            Swal.fire({
+                title: 'Compartiendo pantalla',
+                text: 'Tu pantalla está siendo compartida',
+                icon: 'success',
+                showConfirmButton: false,
+                timer: 2000,
+                timerProgressBar: true,
+                toast: true,
+                position: 'top-end'
+            });
+            
             console.log('Compartición de pantalla iniciada');
         } catch (error) {
-            console.error('Error al iniciar la compartición de pantalla:', error);
-            alert('No se pudo compartir la pantalla: ' + error.message);
+            // Si el usuario cancela la selección, no mostrar error
+            if (error.name === 'NotAllowedError' || error.name === 'AbortError') {
+                console.log('Usuario canceló la compartición de pantalla');
+            } else {
+                console.error('Error al iniciar la compartición de pantalla:', error);
+                Swal.fire({
+                    title: 'Error',
+                    text: 'No se pudo compartir la pantalla: ' + error.message,
+                    icon: 'error',
+                    confirmButtonColor: '#5e0490'
+                });
+            }
+            
+            // Restaurar botón
+            const shareButton = document.getElementById('share-screen');
+            shareButton.innerHTML = '<i class="fas fa-desktop"></i>';
+            
+            throw error;
         }
     }
 
@@ -2003,6 +2085,12 @@
             const localVideo = document.getElementById('local-video');
             localVideo.srcObject = localStream;
             
+            // Ocultar el indicador de compartir pantalla
+            const screenShareIndicator = document.getElementById('screen-share-indicator');
+            if (screenShareIndicator) {
+                screenShareIndicator.style.display = 'none';
+            }
+            
             // Restaurar el aspecto del botón
             const shareButton = document.getElementById('share-screen');
             shareButton.classList.remove('bg-green-500');
@@ -2012,9 +2100,27 @@
             isScreenSharing = false;
             screenStream = null;
             
+            // Mostrar notificación
+            Swal.fire({
+                title: 'Compartición finalizada',
+                text: 'Has dejado de compartir tu pantalla',
+                icon: 'info',
+                showConfirmButton: false,
+                timer: 2000,
+                timerProgressBar: true,
+                toast: true,
+                position: 'top-end'
+            });
+            
             console.log('Compartición de pantalla detenida');
         } catch (error) {
             console.error('Error al detener la compartición de pantalla:', error);
+            Swal.fire({
+                title: 'Error',
+                text: 'Ocurrió un problema al detener la compartición: ' + error.message,
+                icon: 'warning',
+                confirmButtonColor: '#5e0490'
+            });
         }
     }
 
