@@ -133,16 +133,19 @@ class ProfesorController extends Controller
         return response()->json([
             'profesor' => [
                 'id' => $profesor->id,
-                'nombre' => $profesor->nombre,
-                'email' => $profesor->email,
-                'dni' => $profesor->dni,
-                'telefono' => $profesor->telefono,
-                'ciudad' => $profesor->ciudad,
-                'fecha_nacimiento' => $profesor->fecha_nacimiento,
-                'sitio_web' => $profesor->sitio_web,
-                'descripcion' => $profesor->descripcion,
-                'activo' => $profesor->activo,
-                'imagen' => $profesor->imagen
+                'user' => [
+                    'id' => $profesor->id,
+                    'nombre' => $profesor->nombre,
+                    'email' => $profesor->email,
+                    'dni' => $profesor->dni,
+                    'telefono' => $profesor->telefono,
+                    'ciudad' => $profesor->ciudad,
+                    'fecha_nacimiento' => $profesor->fecha_nacimiento,
+                    'sitio_web' => $profesor->sitio_web,
+                    'descripcion' => $profesor->descripcion,
+                    'activo' => $profesor->activo,
+                    'imagen' => $profesor->imagen
+                ]
             ]
         ]);
     }
