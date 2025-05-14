@@ -176,7 +176,7 @@
         <!-- Contenedor del chat -->
         <div class="bg-white rounded-2xl shadow-lg overflow-hidden transform transition-all duration-300 hover:shadow-xl border border-purple-100 animate-fadeIn">
             <!-- Área de mensajes -->
-            <div id="chat-messages" class="h-[500px] overflow-y-auto p-6 space-y-4 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 scroll-smooth">
+            <div id="chat-messages" class="h-[300px] overflow-y-auto p-6 space-y-4 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 scroll-smooth">
                 @if($mensajes->isEmpty())
                     <div class="text-center py-12 animate-fadeIn flex flex-col items-center justify-center h-full">
                         <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-purple-200 to-indigo-200 mb-4 shadow-md">
@@ -256,14 +256,33 @@
             <!-- Formulario para enviar mensajes -->
             <div class="border-t border-purple-100 p-4 bg-white backdrop-blur-lg shadow-inner">
                 <form id="message-form" class="flex flex-col space-y-3" enctype="multipart/form-data">
-                    <div class="flex-1 relative">
-                        <textarea id="message-input"
-                               class="w-full rounded-xl border-gray-300 focus:border-[#5e0490] focus:ring-[#5e0490] transition-colors duration-300 shadow-sm placeholder-gray-400 resize-none px-4 py-3 min-h-[50px] max-h-32"
-                               placeholder="Escribe un mensaje a {{ $otherUser->nombre }}..."
-                               rows="1"></textarea>
-                        <div class="absolute right-3 bottom-3 text-gray-400 text-xs font-medium message-length hidden">
-                            <span id="current-length">0</span>/<span id="max-length">500</span>
+                    <div class="flex items-center space-x-3">
+                        <label for="file-input" class="cursor-pointer p-3 text-gray-500 hover:text-[#5e0490] bg-gray-100 hover:bg-purple-100 rounded-xl transition-all duration-300 transform hover:scale-105 flex items-center justify-center">
+                            <i class="fas fa-paperclip text-lg"></i>
+                            <span class="sr-only">Adjuntar archivo</span>
+                        </label>
+                        <input type="file" id="file-input" name="archivo" class="hidden" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt">
+
+                        <button type="button" id="emoji-button" class="p-3 text-gray-500 hover:text-[#5e0490] bg-gray-100 hover:bg-purple-100 rounded-xl transition-all duration-300 transform hover:scale-105 flex items-center justify-center">
+                            <i class="fas fa-smile text-lg"></i>
+                            <span class="sr-only">Emojis</span>
+                        </button>
+                        
+                        <div class="flex-1 relative">
+                            <textarea id="message-input"
+                                   class="w-full rounded-xl border-gray-300 focus:border-[#5e0490] focus:ring-[#5e0490] transition-colors duration-300 shadow-sm placeholder-gray-400 resize-none px-4 py-3 min-h-[50px] max-h-32"
+                                   placeholder="Escribe un mensaje a {{ $otherUser->nombre }}..."
+                                   rows="1"></textarea>
+                            <div class="absolute right-3 bottom-3 text-gray-400 text-xs font-medium message-length hidden">
+                                <span id="current-length">0</span>/<span id="max-length">500</span>
+                            </div>
                         </div>
+
+                        <button type="submit"
+                                class="inline-flex items-center px-5 py-3 bg-gradient-to-r from-[#5e0490] to-[#4a0370] text-white rounded-xl hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#5e0490] transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <i class="fas fa-paper-plane mr-2"></i>
+                            <span>Enviar</span>
+                        </button>
                     </div>
 
                     <div id="file-preview" class="hidden flex-grow p-3 bg-purple-50 rounded-xl border border-purple-100 animate-fadeIn">
@@ -277,27 +296,6 @@
                         <div id="image-preview-container" class="mt-2 hidden">
                             <img id="image-preview" class="h-20 rounded-lg object-cover shadow-sm" alt="Vista previa">
                         </div>
-                    </div>
-
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center space-x-2">
-                            <label for="file-input" class="cursor-pointer p-3 text-gray-500 hover:text-[#5e0490] bg-gray-100 hover:bg-purple-100 rounded-xl transition-all duration-300 transform hover:scale-105 flex items-center justify-center">
-                                <i class="fas fa-paperclip text-lg"></i>
-                                <span class="sr-only">Adjuntar archivo</span>
-                            </label>
-                            <input type="file" id="file-input" name="archivo" class="hidden" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt">
-
-                            <button type="button" id="emoji-button" class="p-3 text-gray-500 hover:text-[#5e0490] bg-gray-100 hover:bg-purple-100 rounded-xl transition-all duration-300 transform hover:scale-105 flex items-center justify-center">
-                                <i class="fas fa-smile text-lg"></i>
-                                <span class="sr-only">Emojis</span>
-                            </button>
-                        </div>
-
-                        <button type="submit"
-                                class="inline-flex items-center px-5 py-3 bg-gradient-to-r from-[#5e0490] to-[#4a0370] text-white rounded-xl hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#5e0490] transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed">
-                            <i class="fas fa-paper-plane mr-2"></i>
-                            <span>Enviar</span>
-                        </button>
                     </div>
                 </form>
             </div>
