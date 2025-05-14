@@ -7,19 +7,25 @@ const path = require('path');
 const app = express();
 const server = http.createServer(app);
 
-// Configuración mejorada de socket.io
+// Configuración mejorada de socket.io con CORS más permisivo
 const io = socketIO(server, {
   cors: {
-    origin: "*",
+    origin: "*", // Permitir cualquier origen para desarrollo
     methods: ["GET", "POST"],
     allowedHeaders: ["my-custom-header"],
     credentials: true
   },
-  transports: ['websocket', 'polling']
+  transports: ['websocket', 'polling'],
+  pingTimeout: 60000, // Aumentar timeout para conexiones lentas
+  pingInterval: 25000 // Intervalo de ping para mantener la conexión activa
 });
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: '*', // Permitir cualquier origen para desarrollo
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'client')));
 

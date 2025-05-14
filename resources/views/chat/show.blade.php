@@ -499,6 +499,30 @@
                         
                         <!-- Indicador de otro usuario dibujando -->
                         <div id="remote-cursor" class="absolute w-4 h-4 rounded-full border-2 border-red-500 hidden pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div>
+                        
+                        <!-- Área de videollamada minimizada -->
+                        <div id="whiteboard-video-container" class="absolute bottom-4 right-4 w-64 h-48 bg-gray-900 rounded-lg shadow-lg overflow-hidden border-2 border-[#5e0490] animate-fadeIn">
+                            <div class="grid grid-cols-2 gap-1 h-full">
+                                <div class="bg-black rounded-l-lg overflow-hidden relative">
+                                    <video id="whiteboard-local-video" autoplay playsinline muted class="w-full h-full object-cover"></video>
+                                    <div class="absolute bottom-1 left-1 text-white text-xs bg-black bg-opacity-50 px-1 py-0.5 rounded">
+                                        Tú
+                                    </div>
+                                </div>
+                                <div class="bg-black rounded-r-lg overflow-hidden relative">
+                                    <video id="whiteboard-remote-video" autoplay playsinline class="w-full h-full object-cover"></video>
+                                    <div class="absolute bottom-1 left-1 text-white text-xs bg-black bg-opacity-50 px-1 py-0.5 rounded">
+                                        {{ $otherUser->nombre }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="drag-handle" class="absolute top-0 left-0 right-0 h-6 bg-gradient-to-r from-[#5e0490] to-[#4a0370] cursor-move flex items-center justify-center">
+                                <div class="w-12 h-1 bg-white bg-opacity-30 rounded-full"></div>
+                            </div>
+                            <button id="toggle-video-size" class="absolute top-1 right-2 w-6 h-6 bg-black bg-opacity-50 text-white rounded-full flex items-center justify-center hover:bg-opacity-70 transition-opacity">
+                                <i class="fas fa-expand-alt text-xs"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 
@@ -603,8 +627,8 @@
 <!-- Agregar el SDK de Agora -->
 <script src="https://download.agora.io/sdk/release/AgoraRTC_N-4.18.2.js"></script>
 
-<!-- Agregar socket.io para la señalización -->
-<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+<!-- Agregar socket.io para la señalización (versión actualizada) -->
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js" integrity="sha384-mZLF4UVrpi/QTWPA7BjNPEnkIfRFn4ZEO3Qt/HFklTJBj/gBOV8G3HcKn4NfQblz" crossorigin="anonymous"></script>
 
 <!-- Añadir SweetAlert2 -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -612,9 +636,12 @@
 <!-- Añadir CSS personalizado -->
 <link rel="stylesheet" href="{{ asset('css/chat-detail.css') }}">
 
-<!-- Script de funcionalidad de chat -->
+<!-- Configuración para Socket.io -->
 <script>
-    // Pasar variables necesarias a JavaScript
+    // Configurar la variable global para la URL del servidor Socket.io
+    window.socketServerUrl = '{{ env('SOCKET_SERVER_URL', 'http://localhost:3000') }}';
+    
+    // Las variables que se pasan a JavaScript desde Blade
     window.chatId = '{{ $chat->id }}';
     window.authId = {{ auth()->id() }};
     window.otherUserId = '{{ $otherUser->id }}';
@@ -673,6 +700,10 @@
     
     // Configuración actual
     let currentSettings = {...defaultSettings};
+
+    // Configuración Socket.io - Hacerla configurable
+    const socketServerUrl = '{{ env('SOCKET_SERVER_URL', 'http://localhost:3000') }}';
+    console.log('Conectando a servidor Socket.io:', socketServerUrl);
 
     // Event Listeners
     document.addEventListener('DOMContentLoaded', function() {
@@ -1286,11 +1317,175 @@
             // Redimensionar el canvas por si ha cambiado el tamaño del contenedor
             resizeCanvas();
         }
+        
+        // Transferir streams de video a la pizarra
+        transferVideoStreams();
+        
+        // Configurar el botón para expandir/contraer el video
+        setupVideoSizeToggle();
+    }
+    
+    // Transferir streams de video a la pizarra
+    function transferVideoStreams() {
+        const mainLocalVideo = document.getElementById('local-video');
+        const mainRemoteVideo = document.getElementById('remote-video');
+        const whiteboardLocalVideo = document.getElementById('whiteboard-local-video');
+        const whiteboardRemoteVideo = document.getElementById('whiteboard-remote-video');
+        
+        // Transferir el stream local
+        if (mainLocalVideo && mainLocalVideo.srcObject && whiteboardLocalVideo) {
+            whiteboardLocalVideo.srcObject = mainLocalVideo.srcObject;
+        }
+        
+        // Transferir el stream remoto
+        if (mainRemoteVideo && mainRemoteVideo.srcObject && whiteboardRemoteVideo) {
+            whiteboardRemoteVideo.srcObject = mainRemoteVideo.srcObject;
+        }
+    }
+    
+    // Configurar el toggle de tamaño del contenedor de video
+    function setupVideoSizeToggle() {
+        const toggleButton = document.getElementById('toggle-video-size');
+        const videoContainer = document.getElementById('whiteboard-video-container');
+        
+        if (!toggleButton || !videoContainer) return;
+        
+        // Estado inicial
+        let isExpanded = false;
+        
+        toggleButton.addEventListener('click', function() {
+            if (isExpanded) {
+                // Contraer
+                videoContainer.classList.remove('w-96', 'h-72');
+                videoContainer.classList.add('w-64', 'h-48');
+                toggleButton.innerHTML = '<i class="fas fa-expand-alt text-xs"></i>';
+            } else {
+                // Expandir
+                videoContainer.classList.remove('w-64', 'h-48');
+                videoContainer.classList.add('w-96', 'h-72');
+                toggleButton.innerHTML = '<i class="fas fa-compress-alt text-xs"></i>';
+            }
+            
+            isExpanded = !isExpanded;
+        });
+        
+        // Hacer el contenedor arrastrable
+        makeElementDraggable(videoContainer);
+    }
+    
+    // Hacer un elemento arrastrable dentro de su contenedor padre
+    function makeElementDraggable(element) {
+        const dragHandle = document.getElementById('drag-handle');
+        
+        if (!dragHandle || !element) return;
+        
+        let isDragging = false;
+        let initialX, initialY;
+        let currentX = parseInt(element.style.right || '16') * -1;
+        let currentY = parseInt(element.style.bottom || '16') * -1;
+        
+        // Función para iniciar el arrastre
+        function startDrag(e) {
+            // Si es evento táctil, usar el primer toque
+            const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
+            const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
+            
+            isDragging = true;
+            initialX = clientX - currentX;
+            initialY = clientY - currentY;
+            
+            // Añadir clase para indicar estado de arrastre
+            element.classList.add('dragging');
+            
+            // Evitar arrastrar el canvas mientras se arrastra el video
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        // Función para mover durante el arrastre
+        function drag(e) {
+            if (!isDragging) return;
+            
+            // Si es evento táctil, usar el primer toque
+            const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+            const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+            
+            // Calcular nueva posición
+            currentX = clientX - initialX;
+            currentY = clientY - initialY;
+            
+            // Obtener dimensiones del contenedor padre y del elemento
+            const canvas = document.getElementById('whiteboard-canvas');
+            const canvasRect = canvas.getBoundingClientRect();
+            const elementRect = element.getBoundingClientRect();
+            
+            // Mantener dentro de los límites de la pizarra (considerando el tamaño del elemento)
+            const maxX = canvasRect.width - elementRect.width;
+            const maxY = canvasRect.height - elementRect.height;
+            
+            currentX = Math.max(0, Math.min(currentX, maxX));
+            currentY = Math.max(0, Math.min(currentY, maxY));
+            
+            // Actualizar posición con transform (mejor rendimiento)
+            element.style.transform = `translate(${currentX}px, ${currentY}px)`;
+            
+            // Reset de las propiedades originales (importante para que transform funcione correctamente)
+            element.style.bottom = 'auto';
+            element.style.right = 'auto';
+            element.style.top = '0';
+            element.style.left = '0';
+            
+            // Evitar arrastrar el canvas mientras se arrastra el video
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        // Función para finalizar el arrastre
+        function endDrag() {
+            if (!isDragging) return;
+            
+            isDragging = false;
+            element.classList.remove('dragging');
+            
+            // Guardar la última posición
+            element.setAttribute('data-x', currentX.toString());
+            element.setAttribute('data-y', currentY.toString());
+        }
+        
+        // Eventos de ratón
+        dragHandle.addEventListener('mousedown', startDrag);
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('mouseup', endDrag);
+        
+        // Eventos táctiles
+        dragHandle.addEventListener('touchstart', startDrag, { passive: false });
+        document.addEventListener('touchmove', drag, { passive: false });
+        document.addEventListener('touchend', endDrag);
+        
+        // Restaurar la posición guardada si existe
+        const savedX = element.getAttribute('data-x');
+        const savedY = element.getAttribute('data-y');
+        if (savedX && savedY) {
+            currentX = parseInt(savedX);
+            currentY = parseInt(savedY);
+            element.style.transform = `translate(${currentX}px, ${currentY}px)`;
+            element.style.bottom = 'auto';
+            element.style.right = 'auto';
+            element.style.top = '0';
+            element.style.left = '0';
+        }
     }
     
     // Cerrar la pizarra virtual
     function closeWhiteboard() {
         document.getElementById('whiteboard-panel').style.display = 'none';
+        
+        // Detener referencia a los videos (opcional, para liberar recursos)
+        const whiteboardLocalVideo = document.getElementById('whiteboard-local-video');
+        const whiteboardRemoteVideo = document.getElementById('whiteboard-remote-video');
+        
+        if (whiteboardLocalVideo) whiteboardLocalVideo.srcObject = null;
+        if (whiteboardRemoteVideo) whiteboardRemoteVideo.srcObject = null;
     }
     
     // ---- FUNCIONES DE CONFIGURACIÓN DE DISPOSITIVOS Y OTRAS EXISTENTES ----
