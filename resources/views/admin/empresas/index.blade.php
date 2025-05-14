@@ -588,6 +588,7 @@
             .then(data => {
                 if (data.empresa) {
                     const empresa = data.empresa;
+                    console.log('Datos recibidos de la empresa:', empresa);
                     
                     // Datos de usuario
                     document.getElementById('nombre').value = empresa.user.nombre || '';
@@ -596,6 +597,24 @@
                     document.getElementById('password_confirmation').value = '';
                     document.getElementById('telefono').value = empresa.user.telefono || '';
                     document.getElementById('ciudad').value = empresa.user.ciudad || '';
+                    
+                    // Añadir DNI y descripción
+                    if (document.getElementById('dni')) {
+                        document.getElementById('dni').value = empresa.user.dni || '';
+                    }
+                    if (document.getElementById('descripcion')) {
+                        document.getElementById('descripcion').value = empresa.user.descripcion || '';
+                    }
+                    
+                    // Fecha de constitución si existe
+                    if (document.getElementById('fecha_nacimiento') && empresa.user.fecha_nacimiento) {
+                        document.getElementById('fecha_nacimiento').value = empresa.user.fecha_nacimiento.split('T')[0];
+                    }
+                    
+                    // Sitio web
+                    if (document.getElementById('sitio_web')) {
+                        document.getElementById('sitio_web').value = empresa.user.sitio_web || '';
+                    }
                     
                     // Datos específicos de empresa
                     document.getElementById('cif').value = empresa.cif || '';
