@@ -6,9 +6,9 @@
 <div class="flex justify-between items-center mb-6">
     <h1 class="text-2xl font-bold">Detalles del Docente</h1>
     <div class="flex space-x-2">
-        <a href="{{ route('institucion.docentes.edit', $docente->id) }}" class="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition">
+        <button onclick="openEditModal({{ $docente->id }})" class="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition">
             <i class="fas fa-edit mr-2"></i> Editar
-        </a>
+        </button>
         <a href="{{ route('institucion.docentes.index') }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition">
             <i class="fas fa-arrow-left mr-2"></i> Volver al listado
         </a>
@@ -212,9 +212,9 @@
 
 <!-- Acciones -->
 <div class="mt-6 flex justify-end space-x-3">
-    <a href="{{ route('institucion.docentes.edit', $docente->id) }}" class="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition">
+    <button onclick="openEditModal({{ $docente->id }})" class="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition">
         <i class="fas fa-edit mr-2"></i> Editar Docente
-    </a>
+    </button>
     <form action="{{ route('institucion.docentes.toggle-active', $docente->id) }}" method="POST" class="inline-block">
         @csrf
         @method('POST')
@@ -375,6 +375,21 @@
 
 @push('scripts')
 <script>
+    // Función para abrir el modal de edición
+    function openEditModal(id) {
+        console.log("Abriendo modal de edición para docente ID:", id);
+        // Redirigir a la página principal con parámetros para abrir el modal
+        window.location.href = "{{ route('institucion.docentes.index') }}?editModal=true&id=" + id;
+    }
+
+    // Si hay información de contraseña reseteada, mostrarla en la consola
+    @if(session('success') && strpos(session('success'), 'Contraseña reseteada') !== false)
+        console.log('%c CONTRASEÑA RESETEADA ', 'background: #2196F3; color: white; font-size: 12px; font-weight: bold; padding: 5px;');
+        console.log('%c Email: ' + '{{ $docente->user->email }}', 'color: #333; font-size: 14px; font-weight: bold;');
+        console.log('%c Nueva contraseña: ' + '{{ str_replace("Contraseña reseteada correctamente. Nueva contraseña temporal: ", "", session("success")) }}', 'color: #E91E63; font-size: 14px; font-weight: bold;');
+        console.log('%c Guarde esta contraseña ya que no se mostrará nuevamente. ', 'background: #FFC107; color: #333; font-size: 12px; padding: 3px;');
+    @endif
+
     // Categorías organizadas por nivel educativo
     const categoriasPorNivel = {
         @foreach($nivelesEducativos as $nivel)
@@ -410,69 +425,27 @@
         });
     }
 
+    // Script para confirmar eliminación
     document.addEventListener('DOMContentLoaded', function() {
-        // Confirmación de eliminación
-        const deleteForm = document.querySelector('.delete-form');
+        const deleteForms = document.querySelectorAll('.delete-form');
         
-        if (deleteForm) {
-            deleteForm.addEventListener('submit', function(e) {
+        deleteForms.forEach(form => {
+            form.addEventListener('submit', function(e) {
                 e.preventDefault();
                 
                 if (confirm('¿Estás seguro de que deseas eliminar este docente? Esta acción no se puede deshacer y eliminará toda la información asociada.')) {
                     this.submit();
                 }
             });
+        });
+
+        // Verificar si hay un parámetro para abrir el modal de edición
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('editModal') && urlParams.get('editModal') === 'true') {
+            const id = urlParams.get('id') || {{ $docente->id }};
+            openEditModal(id);
         }
-
-        // Funciones para el modal de clase
-        window.openModalClase = function() {
-            const modal = document.getElementById('modalNuevaClase');
-            if (modal) {
-                modal.classList.remove('hidden');
-                document.body.classList.add('overflow-hidden');
-                
-                // Animación de entrada
-                setTimeout(() => {
-                    const modalContent = modal.querySelector('.relative');
-                    if (modalContent) {
-                        modalContent.classList.add('animate-fadeIn');
-                    }
-                }, 10);
-                
-                // Scroll al inicio del modal y focus primer input
-                setTimeout(() => {
-                    const firstInput = modal.querySelector('input, select, textarea');
-                    if (firstInput) firstInput.focus();
-                }, 300);
-            }
-        };
         
-        window.closeModalClase = function() {
-            const modal = document.getElementById('modalNuevaClase');
-            if (modal) {
-                // Animación de salida
-                const modalContent = modal.querySelector('.relative');
-                if (modalContent) {
-                    modalContent.classList.remove('animate-fadeIn');
-                    modalContent.classList.add('animate-fadeOut');
-                }
-                
-                setTimeout(() => {
-                    modal.classList.add('hidden');
-                    document.body.classList.remove('overflow-hidden');
-                    
-                    if (modalContent) {
-                        modalContent.classList.remove('animate-fadeOut');
-                    }
-                    
-                    const form = document.getElementById('formNuevaClase');
-                    if (form) {
-                        form.reset();
-                    }
-                }, 200);
-            }
-        };
-
         // Configuración modal de clase
         const modalNuevaClase = document.getElementById('modalNuevaClase');
         if (modalNuevaClase) {
@@ -490,5 +463,54 @@
             });
         }
     });
+
+    // Funciones para el modal de clase
+    function openModalClase() {
+        const modal = document.getElementById('modalNuevaClase');
+        if (modal) {
+            modal.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+            
+            // Animación de entrada
+            setTimeout(() => {
+                const modalContent = modal.querySelector('.relative');
+                if (modalContent) {
+                    modalContent.classList.add('animate-fadeIn');
+                }
+            }, 10);
+            
+            // Scroll al inicio del modal y focus primer input
+            setTimeout(() => {
+                const firstInput = modal.querySelector('input, select, textarea');
+                if (firstInput) firstInput.focus();
+            }, 300);
+        }
+    }
+
+    function closeModalClase() {
+        const modal = document.getElementById('modalNuevaClase');
+        if (modal) {
+            // Animación de salida
+            const modalContent = modal.querySelector('.relative');
+            if (modalContent) {
+                modalContent.classList.remove('animate-fadeIn');
+                modalContent.classList.add('animate-fadeOut');
+            }
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+                
+                if (modalContent) {
+                    modalContent.classList.remove('animate-fadeOut');
+                }
+                
+                const form = document.getElementById('formNuevaClase');
+                if (form) {
+                    form.reset();
+                }
+            }, 200);
+        }
+    }
 </script>
 @endpush 

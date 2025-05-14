@@ -6,9 +6,9 @@
 <div class="flex justify-between items-center mb-6">
     <h1 class="text-2xl font-bold">{{ $departamento->nombre }}</h1>
     <div class="flex space-x-2">
-        <a href="{{ route('institucion.departamentos.edit', $departamento->id) }}" class="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition">
+        <button onclick="openEditModal({{ $departamento->id }})" class="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition">
             <i class="fas fa-edit mr-2"></i> Editar
-        </a>
+        </button>
         <a href="{{ route('institucion.departamentos.asignar-docentes', $departamento->id) }}" class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition">
             <i class="fas fa-user-plus mr-2"></i> Asignar Docentes
         </a>
@@ -189,9 +189,9 @@
 
 <!-- Acciones -->
 <div class="mt-6 flex justify-end space-x-3">
-    <a href="{{ route('institucion.departamentos.edit', $departamento->id) }}" class="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition">
+    <button onclick="openEditModal({{ $departamento->id }})" class="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition">
         <i class="fas fa-edit mr-2"></i> Editar Departamento
-    </a>
+    </button>
     <form action="{{ route('institucion.departamentos.destroy', $departamento->id) }}" method="POST" class="inline-block delete-form">
         @csrf
         @method('DELETE')
@@ -200,23 +200,35 @@
         </button>
     </form>
 </div>
-@endsection
 
-@push('scripts')
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Confirmación de eliminación
-        const deleteForm = document.querySelector('.delete-form');
-        
-        if (deleteForm) {
-            deleteForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                if (confirm('¿Estás seguro de que deseas eliminar este departamento? Esta acción no se puede deshacer y puede afectar a docentes y clases.')) {
-                    this.submit();
-                }
-            });
-        }
+// Script para confirmar eliminación
+document.addEventListener('DOMContentLoaded', function() {
+    const deleteForms = document.querySelectorAll('.delete-form');
+    
+    deleteForms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (confirm('¿Estás seguro de que deseas eliminar este departamento? Esta acción no se puede deshacer.')) {
+                this.submit();
+            }
+        });
     });
+    
+    // Verificar si hay un parámetro para abrir el modal de edición
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('editModal') && urlParams.get('editModal') === 'true') {
+        const id = urlParams.get('id') || {{ $departamento->id }};
+        openEditModal(id);
+    }
+});
+
+// Función para abrir el modal de edición - definida en el ámbito global
+function openEditModal(id) {
+    console.log("Abriendo modal de edición para departamento ID:", id);
+    // Redirigir a la página principal con parámetros para abrir el modal
+    window.location.href = "{{ route('institucion.departamentos.index') }}?editModal=true&id=" + id;
+}
 </script>
-@endpush 
+@endsection 

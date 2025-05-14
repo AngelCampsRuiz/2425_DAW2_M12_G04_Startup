@@ -50,11 +50,14 @@ class DocenteController extends Controller
             'cargo' => 'required|string|max:100',
         ]);
 
+        // Generar contraseña aleatoria
+        $password = Str::random(10);
+
         // Crear usuario
         $user = User::create([
             'nombre' => $request->nombre,
             'email' => $request->email,
-            'password' => Hash::make(Str::random(10)),
+            'password' => Hash::make($password),
             'role_id' => Rol::where('nombre_rol', 'docente')->first()->id,
             'fecha_nacimiento' => $request->fecha_nacimiento ?? now()->subYears(30),
             'ciudad' => $institucion->provincia,
@@ -78,7 +81,9 @@ class DocenteController extends Controller
         // TODO: implementar envío de email
 
         return redirect()->route('institucion.docentes.index')
-            ->with('success', 'Docente creado correctamente. Se ha enviado un email con las credenciales de acceso.');
+            ->with('success', 'Docente creado correctamente. Se ha enviado un email con las credenciales de acceso.')
+            ->with('password', $password)
+            ->with('email', $user->email);
     }
 
     // Ver docente
