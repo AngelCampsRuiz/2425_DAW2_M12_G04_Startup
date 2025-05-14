@@ -91,6 +91,9 @@
                         <button id="share-screen" class="p-2 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 text-white transition-colors">
                             <i class="fas fa-desktop"></i>
                         </button>
+                        <button id="open-settings" class="p-2 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 text-white transition-colors">
+                            <i class="fas fa-cog"></i>
+                        </button>
                         <button id="end-call" class="p-2 rounded-full bg-red-500 hover:bg-red-600 text-white transition-colors">
                             <i class="fas fa-phone-slash"></i>
                         </button>
@@ -304,6 +307,171 @@
             </div>
         </div>
     </div>
+
+    <!-- Panel de configuración (oculto por defecto) -->
+    <div id="settings-panel" class="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center hidden backdrop-blur-sm">
+        <div class="bg-white rounded-xl w-full max-w-lg mx-4 overflow-hidden shadow-2xl animate-fadeIn">
+            <div class="flex justify-between items-center p-4 border-b bg-gradient-to-r from-[#5e0490] to-[#4a0370] text-white">
+                <h3 class="text-lg font-bold">Configuración de audio y video</h3>
+                <button id="close-settings" class="p-2 rounded-full hover:bg-white hover:bg-opacity-20 text-white transition-colors">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="p-6 max-h-[70vh] overflow-y-auto">
+                <!-- Pestañas -->
+                <div class="mb-6 border-b">
+                    <div class="flex space-x-2">
+                        <button class="settings-tab px-4 py-2 font-medium text-[#5e0490] border-b-2 border-[#5e0490]" data-tab="audio">Audio</button>
+                        <button class="settings-tab px-4 py-2 font-medium text-gray-500" data-tab="video">Video</button>
+                        <button class="settings-tab px-4 py-2 font-medium text-gray-500" data-tab="advanced">Avanzado</button>
+                    </div>
+                </div>
+                
+                <!-- Contenido de las pestañas -->
+                <div class="tab-content" id="audio-tab">
+                    <div class="mb-6">
+                        <label for="microphone-select" class="block text-sm font-medium text-gray-700 mb-1">Micrófono</label>
+                        <select id="microphone-select" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#5e0490] focus:border-[#5e0490]">
+                            <option value="">Cargando dispositivos...</option>
+                        </select>
+                        <div class="mt-4">
+                            <label for="mic-volume" class="block text-sm font-medium text-gray-700 mb-1">Nivel de micrófono</label>
+                            <input type="range" id="mic-volume" min="0" max="100" value="100" class="w-full">
+                            <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                <span>0%</span>
+                                <span>50%</span>
+                                <span>100%</span>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <div class="flex items-center justify-between">
+                                <label for="mic-level" class="block text-sm font-medium text-gray-700">Nivel de entrada</label>
+                                <span id="mic-level-value" class="text-xs bg-gray-100 px-2 py-1 rounded">0%</span>
+                            </div>
+                            <div id="mic-level-meter" class="w-full h-2 bg-gray-200 rounded-full mt-1 overflow-hidden">
+                                <div id="mic-level-indicator" class="h-full bg-gradient-to-r from-green-500 to-[#5e0490] w-0 transition-all"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-6">
+                        <label for="speaker-select" class="block text-sm font-medium text-gray-700 mb-1">Altavoz</label>
+                        <select id="speaker-select" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#5e0490] focus:border-[#5e0490]">
+                            <option value="">Cargando dispositivos...</option>
+                        </select>
+                        <div class="mt-4">
+                            <label for="speaker-volume" class="block text-sm font-medium text-gray-700 mb-1">Volumen de altavoz</label>
+                            <input type="range" id="speaker-volume" min="0" max="100" value="100" class="w-full">
+                            <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                <span>0%</span>
+                                <span>50%</span>
+                                <span>100%</span>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <button id="test-audio" class="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded hover:bg-gray-200 transition-colors">
+                                <i class="fas fa-play mr-1"></i> Probar sonido
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="flex items-center">
+                            <input type="checkbox" id="echo-cancellation" class="rounded text-[#5e0490] focus:ring-[#5e0490]">
+                            <span class="ml-2 text-sm text-gray-700">Activar cancelación de eco</span>
+                        </label>
+                    </div>
+                    <div class="mb-4">
+                        <label class="flex items-center">
+                            <input type="checkbox" id="noise-suppression" class="rounded text-[#5e0490] focus:ring-[#5e0490]">
+                            <span class="ml-2 text-sm text-gray-700">Activar supresión de ruido</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="tab-content hidden" id="video-tab">
+                    <div class="mb-6">
+                        <label for="camera-select" class="block text-sm font-medium text-gray-700 mb-1">Cámara</label>
+                        <select id="camera-select" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#5e0490] focus:border-[#5e0490]">
+                            <option value="">Cargando dispositivos...</option>
+                        </select>
+                    </div>
+                    <div class="mb-6">
+                        <label for="video-quality" class="block text-sm font-medium text-gray-700 mb-1">Calidad de video</label>
+                        <select id="video-quality" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#5e0490] focus:border-[#5e0490]">
+                            <option value="low">Baja (320p)</option>
+                            <option value="standard" selected>Estándar (480p)</option>
+                            <option value="high">Alta (720p)</option>
+                            <option value="hd">HD (1080p)</option>
+                        </select>
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-3">Vista previa</label>
+                        <div class="relative w-full h-40 bg-black rounded-lg overflow-hidden">
+                            <video id="camera-preview" autoplay muted playsinline class="w-full h-full object-cover"></video>
+                            <div id="no-camera-message" class="absolute inset-0 flex items-center justify-center bg-gray-900 text-white text-sm hidden">
+                                <p>No se detecta cámara</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tab-content hidden" id="advanced-tab">
+                    <div class="mb-6">
+                        <label for="bandwidth-limit" class="block text-sm font-medium text-gray-700 mb-1">Límite de ancho de banda</label>
+                        <select id="bandwidth-limit" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#5e0490] focus:border-[#5e0490]">
+                            <option value="unlimited">Sin límite</option>
+                            <option value="1000">1 Mbps</option>
+                            <option value="500">500 Kbps</option>
+                            <option value="250">250 Kbps</option>
+                        </select>
+                        <p class="text-xs text-gray-500 mt-1">Límite inferior puede mejorar la estabilidad en conexiones lentas</p>
+                    </div>
+                    <div class="mb-6">
+                        <label for="video-fps" class="block text-sm font-medium text-gray-700 mb-1">Fotogramas por segundo (FPS)</label>
+                        <select id="video-fps" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#5e0490] focus:border-[#5e0490]">
+                            <option value="15">15 FPS (Económico)</option>
+                            <option value="24" selected>24 FPS (Estándar)</option>
+                            <option value="30">30 FPS (Fluido)</option>
+                        </select>
+                    </div>
+                    <div class="mb-6">
+                        <label class="flex items-center">
+                            <input type="checkbox" id="low-bandwidth-mode" class="rounded text-[#5e0490] focus:ring-[#5e0490]">
+                            <span class="ml-2 text-sm text-gray-700">Modo de bajo ancho de banda (prioriza audio)</span>
+                        </label>
+                    </div>
+                    <div class="mb-6">
+                        <label class="flex items-center">
+                            <input type="checkbox" id="hardware-acceleration" class="rounded text-[#5e0490] focus:ring-[#5e0490]" checked>
+                            <span class="ml-2 text-sm text-gray-700">Activar aceleración por hardware</span>
+                        </label>
+                    </div>
+                    <div class="mb-4">
+                        <p class="text-sm font-medium text-gray-700 mb-2">Información de conexión</p>
+                        <div class="bg-gray-50 p-3 rounded text-xs text-gray-600">
+                            <div class="grid grid-cols-2 gap-y-1">
+                                <span>Velocidad de descarga:</span>
+                                <span id="download-speed">Calculando...</span>
+                                <span>Velocidad de subida:</span>
+                                <span id="upload-speed">Calculando...</span>
+                                <span>Latencia:</span>
+                                <span id="latency">Calculando...</span>
+                                <span>Paquetes perdidos:</span>
+                                <span id="packet-loss">Calculando...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 border-t bg-gray-50 flex justify-end">
+                <button id="reset-settings" class="px-4 py-2 text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-md mr-2 text-sm">
+                    Restablecer
+                </button>
+                <button id="save-settings" class="px-4 py-2 bg-gradient-to-r from-[#5e0490] to-[#4a0370] text-white rounded-md hover:shadow-lg text-sm">
+                    Guardar cambios
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Añadir Font Awesome -->
@@ -336,14 +504,80 @@
     let isScreenSharing = false;
     let agoraClient;
     let agoraScreenClient;
+    
+    // Variables para configuración de audio/video
+    let videoDevices = [];
+    let audioInputDevices = [];
+    let audioOutputDevices = [];
+    let selectedAudioInput = '';
+    let selectedAudioOutput = '';
+    let selectedVideoInput = '';
+    let audioContext;
+    let mediaStreamSource;
+    let analyzer;
+    let audioLevelInterval;
+    
+    // Configuración por defecto
+    const defaultSettings = {
+        audioInput: '',
+        audioOutput: '',
+        videoInput: '',
+        videoQuality: 'standard',
+        videoBitrate: 'unlimited',
+        videoFps: '24',
+        echoCancellation: true,
+        noiseSuppression: true,
+        hardwareAcceleration: true,
+        lowBandwidthMode: false
+    };
+    
+    // Configuración actual
+    let currentSettings = {...defaultSettings};
 
-    document.getElementById('video-call-btn').addEventListener('click', async function() {
+    // Event Listeners
+    document.addEventListener('DOMContentLoaded', function() {
+        // Botón de videollamada
+        document.getElementById('video-call-btn').addEventListener('click', startVideoCall);
+        
+        // Botón de configuración
+        document.getElementById('open-settings').addEventListener('click', openSettings);
+        document.getElementById('close-settings').addEventListener('click', closeSettings);
+        
+        // Gestión de pestañas
+        const tabButtons = document.querySelectorAll('.settings-tab');
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const tabName = button.getAttribute('data-tab');
+                switchTab(tabName);
+            });
+        });
+        
+        // Botones de acción
+        document.getElementById('save-settings').addEventListener('click', saveSettings);
+        document.getElementById('reset-settings').addEventListener('click', resetSettings);
+        document.getElementById('test-audio').addEventListener('click', testAudio);
+        
+        // Cambio de dispositivos
+        document.getElementById('microphone-select').addEventListener('change', changeMicrophone);
+        document.getElementById('speaker-select').addEventListener('change', changeSpeaker);
+        document.getElementById('camera-select').addEventListener('change', changeCamera);
+        
+        // Configuración de sonido
+        document.getElementById('echo-cancellation').addEventListener('change', updateAudioConstraints);
+        document.getElementById('noise-suppression').addEventListener('change', updateAudioConstraints);
+    });
+
+    async function startVideoCall() {
         console.log('Botón de videollamada presionado');
         document.getElementById('video-container').style.display = 'flex';
         
         try {
-            // Solicitar permisos explícitamente
-            const stream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
+            // Solicitar permisos explícitamente con las restricciones guardadas
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: getVideoConstraints(),
+                audio: getAudioConstraints()
+            });
+            
             localStream = stream;
             
             // Obtener referencia al elemento de video
@@ -374,12 +608,15 @@
             // Inicializar los controles
             initializeControls(stream);
             
+            // Enumerar dispositivos para configuración
+            await enumerateDevices();
+            
             console.log('Cámara iniciada correctamente');
         } catch (error) {
             console.error('Error al acceder a la cámara:', error);
             alert('No se pudo acceder a la cámara o micrófono. Por favor, verifica los permisos: ' + error.message);
         }
-    });
+    }
 
     function initializeControls(stream) {
         // Mute/unmute audio
@@ -428,6 +665,452 @@
         document.getElementById('close-video-container').addEventListener('click', function() {
             document.getElementById('video-container').style.display = 'none';
         });
+    }
+
+    // ---- FUNCIONES DE CONFIGURACIÓN DE DISPOSITIVOS ----
+    
+    // Enumerar dispositivos disponibles
+    async function enumerateDevices() {
+        try {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            
+            // Limpiar arrays
+            videoDevices = [];
+            audioInputDevices = [];
+            audioOutputDevices = [];
+            
+            // Clasificar dispositivos
+            devices.forEach(device => {
+                if (device.kind === 'videoinput') {
+                    videoDevices.push(device);
+                } else if (device.kind === 'audioinput') {
+                    audioInputDevices.push(device);
+                } else if (device.kind === 'audiooutput') {
+                    audioOutputDevices.push(device);
+                }
+            });
+            
+            // Actualizar selectores
+            updateDeviceSelectors();
+            
+            // Si no se han seleccionado dispositivos, seleccionar los primeros disponibles
+            if (!selectedAudioInput && audioInputDevices.length > 0) {
+                selectedAudioInput = audioInputDevices[0].deviceId;
+            }
+            
+            if (!selectedVideoInput && videoDevices.length > 0) {
+                selectedVideoInput = videoDevices[0].deviceId;
+            }
+            
+            if (!selectedAudioOutput && audioOutputDevices.length > 0) {
+                selectedAudioOutput = audioOutputDevices[0].deviceId;
+            }
+        } catch (error) {
+            console.error('Error al enumerar dispositivos:', error);
+        }
+    }
+    
+    // Actualizar selectores de dispositivos
+    function updateDeviceSelectors() {
+        const micSelect = document.getElementById('microphone-select');
+        const speakerSelect = document.getElementById('speaker-select');
+        const cameraSelect = document.getElementById('camera-select');
+        
+        // Limpiar selectores
+        micSelect.innerHTML = '';
+        speakerSelect.innerHTML = '';
+        cameraSelect.innerHTML = '';
+        
+        // Actualizar selector de micrófonos
+        audioInputDevices.forEach(device => {
+            const option = document.createElement('option');
+            option.value = device.deviceId;
+            option.text = device.label || `Micrófono ${micSelect.options.length + 1}`;
+            micSelect.appendChild(option);
+        });
+        
+        // Actualizar selector de altavoces
+        audioOutputDevices.forEach(device => {
+            const option = document.createElement('option');
+            option.value = device.deviceId;
+            option.text = device.label || `Altavoz ${speakerSelect.options.length + 1}`;
+            speakerSelect.appendChild(option);
+        });
+        
+        // Actualizar selector de cámaras
+        videoDevices.forEach(device => {
+            const option = document.createElement('option');
+            option.value = device.deviceId;
+            option.text = device.label || `Cámara ${cameraSelect.options.length + 1}`;
+            cameraSelect.appendChild(option);
+        });
+        
+        // Seleccionar dispositivos actuales
+        if (selectedAudioInput) {
+            micSelect.value = selectedAudioInput;
+        }
+        
+        if (selectedAudioOutput) {
+            speakerSelect.value = selectedAudioOutput;
+        }
+        
+        if (selectedVideoInput) {
+            cameraSelect.value = selectedVideoInput;
+        }
+    }
+    
+    // Cambiar micrófono
+    async function changeMicrophone() {
+        const micSelect = document.getElementById('microphone-select');
+        selectedAudioInput = micSelect.value;
+        
+        if (localStream) {
+            // Detener pistas de audio actuales
+            localStream.getAudioTracks().forEach(track => track.stop());
+            
+            try {
+                // Obtener nueva pista de audio
+                const newStream = await navigator.mediaDevices.getUserMedia({
+                    audio: getAudioConstraints()
+                });
+                
+                // Reemplazar pista de audio en el stream local
+                const newAudioTrack = newStream.getAudioTracks()[0];
+                const oldAudioTrack = localStream.getAudioTracks()[0];
+                
+                if (oldAudioTrack) {
+                    localStream.removeTrack(oldAudioTrack);
+                }
+                
+                localStream.addTrack(newAudioTrack);
+                
+                // Actualizar el medidor de audio
+                setupAudioMeter(newStream);
+                
+                // Si estamos en una llamada, actualizar la pista en la conexión peer
+                if (agoraClient) {
+                    // Código específico para Agora
+                }
+            } catch (error) {
+                console.error('Error al cambiar de micrófono:', error);
+            }
+        }
+    }
+    
+    // Cambiar altavoz (solo funciona si el navegador lo soporta)
+    function changeSpeaker() {
+        const speakerSelect = document.getElementById('speaker-select');
+        selectedAudioOutput = speakerSelect.value;
+        
+        const remoteVideo = document.getElementById('remote-video');
+        if (remoteVideo && typeof remoteVideo.setSinkId === 'function') {
+            remoteVideo.setSinkId(selectedAudioOutput)
+                .then(() => console.log('Altavoz cambiado con éxito'))
+                .catch(error => console.error('Error al cambiar de altavoz:', error));
+        } else {
+            console.warn('Este navegador no soporta selección de dispositivo de salida de audio');
+        }
+    }
+    
+    // Cambiar cámara
+    async function changeCamera() {
+        const cameraSelect = document.getElementById('camera-select');
+        selectedVideoInput = cameraSelect.value;
+        
+        // Actualizar vista previa de la cámara
+        updateCameraPreview();
+        
+        if (localStream) {
+            // Detener pistas de video actuales
+            localStream.getVideoTracks().forEach(track => track.stop());
+            
+            try {
+                // Obtener nueva pista de video
+                const newStream = await navigator.mediaDevices.getUserMedia({
+                    video: getVideoConstraints()
+                });
+                
+                // Reemplazar pista de video en el stream local
+                const newVideoTrack = newStream.getVideoTracks()[0];
+                const oldVideoTrack = localStream.getVideoTracks()[0];
+                
+                if (oldVideoTrack) {
+                    localStream.removeTrack(oldVideoTrack);
+                }
+                
+                localStream.addTrack(newVideoTrack);
+                
+                // Actualizar video local
+                const localVideo = document.getElementById('local-video');
+                if (localVideo) {
+                    localVideo.srcObject = localStream;
+                }
+                
+                // Si estamos en una llamada, actualizar la pista en la conexión peer
+                if (agoraClient) {
+                    // Código específico para Agora
+                }
+            } catch (error) {
+                console.error('Error al cambiar de cámara:', error);
+            }
+        }
+    }
+    
+    // Actualizar vista previa de la cámara
+    async function updateCameraPreview() {
+        const preview = document.getElementById('camera-preview');
+        const noCamera = document.getElementById('no-camera-message');
+        
+        try {
+            // Detener cualquier pista de video que estuviera reproduciéndose
+            if (preview.srcObject) {
+                preview.srcObject.getTracks().forEach(track => track.stop());
+            }
+            
+            // Obtener nueva pista de video para la vista previa
+            const previewStream = await navigator.mediaDevices.getUserMedia({
+                video: getVideoConstraints(),
+                audio: false
+            });
+            
+            preview.srcObject = previewStream;
+            preview.style.display = 'block';
+            noCamera.style.display = 'none';
+        } catch (error) {
+            console.error('Error al mostrar vista previa de la cámara:', error);
+            preview.style.display = 'none';
+            noCamera.style.display = 'flex';
+        }
+    }
+    
+    // Obtener restricciones de audio basadas en configuración
+    function getAudioConstraints() {
+        return {
+            deviceId: selectedAudioInput ? { exact: selectedAudioInput } : undefined,
+            echoCancellation: document.getElementById('echo-cancellation').checked,
+            noiseSuppression: document.getElementById('noise-suppression').checked,
+            autoGainControl: true
+        };
+    }
+    
+    // Obtener restricciones de video basadas en configuración
+    function getVideoConstraints() {
+        const qualitySelect = document.getElementById('video-quality');
+        const fpsSelect = document.getElementById('video-fps');
+        
+        let width, height;
+        switch (qualitySelect.value) {
+            case 'low':
+                width = 320;
+                height = 240;
+                break;
+            case 'standard':
+                width = 640;
+                height = 480;
+                break;
+            case 'high':
+                width = 1280;
+                height = 720;
+                break;
+            case 'hd':
+                width = 1920;
+                height = 1080;
+                break;
+            default:
+                width = 640;
+                height = 480;
+        }
+        
+        return {
+            deviceId: selectedVideoInput ? { exact: selectedVideoInput } : undefined,
+            width: { ideal: width },
+            height: { ideal: height },
+            frameRate: { ideal: parseInt(fpsSelect.value) }
+        };
+    }
+    
+    // Actualizar restricciones de audio en tiempo real
+    function updateAudioConstraints() {
+        if (localStream && localStream.getAudioTracks().length > 0) {
+            changeMicrophone();
+        }
+    }
+    
+    // Configurar el medidor de nivel de audio
+    function setupAudioMeter(stream) {
+        try {
+            // Detener el intervalo anterior si existe
+            if (audioLevelInterval) {
+                clearInterval(audioLevelInterval);
+            }
+            
+            // Crear contexto de audio si no existe
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            
+            // Crear fuente de stream y analizador
+            mediaStreamSource = audioContext.createMediaStreamSource(stream);
+            analyzer = audioContext.createAnalyser();
+            analyzer.fftSize = 256;
+            mediaStreamSource.connect(analyzer);
+            
+            // Configurar array para los datos del analizador
+            const dataArray = new Uint8Array(analyzer.frequencyBinCount);
+            const micLevelIndicator = document.getElementById('mic-level-indicator');
+            const micLevelValue = document.getElementById('mic-level-value');
+            
+            // Actualizar el nivel cada 100ms
+            audioLevelInterval = setInterval(() => {
+                analyzer.getByteFrequencyData(dataArray);
+                
+                // Calcular el nivel de audio (0-100)
+                let sum = 0;
+                for (let i = 0; i < dataArray.length; i++) {
+                    sum += dataArray[i];
+                }
+                
+                const average = sum / dataArray.length;
+                const level = Math.min(100, Math.round((average / 255) * 100));
+                
+                // Actualizar UI
+                micLevelIndicator.style.width = `${level}%`;
+                micLevelValue.textContent = `${level}%`;
+                
+                // Añadir clase según el nivel
+                if (level > 70) {
+                    micLevelIndicator.className = 'h-full bg-red-500 transition-all';
+                } else if (level > 30) {
+                    micLevelIndicator.className = 'h-full bg-yellow-500 transition-all';
+                } else {
+                    micLevelIndicator.className = 'h-full bg-green-500 transition-all';
+                }
+            }, 100);
+        } catch (error) {
+            console.error('Error al configurar el medidor de audio:', error);
+        }
+    }
+    
+    // Probar sonido del altavoz
+    function testAudio() {
+        // Crear un elemento de audio
+        const testSound = new Audio('/notification.mp3');
+        
+        // Asignar dispositivo de salida si está soportado
+        if (typeof testSound.setSinkId === 'function' && selectedAudioOutput) {
+            testSound.setSinkId(selectedAudioOutput)
+                .then(() => {
+                    testSound.play();
+                })
+                .catch(error => {
+                    console.error('Error al asignar dispositivo de salida:', error);
+                    testSound.play();
+                });
+        } else {
+            testSound.play();
+        }
+    }
+    
+    // ---- FUNCIONES DE LA INTERFAZ DE CONFIGURACIÓN ----
+    
+    // Abrir panel de configuración
+    function openSettings() {
+        document.getElementById('settings-panel').style.display = 'flex';
+        
+        // Cargar dispositivos actuales
+        enumerateDevices().then(() => {
+            // Mostrar vista previa de la cámara
+            updateCameraPreview();
+            
+            // Configurar medidor de audio si hay stream activo
+            if (localStream && localStream.getAudioTracks().length > 0) {
+                setupAudioMeter(localStream);
+            }
+        });
+    }
+    
+    // Cerrar panel de configuración
+    function closeSettings() {
+        document.getElementById('settings-panel').style.display = 'none';
+        
+        // Detener el medidor de audio
+        if (audioLevelInterval) {
+            clearInterval(audioLevelInterval);
+        }
+        
+        // Detener la vista previa
+        const preview = document.getElementById('camera-preview');
+        if (preview.srcObject) {
+            preview.srcObject.getTracks().forEach(track => track.stop());
+            preview.srcObject = null;
+        }
+    }
+    
+    // Cambiar entre pestañas
+    function switchTab(tabName) {
+        // Ocultar todos los contenidos
+        document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.classList.add('hidden');
+        });
+        
+        // Desactivar todos los botones
+        document.querySelectorAll('.settings-tab').forEach(button => {
+            button.classList.remove('text-[#5e0490]', 'border-b-2', 'border-[#5e0490]');
+            button.classList.add('text-gray-500');
+        });
+        
+        // Mostrar contenido de la pestaña seleccionada
+        document.getElementById(`${tabName}-tab`).classList.remove('hidden');
+        
+        // Activar botón seleccionado
+        const activeButton = document.querySelector(`.settings-tab[data-tab="${tabName}"]`);
+        activeButton.classList.remove('text-gray-500');
+        activeButton.classList.add('text-[#5e0490]', 'border-b-2', 'border-[#5e0490]');
+    }
+    
+    // Guardar configuración
+    function saveSettings() {
+        // Guardar valores actuales
+        currentSettings = {
+            audioInput: document.getElementById('microphone-select').value,
+            audioOutput: document.getElementById('speaker-select').value,
+            videoInput: document.getElementById('camera-select').value,
+            videoQuality: document.getElementById('video-quality').value,
+            videoBitrate: document.getElementById('bandwidth-limit').value,
+            videoFps: document.getElementById('video-fps').value,
+            echoCancellation: document.getElementById('echo-cancellation').checked,
+            noiseSuppression: document.getElementById('noise-suppression').checked,
+            hardwareAcceleration: document.getElementById('hardware-acceleration').checked,
+            lowBandwidthMode: document.getElementById('low-bandwidth-mode').checked
+        };
+        
+        // Guardar en localStorage para persistencia
+        localStorage.setItem('videocallSettings', JSON.stringify(currentSettings));
+        
+        // Aplicar cambios si hay una videollamada activa
+        if (localStream) {
+            changeCamera();
+            changeMicrophone();
+            changeSpeaker();
+        }
+        
+        // Cerrar panel
+        closeSettings();
+    }
+    
+    // Restablecer configuración
+    function resetSettings() {
+        // Restablecer valores a los predeterminados
+        document.getElementById('echo-cancellation').checked = defaultSettings.echoCancellation;
+        document.getElementById('noise-suppression').checked = defaultSettings.noiseSuppression;
+        document.getElementById('video-quality').value = defaultSettings.videoQuality;
+        document.getElementById('bandwidth-limit').value = defaultSettings.videoBitrate;
+        document.getElementById('video-fps').value = defaultSettings.videoFps;
+        document.getElementById('hardware-acceleration').checked = defaultSettings.hardwareAcceleration;
+        document.getElementById('low-bandwidth-mode').checked = defaultSettings.lowBandwidthMode;
+        
+        // Actualizar vista previa con los cambios
+        updateCameraPreview();
     }
 
     // Función para compartir pantalla
@@ -514,6 +1197,54 @@
         }
     }
 
+    // Comprobar si hay configuración guardada al cargar
+    (function loadSavedSettings() {
+        try {
+            const savedSettings = localStorage.getItem('videocallSettings');
+            if (savedSettings) {
+                currentSettings = JSON.parse(savedSettings);
+                
+                // Aplicar cuando se abra el panel de configuración
+                document.addEventListener('DOMContentLoaded', function() {
+                    document.getElementById('open-settings').addEventListener('click', function() {
+                        setTimeout(() => {
+                            // Aplicar valores guardados a los controles
+                            if (currentSettings.echoCancellation !== undefined) {
+                                document.getElementById('echo-cancellation').checked = currentSettings.echoCancellation;
+                            }
+                            
+                            if (currentSettings.noiseSuppression !== undefined) {
+                                document.getElementById('noise-suppression').checked = currentSettings.noiseSuppression;
+                            }
+                            
+                            if (currentSettings.videoQuality) {
+                                document.getElementById('video-quality').value = currentSettings.videoQuality;
+                            }
+                            
+                            if (currentSettings.videoBitrate) {
+                                document.getElementById('bandwidth-limit').value = currentSettings.videoBitrate;
+                            }
+                            
+                            if (currentSettings.videoFps) {
+                                document.getElementById('video-fps').value = currentSettings.videoFps;
+                            }
+                            
+                            if (currentSettings.hardwareAcceleration !== undefined) {
+                                document.getElementById('hardware-acceleration').checked = currentSettings.hardwareAcceleration;
+                            }
+                            
+                            if (currentSettings.lowBandwidthMode !== undefined) {
+                                document.getElementById('low-bandwidth-mode').checked = currentSettings.lowBandwidthMode;
+                            }
+                        }, 500);
+                    });
+                });
+            }
+        } catch (error) {
+            console.error('Error al cargar configuración guardada:', error);
+        }
+    })();
+
     // Añade esto después del código anterior
     document.head.insertAdjacentHTML('beforeend', `
         <style>
@@ -529,6 +1260,20 @@
             height: 100%;
             object-fit: cover;
             display: block;
+        }
+        /* Añadir un sonido de notificación para la prueba de audio */
+        @keyframes pulse-ring {
+            0% {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+            80% {
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(1.5);
+                opacity: 0;
+            }
         }
         </style>
     `);
