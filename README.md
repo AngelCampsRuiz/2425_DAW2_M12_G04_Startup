@@ -92,3 +92,70 @@ socket.on('user_list', (users) => {
 ## Licencia
 
 MIT
+
+## Configuración del servidor Socket.io para videollamadas
+
+### Requisitos
+- Node.js instalado (v14 o superior)
+- NPM instalado
+
+### Configuración
+1. Configurar la URL del servidor Socket.io en el archivo `.env` de Laravel:
+   ```
+   SOCKET_SERVER_URL=http://localhost:3000
+   ```
+
+2. Iniciar el servidor de señalización Socket.io:
+   ```
+   npm start
+   ```
+   o
+   ```
+   node server.js
+   ```
+
+3. Para desarrollo con recarga automática:
+   ```
+   npm run dev
+   ```
+
+4. Asegurarse de que ambos servidores estén funcionando:
+   - Servidor Laravel (PHP): Generalmente en el puerto 8000 o el que uses con Artisan
+   - Servidor Socket.io (Node.js): Puerto 3000 por defecto
+
+### Configuración de entorno
+
+Añade la siguiente variable a tu archivo `.env` de Laravel:
+
+```
+# Configuración de Socket.io para videollamadas
+SOCKET_SERVER_URL=http://localhost:3000
+```
+
+Para entornos de producción, usa la URL completa del servidor Socket.io:
+
+```
+SOCKET_SERVER_URL=https://tu-dominio.com:3000
+```
+
+Si estás utilizando HTTPS en producción, asegúrate de que el servidor Socket.io también esté configurado con SSL.
+
+### Solución de problemas de conexión Socket.io
+
+Si experimentas problemas de conexión con Socket.io:
+
+1. Verifica que el servidor Socket.io esté ejecutándose (`npm start`)
+2. Confirma que la URL configurada en `.env` sea accesible desde el navegador
+3. Si usas HTTPS en producción, asegúrate de configurar Socket.io con SSL también
+4. Para entornos de producción, considera usar un proxy inverso como Nginx para servir tanto Laravel como Socket.io
+
+### Acceso desde diferentes dispositivos
+
+Para pruebas en red local, usa la IP de tu máquina en lugar de localhost:
+
+1. Averigua tu dirección IP local (por ejemplo, 192.168.1.10)
+2. Configura en `.env`:
+   ```
+   SOCKET_SERVER_URL=http://192.168.1.10:3000
+   ```
+3. Asegúrate de que los puertos necesarios estén abiertos en el firewall

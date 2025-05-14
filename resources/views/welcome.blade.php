@@ -29,7 +29,6 @@
                         {{-- <div class="text-2xl font-semibold text-[#7705B6]">🏢 {{ $totalEmpresas }} empresas confían en nosotros</div> --}}
                         <div class="text-lg">💼 {{ $totalOfertas }} ofertas publicadas</div>
                         <div class="text-lg">🤝 {{ $porcentajeRepiten }}% de empresas repiten</div>
-                        {{-- <div class="text-lg">🌍 Presencia en {{ $totalProvincias }} provincias</div> --}}
                     </div>
                 </div>
 

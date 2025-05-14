@@ -53,6 +53,9 @@ class HomeController extends Controller
             $empresasRepiten = Empresa::has('convenios', '>', 1)->count();
             $porcentajeRepiten = $totalEmpresas > 0 ? round(($empresasRepiten / $totalEmpresas) * 100) : 0;
 
+        // TOTAL DE PROVINCIAS
+            // $totalProvincias = Empresa::distinct('provincia')->count('provincia');
+
         // TOTAL DE OFERTAS
             $totalOfertas = Publicacion::where('activa', true)->count();
 
@@ -65,6 +68,7 @@ class HomeController extends Controller
                 'totalCentros',
                 'porcentajeExito',
                 'porcentajeRepiten'
+                
             ));
     }
 
