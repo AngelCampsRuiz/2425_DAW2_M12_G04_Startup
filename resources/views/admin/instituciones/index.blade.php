@@ -1,14 +1,155 @@
 @extends('admin.dashboard')
 
 @section('admin_content')
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold text-purple-800">Gestión de Instituciones</h1>
-        <button id="btn-crear-institucion" class="btn-crear px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors">
-            <i class="fas fa-plus mr-2"></i>Nueva Institución
-        </button>
+    <!-- Mensaje de éxito -->
+    <div id="success-message" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-6" role="alert" style="display: none;">
+        <span id="success-message-text" class="block sm:inline"></span>
     </div>
 
-    <div id="tabla-instituciones-container">
+    <!-- Filtros -->
+    <div class="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl shadow-md p-6 mb-8 border border-purple-100">
+        <div class="flex flex-col md:flex-row justify-between items-center mb-6">
+            <div class="flex items-center mb-4 md:mb-0">
+                <svg class="w-5 h-5 text-purple-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                </svg>
+                <h3 class="text-lg font-semibold text-purple-800">Filtros de búsqueda</h3>
+            </div>
+            <button id="reset-filtros" class="inline-flex items-center px-4 py-2 bg-white border border-purple-200 rounded-lg font-medium text-sm text-purple-700 hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors duration-150 shadow-sm">
+                <svg class="w-4 h-4 mr-2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Reiniciar filtros
+            </button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div class="relative">
+                <label for="filtro_nombre" class="block text-sm font-medium text-purple-700 mb-2">Nombre</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </div>
+                    <input type="text" id="filtro_nombre" class="pl-10 w-full rounded-lg border-purple-200 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50" placeholder="Buscar por nombre...">
+                </div>
+            </div>
+            
+            <div class="relative">
+                <label for="filtro_email" class="block text-sm font-medium text-purple-700 mb-2">Email</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                    <input type="text" id="filtro_email" class="pl-10 w-full rounded-lg border-purple-200 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50" placeholder="Buscar por email...">
+                </div>
+            </div>
+
+            <div class="relative">
+                <label for="filtro_codigo_centro" class="block text-sm font-medium text-purple-700 mb-2">Código Centro</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
+                        </svg>
+                    </div>
+                    <input type="text" id="filtro_codigo_centro" class="pl-10 w-full rounded-lg border-purple-200 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50" placeholder="Buscar por código...">
+                </div>
+            </div>
+
+            <div class="relative">
+                <label for="filtro_ciudad" class="block text-sm font-medium text-purple-700 mb-2">Ciudad</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                    </div>
+                    <select id="filtro_ciudad" class="pl-10 w-full rounded-lg border-purple-200 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50 appearance-none bg-white">
+                        <option value="">Todas las ciudades</option>
+                        @foreach($ciudades as $ciudad)
+                            <option value="{{ $ciudad }}">{{ $ciudad }}</option>
+                        @endforeach
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                        <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Temporalmente deshabilitado: la columna tipo_institucion no existe en la base de datos --}}
+            <div class="relative" style="display: none;">
+                <label for="filtro_tipo_institucion" class="block text-sm font-medium text-purple-700 mb-2">Tipo de Institución</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                    </div>
+                    <select id="filtro_tipo_institucion" class="pl-10 w-full rounded-lg border-purple-200 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50 appearance-none bg-white">
+                        <option value="">Todos los tipos</option>
+                        @foreach($tipos_institucion as $tipo)
+                            <option value="{{ $tipo }}">{{ $tipo }}</option>
+                        @endforeach
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                        <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="relative">
+                <label for="filtro_estado" class="block text-sm font-medium text-purple-700 mb-2">Estado</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <select id="filtro_estado" class="pl-10 w-full rounded-lg border-purple-200 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50 appearance-none bg-white">
+                        <option value="">Todos</option>
+                        <option value="1">Activos</option>
+                        <option value="0">Inactivos</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                        <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="relative">
+                <label for="filtro_verificada" class="block text-sm font-medium text-purple-700 mb-2">Verificación</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <select id="filtro_verificada" class="pl-10 w-full rounded-lg border-purple-200 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50 appearance-none bg-white">
+                        <option value="">Todas</option>
+                        <option value="1">Verificadas</option>
+                        <option value="0">Pendientes</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                        <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Contenedor de la tabla -->
+    <div id="tabla-instituciones-container" class="bg-white rounded-lg shadow overflow-hidden">
         @include('admin.instituciones.tabla')
     </div>
 
@@ -57,6 +198,11 @@
                             <div class="mb-3">
                                 <label for="dni" class="block text-sm font-medium text-gray-700">DNI/NIF</label>
                                 <input type="text" id="dni" name="dni" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="ciudad" class="block text-sm font-medium text-gray-700">Ciudad</label>
+                                <input type="text" id="ciudad" name="ciudad" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
                             </div>
                             
                             <div class="mb-3">
@@ -126,11 +272,6 @@
                             <div class="mb-3">
                                 <label for="direccion" class="block text-sm font-medium text-gray-700">Dirección</label>
                                 <input type="text" id="direccion" name="direccion" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="provincia" class="block text-sm font-medium text-gray-700">Provincia</label>
-                                <input type="text" id="provincia" name="provincia" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required>
                             </div>
                             
                             <div class="mb-3">
@@ -285,934 +426,130 @@
         </div>
     </div>
 
+    @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Botón de crear institución
-            document.getElementById('btn-crear-institucion').addEventListener('click', function() {
-                resetForm();
-                document.getElementById('modal-titulo').textContent = 'Nueva Institución';
-                document.getElementById('form-institucion').setAttribute('action', '{{ route("admin.instituciones.store") }}');
-                document.getElementById('form_method').value = 'POST';
-                document.getElementById('modal-institucion').classList.remove('hidden');
-            });
-            
-            // Botones de cerrar y cancelar
-            document.getElementById('modal-close').addEventListener('click', function() {
-                document.getElementById('modal-institucion').classList.add('hidden');
-            });
-            
-            document.getElementById('btn-cancelar').addEventListener('click', function() {
-                document.getElementById('modal-institucion').classList.add('hidden');
-            });
-            
-            document.getElementById('modal-eliminar-close').addEventListener('click', function() {
-                document.getElementById('modal-eliminar').classList.add('hidden');
-            });
-            
-            document.getElementById('btn-cancelar-eliminar').addEventListener('click', function() {
-                document.getElementById('modal-eliminar').classList.add('hidden');
-            });
-            
-            // Botones del modal de categorías
-            document.getElementById('modal-categorias-close').addEventListener('click', function() {
-                document.getElementById('modal-categorias').classList.add('hidden');
-            });
-            
-            document.getElementById('btn-cancelar-categorias').addEventListener('click', function() {
-                document.getElementById('modal-categorias').classList.add('hidden');
-            });
-            
-            // Delegación de eventos para botones en la tabla
-            document.addEventListener('click', function(e) {
-                // Botón de editar
-                if (e.target.closest('.btn-editar')) {
-                    const id = e.target.closest('.btn-editar').getAttribute('data-id');
-                    cargarInstitucion(id);
-                }
+            // Función para actualizar la tabla mediante AJAX
+            window.actualizarTabla = function(url = null) {
+                // Obtener valores de filtros
+                const filtro_nombre = document.getElementById('filtro_nombre').value;
+                const filtro_email = document.getElementById('filtro_email').value;
+                const filtro_codigo_centro = document.getElementById('filtro_codigo_centro').value;
+                const filtro_ciudad = document.getElementById('filtro_ciudad').value;
+                // Temporalmente deshabilitado
+                // const filtro_tipo_institucion = document.getElementById('filtro_tipo_institucion').value;
+                const filtro_tipo_institucion = ""; // Valor vacío por defecto
+                const filtro_estado = document.getElementById('filtro_estado').value;
+                const filtro_verificada = document.getElementById('filtro_verificada').value;
                 
-                // Botón de eliminar
-                if (e.target.closest('.btn-eliminar')) {
-                    const id = e.target.closest('.btn-eliminar').getAttribute('data-id');
-                    document.getElementById('eliminar_id').value = id;
-                    document.getElementById('form-eliminar').setAttribute('action', '{{ route("admin.instituciones.destroy", ["institucione" => "__ID__"]) }}'.replace('__ID__', id));
-                    document.getElementById('modal-eliminar').classList.remove('hidden');
-                }
+                // Construir URL con parámetros
+                const params = new URLSearchParams();
+                if (filtro_nombre) params.append('nombre', filtro_nombre);
+                if (filtro_email) params.append('email', filtro_email);
+                if (filtro_codigo_centro) params.append('codigo_centro', filtro_codigo_centro);
+                if (filtro_ciudad) params.append('ciudad', filtro_ciudad);
+                if (filtro_tipo_institucion) params.append('tipo_institucion', filtro_tipo_institucion);
+                if (filtro_estado) params.append('estado', filtro_estado);
+                if (filtro_verificada) params.append('verificada', filtro_verificada);
                 
-                // Botón de verificar/desverificar
-                if (e.target.closest('.btn-verificar')) {
-                    const btn = e.target.closest('.btn-verificar');
-                    const id = btn.getAttribute('data-id');
-                    cambiarVerificacion(id);
-                }
+                // Determinar la URL
+                let fetchUrl = url || '{{ route("admin.instituciones.index") }}';
                 
-                // Botón de gestionar categorías
-                if (e.target.closest('.btn-categorias')) {
-                    const id = e.target.closest('.btn-categorias').getAttribute('data-id');
-                    abrirModalCategorias(id);
-                }
-                
-                // Enlaces de paginación
-                if (e.target.closest('.pagination-link')) {
-                    e.preventDefault();
-                    const url = e.target.closest('.pagination-link').getAttribute('href');
-                    actualizarTabla(url);
-                }
-            });
-            
-            // Envío del formulario de institución
-            document.getElementById('form-institucion').addEventListener('submit', function(e) {
-                e.preventDefault();
-                const form = this;
-                const formData = new FormData(form);
-                
-                fetch(form.getAttribute('action'), {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        document.getElementById('modal-institucion').classList.add('hidden');
-                        actualizarTabla();
-                        mostrarNotificacion(data.message, 'success');
-                    } else {
-                        mostrarNotificacion(data.message, 'error');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    mostrarNotificacion('Error al procesar la solicitud', 'error');
-                });
-            });
-            
-            // Envío del formulario de eliminación
-            document.getElementById('form-eliminar').addEventListener('submit', function(e) {
-                e.preventDefault();
-                const form = this;
-                
-                fetch(form.getAttribute('action'), {
-                    method: 'POST',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        _method: 'DELETE'
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        document.getElementById('modal-eliminar').classList.add('hidden');
-                        actualizarTabla();
-                        mostrarNotificacion(data.message, 'success');
-                    } else {
-                        mostrarNotificacion(data.message, 'error');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    mostrarNotificacion('Error al procesar la solicitud', 'error');
-                });
-            });
-            
-            // Manejo del formulario para agregar categorías
-            document.getElementById('form-agregar-categoria').addEventListener('submit', function(e) {
-                e.preventDefault();
-                agregarNuevaCategoria();
-            });
-            
-            // Cambio en el selector de nivel para cargar las categorías correspondientes
-            document.getElementById('nueva-categoria-nivel').addEventListener('change', function() {
-                const nivelId = this.value;
-                if (nivelId) {
-                    cargarCategoriasPorNivel(nivelId);
+                // Si no hay url específica, añadir los parámetros a la URL actual
+                if (!url) {
+                    fetchUrl = `${fetchUrl}?${params.toString()}`;
+                } else if (url.includes('?')) {
+                    // Si la URL ya tiene parámetros, añadir los nuevos
+                    fetchUrl = `${url}&${params.toString()}`;
                 } else {
-                    const categoriaSelect = document.getElementById('nueva-categoria-id');
-                    categoriaSelect.innerHTML = '<option value="">Seleccione primero un nivel</option>';
-                    categoriaSelect.disabled = true;
-                }
-            });
-            
-            // Guardar cambios en categorías
-            document.getElementById('btn-guardar-categorias').addEventListener('click', function() {
-                guardarCategorias();
-            });
-        });
-        
-        // Variables globales para gestionar categorías
-        let institucionActualId;
-        let categoriasPorAgregar = [];
-        let categoriasPorEliminar = [];
-        let todasCategoriasPorNivel = {}; // Todas las categorías disponibles por nivel
-        
-        // Función para cargar datos de una institución para editar
-        function cargarInstitucion(id) {
-            fetch('{{ route("admin.instituciones.edit", ["institucione" => "__ID__"]) }}'.replace('__ID__', id), {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                resetForm();
-                
-                const institucion = data.institucion;
-                const user = institucion.user;
-                const nivelesSeleccionados = data.niveles_seleccionados;
-                
-                // Rellenar campos de usuario
-                document.getElementById('nombre').value = user.nombre;
-                document.getElementById('email').value = user.email;
-                document.getElementById('dni').value = user.dni;
-                document.getElementById('telefono').value = user.telefono || '';
-                document.getElementById('descripcion').value = user.descripcion || '';
-                document.getElementById('sitio_web').value = user.sitio_web || '';
-                
-                if (user.activo) {
-                    document.querySelector('input[name="activo"]').checked = true;
+                    // Si la URL no tiene parámetros, añadirlos
+                    fetchUrl = `${url}?${params.toString()}`;
                 }
                 
-                // Rellenar campos de institución
-                document.getElementById('codigo_centro').value = institucion.codigo_centro;
-                document.getElementById('tipo_institucion').value = institucion.tipo_institucion;
-                document.getElementById('direccion').value = institucion.direccion;
-                document.getElementById('provincia').value = institucion.provincia;
-                document.getElementById('codigo_postal').value = institucion.codigo_postal;
-                document.getElementById('representante_legal').value = institucion.representante_legal;
-                document.getElementById('cargo_representante').value = institucion.cargo_representante;
-                
-                if (institucion.verificada) {
-                    document.querySelector('input[name="verificada"]').checked = true;
-                }
-                
-                // Marcar niveles educativos
-                nivelesSeleccionados.forEach(nivelId => {
-                    const checkbox = document.getElementById(`nivel_${nivelId}`);
-                    if (checkbox) checkbox.checked = true;
-                });
-                
-                // Mostrar imagen actual si existe
-                if (user.imagen) {
-                    document.getElementById('imagen-actual').src = `/storage/profile_images/${user.imagen}`;
-                    document.getElementById('imagen-actual-container').classList.remove('hidden');
-                }
-                
-                // Actualizar formulario para edición
-                document.getElementById('modal-titulo').textContent = 'Editar Institución';
-                document.getElementById('form-institucion').setAttribute('action', '{{ route("admin.instituciones.update", ["institucione" => "__ID__"]) }}'.replace('__ID__', id));
-                document.getElementById('form_method').value = 'PUT';
-                
-                // Mostrar modal
-                document.getElementById('modal-institucion').classList.remove('hidden');
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                mostrarNotificacion('Error al cargar los datos de la institución', 'error');
-            });
-        }
-        
-        // Función para abrir el modal de categorías
-        function abrirModalCategorias(id) {
-            institucionActualId = id;
-            categoriasPorAgregar = [];
-            categoriasPorEliminar = [];
-            
-            // Mostrar carga y ocultar contenido
-            document.getElementById('mensaje-cargando-categorias').classList.remove('hidden');
-            document.getElementById('contenedor-categorias-institucion').classList.add('hidden');
-            document.getElementById('error-categorias').classList.add('hidden');
-            
-            // Mostrar modal
-            document.getElementById('modal-categorias').classList.remove('hidden');
-            
-            // Cargar datos de categorías
-            cargarCategorias(id);
-        }
-        
-        // Función para cargar las categorías de una institución
-        function cargarCategorias(id) {
-            fetch('{{ route("admin.instituciones.categorias", ["id" => "__ID__"]) }}'.replace('__ID__', id), {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Actualizar título del modal
-                    document.getElementById('modal-categorias-titulo').textContent = 
-                        `Gestionar Categorías: ${data.institucion.nombre}`;
-                    
-                    // Guardar datos para uso posterior
-                    todasCategoriasPorNivel = data.todas_categorias;
-                    
-                    // Mostrar niveles educativos de la institución
-                    mostrarNivelesEducativos(data.niveles_educativos);
-                    
-                    // Cargar selector de nivel educativo para nuevas categorías
-                    cargarSelectorNivelEducativo(data.niveles_educativos);
-                    
-                    // Mostrar categorías por nivel
-                    mostrarCategoriasPorNivel(data.categorias_por_nivel);
-                    
-                    // Ocultar carga y mostrar contenido
-                    document.getElementById('mensaje-cargando-categorias').classList.add('hidden');
-                    document.getElementById('contenedor-categorias-institucion').classList.remove('hidden');
-                } else {
-                    mostrarErrorCategorias(data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                mostrarErrorCategorias('Error al cargar los datos: ' + error.message);
-            });
-        }
-        
-        // Función para mostrar los niveles educativos de la institución
-        function mostrarNivelesEducativos(niveles) {
-            const container = document.getElementById('niveles-container');
-            container.innerHTML = '';
-            
-            if (niveles.length === 0) {
-                container.innerHTML = '<p class="text-gray-500 text-sm">Esta institución no tiene niveles educativos asignados.</p>';
-                return;
-            }
-            
-            niveles.forEach(nivel => {
-                const badge = document.createElement('span');
-                badge.className = 'inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800';
-                badge.textContent = nivel.nombre_nivel;
-                container.appendChild(badge);
-            });
-        }
-        
-        // Función para cargar el selector de nivel educativo
-        function cargarSelectorNivelEducativo(niveles) {
-            const selector = document.getElementById('nueva-categoria-nivel');
-            selector.innerHTML = '<option value="">Seleccione un nivel</option>';
-            
-            if (niveles.length === 0) {
-                selector.disabled = true;
-                selector.innerHTML = '<option value="">La institución no tiene niveles asignados</option>';
-                return;
-            }
-            
-            niveles.forEach(nivel => {
-                const option = document.createElement('option');
-                option.value = nivel.id;
-                option.textContent = nivel.nombre_nivel;
-                selector.appendChild(option);
-            });
-            
-            selector.disabled = false;
-        }
-        
-        // Función para mostrar las categorías por nivel educativo
-        function mostrarCategoriasPorNivel(categoriasPorNivel) {
-            const container = document.getElementById('categorias-container');
-            container.innerHTML = '';
-            
-            const noCategoriasMsg = document.getElementById('no-categorias');
-            
-            if (Object.keys(categoriasPorNivel).length === 0) {
-                noCategoriasMsg.classList.remove('hidden');
-                return;
-            }
-            
-            noCategoriasMsg.classList.add('hidden');
-            
-            // Para cada nivel, crear una sección con sus categorías
-            Object.keys(categoriasPorNivel).forEach(nivelId => {
-                const categorias = categoriasPorNivel[nivelId];
-                
-                // Buscar el nombre del nivel
-                let nombreNivel = 'Nivel ' + nivelId;
-                // Buscar en los niveles educativos
-                const nivelesEdu = document.getElementById('nueva-categoria-nivel').options;
-                for (let i = 0; i < nivelesEdu.length; i++) {
-                    if (nivelesEdu[i].value == nivelId) {
-                        nombreNivel = nivelesEdu[i].textContent;
-                        break;
-                    }
-                }
-                
-                // Crear contenedor del nivel
-                const nivelSection = document.createElement('div');
-                nivelSection.className = 'mb-6 last:mb-0';
-                nivelSection.innerHTML = `
-                    <h5 class="font-medium text-gray-700 mb-2">${nombreNivel}</h5>
-                    <div class="border rounded-lg overflow-hidden">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-100">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Categoría</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200" id="categoria-nivel-${nivelId}">
-                            </tbody>
-                        </table>
+                // Mostrar indicador de carga
+                document.getElementById('tabla-instituciones-container').innerHTML = `
+                    <div class="flex justify-center items-center py-12">
+                        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-700"></div>
                     </div>
                 `;
                 
-                container.appendChild(nivelSection);
-                
-                // Agregar categorías a la tabla
-                const tbody = nivelSection.querySelector(`#categoria-nivel-${nivelId}`);
-                
-                categorias.forEach(categoria => {
-                    const row = document.createElement('tr');
-                    row.className = 'hover:bg-gray-50';
-                    row.setAttribute('data-categoria-id', categoria.id);
-                    row.setAttribute('data-nivel-id', nivelId);
-                    
-                    row.innerHTML = `
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            ${categoria.nombre}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            ${categoria.activo ? 
-                                '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Activo</span>' : 
-                                '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Inactivo</span>'}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <div class="flex justify-end items-center space-x-2">
-                                <button class="text-blue-600 hover:text-blue-900 focus:outline-none btn-toggle-categoria" data-pivot-id="${categoria.pivot_id || ''}" data-activo="${categoria.activo ? 1 : 0}">
-                                    ${categoria.activo ? 
-                                        '<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>' : 
-                                        '<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>'}
-                                </button>
-                                <button class="text-red-600 hover:text-red-900 focus:outline-none btn-eliminar-categoria" data-pivot-id="${categoria.pivot_id || ''}">
-                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                    </svg>
-                                </button>
-                            </div>
-                        </td>
-                    `;
-                    
-                    tbody.appendChild(row);
-                });
-            });
-            
-            // Agregar listeners para eliminar categorías
-            document.querySelectorAll('.btn-eliminar-categoria').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const pivotId = this.getAttribute('data-pivot-id');
-                    if (pivotId) {
-                        categoriasPorEliminar.push(pivotId);
-                        this.closest('tr').remove();
+                // Realizar petición AJAX
+                fetch(fetchUrl, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
                     }
-                });
-            });
-            
-            // Agregar listeners para activar/desactivar categorías
-            document.querySelectorAll('.btn-toggle-categoria').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const pivotId = this.getAttribute('data-pivot-id');
-                    const estaActivo = this.getAttribute('data-activo') === '1';
-                    if (pivotId) {
-                        cambiarEstadoCategoria(institucionActualId, pivotId, !estaActivo);
-                    }
-                });
-            });
-        }
-        
-        // Función para cargar las categorías según el nivel seleccionado
-        function cargarCategoriasPorNivel(nivelId) {
-            const select = document.getElementById('nueva-categoria-id');
-            select.innerHTML = '<option value="">Cargando categorías...</option>';
-            select.disabled = true;
-            
-            // Hacer petición a la API de categorías por nivel
-            fetch('/api/categorias-por-niveles', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                body: JSON.stringify({
-                    niveles: [nivelId]
                 })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data[nivelId] && data[nivelId].length > 0) {
-                    // Guardar en nuestro objeto global para futuros usos
-                    todasCategoriasPorNivel[nivelId] = data[nivelId];
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('tabla-instituciones-container').innerHTML = data.tabla;
                     
-                    // Rellenar el selector
-                    rellenarSelectCategorias(select, data[nivelId]);
-                } else {
-                    select.innerHTML = '<option value="">No hay categorías disponibles para este nivel</option>';
-                    select.disabled = true;
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                select.innerHTML = '<option value="">Error al cargar categorías</option>';
-                select.disabled = true;
-            });
-        }
-        
-        // Función para rellenar el select de categorías
-        function rellenarSelectCategorias(select, categorias) {
-            select.innerHTML = '<option value="">Seleccione una categoría</option>';
-            
-            categorias.forEach(categoria => {
-                const option = document.createElement('option');
-                option.value = categoria.id;
-                option.textContent = categoria.nombre_categoria || categoria.nombre;
-                select.appendChild(option);
-            });
-            
-            select.disabled = false;
-        }
-        
-        // Función para agregar una nueva categoría a la institución
-        function agregarNuevaCategoria() {
-            const nivelId = document.getElementById('nueva-categoria-nivel').value;
-            const categoriaId = document.getElementById('nueva-categoria-id').value;
-            const activo = document.getElementById('nueva-categoria-activo').checked;
-            
-            if (!nivelId || !categoriaId) {
-                mostrarNotificacion('Seleccione un nivel educativo y una categoría', 'error');
-                return;
-            }
-            
-            // Verificar que la categoría no esté ya añadida
-            const yaExiste = document.querySelector(`tr[data-categoria-id="${categoriaId}"][data-nivel-id="${nivelId}"]`);
-            if (yaExiste) {
-                mostrarNotificacion('Esta categoría ya está asociada a la institución', 'error');
-                return;
-            }
-            
-            // Añadir a la lista de categorías por agregar
-            categoriasPorAgregar.push({
-                nivel_id: nivelId,
-                categoria_id: categoriaId,
-                activo: activo
-            });
-            
-            // Actualizar la vista
-            actualizarVistaCategorias();
-            
-            // Limpiar formulario
-            document.getElementById('form-agregar-categoria').reset();
-            document.getElementById('nueva-categoria-id').innerHTML = '<option value="">Seleccione primero un nivel</option>';
-            document.getElementById('nueva-categoria-id').disabled = true;
-            
-            mostrarNotificacion('Categoría añadida. No olvide guardar los cambios.', 'success');
-        }
-        
-        // Función para actualizar la vista de categorías con las nuevas agregadas
-        function actualizarVistaCategorias() {
-            // Recorremos las categorías por agregar
-            categoriasPorAgregar.forEach(categoria => {
-                const nivelId = categoria.nivel_id;
-                
-                // Verificar si ya existe una sección para este nivel
-                let seccionNivel = document.querySelector(`#categoria-nivel-${nivelId}`);
-                
-                if (!seccionNivel) {
-                    // Si no existe la sección, crear una nueva
-                    const container = document.getElementById('categorias-container');
-                    const noCategoriasMsg = document.getElementById('no-categorias');
-                    noCategoriasMsg.classList.add('hidden');
+                    // Convertir enlaces de paginación a AJAX
+                    document.querySelectorAll('.pagination a').forEach(link => {
+                        link.classList.add('pagination-link');
+                        link.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            actualizarTabla(this.getAttribute('href'));
+                        });
+                    });
                     
-                    // Buscar el nombre del nivel
-                    let nombreNivel = 'Nivel ' + nivelId;
-                    // Buscar en los niveles educativos
-                    const nivelesEdu = document.getElementById('nueva-categoria-nivel').options;
-                    for (let i = 0; i < nivelesEdu.length; i++) {
-                        if (nivelesEdu[i].value == nivelId) {
-                            nombreNivel = nivelesEdu[i].textContent;
-                            break;
-                        }
-                    }
-                    
-                    const nivelSection = document.createElement('div');
-                    nivelSection.className = 'mb-6 last:mb-0';
-                    nivelSection.innerHTML = `
-                        <h5 class="font-medium text-gray-700 mb-2">${nombreNivel}</h5>
-                        <div class="border rounded-lg overflow-hidden">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-100">
-                                    <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Categoría</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="bg-white divide-y divide-gray-200" id="categoria-nivel-${nivelId}">
-                                </tbody>
-                            </table>
+                    // Volver a asignar eventos a los botones
+                    asignarEventosTabla();
+                })
+                .catch(error => {
+                    console.error('Error al cargar tabla:', error);
+                    document.getElementById('tabla-instituciones-container').innerHTML = `
+                        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative my-6">
+                            <strong class="font-bold">Error:</strong>
+                            <span class="block sm:inline">Ha ocurrido un error al cargar los datos.</span>
                         </div>
                     `;
-                    
-                    container.appendChild(nivelSection);
-                    seccionNivel = nivelSection.querySelector(`#categoria-nivel-${nivelId}`);
-                }
-                
-                // Encontrar nombre de la categoría
-                let nombreCategoria = 'Categoría ' + categoria.categoria_id;
-                
-                // Buscar en las categorías disponibles para este nivel
-                const categoriasPorNivel = todasCategoriasPorNivel[nivelId];
-                if (categoriasPorNivel) {
-                    const categoriaObj = categoriasPorNivel.find(c => c.id == categoria.categoria_id);
-                    if (categoriaObj) {
-                        nombreCategoria = categoriaObj.nombre_categoria;
-                    }
-                }
-                
-                // Si no se encontró, buscar en el select de categorías
-                if (nombreCategoria === 'Categoría ' + categoria.categoria_id) {
-                    const categoriaOptions = document.getElementById('nueva-categoria-id').options;
-                    for (let i = 0; i < categoriaOptions.length; i++) {
-                        if (categoriaOptions[i].value == categoria.categoria_id) {
-                            nombreCategoria = categoriaOptions[i].textContent;
-                            break;
-                        }
-                    }
-                }
-                
-                // Verificar que no exista ya una fila para esta categoría
-                const existeRow = seccionNivel.querySelector(`tr[data-categoria-id="${categoria.categoria_id}"]`);
-                if (existeRow) {
-                    return;
-                }
-                
-                // Crear la fila para la categoría
-                const row = document.createElement('tr');
-                row.className = 'hover:bg-gray-50 nueva-categoria';
-                row.setAttribute('data-categoria-id', categoria.categoria_id);
-                row.setAttribute('data-nivel-id', nivelId);
-                
-                row.innerHTML = `
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        ${nombreCategoria}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        ${categoria.activo ? 
-                            '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Activo</span>' : 
-                            '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Inactivo</span>'}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div class="flex justify-end items-center space-x-2">
-                            <button class="text-blue-600 hover:text-blue-900 focus:outline-none btn-toggle-nueva-categoria" data-index="${categoriasPorAgregar.length - 1}">
-                                ${categoria.activo ? 
-                                    '<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>' : 
-                                    '<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>'}
-                            </button>
-                            <button class="text-red-600 hover:text-red-900 focus:outline-none btn-cancelar-nueva-categoria">
-                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                </svg>
-                            </button>
-                        </div>
-                    </td>
-                `;
-                
-                seccionNivel.appendChild(row);
-                
-                // Añadir listener para eliminar la nueva categoría
-                row.querySelector('.btn-cancelar-nueva-categoria').addEventListener('click', function() {
-                    // Encontrar el índice de la categoría en el array
-                    const index = categoriasPorAgregar.findIndex(c => 
-                        c.categoria_id == categoria.categoria_id && c.nivel_id == nivelId);
-                    
-                    if (index !== -1) {
-                        // Eliminar del array
-                        categoriasPorAgregar.splice(index, 1);
-                        // Eliminar fila
-                        row.remove();
-                    }
                 });
-                
-                // Añadir listener para activar/desactivar la nueva categoría
-                row.querySelector('.btn-toggle-nueva-categoria').addEventListener('click', function() {
-                    const index = parseInt(this.getAttribute('data-index'));
-                    if (index >= 0 && index < categoriasPorAgregar.length) {
-                        // Invertir el estado activo
-                        categoriasPorAgregar[index].activo = !categoriasPorAgregar[index].activo;
-                        
-                        // Actualizar la vista
-                        const activo = categoriasPorAgregar[index].activo;
-                        const estadoSpan = this.closest('tr').querySelector('td:nth-child(2) span');
-                        if (estadoSpan) {
-                            if (activo) {
-                                estadoSpan.className = 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800';
-                                estadoSpan.textContent = 'Activo';
-                                this.innerHTML = '<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
-                            } else {
-                                estadoSpan.className = 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800';
-                                estadoSpan.textContent = 'Inactivo';
-                                this.innerHTML = '<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
-                            }
-                        }
-                    }
-                });
-            });
-        }
-        
-        // Función para guardar los cambios en las categorías
-        function guardarCategorias() {
-            // Mostrar indicador de carga
-            document.getElementById('btn-guardar-categorias').disabled = true;
-            document.getElementById('btn-guardar-categorias').innerHTML = `
-                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Guardando...
-            `;
-            
-            fetch('{{ route("admin.instituciones.updateCategorias", ["id" => "__ID__"]) }}'.replace('__ID__', institucionActualId), {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: JSON.stringify({
-                    categorias: categoriasPorAgregar,
-                    eliminar_categorias: categoriasPorEliminar
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Restaurar botón
-                document.getElementById('btn-guardar-categorias').disabled = false;
-                document.getElementById('btn-guardar-categorias').textContent = 'Guardar Cambios';
-                
-                if (data.success) {
-                    // Mostrar notificación
-                    mostrarNotificacion(data.message, 'success');
-                    
-                    // Limpiar datos temporales
-                    categoriasPorAgregar = [];
-                    categoriasPorEliminar = [];
-                    
-                    // Recargar los datos para obtener los IDs de pivot actualizados
-                    cargarCategorias(institucionActualId);
-                } else {
-                    mostrarNotificacion(data.message, 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                
-                // Restaurar botón
-                document.getElementById('btn-guardar-categorias').disabled = false;
-                document.getElementById('btn-guardar-categorias').textContent = 'Guardar Cambios';
-                
-                mostrarNotificacion('Error al guardar los cambios: ' + error.message, 'error');
-            });
-        }
-        
-        // Función para mostrar error en el modal de categorías
-        function mostrarErrorCategorias(mensaje) {
-            document.getElementById('mensaje-cargando-categorias').classList.add('hidden');
-            document.getElementById('contenedor-categorias-institucion').classList.add('hidden');
-            
-            const errorContainer = document.getElementById('error-categorias');
-            document.getElementById('error-categorias-mensaje').textContent = mensaje;
-            errorContainer.classList.remove('hidden');
-        }
-        
-        // Función para cambiar estado de verificación
-        function cambiarVerificacion(id) {
-            fetch('{{ route("admin.instituciones.cambiar-verificacion", ["id" => "__ID__"]) }}'.replace('__ID__', id), {
-                method: 'POST',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    actualizarTabla();
-                    mostrarNotificacion(data.message, 'success');
-                } else {
-                    mostrarNotificacion(data.message, 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                mostrarNotificacion('Error al cambiar estado de verificación', 'error');
-            });
-        }
-        
-        // Función para actualizar la tabla
-        function actualizarTabla(url = '{{ route("admin.instituciones.index") }}') {
-            fetch(url, {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('tabla-instituciones-container').innerHTML = data.tabla;
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                mostrarNotificacion('Error al actualizar la tabla', 'error');
-            });
-        }
-        
-        // Función para resetear el formulario
-        function resetForm() {
-            document.getElementById('form-institucion').reset();
-            document.getElementById('imagen-actual-container').classList.add('hidden');
-            
-            // Desmarcar todos los checkboxes de niveles educativos
-            document.querySelectorAll('input[name="niveles_educativos[]"]').forEach(checkbox => {
-                checkbox.checked = false;
-            });
-        }
-        
-        // Función para mostrar notificaciones
-        function mostrarNotificacion(mensaje, tipo) {
-            // Crear contenedor de notificación si no existe
-            let notificacionContainer = document.getElementById('notificacion-container');
-            if (!notificacionContainer) {
-                notificacionContainer = document.createElement('div');
-                notificacionContainer.id = 'notificacion-container';
-                notificacionContainer.className = 'fixed top-4 right-4 z-50 flex flex-col items-end space-y-2';
-                document.body.appendChild(notificacionContainer);
             }
             
-            // Crear elemento de notificación
-            const notificacion = document.createElement('div');
+            // Eventos para los campos de filtro
+            document.getElementById('filtro_nombre').addEventListener('input', debounce(actualizarTabla, 500));
+            document.getElementById('filtro_email').addEventListener('input', debounce(actualizarTabla, 500));
+            document.getElementById('filtro_codigo_centro').addEventListener('input', debounce(actualizarTabla, 500));
+            document.getElementById('filtro_ciudad').addEventListener('change', actualizarTabla);
+            // Temporalmente deshabilitado
+            // document.getElementById('filtro_tipo_institucion').addEventListener('change', actualizarTabla);
+            document.getElementById('filtro_estado').addEventListener('change', actualizarTabla);
+            document.getElementById('filtro_verificada').addEventListener('change', actualizarTabla);
             
-            // Definir clases según el tipo
-            let clasesPorTipo = {
-                'success': 'bg-green-100 border-l-4 border-green-500 text-green-700',
-                'error': 'bg-red-100 border-l-4 border-red-500 text-red-700',
-                'warning': 'bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700',
-                'info': 'bg-blue-100 border-l-4 border-blue-500 text-blue-700'
-            };
-            
-            // Iconos por tipo
-            let iconosPorTipo = {
-                'success': '<svg class="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>',
-                'error': '<svg class="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg>',
-                'warning': '<svg class="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>',
-                'info': '<svg class="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>'
-            };
-            
-            // Establecer clase según tipo
-            let claseNotificacion = clasesPorTipo[tipo] || clasesPorTipo['info'];
-            let icono = iconosPorTipo[tipo] || iconosPorTipo['info'];
-            
-            // Añadir clases y contenido
-            notificacion.className = `py-3 px-4 shadow-md rounded-md flex items-center ${claseNotificacion} transition-all duration-300 transform translate-x-full opacity-0`;
-            notificacion.innerHTML = `
-                ${icono}
-                <span>${mensaje}</span>
-                <button class="ml-4 text-gray-500 hover:text-gray-700">
-                    <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                    </svg>
-                </button>
-            `;
-            
-            // Añadir al contenedor
-            notificacionContainer.appendChild(notificacion);
-            
-            // Añadir eventos
-            const botonCerrar = notificacion.querySelector('button');
-            botonCerrar.addEventListener('click', () => {
-                notificacion.style.opacity = '0';
-                notificacion.style.transform = 'translateX(100%)';
-                setTimeout(() => {
-                    notificacionContainer.removeChild(notificacion);
-                }, 300);
+            // Botón para reiniciar filtros
+            document.getElementById('reset-filtros').addEventListener('click', function() {
+                document.getElementById('filtro_nombre').value = '';
+                document.getElementById('filtro_email').value = '';
+                document.getElementById('filtro_codigo_centro').value = '';
+                document.getElementById('filtro_ciudad').value = '';
+                // document.getElementById('filtro_tipo_institucion').value = '';
+                document.getElementById('filtro_estado').value = '';
+                document.getElementById('filtro_verificada').value = '';
+                actualizarTabla();
             });
             
-            // Mostrar notificación con animación
-            setTimeout(() => {
-                notificacion.style.transform = 'translateX(0)';
-                notificacion.style.opacity = '1';
-            }, 10);
+            // Función debounce para evitar muchas peticiones seguidas
+            function debounce(func, wait) {
+                let timeout;
+                return function executedFunction(...args) {
+                    const later = () => {
+                        clearTimeout(timeout);
+                        func(...args);
+                    };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
+            }
             
-            // Auto-cerrar después de 5 segundos
-            setTimeout(() => {
-                if (notificacion.parentNode) {
-                    notificacion.style.opacity = '0';
-                    notificacion.style.transform = 'translateX(100%)';
-                    setTimeout(() => {
-                        if (notificacion.parentNode) {
-                            notificacionContainer.removeChild(notificacion);
-                        }
-                    }, 300);
-                }
-            }, 5000);
-        }
-        
-        // Función para cambiar el estado de activación de una categoría
-        function cambiarEstadoCategoria(institucionId, categoriaId, nuevoEstado) {
-            fetch('{{ route("admin.instituciones.toggleCategoria", ["id" => "__INST_ID__", "categoria" => "__CAT_ID__"]) }}'
-                .replace('__INST_ID__', institucionId)
-                .replace('__CAT_ID__', categoriaId), {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Actualizar la vista del botón y estado
-                    const btn = document.querySelector(`.btn-toggle-categoria[data-pivot-id="${categoriaId}"]`);
-                    if (btn) {
-                        // Actualizar atributo de estado
-                        btn.setAttribute('data-activo', data.activo ? '1' : '0');
-                        
-                        // Actualizar icono del botón
-                        if (data.activo) {
-                            btn.innerHTML = '<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
-                        } else {
-                            btn.innerHTML = '<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
-                        }
-                        
-                        // Actualizar estado en la tabla
-                        const estadoSpan = btn.closest('tr').querySelector('td:nth-child(2) span');
-                        if (estadoSpan) {
-                            if (data.activo) {
-                                estadoSpan.className = 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800';
-                                estadoSpan.textContent = 'Activo';
-                            } else {
-                                estadoSpan.className = 'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800';
-                                estadoSpan.textContent = 'Inactivo';
-                            }
-                        }
-                    }
-                    
-                    mostrarNotificacion(data.message, 'success');
-                } else {
-                    mostrarNotificacion(data.message, 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                mostrarNotificacion('Error al cambiar el estado de la categoría', 'error');
-            });
-        }
+            // Función para asignar eventos a los botones de la tabla
+            function asignarEventosTabla() {
+                // Aquí se asignarían los eventos a los botones de la tabla
+                // (esta lógica debe ser similar a la que ya tengas implementada)
+            }
+            
+            // Inicializar asignación de eventos
+            asignarEventosTabla();
+        });
     </script>
+    @endpush
 @endsection 

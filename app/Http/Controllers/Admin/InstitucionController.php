@@ -21,21 +21,85 @@ class InstitucionController extends Controller
     /**
      * Muestra el listado de instituciones
      */
-    public function index()
+    public function index(Request $request)
     {
-        $instituciones = Institucion::with('user', 'nivelesEducativos')
-                ->orderBy('id', 'asc')
-                ->paginate(10);
+        $query = Institucion::with('user', 'nivelesEducativos');
         
+        // Aplicar filtro por nombre
+        if ($request->has('nombre') && !empty($request->nombre)) {
+            $query->whereHas('user', function($q) use ($request) {
+                $q->where('nombre', 'like', '%' . $request->nombre . '%');
+            });
+        }
+        
+        // Aplicar filtro por email
+        if ($request->has('email') && !empty($request->email)) {
+            $query->whereHas('user', function($q) use ($request) {
+                $q->where('email', 'like', '%' . $request->email . '%');
+            });
+        }
+        
+        // Aplicar filtro por código de centro
+        if ($request->has('codigo_centro') && !empty($request->codigo_centro)) {
+            $query->where('codigo_centro', 'like', '%' . $request->codigo_centro . '%');
+        }
+        
+        // Aplicar filtro por tipo de institución - Deshabilitado temporalmente
+        /*if ($request->has('tipo_institucion') && !empty($request->tipo_institucion)) {
+            $query->where('tipo_institucion', $request->tipo_institucion);
+        }*/
+        
+        // Aplicar filtro por ciudad
+        if ($request->has('ciudad') && !empty($request->ciudad)) {
+            $query->whereHas('user', function($q) use ($request) {
+                $q->where('ciudad', $request->ciudad);
+            });
+        }
+        
+        // Aplicar filtro por estado
+        if ($request->has('estado') && $request->estado !== '') {
+            $query->whereHas('user', function($q) use ($request) {
+                $q->where('activo', $request->estado);
+            });
+        }
+        
+        // Aplicar filtro por verificación
+        if ($request->has('verificada') && $request->verificada !== '') {
+            $query->where('verificada', $request->verificada);
+        }
+
+        // Obtener ciudades únicas para el selector de filtros
+        $ciudades = User::whereHas('institucion')
+                       ->whereNotNull('ciudad')
+                       ->where('ciudad', '!=', '')
+                       ->distinct()
+                       ->pluck('ciudad')
+                       ->sort()
+                       ->values();
+        
+        // Obtener tipos de institución para el selector
+        // Comentado temporalmente debido a que la columna no existe
+        $tipos_institucion = []; // Array vacío como fallback
+        /*$tipos_institucion = Institucion::whereNotNull('tipo_institucion')
+                      ->where('tipo_institucion', '!=', '')
+                      ->distinct()
+                      ->pluck('tipo_institucion')
+                      ->sort()
+                      ->values();*/
+                       
         $nivelesEducativos = NivelEducativo::all();
         
-        if (request()->ajax()) {
+        $instituciones = $query->orderBy('id', 'desc')
+                        ->paginate(10);
+        
+        if ($request->ajax()) {
             return response()->json([
-                'tabla' => view('admin.instituciones.tabla', compact('instituciones'))->render()
+                'tabla' => view('admin.instituciones.tabla', compact('instituciones'))->render(),
+                'pagination' => $instituciones->links()->toHtml()
             ]);
         }
         
-        return view('admin.instituciones.index', compact('instituciones', 'nivelesEducativos'));
+        return view('admin.instituciones.index', compact('instituciones', 'nivelesEducativos', 'ciudades', 'tipos_institucion'));
     }
 
     /**
@@ -53,7 +117,7 @@ class InstitucionController extends Controller
             'codigo_centro' => 'required|string|max:20|unique:instituciones,codigo_centro',
             'tipo_institucion' => 'required|string|max:50',
             'direccion' => 'required|string|max:255',
-            'provincia' => 'required|string|max:100',
+            'ciudad' => 'required|string|max:100',
             'codigo_postal' => 'required|string|max:10',
             'representante_legal' => 'required|string|max:255',
             'cargo_representante' => 'required|string|max:255',
@@ -87,7 +151,7 @@ class InstitucionController extends Controller
                 'email' => $request->input('email'),
                 'password' => Hash::make($request->input('password')),
                 'fecha_nacimiento' => $request->input('fecha_nacimiento') ?? null,
-                'ciudad' => $request->input('provincia') ?? null,
+                'ciudad' => $request->input('ciudad') ?? null,
                 'dni' => $request->input('dni'),
                 'activo' => true,
                 'sitio_web' => $request->input('sitio_web') ?? null,
@@ -211,7 +275,7 @@ class InstitucionController extends Controller
                 'nombre' => $request->input('nombre'),
                 'email' => $request->input('email'),
                 'fecha_nacimiento' => $request->input('fecha_nacimiento') ?? null,
-                'ciudad' => $request->input('provincia') ?? null,
+                'ciudad' => $request->input('ciudad') ?? null,
                 'dni' => $request->input('dni'),
                 'activo' => $request->has('activo') ? true : false,
                 'sitio_web' => $request->input('sitio_web') ?? null,
