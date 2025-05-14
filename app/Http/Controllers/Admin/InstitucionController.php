@@ -179,7 +179,7 @@ class InstitucionController extends Controller
                 'codigo_centro' => $request->input('codigo_centro'),
                 'tipo_institucion' => $request->input('tipo_institucion'),
                 'direccion' => $request->input('direccion'),
-                'provincia' => $request->input('ciudad'), // Usando ciudad en lugar de provincia
+                'ciudad' => $request->input('ciudad'),
                 'codigo_postal' => $request->input('codigo_postal'),
                 'representante_legal' => $request->input('representante_legal'),
                 'cargo_representante' => $request->input('cargo_representante'),
@@ -345,7 +345,7 @@ class InstitucionController extends Controller
                 'codigo_centro' => $request->input('codigo_centro'),
                 'tipo_institucion' => $request->input('tipo_institucion'),
                 'direccion' => $request->input('direccion'),
-                'provincia' => $request->input('ciudad'),
+                'ciudad' => $request->input('ciudad'),
                 'codigo_postal' => $request->input('codigo_postal'),
                 'representante_legal' => $request->input('representante_legal'),
                 'cargo_representante' => $request->input('cargo_representante'),
@@ -731,6 +731,50 @@ class InstitucionController extends Controller
                 'success' => false,
                 'message' => 'Error al cambiar estado de la categoría: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    /**
+     * Cambiar estado de activo de una institución
+     */
+    public function cambiarEstado($id)
+    {
+        try {
+            DB::beginTransaction();
+            
+            $institucion = Institucion::findOrFail($id);
+            $user = $institucion->user;
+            
+            // Cambiar estado del usuario asociado
+            $user->activo = !$user->activo;
+            $user->save();
+            
+            DB::commit();
+            
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Estado de la institución actualizado correctamente',
+                    'estado' => $user->activo
+                ]);
+            }
+            
+            return redirect()->route('admin.instituciones.index')
+                ->with('success', 'Estado de la institución actualizado correctamente');
+                
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Error al cambiar estado de la institución: ' . $e->getMessage());
+            
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error al cambiar estado de la institución: ' . $e->getMessage()
+                ], 500);
+            }
+            
+            return redirect()->route('admin.instituciones.index')
+                ->with('error', 'Error al cambiar estado de la institución: ' . $e->getMessage());
         }
     }
 } 

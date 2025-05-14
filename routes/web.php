@@ -291,6 +291,8 @@
                     // RUTA CAMBIAR VERIFICACIÓN
                         Route::post('instituciones/cambiar-verificacion/{id}', [App\Http\Controllers\Admin\InstitucionController::class, 'cambiarVerificacion'])->name('instituciones.cambiar-verificacion');
                         Route::post('instituciones/{id}/verificar', [App\Http\Controllers\Admin\InstitucionController::class, 'cambiarVerificacion'])->name('instituciones.verificar');
+                    // RUTA CAMBIAR ESTADO
+                        Route::post('instituciones/{id}/cambiar-estado', [App\Http\Controllers\Admin\InstitucionController::class, 'cambiarEstado'])->name('instituciones.cambiar-estado');
                     // RUTA ELIMINAR SQL
                         Route::delete('instituciones/eliminar-sql/{institucion}', [App\Http\Controllers\Admin\InstitucionController::class, 'destroySQL'])->name('instituciones.destroySQL');
                     // RUTA OBTENER CATEGORÍAS

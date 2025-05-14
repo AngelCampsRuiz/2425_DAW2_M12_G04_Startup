@@ -168,6 +168,7 @@
                 <form id="form-institucion" action="{{ route('admin.instituciones.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
                     <input type="hidden" id="form_method" name="_method" value="POST">
+                    <input type="hidden" id="institucion_id" name="institucion_id" value="">
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <!-- Datos del Usuario -->
@@ -237,7 +238,7 @@
                             
                             <div class="mb-3">
                                 <label class="flex items-center">
-                                    <input type="checkbox" name="activo" checked class="rounded border-gray-300 text-purple-600">
+                                    <input type="checkbox" name="activo" id="activo" checked class="rounded border-gray-300 text-purple-600">
                                     <span class="ml-2 text-sm text-gray-600">Cuenta Activa</span>
                                 </label>
                             </div>
@@ -291,7 +292,7 @@
                             
                             <div class="mb-3">
                                 <label class="flex items-center">
-                                    <input type="checkbox" name="verificada" class="rounded border-gray-300 text-purple-600">
+                                    <input type="checkbox" name="verificada" id="verificada" class="rounded border-gray-300 text-purple-600">
                                     <span class="ml-2 text-sm text-gray-600">Institución Verificada</span>
                                 </label>
                             </div>
@@ -357,6 +358,7 @@
                 </button>
             </div>
             <div class="mt-4 max-h-[75vh] overflow-y-auto p-2">
+                <input type="hidden" id="institucion_id_categorias" value="">
                 <div id="contenedor-categorias-institucion">
                     <div id="lista-niveles-educativos" class="mb-6">
                         <h4 class="text-lg font-medium text-gray-700 mb-3">Niveles Educativos de la Institución</h4>
@@ -411,7 +413,7 @@
                     </div>
                 </div>
                 <div id="mensaje-cargando-categorias" class="text-center py-8">
-                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-600"></div>
+                    <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-purple-600"></div>
                     <p class="mt-2 text-gray-600">Cargando categorías...</p>
                 </div>
                 <div id="error-categorias" class="hidden bg-red-50 text-red-700 p-4 rounded-lg mb-4">
@@ -458,7 +460,7 @@
                 // Si no hay url específica, añadir los parámetros a la URL actual
                 if (!url) {
                     fetchUrl = `${fetchUrl}?${params.toString()}`;
-                } else if (url.includes('?')) {
+                } else if (typeof url === 'string' && url.includes('?')) {
                     // Si la URL ya tiene parámetros, añadir los nuevos
                     fetchUrl = `${url}&${params.toString()}`;
                 } else {
@@ -561,102 +563,7 @@
                 // Botones de editar institución
                 document.querySelectorAll('.btn-editar').forEach(btn => {
                     btn.addEventListener('click', function() {
-                        const id = this.getAttribute('data-id');
-                        document.getElementById('modal-titulo').textContent = 'Editar Institución';
-                        
-                        // Mostrar indicador de carga en el formulario
-                        const formContent = document.getElementById('form-institucion').innerHTML;
-                        const loadingIndicator = `
-                            <div class="flex justify-center items-center py-12">
-                                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-700"></div>
-                            </div>
-                        `;
-                        document.getElementById('form-institucion').innerHTML = loadingIndicator;
-                        
-                        // Mostrar modal
-                        document.getElementById('modal-institucion').classList.remove('hidden');
-                        
-                        // Cargar datos de la institución
-                        fetch(`{{ url('admin/instituciones') }}/${id}/edit`, {
-                            headers: {
-                                'X-Requested-With': 'XMLHttpRequest'
-                            }
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            // Restaurar el formulario original
-                            document.getElementById('form-institucion').innerHTML = formContent;
-                            
-                            // Establecer método PUT para actualización
-                            document.getElementById('form_method').value = 'PUT';
-                            document.getElementById('form-institucion').action = `{{ url('admin/instituciones') }}/${id}`;
-                            
-                            // Completar formulario con datos
-                            if (data.institucion && data.institucion.user) {
-                                // Datos de usuario
-                                document.getElementById('nombre').value = data.institucion.user.nombre || '';
-                                document.getElementById('email').value = data.institucion.user.email || '';
-                                document.getElementById('dni').value = data.institucion.user.dni || '';
-                                document.getElementById('ciudad').value = data.institucion.user.ciudad || '';
-                                document.getElementById('telefono').value = data.institucion.user.telefono || '';
-                                document.getElementById('descripcion').value = data.institucion.user.descripcion || '';
-                                document.getElementById('sitio_web').value = data.institucion.user.sitio_web || '';
-                                
-                                // Establecer estado activo
-                                const checkboxActivo = document.querySelector('input[name="activo"]');
-                                if (checkboxActivo) {
-                                    checkboxActivo.checked = data.institucion.user.activo ? true : false;
-                                }
-                                
-                                // Mostrar imagen actual si existe
-                                if (data.institucion.user.imagen) {
-                                    document.getElementById('imagen-actual').src = `{{ asset('public/profile_images') }}/${data.institucion.user.imagen}`;
-                                    document.getElementById('imagen-actual-container').classList.remove('hidden');
-                                } else {
-                                    document.getElementById('imagen-actual-container').classList.add('hidden');
-                                }
-                                
-                                // Datos de institución
-                                document.getElementById('codigo_centro').value = data.institucion.codigo_centro || '';
-                                
-                                // Establecer tipo de institución
-                                const selectTipo = document.getElementById('tipo_institucion');
-                                if (selectTipo && data.institucion.tipo_institucion) {
-                                    Array.from(selectTipo.options).forEach(option => {
-                                        if (option.value === data.institucion.tipo_institucion) {
-                                            option.selected = true;
-                                        }
-                                    });
-                                }
-                                
-                                document.getElementById('direccion').value = data.institucion.direccion || '';
-                                document.getElementById('codigo_postal').value = data.institucion.codigo_postal || '';
-                                document.getElementById('representante_legal').value = data.institucion.representante_legal || '';
-                                document.getElementById('cargo_representante').value = data.institucion.cargo_representante || '';
-                                
-                                // Establecer verificada
-                                const checkboxVerificada = document.querySelector('input[name="verificada"]');
-                                if (checkboxVerificada) {
-                                    checkboxVerificada.checked = data.institucion.verificada ? true : false;
-                                }
-                                
-                                // Marcar niveles educativos seleccionados
-                                const nivelesSeleccionados = data.niveles_seleccionados || [];
-                                document.querySelectorAll('input[name="niveles_educativos[]"]').forEach(checkbox => {
-                                    checkbox.checked = nivelesSeleccionados.includes(parseInt(checkbox.value));
-                                });
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error al cargar institución:', error);
-                            // Mostrar mensaje de error
-                            document.getElementById('form-institucion').innerHTML = `
-                                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative my-6">
-                                    <strong class="font-bold">Error:</strong>
-                                    <span class="block sm:inline">Ha ocurrido un error al cargar los datos. Intente nuevamente.</span>
-                                </div>
-                            `;
-                        });
+                        editarInstitucion(this.getAttribute('data-id'));
                     });
                 });
                 
@@ -696,13 +603,52 @@
                     });
                 });
                 
-                // Botones de eliminar institución
-                document.querySelectorAll('.btn-eliminar').forEach(btn => {
+                // Botones de cambiar estado
+                document.querySelectorAll('.btn-cambiar-estado').forEach(btn => {
                     btn.addEventListener('click', function() {
                         const id = this.getAttribute('data-id');
-                        document.getElementById('eliminar_id').value = id;
-                        document.getElementById('form-eliminar').action = `{{ url('admin/instituciones') }}/${id}`;
-                        document.getElementById('modal-eliminar').classList.remove('hidden');
+                        const activo = this.getAttribute('data-active') === '1' ? 'desactivar' : 'activar';
+                        
+                        if (confirm(`¿Está seguro que desea ${activo} esta institución?`)) {
+                            // Enviar solicitud AJAX para cambiar estado
+                            fetch(`{{ url('admin/instituciones') }}/${id}/cambiar-estado`, {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json'
+                                }
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    // Mostrar mensaje de éxito
+                                    document.getElementById('success-message-text').textContent = data.message || `Institución ${activo}da correctamente`;
+                                    document.getElementById('success-message').style.display = 'block';
+                                    
+                                    // Actualizar tabla
+                                    actualizarTabla();
+                                    
+                                    // Ocultar mensaje después de 3 segundos
+                                    setTimeout(() => {
+                                        document.getElementById('success-message').style.display = 'none';
+                                    }, 3000);
+                                } else {
+                                    alert('Error: ' + data.message);
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                alert('Ocurrió un error al procesar la solicitud');
+                            });
+                        }
+                    });
+                });
+                
+                // Botones de categorías
+                document.querySelectorAll('.btn-categorias').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        abrirModalCategorias(this.getAttribute('data-id'));
                     });
                 });
                 
@@ -726,41 +672,6 @@
                     document.getElementById('modal-institucion').classList.add('hidden');
                 });
                 
-                // Botones de categorías
-                document.querySelectorAll('.btn-categorias').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        const id = this.getAttribute('data-id');
-                        
-                        // Mostrar modal
-                        document.getElementById('modal-categorias').classList.remove('hidden');
-                        document.getElementById('contenedor-categorias-institucion').classList.add('hidden');
-                        document.getElementById('mensaje-cargando-categorias').classList.remove('hidden');
-                        document.getElementById('error-categorias').classList.add('hidden');
-                        
-                        // Cargar categorías
-                        fetch(`{{ url('admin/instituciones') }}/${id}/categorias`, {
-                            headers: {
-                                'X-Requested-With': 'XMLHttpRequest'
-                            }
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if(data.success) {
-                                // Implementar lógica para mostrar categorías
-                                // Esta parte requeriría una implementación más detallada
-                            } else {
-                                throw new Error(data.message || 'Error al cargar categorías');
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            document.getElementById('mensaje-cargando-categorias').classList.add('hidden');
-                            document.getElementById('error-categorias').classList.remove('hidden');
-                            document.getElementById('error-categorias-mensaje').textContent = error.message || 'Error al cargar las categorías. Intente nuevamente.';
-                        });
-                    });
-                });
-                
                 // Botón cerrar modal de categorías
                 document.getElementById('modal-categorias-close')?.addEventListener('click', function() {
                     document.getElementById('modal-categorias').classList.add('hidden');
@@ -771,6 +682,512 @@
                     document.getElementById('modal-categorias').classList.add('hidden');
                 });
             }
+            
+            // Función global para editar institución (disponible para tabla.blade.php)
+            window.editarInstitucion = function(id) {
+                document.getElementById('modal-titulo').textContent = 'Editar Institución';
+                
+                // Mostrar modal primero para asegurarnos de que todos los elementos del DOM estén visibles
+                document.getElementById('modal-institucion').classList.remove('hidden');
+                
+                // Establecer método PUT para actualización y guardar ID
+                const formMethodInput = document.getElementById('form_method');
+                if (formMethodInput) {
+                    formMethodInput.value = 'PUT';
+                }
+                
+                const idInput = document.getElementById('institucion_id');
+                if (idInput) {
+                    idInput.value = id;
+                }
+                
+                // Actualizar action del formulario
+                const formInstitucion = document.getElementById('form-institucion');
+                if (formInstitucion) {
+                    formInstitucion.action = `{{ url('admin/instituciones') }}/${id}`;
+                }
+                
+                // Mostrar indicador de carga
+                const loadingIndicator = `
+                    <div class="flex justify-center items-center py-12">
+                        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-700"></div>
+                        <span class="ml-3">Cargando datos de la institución...</span>
+                    </div>
+                `;
+                
+                // Ocultar contenido del formulario y mostrar indicador de carga
+                const formContent = document.querySelectorAll('#form-institucion .grid');
+                formContent.forEach(element => {
+                    element.style.display = 'none';
+                });
+                
+                const submitButtons = document.querySelector('#form-institucion .flex.justify-end');
+                if (submitButtons) {
+                    submitButtons.style.display = 'none';
+                }
+                
+                // Insertar indicador de carga
+                const loadingDiv = document.createElement('div');
+                loadingDiv.id = 'loading-indicator';
+                loadingDiv.innerHTML = loadingIndicator;
+                formInstitucion.appendChild(loadingDiv);
+                
+                // Cargar datos de la institución
+                fetch(`{{ url('admin/instituciones') }}/${id}/edit`, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Eliminar indicador de carga
+                    const loadingIndicator = document.getElementById('loading-indicator');
+                    if (loadingIndicator) {
+                        loadingIndicator.remove();
+                    }
+                    
+                    // Mostrar contenido del formulario
+                    formContent.forEach(element => {
+                        element.style.display = 'grid';
+                    });
+                    
+                    if (submitButtons) {
+                        submitButtons.style.display = 'flex';
+                    }
+                    
+                    // Completar formulario con datos
+                    if (data.institucion && data.institucion.user) {
+                        // Datos de usuario
+                        setValueIfExists('nombre', data.institucion.user.nombre);
+                        setValueIfExists('email', data.institucion.user.email);
+                        setValueIfExists('dni', data.institucion.user.dni);
+                        setValueIfExists('ciudad', data.institucion.user.ciudad);
+                        setValueIfExists('telefono', data.institucion.user.telefono);
+                        setValueIfExists('descripcion', data.institucion.user.descripcion);
+                        setValueIfExists('sitio_web', data.institucion.user.sitio_web);
+                        
+                        // Establecer estado activo
+                        const checkboxActivo = document.getElementById('activo');
+                        if (checkboxActivo) {
+                            checkboxActivo.checked = data.institucion.user.activo ? true : false;
+                        }
+                        
+                        // Mostrar imagen actual si existe
+                        const imagenContainer = document.getElementById('imagen-actual-container');
+                        const imagenActual = document.getElementById('imagen-actual');
+                        
+                        if (imagenContainer && imagenActual) {
+                            if (data.institucion.user.imagen) {
+                                imagenActual.src = `{{ asset('public/profile_images') }}/${data.institucion.user.imagen}`;
+                                imagenContainer.classList.remove('hidden');
+                            } else {
+                                imagenContainer.classList.add('hidden');
+                            }
+                        }
+                        
+                        // Datos de institución
+                        setValueIfExists('codigo_centro', data.institucion.codigo_centro);
+                        
+                        // Establecer tipo de institución
+                        const selectTipo = document.getElementById('tipo_institucion');
+                        if (selectTipo && data.institucion.tipo_institucion) {
+                            Array.from(selectTipo.options).forEach(option => {
+                                if (option.value === data.institucion.tipo_institucion) {
+                                    option.selected = true;
+                                }
+                            });
+                        }
+                        
+                        setValueIfExists('direccion', data.institucion.direccion);
+                        setValueIfExists('codigo_postal', data.institucion.codigo_postal);
+                        setValueIfExists('representante_legal', data.institucion.representante_legal);
+                        setValueIfExists('cargo_representante', data.institucion.cargo_representante);
+                        
+                        // Establecer verificada
+                        const checkboxVerificada = document.getElementById('verificada');
+                        if (checkboxVerificada) {
+                            checkboxVerificada.checked = data.institucion.verificada ? true : false;
+                        }
+                        
+                        // Marcar niveles educativos seleccionados
+                        const nivelesSeleccionados = data.niveles_seleccionados || [];
+                        document.querySelectorAll('input[name="niveles_educativos[]"]').forEach(checkbox => {
+                            checkbox.checked = nivelesSeleccionados.includes(parseInt(checkbox.value));
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al cargar institución:', error);
+                    
+                    // Eliminar indicador de carga
+                    const loadingIndicator = document.getElementById('loading-indicator');
+                    if (loadingIndicator) {
+                        loadingIndicator.remove();
+                    }
+                    
+                    // Mostrar contenido del formulario
+                    formContent.forEach(element => {
+                        element.style.display = 'grid';
+                    });
+                    
+                    if (submitButtons) {
+                        submitButtons.style.display = 'flex';
+                    }
+                    
+                    // Mostrar mensaje de error
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative my-6';
+                    errorDiv.innerHTML = `
+                        <strong class="font-bold">Error:</strong>
+                        <span class="block sm:inline">Ha ocurrido un error al cargar los datos. Intente nuevamente.</span>
+                    `;
+                    
+                    formInstitucion.insertBefore(errorDiv, formInstitucion.firstChild);
+                    
+                    // Eliminar mensaje de error después de 5 segundos
+                    setTimeout(() => {
+                        errorDiv.remove();
+                    }, 5000);
+                });
+            };
+            
+            // Función auxiliar para establecer valores en elementos del DOM si existen
+            function setValueIfExists(id, value) {
+                const element = document.getElementById(id);
+                if (element && value !== undefined) {
+                    element.value = value || '';
+                }
+            }
+            
+            // Función global para abrir modal de categorías (disponible para tabla.blade.php)
+            window.abrirModalCategorias = function(id) {
+                // Mostrar modal
+                document.getElementById('modal-categorias').classList.remove('hidden');
+                document.getElementById('contenedor-categorias-institucion').classList.add('hidden');
+                document.getElementById('mensaje-cargando-categorias').classList.remove('hidden');
+                document.getElementById('error-categorias').classList.add('hidden');
+                
+                // Guardar ID de institución en campo oculto
+                const idField = document.getElementById('institucion_id_categorias');
+                if (idField) {
+                    idField.value = id;
+                }
+                
+                // Cargar categorías
+                fetch(`{{ url('admin/instituciones') }}/${id}/categorias`, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if(data.success) {
+                        // Actualizar el contenido del modal con las categorías
+                        const contenedor = document.getElementById('contenedor-categorias-institucion');
+                        if (contenedor) {
+                            contenedor.classList.remove('hidden');
+                        }
+                        const mensajeCarga = document.getElementById('mensaje-cargando-categorias');
+                        if (mensajeCarga) {
+                            mensajeCarga.classList.add('hidden');
+                        }
+                        
+                        // Generar HTML para niveles educativos
+                        let htmlNiveles = '';
+                        if (data.niveles_educativos && data.niveles_educativos.length > 0) {
+                            data.niveles_educativos.forEach(nivel => {
+                                if (nivel && nivel.id && nivel.nombre_nivel) {
+                                    htmlNiveles += `
+                                        <span class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">
+                                            ${nivel.nombre_nivel}
+                                        </span>
+                                    `;
+                                }
+                            });
+                        } else {
+                            htmlNiveles = '<p class="text-gray-500 italic">No hay niveles educativos asignados a esta institución</p>';
+                        }
+                        
+                        const nivelesContainer = document.getElementById('niveles-container');
+                        if (nivelesContainer) {
+                            nivelesContainer.innerHTML = htmlNiveles;
+                        }
+                        
+                        // Generar HTML para categorías por nivel
+                        let htmlCategorias = '';
+                        let hayCategorias = false;
+                        
+                        // Verificar que tenemos niveles y categorías
+                        if (data.niveles_educativos && data.niveles_educativos.length > 0) {
+                            data.niveles_educativos.forEach(nivel => {
+                                if (!nivel || !nivel.id || !nivel.nombre_nivel) return;
+                                
+                                // Obtener categorías para este nivel
+                                const categoriasNivel = data.categorias_por_nivel && 
+                                                       data.categorias_por_nivel[nivel.id] ? 
+                                                       data.categorias_por_nivel[nivel.id] : [];
+                                
+                                htmlCategorias += `
+                                    <div class="mb-6 border-b pb-4">
+                                        <h3 class="text-lg font-semibold mb-3">${nivel.nombre_nivel}</h3>
+                                        <div class="space-y-2">
+                                `;
+                                
+                                if (categoriasNivel.length > 0) {
+                                    hayCategorias = true;
+                                    categoriasNivel.forEach(categoria => {
+                                        if (!categoria) return;
+                                        
+                                        const categoriaId = categoria.id || categoria.categoria_id;
+                                        const nombreCategoria = categoria.nombre_categoria || categoria.nombre;
+                                        const isActiva = categoria.activo !== undefined ? categoria.activo : true;
+                                        
+                                        htmlCategorias += `
+                                            <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                                <span>${nombreCategoria}</span>
+                                                <label class="relative inline-flex items-center cursor-pointer">
+                                                    <input type="checkbox" class="toggle-categoria sr-only peer" 
+                                                        data-nivel="${nivel.id}" 
+                                                        data-categoria="${categoriaId}"
+                                                        ${isActiva ? 'checked' : ''}>
+                                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                                </label>
+                                            </div>
+                                        `;
+                                    });
+                                } else {
+                                    htmlCategorias += `
+                                        <p class="text-gray-500 italic">No hay categorías asociadas a este nivel</p>
+                                    `;
+                                }
+                                
+                                htmlCategorias += `
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                        }
+                        
+                        const categoriasContainer = document.getElementById('categorias-container');
+                        const noCategoriasMsg = document.getElementById('no-categorias');
+                        
+                        if (categoriasContainer) {
+                            if (hayCategorias) {
+                                categoriasContainer.innerHTML = htmlCategorias;
+                                if (noCategoriasMsg) noCategoriasMsg.classList.add('hidden');
+                            } else {
+                                categoriasContainer.innerHTML = '';
+                                if (noCategoriasMsg) noCategoriasMsg.classList.remove('hidden');
+                            }
+                        }
+                        
+                        // Preparar formulario para añadir nuevas categorías
+                        const selectNivel = document.getElementById('nueva-categoria-nivel');
+                        if (selectNivel) {
+                            // Limpiar opciones previas
+                            selectNivel.innerHTML = '<option value="">Seleccione un nivel</option>';
+                            
+                            // Añadir opciones de niveles educativos
+                            if (data.niveles_educativos && data.niveles_educativos.length > 0) {
+                                data.niveles_educativos.forEach(nivel => {
+                                    if (nivel && nivel.id && nivel.nombre_nivel) {
+                                        selectNivel.innerHTML += `<option value="${nivel.id}">${nivel.nombre_nivel}</option>`;
+                                    }
+                                });
+                            }
+                            
+                            // Añadir evento para cambio de nivel
+                            selectNivel.addEventListener('change', function() {
+                                const nivelId = this.value;
+                                const selectCategorias = document.getElementById('nueva-categoria-id');
+                                
+                                if (!selectCategorias) return;
+                                
+                                if (!nivelId) {
+                                    selectCategorias.innerHTML = '<option value="">Seleccione primero un nivel</option>';
+                                    selectCategorias.disabled = true;
+                                    return;
+                                }
+                                
+                                // Indicador de carga
+                                selectCategorias.innerHTML = '<option value="">Cargando categorías...</option>';
+                                selectCategorias.disabled = true;
+                                
+                                // Cargar categorías para este nivel
+                                fetch(`{{ url('admin/categorias') }}/${nivelId}/subcategorias`, {
+                                    headers: {
+                                        'X-Requested-With': 'XMLHttpRequest'
+                                    }
+                                })
+                                .then(response => response.json())
+                                .then(categoriasData => {
+                                    // Preparar opciones
+                                    let options = '<option value="">Seleccione una categoría</option>';
+                                    
+                                    if (Array.isArray(categoriasData) && categoriasData.length > 0) {
+                                        categoriasData.forEach(categoria => {
+                                            if (categoria && categoria.id && categoria.nombre_categoria) {
+                                                options += `<option value="${categoria.id}">${categoria.nombre_categoria}</option>`;
+                                            }
+                                        });
+                                        selectCategorias.disabled = false;
+                                    } else {
+                                        options = '<option value="">No hay categorías disponibles</option>';
+                                        selectCategorias.disabled = true;
+                                    }
+                                    
+                                    selectCategorias.innerHTML = options;
+                                })
+                                .catch(error => {
+                                    console.error('Error al cargar categorías:', error);
+                                    selectCategorias.innerHTML = '<option value="">Error al cargar categorías</option>';
+                                    selectCategorias.disabled = true;
+                                });
+                            });
+                        }
+                        
+                        // Manejar formulario para agregar nueva categoría
+                        const formNuevaCategoria = document.getElementById('form-agregar-categoria');
+                        if (formNuevaCategoria) {
+                            formNuevaCategoria.addEventListener('submit', function(e) {
+                                e.preventDefault();
+                                
+                                const nivelId = document.getElementById('nueva-categoria-nivel')?.value;
+                                const categoriaId = document.getElementById('nueva-categoria-id')?.value;
+                                const activo = document.getElementById('nueva-categoria-activo')?.checked;
+                                
+                                if (!nivelId || !categoriaId) {
+                                    alert('Por favor seleccione nivel y categoría');
+                                    return;
+                                }
+                                
+                                // Mostrar indicador de carga
+                                const submitBtn = this.querySelector('button[type="submit"]');
+                                if (submitBtn) {
+                                    const originalText = submitBtn.textContent;
+                                    submitBtn.innerHTML = `
+                                        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        Agregando...
+                                    `;
+                                    submitBtn.disabled = true;
+                                }
+                                
+                                // Enviar solicitud para agregar categoría
+                                fetch(`{{ url('admin/instituciones') }}/${id}/categorias`, {
+                                    method: 'POST',
+                                    headers: {
+                                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
+                                        'Content-Type': 'application/json',
+                                        'Accept': 'application/json'
+                                    },
+                                    body: JSON.stringify({
+                                        categorias: [{
+                                            nivel_id: nivelId,
+                                            categoria_id: categoriaId,
+                                            activo: activo
+                                        }]
+                                    })
+                                })
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (submitBtn) {
+                                        submitBtn.innerHTML = 'Agregar Categoría';
+                                        submitBtn.disabled = false;
+                                    }
+                                    
+                                    if (data.success) {
+                                        // Recargar modal de categorías
+                                        window.abrirModalCategorias(id);
+                                        
+                                        // Limpiar formulario
+                                        if (document.getElementById('nueva-categoria-nivel')) {
+                                            document.getElementById('nueva-categoria-nivel').value = '';
+                                        }
+                                        if (document.getElementById('nueva-categoria-id')) {
+                                            document.getElementById('nueva-categoria-id').value = '';
+                                            document.getElementById('nueva-categoria-id').disabled = true;
+                                        }
+                                    } else {
+                                        alert(data.message || 'Error al agregar categoría');
+                                    }
+                                })
+                                .catch(error => {
+                                    console.error('Error:', error);
+                                    alert('Error al agregar la categoría');
+                                    
+                                    if (submitBtn) {
+                                        submitBtn.innerHTML = 'Agregar Categoría';
+                                        submitBtn.disabled = false;
+                                    }
+                                });
+                            });
+                        }
+                        
+                        // Manejar eventos para los toggles de categorías
+                        setTimeout(() => {
+                            document.querySelectorAll('.toggle-categoria').forEach(toggle => {
+                                toggle.addEventListener('change', function() {
+                                    const nivelId = this.getAttribute('data-nivel');
+                                    const categoriaId = this.getAttribute('data-categoria');
+                                    const isActive = this.checked;
+                                    
+                                    // Enviar solicitud para activar/desactivar
+                                    fetch(`{{ url('admin/instituciones') }}/${id}/categorias/${categoriaId}/toggle`, {
+                                        method: 'POST',
+                                        headers: {
+                                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
+                                            'Content-Type': 'application/json',
+                                            'Accept': 'application/json'
+                                        },
+                                        body: JSON.stringify({
+                                            nivel_id: nivelId,
+                                            activo: isActive
+                                        })
+                                    })
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        if (!data.success) {
+                                            // Revertir cambio si hay error
+                                            this.checked = !isActive;
+                                            alert(data.message || 'Error al cambiar estado de la categoría');
+                                        }
+                                    })
+                                    .catch(error => {
+                                        console.error('Error:', error);
+                                        // Revertir cambio en caso de error
+                                        this.checked = !isActive;
+                                        alert('Error al actualizar la categoría');
+                                    });
+                                });
+                            });
+                        }, 500); // Pequeño retraso para asegurar que los elementos estén en el DOM
+                    } else {
+                        throw new Error(data.message || 'Error al cargar categorías');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    
+                    const mensajeCarga = document.getElementById('mensaje-cargando-categorias');
+                    if (mensajeCarga) {
+                        mensajeCarga.classList.add('hidden');
+                    }
+                    
+                    const errorBox = document.getElementById('error-categorias');
+                    const errorMsg = document.getElementById('error-categorias-mensaje');
+                    
+                    if (errorBox) {
+                        errorBox.classList.remove('hidden');
+                    }
+                    
+                    if (errorMsg) {
+                        errorMsg.textContent = error.message || 'Error al cargar las categorías. Intente nuevamente.';
+                    }
+                });
+            };
             
             // Inicializar asignación de eventos
             asignarEventosTabla();
