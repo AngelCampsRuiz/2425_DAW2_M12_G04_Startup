@@ -114,11 +114,11 @@ class ProfileController extends Controller
                 'telefono' => $validatedData['telefono'] ?? null,
                 'ciudad' => $validatedData['ciudad'] ?? null,
                 'sitio_web' => $validatedData['sitio_web'] ?? null,
-                'show_telefono' => $request->has('show_telefono'),
-                'show_dni' => $request->has('show_dni'),
-                'show_ciudad' => $request->has('show_ciudad'),
-                'show_direccion' => $request->has('show_direccion'),
-                'show_web' => $request->has('show_web'),
+                'show_telefono' => $request->boolean('show_telefono'),
+                'show_cif' => $request->boolean('show_cif'),
+                'show_ciudad' => $request->boolean('show_ciudad'),
+                'show_direccion' => $request->boolean('show_direccion'),
+                'show_web' => $request->boolean('show_web'),
             ];
 
             if (isset($validatedData['imagen'])) {
@@ -129,15 +129,19 @@ class ProfileController extends Controller
                 $updateData['banner'] = $validatedData['banner'];
             }
 
-            // Si es una empresa, actualizar el CIF
+            // Si es una empresa, actualizar el CIF y show_cif
             if ($user->role_id == 2 && isset($validatedData['cif'])) {
                 $user->empresa()->update([
-                    'cif' => $validatedData['cif']
+                    'cif' => $validatedData['cif'],
+                    'show_cif' => $request->boolean('show_cif')
                 ]);
             } elseif (isset($validatedData['dni'])) {
                 $updateData['dni'] = $validatedData['dni'];
             }
 
+            // Remover show_cif del updateData si existe
+            unset($updateData['show_cif']);
+            
             $user->update($updateData);
 
             DB::commit();

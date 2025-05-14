@@ -383,29 +383,32 @@
                                             </div>
                                         </div>
 
-                                        <div class="flex items-start" data-campo="dni" style="display: {{ $user->show_dni ? 'flex' : 'none' }}">
+                                        {{-- Checkbox para mostrar/ocultar CIF --}}
+                                        <label class="flex items-center space-x-3 p-4 bg-gradient-to-br from-white to-purple-50 rounded-xl hover:bg-purple-50 transition-all duration-200 cursor-pointer">
+                                            <input type="checkbox" 
+                                                   name="show_cif" 
+                                                   value="1"
+                                                   {{ $user->empresa && $user->empresa->show_cif ? 'checked' : '' }}
+                                                   class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-500 focus:ring-purple-500">
+                                            <span class="text-sm font-medium text-gray-700">Mostrar CIF</span>
+                                        </label>
+
+                                        {{-- Sección donde se muestra el CIF --}}
+                                        @php
+                                            $showCif = $user->empresa && $user->empresa->show_cif;
+                                        @endphp
+
+                                        <div class="flex items-start" 
+                                             data-campo="cif" 
+                                             style="display: {{ $showCif ? 'flex' : 'none' }}">
                                             <div class="flex-shrink-0">
-                                                <div class="bg-purple-100 p-2 rounded-lg">
-                                                    <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/>
-                                                    </svg>
-                                                </div>
+                                                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                </svg>
                                             </div>
                                             <div class="ml-4">
-                                                <p class="text-sm font-medium text-gray-500">
-                                                    @if($user->role_id == 2)
-                                                        {{ __('messages.cif') }}
-                                                    @else
-                                                        {{ __('messages.dni') }}
-                                                    @endif
-                                                </p>
-                                                <p class="text-lg font-semibold text-gray-900" data-valor="dni">
-                                                    @if($user->role_id == 2)
-                                                        {{ $user->empresa->cif ?? 'No especificado' }}
-                                                    @else
-                                                        {{ $user->dni ?? 'No especificado' }}
-                                                    @endif
-                                                </p>
+                                                <p class="text-sm text-gray-500">CIF</p>
+                                                <p class="font-medium text-gray-900">{{ $user->empresa ? $user->empresa->cif : 'No especificado' }}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -604,7 +607,7 @@
                                         <h3 class="text-xl font-semibold text-gray-900 ml-4">Información de la Empresa</h3>
                                     </div>
                                     <div class="space-y-4">
-                                        <div class="flex items-start">
+                                        <div class="flex items-start" data-campo="empresa-cif">
                                             <div class="flex-shrink-0">
                                                 <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -616,15 +619,8 @@
                                             </div>
                                         </div>
                                         <div class="flex items-start">
-                                            <div class="flex-shrink-0">
-                                                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                                                </svg>
-                                            </div>
-                                            <div class="ml-4">
-                                                <p class="text-sm text-gray-500">Sector</p>
-                                                <p class="font-medium text-gray-900">{{ $user->empresa->sector ?? 'No especificado' }}</p>
-                                            </div>
+                                          
+                                            
                                         </div>
                                     </div>
                                 </div>
@@ -1059,10 +1055,10 @@
                                     </label>
 
                                     <label class="flex items-center space-x-3 p-4 bg-gradient-to-br from-white to-purple-50 rounded-xl hover:bg-purple-50 transition-all duration-200 cursor-pointer">
-                                        <input type="checkbox" name="show_dni" value="1"
-                                               {{ $user->show_dni ? 'checked' : '' }}
+                                        <input type="checkbox" name="show_cif" value="1"
+                                               {{ $user->empresa->show_cif ? 'checked' : '' }}
                                                class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-500 focus:ring-purple-500">
-                                        <span class="text-sm font-medium text-gray-700">Mostrar DNI</span>
+                                        <span class="text-sm font-medium text-gray-700">Mostrar CIF</span>
                                     </label>
 
                                     <label class="flex items-center space-x-3 p-4 bg-gradient-to-br from-white to-purple-50 rounded-xl hover:bg-purple-50 transition-all duration-200 cursor-pointer">
@@ -1234,13 +1230,14 @@
                                 <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
                                     <div class="flex items-center justify-between mb-6">
                                         <h3 class="text-xl font-semibold text-gray-900 flex items-center">
+                                            {{-- Ubicación del mapa --}}
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
                                             </svg>
                                             Ubicación
                                         </h3>
-                                        <button onclick="saveLocation()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center">
+                                        <button type="button" onclick="saveLocation()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                                             </svg>
@@ -1257,15 +1254,11 @@
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                                         <div>
                                             <label for="direccion" class="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
-                                            <input type="text" name="direccion" id="direccion" value="{{ $user->direccion }}"
-                                                   class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
-                                                   readonly>
+                                            <input type="text" name="direccion" id="direccion" value="{{ $user->direccion }}" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" readonly>
                                         </div>
                                         <div>
                                             <label for="ciudad_mapa" class="block text-sm font-medium text-gray-700 mb-1">Ciudad</label>
-                                            <input type="text" name="ciudad_mapa" id="ciudad_mapa" value="{{ $user->ciudad }}"
-                                                   class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
-                                                   readonly>
+                                            <input type="text" name="ciudad_mapa" id="ciudad_mapa" value="{{ $user->ciudad }}" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" readonly>
                                         </div>
                                     </div>
 
@@ -1560,7 +1553,7 @@
                         // Actualizar campos de visibilidad
                         const camposVisibles = {
                             'telefono': user.show_telefono,
-                            'dni': user.show_dni,
+                            'cif': user.empresa.show_cif,
                             'ciudad': user.show_ciudad,
                             'direccion': user.show_direccion,
                             'web': user.show_web
@@ -1577,7 +1570,7 @@
                         // Actualizar valores de los campos
                         const camposValores = {
                             'telefono': user.telefono,
-                            'dni': user.dni,
+                            'cif': user.empresa.cif,
                             'ciudad': user.ciudad,
                             'direccion': user.direccion,
                             'web': user.web
@@ -1673,11 +1666,11 @@
                         showError(telefonoInput, "Este número de teléfono ya está registrado");
                         return;
                     }
-                } else if (errorMsg.includes('Duplicate entry') && errorMsg.includes('user_dni_unique')) {
+                } else if (errorMsg.includes('Duplicate entry') && errorMsg.includes('user_cif_unique')) {
                     // Error de DNI duplicado
-                    const dniInput = document.getElementById('dni');
-                    if (dniInput) {
-                        showError(dniInput, "Este DNI/NIE ya está registrado");
+                    const cifInput = document.getElementById('cif');
+                    if (cifInput) {
+                        showError(cifInput, "Este CIF ya está registrado");
                         return;
                     }
                 } else if (errorMsg.includes('Duplicate entry') && errorMsg.includes('user_email_unique')) {

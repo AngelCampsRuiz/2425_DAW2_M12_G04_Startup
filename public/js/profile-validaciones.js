@@ -160,11 +160,10 @@ function handleFormSubmit(e) {
     // Preparar los datos del formulario
     const formData = new FormData(form);
 
-    // Asegurarse de que los checkboxes no marcados se envíen como 0
-    ['show_telefono', 'show_dni', 'show_ciudad', 'show_direccion', 'show_web'].forEach(field => {
-        if (!formData.has(field)) {
-            formData.append(field, '0');
-        }
+    // Asegurarse de que los checkboxes no marcados se envíen como false
+    ['show_telefono', 'show_cif', 'show_ciudad', 'show_direccion', 'show_web'].forEach(field => {
+        const checkbox = form.querySelector(`input[name="${field}"]`);
+        formData.set(field, checkbox && checkbox.checked ? '1' : '0');
     });
 
     // Asegurarse de que sitio_web se envíe aunque esté vacío
@@ -197,6 +196,25 @@ function handleFormSubmit(e) {
                 icon: 'success',
                 confirmButtonColor: '#7C3AED'
             }).then(() => {
+                // Actualizar campos de visibilidad antes de recargar
+                const user = data.user;
+                const camposVisibles = {
+                    'telefono': user.show_telefono,
+                    'cif': user.empresa && user.empresa.show_cif,
+                    'ciudad': user.show_ciudad,
+                    'direccion': user.show_direccion,
+                    'web': user.show_web
+                };
+
+                // Actualizar la visibilidad de cada campo
+                Object.entries(camposVisibles).forEach(([campo, visible]) => {
+                    const elemento = document.querySelector(`[data-campo="${campo}"]`);
+                    if (elemento) {
+                        elemento.style.display = visible ? 'flex' : 'none';
+                    }
+                });
+
+                // Recargar la página después de actualizar la visibilidad
                 window.location.reload();
             });
         } else if (data.errors) {
@@ -207,7 +225,6 @@ function handleFormSubmit(e) {
                     showError(input, Array.isArray(messages) ? messages[0] : messages);
                 }
             });
-            throw new Error('Por favor, corrige los errores de validación');
         }
     })
     .catch(error => {
@@ -225,6 +242,37 @@ function handleFormSubmit(e) {
             submitButton.innerHTML = 'Guardar cambios';
         }
         window.isFormSubmitting = false;
+    });
+}
+
+// Función para manejar la visibilidad de los campos en tiempo real
+function setupVisibilityToggles() {
+    const checkboxes = {
+        'show_telefono': '[data-campo="telefono"]',
+        'show_cif': '[data-campo="cif"], [data-campo="empresa-cif"]',
+        'show_ciudad': '[data-campo="ciudad"]',
+        'show_direccion': '[data-campo="direccion"]',
+        'show_web': '[data-campo="web"]'
+    };
+
+    // Inicializar el estado inicial de los campos
+    Object.entries(checkboxes).forEach(([checkboxName, selectors]) => {
+        const checkbox = document.querySelector(`input[name="${checkboxName}"]`);
+        // Manejar múltiples selectores
+        selectors.split(', ').forEach(selector => {
+            const campos = document.querySelectorAll(selector);
+            campos.forEach(campo => {
+                if (checkbox && campo) {
+                    // Establecer visibilidad inicial
+                    campo.style.display = checkbox.checked ? 'flex' : 'none';
+                    
+                    // Añadir listener para cambios
+                    checkbox.addEventListener('change', function() {
+                        campo.style.display = this.checked ? 'flex' : 'none';
+                    });
+                }
+            });
+        });
     });
 }
 
@@ -272,6 +320,8 @@ document.addEventListener('DOMContentLoaded', function() {
     if (emailInput) {
         emailInput.addEventListener('blur', () => validarEmail(emailInput));
     }
+
+    setupVisibilityToggles();
 });
 
 
