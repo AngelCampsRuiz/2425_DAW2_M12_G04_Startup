@@ -88,6 +88,9 @@
                         <button id="toggle-video" class="p-2 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 text-white transition-colors">
                             <i class="fas fa-video"></i>
                         </button>
+                        <button id="share-screen" class="p-2 rounded-full bg-white bg-opacity-20 hover:bg-opacity-30 text-white transition-colors">
+                            <i class="fas fa-desktop"></i>
+                        </button>
                         <button id="end-call" class="p-2 rounded-full bg-red-500 hover:bg-red-600 text-white transition-colors">
                             <i class="fas fa-phone-slash"></i>
                         </button>
@@ -327,6 +330,13 @@
     window.routeGetMessages = '{{ route('chat.messages', ['chat' => $chat->id]) }}';
     window.routeSendMessage = '{{ route('chat.message', ['chat' => $chat->id]) }}';
 
+    // Variables para la videollamada
+    let localStream;
+    let screenStream;
+    let isScreenSharing = false;
+    let agoraClient;
+    let agoraScreenClient;
+
     document.getElementById('video-call-btn').addEventListener('click', async function() {
         console.log('Botón de videollamada presionado');
         document.getElementById('video-container').style.display = 'flex';
@@ -334,6 +344,7 @@
         try {
             // Solicitar permisos explícitamente
             const stream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
+            localStream = stream;
             
             // Obtener referencia al elemento de video
             const localVideo = document.getElementById('local-video');
@@ -392,10 +403,19 @@
                     '<i class="fas fa-video-slash"></i>';
             }
         });
+
+        // Compartir pantalla
+        document.getElementById('share-screen').addEventListener('click', toggleScreenSharing);
         
         // End call
         document.getElementById('end-call').addEventListener('click', function() {
             stream.getTracks().forEach(track => track.stop());
+            
+            // Si estamos compartiendo pantalla, detenerla
+            if (isScreenSharing && screenStream) {
+                screenStream.getTracks().forEach(track => track.stop());
+            }
+            
             document.getElementById('video-container').style.display = 'none';
         });
         
@@ -408,6 +428,90 @@
         document.getElementById('close-video-container').addEventListener('click', function() {
             document.getElementById('video-container').style.display = 'none';
         });
+    }
+
+    // Función para compartir pantalla
+    async function toggleScreenSharing() {
+        if (!localStream) {
+            console.error('No hay stream local disponible');
+            return;
+        }
+
+        if (isScreenSharing) {
+            await stopScreenSharing();
+        } else {
+            await startScreenSharing();
+        }
+    }
+
+    // Iniciar compartir pantalla
+    async function startScreenSharing() {
+        try {
+            console.log('Iniciando compartición de pantalla...');
+            
+            // Solicitar acceso a la pantalla
+            screenStream = await navigator.mediaDevices.getDisplayMedia({
+                video: {
+                    cursor: 'always',
+                    displaySurface: 'monitor'
+                }
+            });
+            
+            // Guardar la referencia al video local original
+            const localVideo = document.getElementById('local-video');
+            
+            // Mostrar la pantalla compartida en el video local
+            localVideo.srcObject = screenStream;
+            
+            // Marcar el botón como activo
+            const shareButton = document.getElementById('share-screen');
+            shareButton.classList.add('bg-green-500');
+            shareButton.classList.remove('bg-white', 'bg-opacity-20');
+            
+            // Actualizar estado
+            isScreenSharing = true;
+            
+            // Detectar cuando el usuario detiene la compartición de pantalla desde el navegador
+            screenStream.getVideoTracks()[0].onended = function() {
+                stopScreenSharing();
+            };
+            
+            console.log('Compartición de pantalla iniciada');
+        } catch (error) {
+            console.error('Error al iniciar la compartición de pantalla:', error);
+            alert('No se pudo compartir la pantalla: ' + error.message);
+        }
+    }
+
+    // Detener compartir pantalla
+    async function stopScreenSharing() {
+        if (!isScreenSharing || !screenStream) {
+            return;
+        }
+        
+        try {
+            console.log('Deteniendo compartición de pantalla...');
+            
+            // Detener todas las pistas del stream de pantalla
+            screenStream.getTracks().forEach(track => track.stop());
+            
+            // Restaurar el vídeo de la cámara
+            const localVideo = document.getElementById('local-video');
+            localVideo.srcObject = localStream;
+            
+            // Restaurar el aspecto del botón
+            const shareButton = document.getElementById('share-screen');
+            shareButton.classList.remove('bg-green-500');
+            shareButton.classList.add('bg-white', 'bg-opacity-20');
+            
+            // Actualizar estado
+            isScreenSharing = false;
+            screenStream = null;
+            
+            console.log('Compartición de pantalla detenida');
+        } catch (error) {
+            console.error('Error al detener la compartición de pantalla:', error);
+        }
     }
 
     // Añade esto después del código anterior

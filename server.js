@@ -2,23 +2,35 @@ const express = require('express');
 const http = require('http');
 const socketIO = require('socket.io');
 const cors = require('cors');
+const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
+
+// Configuración mejorada de socket.io
 const io = socketIO(server, {
   cors: {
     origin: "*",
-    methods: ["GET", "POST"]
-  }
+    methods: ["GET", "POST"],
+    allowedHeaders: ["my-custom-header"],
+    credentials: true
+  },
+  transports: ['websocket', 'polling']
 });
 
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use(express.static(path.join(__dirname, 'client')));
 
 // Ruta básica
 app.get('/', (req, res) => {
-  res.send('Servidor de señalización para videollamadas funcionando');
+  res.sendFile(path.join(__dirname, 'client', 'index.html'));
+});
+
+// Agregar ruta para comprobar que el servidor está funcionando
+app.get('/api/status', (req, res) => {
+  res.json({ status: 'Servidor activo', timestamp: new Date() });
 });
 
 // Almacenamiento de usuarios conectados

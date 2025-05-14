@@ -1,6 +1,8 @@
 // Variables globales
 let socket;
 let localStream;
+let screenStream;
+let isScreenSharing = false;
 let peerConnection;
 let currentUser = null;
 let currentCall = null;
@@ -16,7 +18,7 @@ const peerConfig = {
 
 // DOM Elements
 const registerForm = document.getElementById('register-form');
-const usernameInput = document.getElementById('username-input');
+const usernameInput = document.getElementById('username');
 const registerCard = document.getElementById('register-card');
 const mainSection = document.getElementById('main-section');
 const usersList = document.getElementById('users-list');
@@ -31,6 +33,10 @@ const rejectCallBtn = document.getElementById('reject-call');
 const endCallBtn = document.getElementById('end-call');
 const muteBtn = document.getElementById('mute-audio');
 const disableVideoBtn = document.getElementById('disable-video');
+const shareScreenBtn = document.getElementById('share-screen');
+const callTitle = document.getElementById('call-title');
+const callName = document.getElementById('call-name');
+const chatBtn = document.getElementById('chat-btn');
 
 // Inicialización
 document.addEventListener('DOMContentLoaded', () => {
@@ -41,6 +47,12 @@ document.addEventListener('DOMContentLoaded', () => {
     endCallBtn.addEventListener('click', endCall);
     muteBtn.addEventListener('click', muteAudio);
     disableVideoBtn.addEventListener('click', disableVideo);
+    shareScreenBtn.addEventListener('click', toggleScreenSharing);
+    
+    // Nuevo botón de chat
+    if (chatBtn) {
+        chatBtn.addEventListener('click', toggleChat);
+    }
 });
 
 // Función para registrar al usuario
@@ -57,22 +69,40 @@ async function registerUser(event) {
         // Solicitar permisos de cámara y micrófono
         localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
         localVideo.srcObject = localStream;
+        console.log("Cámara y micrófono accesibles");
         
-        // Conectar al servidor mediante socket.io
-        socket = io('http://localhost:3000');
+        // Conectar al servidor mediante socket.io con manejo de errores mejorado
+        console.log("Intentando conectar a Socket.io en http://localhost:3000");
+        socket = io('http://localhost:3000', {
+            reconnectionAttempts: 5,
+            reconnectionDelay: 1000,
+            timeout: 10000,
+            transports: ['websocket', 'polling'] // Intentar primero websocket, luego polling
+        });
+        
+        // Manejar errores de conexión
+        socket.on('connect_error', (error) => {
+            console.error('Error de conexión a Socket.io:', error);
+            showNotification(`Error de conexión al servidor: ${error.message}`, 'error');
+        });
+        
+        socket.on('connect', () => {
+            console.log('Conectado a Socket.io con ID:', socket.id);
+            
+            // Solo registrar al usuario cuando estamos conectados
+            socket.emit('register', username);
+            currentUser = username;
+            
+            // Mostrar la interfaz principal
+            registerCard.style.display = 'none';
+            mainSection.style.display = 'block';
+            
+            showNotification(`Te has registrado como: ${username}`, 'success');
+        });
         
         // Registrar eventos de socket
         setupSocketEvents();
         
-        // Registrar al usuario en el servidor - enviar solo el nombre como string
-        socket.emit('register', username);
-        currentUser = username;
-        
-        // Mostrar la interfaz principal
-        registerCard.style.display = 'none';
-        mainSection.style.display = 'block';
-        
-        showNotification(`Te has registrado como: ${username}`, 'success');
     } catch (error) {
         showNotification(`Error al acceder a la cámara/micrófono: ${error.message}`, 'error');
         console.error('Error accessing media devices:', error);
@@ -248,22 +278,28 @@ async function initiateCall(toUsername) {
 async function handleIncomingCall(fromUsername, signalData) {
     if (currentCall) {
         // Automáticamente rechazar si ya estamos en una llamada
-        socket.emit('reject-call', {
-            to: fromUsername,
+        socket.emit('reject', {
+            from: fromUsername,
             reason: 'busy'
         });
         return;
     }
     
+    // Registrar la llamada entrante
     currentCall = {
-        with: fromUsername,
+        from: fromUsername,
         status: 'incoming',
-        offer: signalData
+        signalData: signalData
     };
     
     // Mostrar controles de llamada entrante
-    incomingCallText.textContent = `${fromUsername} te está llamando...`;
-    incomingCallControls.style.display = 'block';
+    incomingCallControls.style.display = 'flex';
+    incomingCallText.textContent = `Llamada entrante de ${fromUsername}`;
+    
+    // Reproducir sonido de llamada (si existe)
+    if (window.ringtone) {
+        window.ringtone.play();
+    }
     
     showNotification(`Llamada entrante de ${fromUsername}`, 'info');
 }
@@ -275,7 +311,7 @@ async function acceptCall() {
     }
     
     try {
-        // Crear una nueva conexión peer
+        // Crear la conexión peer
         peerConnection = new RTCPeerConnection(peerConfig);
         
         // Añadir la transmisión local
@@ -287,7 +323,7 @@ async function acceptCall() {
         peerConnection.onicecandidate = (event) => {
             if (event.candidate) {
                 socket.emit('ice-candidate', {
-                    to: currentCall.with,
+                    to: currentCall.from,
                     candidate: event.candidate
                 });
             }
@@ -298,29 +334,37 @@ async function acceptCall() {
             remoteVideo.srcObject = event.streams[0];
         };
         
-        // Configurar la descripción remota (oferta)
-        await peerConnection.setRemoteDescription(new RTCSessionDescription(currentCall.offer));
+        // Establecer la descripción remota (oferta)
+        await peerConnection.setRemoteDescription(currentCall.signalData);
         
         // Crear una respuesta
         const answer = await peerConnection.createAnswer();
         await peerConnection.setLocalDescription(answer);
         
-        // Enviar la respuesta al otro usuario
+        // Enviar la respuesta al llamante
         socket.emit('accept_call', {
-            from: currentCall.with,
+            from: currentCall.from,
             signalData: peerConnection.localDescription
         });
         
-        // Actualizar el estado de la llamada
-        currentCall.status = 'ongoing';
+        // Actualizar estado
+        currentCall.status = 'connected';
         
         // Ocultar controles de llamada entrante y mostrar controles de llamada
         incomingCallControls.style.display = 'none';
         callControls.style.display = 'flex';
-        endCallBtn.style.display = 'block';
+        callControls.style.zIndex = '100';
         
-        showNotification(`Llamada en curso con ${currentCall.with}`, 'success');
+        document.getElementById('remote-user-name').textContent = currentCall.from;
         
+        showNotification(`Llamada conectada con ${currentCall.from}`, 'success');
+        
+        // Actualizar título de la llamada
+        updateCallInfo(currentCall.from);
+        
+        // Comprobación extra para depuración
+        console.log("Controles de llamada activados en acceptCall:", callControls);
+        console.log("Estado de visualización:", callControls.style.display);
     } catch (error) {
         showNotification(`Error al aceptar la llamada: ${error.message}`, 'error');
         console.error('Error accepting call:', error);
@@ -350,26 +394,36 @@ function rejectCall() {
 
 // Manejar la aceptación de una llamada
 async function handleCallAccepted(byUsername, answer) {
-    if (!currentCall || currentCall.with !== byUsername || currentCall.status !== 'calling') {
-        return;
-    }
-    
     try {
-        // Configurar la descripción remota (respuesta)
-        await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+        if (!peerConnection) {
+            console.error('No hay conexión peer activa');
+            return;
+        }
+        
+        // Establecer la descripción remota
+        await peerConnection.setRemoteDescription(answer);
         
         // Actualizar el estado de la llamada
-        currentCall.status = 'ongoing';
+        currentCall.status = 'connected';
         
-        // Mostrar controles de llamada
+        // Mostrar controles de llamada (asegurándonos de que sean visibles)
         callControls.style.display = 'flex';
-        endCallBtn.style.display = 'block';
+        callControls.style.zIndex = '100';
+        incomingCallControls.style.display = 'none';
         
-        showNotification(`${byUsername} ha aceptado tu llamada`, 'success');
+        document.getElementById('remote-user-name').textContent = byUsername;
         
+        showNotification(`Llamada conectada con ${byUsername}`, 'success');
+        
+        // Actualizar título de la llamada
+        updateCallInfo(byUsername);
+        
+        // Comprobación extra para depuración
+        console.log("Controles de llamada:", callControls);
+        console.log("Estado de visualización:", callControls.style.display);
     } catch (error) {
-        showNotification(`Error al establecer la llamada: ${error.message}`, 'error');
-        console.error('Error establishing call:', error);
+        showNotification(`Error al establecer la conexión: ${error.message}`, 'error');
+        console.error('Error handling call acceptance:', error);
         resetCall();
     }
 }
@@ -454,6 +508,13 @@ function resetCall() {
     
     // Restablecer la variable de llamada actual
     currentCall = null;
+    
+    // Si estamos compartiendo pantalla, detenerla
+    if (isScreenSharing && screenStream) {
+        screenStream.getTracks().forEach(track => track.stop());
+        isScreenSharing = false;
+        shareScreenBtn.classList.remove('active');
+    }
 }
 
 // Silenciar audio
@@ -477,5 +538,148 @@ function disableVideo() {
                 track.enabled = !track.enabled;
             }
         }
+    }
+}
+
+// Función para compartir pantalla
+async function toggleScreenSharing() {
+    if (!currentCall || currentCall.status !== 'connected') {
+        showNotification('Necesitas estar en una llamada para compartir tu pantalla', 'warning');
+        return;
+    }
+
+    try {
+        if (isScreenSharing) {
+            // Detener compartir pantalla
+            stopScreenSharing();
+        } else {
+            // Iniciar compartir pantalla
+            await startScreenSharing();
+        }
+    } catch (error) {
+        showNotification(`Error al compartir pantalla: ${error.message}`, 'error');
+        console.error('Error toggling screen share:', error);
+    }
+}
+
+// Iniciar compartir pantalla
+async function startScreenSharing() {
+    try {
+        // Obtener acceso a la pantalla
+        screenStream = await navigator.mediaDevices.getDisplayMedia({ 
+            video: { 
+                cursor: 'always',
+                displaySurface: 'monitor'
+            }
+        });
+        
+        // Almacenar las pistas de video originales para restaurarlas después
+        const videoTrack = localStream.getVideoTracks()[0];
+        
+        // Reemplazar la pista de video con la pantalla en la peer connection
+        const screenTrack = screenStream.getVideoTracks()[0];
+        
+        // Obtener los remitentes de la conexión peer
+        const senders = peerConnection.getSenders();
+        const videoSender = senders.find(sender => sender.track.kind === 'video');
+        
+        // Reemplazar la pista de video con la pista de la pantalla
+        await videoSender.replaceTrack(screenTrack);
+        
+        // Actualizar el video local con la pantalla compartida
+        localVideo.srcObject = screenStream;
+        
+        // Marcar que estamos compartiendo pantalla
+        isScreenSharing = true;
+        shareScreenBtn.classList.add('active');
+        
+        // Detectar cuando el usuario detiene la compartición de pantalla
+        screenTrack.onended = () => {
+            stopScreenSharing();
+        };
+        
+        showNotification('Compartiendo pantalla', 'success');
+    } catch (error) {
+        throw error;
+    }
+}
+
+// Detener compartir pantalla
+async function stopScreenSharing() {
+    if (!isScreenSharing || !screenStream) {
+        return;
+    }
+    
+    try {
+        // Detener todas las pistas del stream de pantalla
+        screenStream.getTracks().forEach(track => track.stop());
+        
+        // Obtener la pista de video original
+        const videoTrack = localStream.getVideoTracks()[0];
+        
+        // Obtener el remitente de video
+        const senders = peerConnection.getSenders();
+        const videoSender = senders.find(sender => sender.track.kind === 'video');
+        
+        // Reemplazar la pista de pantalla con la pista de video original
+        if (videoTrack && videoSender) {
+            await videoSender.replaceTrack(videoTrack);
+        }
+        
+        // Restaurar el stream de video local
+        localVideo.srcObject = localStream;
+        
+        // Actualizar estado
+        isScreenSharing = false;
+        shareScreenBtn.classList.remove('active');
+        
+        showNotification('Compartición de pantalla finalizada', 'info');
+    } catch (error) {
+        console.error('Error stopping screen sharing:', error);
+        showNotification('Error al detener la compartición de pantalla', 'error');
+    }
+}
+
+// Función para el chat
+function toggleChat() {
+    showNotification('Funcionalidad de chat en desarrollo', 'info');
+}
+
+// Función para actualizar la información de la llamada
+function updateCallInfo(username) {
+    // Actualizar el nombre en el título
+    if (callName) {
+        callName.textContent = username;
+    }
+    
+    // Asegurarnos de que el header sea visible
+    const callHeader = document.getElementById('call-header');
+    if (callHeader) {
+        callHeader.style.display = 'flex';
+    }
+    
+    // Añadir indicadores de estado a los videos
+    addStatusIndicators();
+}
+
+// Función para añadir indicadores de estado
+function addStatusIndicators() {
+    const localVideo = document.querySelector('.video-wrapper.local');
+    const remoteVideo = document.querySelector('.video-wrapper:not(.local)');
+    
+    // Indicador para video local
+    if (localVideo && !localVideo.querySelector('.status-indicator')) {
+        const indicator = document.createElement('div');
+        indicator.className = 'status-indicator';
+        indicator.textContent = 'Activo';
+        localVideo.appendChild(indicator);
+    }
+    
+    // Indicador para video remoto
+    if (remoteVideo && !remoteVideo.querySelector('.status-indicator')) {
+        const indicator = document.createElement('div');
+        indicator.className = 'status-indicator';
+        indicator.textContent = 'Activo';
+        remoteVideo.appendChild(indicator);
     }
 } 
