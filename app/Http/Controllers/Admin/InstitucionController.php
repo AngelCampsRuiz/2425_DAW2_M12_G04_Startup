@@ -124,6 +124,18 @@ class InstitucionController extends Controller
             'niveles_educativos' => 'nullable|array',
             'niveles_educativos.*' => 'exists:niveles_educativos,id',
         ]);
+        
+        if ($validator->fails()) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error de validación',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+            
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
 
         // Iniciar transacción
         DB::beginTransaction();
@@ -167,7 +179,7 @@ class InstitucionController extends Controller
                 'codigo_centro' => $request->input('codigo_centro'),
                 'tipo_institucion' => $request->input('tipo_institucion'),
                 'direccion' => $request->input('direccion'),
-                'provincia' => $request->input('provincia'),
+                'provincia' => $request->input('ciudad'), // Usando ciudad en lugar de provincia
                 'codigo_postal' => $request->input('codigo_postal'),
                 'representante_legal' => $request->input('representante_legal'),
                 'cargo_representante' => $request->input('cargo_representante'),
@@ -188,11 +200,12 @@ class InstitucionController extends Controller
             
             DB::commit();
             
-            if ($request->ajax()) {
+            if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => true,
                     'message' => 'Institución creada correctamente',
-                    'institucion' => $institucion
+                    'institucion' => $institucion,
+                    'redirect' => route('admin.instituciones.index')
                 ]);
             }
             
@@ -203,7 +216,7 @@ class InstitucionController extends Controller
             DB::rollBack();
             Log::error('Error al crear institución: ' . $e->getMessage());
             
-            if ($request->ajax()) {
+            if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Error al crear la institución: ' . $e->getMessage(),
@@ -251,7 +264,7 @@ class InstitucionController extends Controller
             'codigo_centro' => 'required|string|max:20|unique:instituciones,codigo_centro,'.$institucion->id,
             'tipo_institucion' => 'required|string|max:50',
             'direccion' => 'required|string|max:255',
-            'provincia' => 'required|string|max:100',
+            'ciudad' => 'required|string|max:100',
             'codigo_postal' => 'required|string|max:10',
             'representante_legal' => 'required|string|max:255',
             'cargo_representante' => 'required|string|max:255',
@@ -265,6 +278,18 @@ class InstitucionController extends Controller
         }
 
         $validator = Validator::make($request->all(), $rules);
+        
+        if ($validator->fails()) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error de validación',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+            
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
 
         // Iniciar transacción
         DB::beginTransaction();
@@ -320,7 +345,7 @@ class InstitucionController extends Controller
                 'codigo_centro' => $request->input('codigo_centro'),
                 'tipo_institucion' => $request->input('tipo_institucion'),
                 'direccion' => $request->input('direccion'),
-                'provincia' => $request->input('provincia'),
+                'provincia' => $request->input('ciudad'),
                 'codigo_postal' => $request->input('codigo_postal'),
                 'representante_legal' => $request->input('representante_legal'),
                 'cargo_representante' => $request->input('cargo_representante'),
@@ -348,10 +373,11 @@ class InstitucionController extends Controller
             
             DB::commit();
             
-            if ($request->ajax()) {
+            if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'Institución actualizada correctamente'
+                    'message' => 'Institución actualizada correctamente',
+                    'redirect' => route('admin.instituciones.index')
                 ]);
             }
             
@@ -362,7 +388,7 @@ class InstitucionController extends Controller
             DB::rollBack();
             Log::error('Error al actualizar institución: ' . $e->getMessage());
             
-            if ($request->ajax()) {
+            if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Error al actualizar la institución: ' . $e->getMessage(),
@@ -401,7 +427,7 @@ class InstitucionController extends Controller
             
             DB::commit();
             
-            if (request()->ajax()) {
+            if (request()->ajax() || request()->wantsJson()) {
                 return response()->json([
                     'success' => true,
                     'message' => 'Institución eliminada correctamente'
@@ -415,7 +441,7 @@ class InstitucionController extends Controller
             DB::rollBack();
             Log::error('Error al eliminar institución: ' . $e->getMessage());
             
-            if (request()->ajax()) {
+            if (request()->ajax() || request()->wantsJson()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Error al eliminar la institución: ' . $e->getMessage()
@@ -477,20 +503,32 @@ class InstitucionController extends Controller
      */
     public function cambiarVerificacion($id)
     {
-        $institucion = Institucion::findOrFail($id);
-        $institucion->verificada = !$institucion->verificada;
-        $institucion->save();
-        
-        if (request()->ajax()) {
-            return response()->json([
-                'success' => true,
-                'verificada' => $institucion->verificada,
-                'message' => 'Estado de verificación actualizado correctamente'
-            ]);
+        try {
+            $institucion = Institucion::findOrFail($id);
+            $institucion->verificada = !$institucion->verificada;
+            $institucion->save();
+            
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'verificada' => $institucion->verificada,
+                    'message' => 'Estado de verificación actualizado correctamente'
+                ]);
+            }
+            
+            return redirect()->route('admin.instituciones.index')
+                ->with('success', 'Estado de verificación actualizado correctamente');
+        } catch (\Exception $e) {
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error al actualizar estado de verificación: ' . $e->getMessage()
+                ], 500);
+            }
+            
+            return redirect()->route('admin.instituciones.index')
+                ->with('error', 'Error al actualizar estado de verificación: ' . $e->getMessage());
         }
-        
-        return redirect()->route('admin.instituciones.index')
-            ->with('success', 'Estado de verificación actualizado correctamente');
     }
 
     /**

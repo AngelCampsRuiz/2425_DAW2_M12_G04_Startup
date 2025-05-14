@@ -543,12 +543,354 @@
             
             // Función para asignar eventos a los botones de la tabla
             function asignarEventosTabla() {
-                // Aquí se asignarían los eventos a los botones de la tabla
-                // (esta lógica debe ser similar a la que ya tengas implementada)
+                // Botón de crear institución
+                document.getElementById('btn-crear-institucion')?.addEventListener('click', function() {
+                    // Limpiar el formulario
+                    document.getElementById('form-institucion').reset();
+                    document.getElementById('form_method').value = 'POST';
+                    document.getElementById('form-institucion').action = '{{ route("admin.instituciones.store") }}';
+                    document.getElementById('modal-titulo').textContent = 'Nueva Institución';
+                    
+                    // Si hay imagen previa, ocultarla
+                    document.getElementById('imagen-actual-container').classList.add('hidden');
+                    
+                    // Mostrar modal
+                    document.getElementById('modal-institucion').classList.remove('hidden');
+                });
+                
+                // Botones de editar institución
+                document.querySelectorAll('.btn-editar').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const id = this.getAttribute('data-id');
+                        document.getElementById('modal-titulo').textContent = 'Editar Institución';
+                        
+                        // Mostrar indicador de carga en el formulario
+                        const formContent = document.getElementById('form-institucion').innerHTML;
+                        const loadingIndicator = `
+                            <div class="flex justify-center items-center py-12">
+                                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-700"></div>
+                            </div>
+                        `;
+                        document.getElementById('form-institucion').innerHTML = loadingIndicator;
+                        
+                        // Mostrar modal
+                        document.getElementById('modal-institucion').classList.remove('hidden');
+                        
+                        // Cargar datos de la institución
+                        fetch(`{{ url('admin/instituciones') }}/${id}/edit`, {
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            // Restaurar el formulario original
+                            document.getElementById('form-institucion').innerHTML = formContent;
+                            
+                            // Establecer método PUT para actualización
+                            document.getElementById('form_method').value = 'PUT';
+                            document.getElementById('form-institucion').action = `{{ url('admin/instituciones') }}/${id}`;
+                            
+                            // Completar formulario con datos
+                            if (data.institucion && data.institucion.user) {
+                                // Datos de usuario
+                                document.getElementById('nombre').value = data.institucion.user.nombre || '';
+                                document.getElementById('email').value = data.institucion.user.email || '';
+                                document.getElementById('dni').value = data.institucion.user.dni || '';
+                                document.getElementById('ciudad').value = data.institucion.user.ciudad || '';
+                                document.getElementById('telefono').value = data.institucion.user.telefono || '';
+                                document.getElementById('descripcion').value = data.institucion.user.descripcion || '';
+                                document.getElementById('sitio_web').value = data.institucion.user.sitio_web || '';
+                                
+                                // Establecer estado activo
+                                const checkboxActivo = document.querySelector('input[name="activo"]');
+                                if (checkboxActivo) {
+                                    checkboxActivo.checked = data.institucion.user.activo ? true : false;
+                                }
+                                
+                                // Mostrar imagen actual si existe
+                                if (data.institucion.user.imagen) {
+                                    document.getElementById('imagen-actual').src = `{{ asset('public/profile_images') }}/${data.institucion.user.imagen}`;
+                                    document.getElementById('imagen-actual-container').classList.remove('hidden');
+                                } else {
+                                    document.getElementById('imagen-actual-container').classList.add('hidden');
+                                }
+                                
+                                // Datos de institución
+                                document.getElementById('codigo_centro').value = data.institucion.codigo_centro || '';
+                                
+                                // Establecer tipo de institución
+                                const selectTipo = document.getElementById('tipo_institucion');
+                                if (selectTipo && data.institucion.tipo_institucion) {
+                                    Array.from(selectTipo.options).forEach(option => {
+                                        if (option.value === data.institucion.tipo_institucion) {
+                                            option.selected = true;
+                                        }
+                                    });
+                                }
+                                
+                                document.getElementById('direccion').value = data.institucion.direccion || '';
+                                document.getElementById('codigo_postal').value = data.institucion.codigo_postal || '';
+                                document.getElementById('representante_legal').value = data.institucion.representante_legal || '';
+                                document.getElementById('cargo_representante').value = data.institucion.cargo_representante || '';
+                                
+                                // Establecer verificada
+                                const checkboxVerificada = document.querySelector('input[name="verificada"]');
+                                if (checkboxVerificada) {
+                                    checkboxVerificada.checked = data.institucion.verificada ? true : false;
+                                }
+                                
+                                // Marcar niveles educativos seleccionados
+                                const nivelesSeleccionados = data.niveles_seleccionados || [];
+                                document.querySelectorAll('input[name="niveles_educativos[]"]').forEach(checkbox => {
+                                    checkbox.checked = nivelesSeleccionados.includes(parseInt(checkbox.value));
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error al cargar institución:', error);
+                            // Mostrar mensaje de error
+                            document.getElementById('form-institucion').innerHTML = `
+                                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative my-6">
+                                    <strong class="font-bold">Error:</strong>
+                                    <span class="block sm:inline">Ha ocurrido un error al cargar los datos. Intente nuevamente.</span>
+                                </div>
+                            `;
+                        });
+                    });
+                });
+                
+                // Botones de verificar institución
+                document.querySelectorAll('.btn-verificar').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const id = this.getAttribute('data-id');
+                        
+                        // Hacer petición para cambiar estado de verificación
+                        fetch(`{{ url('admin/instituciones') }}/${id}/verificar`, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                'Content-Type': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if(data.success) {
+                                // Mostrar mensaje de éxito
+                                document.getElementById('success-message-text').textContent = data.message;
+                                document.getElementById('success-message').style.display = 'block';
+                                
+                                // Actualizar tabla
+                                actualizarTabla();
+                                
+                                // Ocultar mensaje después de 3 segundos
+                                setTimeout(() => {
+                                    document.getElementById('success-message').style.display = 'none';
+                                }, 3000);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error al cambiar verificación:', error);
+                        });
+                    });
+                });
+                
+                // Botones de eliminar institución
+                document.querySelectorAll('.btn-eliminar').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const id = this.getAttribute('data-id');
+                        document.getElementById('eliminar_id').value = id;
+                        document.getElementById('form-eliminar').action = `{{ url('admin/instituciones') }}/${id}`;
+                        document.getElementById('modal-eliminar').classList.remove('hidden');
+                    });
+                });
+                
+                // Botón cerrar modal de eliminación
+                document.getElementById('modal-eliminar-close')?.addEventListener('click', function() {
+                    document.getElementById('modal-eliminar').classList.add('hidden');
+                });
+                
+                // Botón cancelar eliminación
+                document.getElementById('btn-cancelar-eliminar')?.addEventListener('click', function() {
+                    document.getElementById('modal-eliminar').classList.add('hidden');
+                });
+                
+                // Botón cerrar modal de institución
+                document.getElementById('modal-close')?.addEventListener('click', function() {
+                    document.getElementById('modal-institucion').classList.add('hidden');
+                });
+                
+                // Botón cancelar formulario
+                document.getElementById('btn-cancelar')?.addEventListener('click', function() {
+                    document.getElementById('modal-institucion').classList.add('hidden');
+                });
+                
+                // Botones de categorías
+                document.querySelectorAll('.btn-categorias').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const id = this.getAttribute('data-id');
+                        
+                        // Mostrar modal
+                        document.getElementById('modal-categorias').classList.remove('hidden');
+                        document.getElementById('contenedor-categorias-institucion').classList.add('hidden');
+                        document.getElementById('mensaje-cargando-categorias').classList.remove('hidden');
+                        document.getElementById('error-categorias').classList.add('hidden');
+                        
+                        // Cargar categorías
+                        fetch(`{{ url('admin/instituciones') }}/${id}/categorias`, {
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if(data.success) {
+                                // Implementar lógica para mostrar categorías
+                                // Esta parte requeriría una implementación más detallada
+                            } else {
+                                throw new Error(data.message || 'Error al cargar categorías');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            document.getElementById('mensaje-cargando-categorias').classList.add('hidden');
+                            document.getElementById('error-categorias').classList.remove('hidden');
+                            document.getElementById('error-categorias-mensaje').textContent = error.message || 'Error al cargar las categorías. Intente nuevamente.';
+                        });
+                    });
+                });
+                
+                // Botón cerrar modal de categorías
+                document.getElementById('modal-categorias-close')?.addEventListener('click', function() {
+                    document.getElementById('modal-categorias').classList.add('hidden');
+                });
+                
+                // Botón cancelar categorías
+                document.getElementById('btn-cancelar-categorias')?.addEventListener('click', function() {
+                    document.getElementById('modal-categorias').classList.add('hidden');
+                });
             }
             
             // Inicializar asignación de eventos
             asignarEventosTabla();
+            
+            // Manejar envío del formulario vía AJAX
+            document.getElementById('form-institucion').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                const actionUrl = this.action;
+                const method = document.getElementById('form_method').value.toUpperCase();
+                
+                // Mostrar indicador de carga en formulario
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const originalBtnText = submitBtn.textContent;
+                submitBtn.innerHTML = `
+                    <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Guardando...
+                `;
+                submitBtn.disabled = true;
+                
+                // Configurar opciones fetch según el método
+                const fetchOptions = {
+                    method: method === 'PUT' ? 'POST' : method,
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                };
+                
+                fetch(actionUrl, fetchOptions)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Mostrar mensaje de éxito
+                            document.getElementById('success-message-text').textContent = data.message || 'Institución guardada correctamente';
+                            document.getElementById('success-message').style.display = 'block';
+                            
+                            // Cerrar modal
+                            document.getElementById('modal-institucion').classList.add('hidden');
+                            
+                            // Actualizar tabla
+                            actualizarTabla();
+                            
+                            // Ocultar mensaje después de 3 segundos
+                            setTimeout(() => {
+                                document.getElementById('success-message').style.display = 'none';
+                            }, 3000);
+                        } else if (data.errors) {
+                            // Mostrar errores de validación
+                            let errorsHtml = '<ul class="list-disc pl-5 text-sm text-red-600">';
+                            for (const field in data.errors) {
+                                data.errors[field].forEach(error => {
+                                    errorsHtml += `<li>${error}</li>`;
+                                });
+                            }
+                            errorsHtml += '</ul>';
+                            
+                            // Insertar mensajes de error al principio del formulario
+                            const errorDiv = document.createElement('div');
+                            errorDiv.className = 'bg-red-50 border-l-4 border-red-500 p-4 mb-4';
+                            errorDiv.innerHTML = `
+                                <div class="flex">
+                                    <div class="flex-shrink-0">
+                                        <svg class="h-5 w-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                        </svg>
+                                    </div>
+                                    <div class="ml-3">
+                                        <h3 class="text-sm font-medium text-red-800">Se encontraron los siguientes errores:</h3>
+                                        ${errorsHtml}
+                                    </div>
+                                </div>
+                            `;
+                            
+                            // Remover mensajes de error anteriores
+                            const previousError = this.querySelector('.bg-red-50');
+                            if (previousError) {
+                                previousError.remove();
+                            }
+                            
+                            this.insertBefore(errorDiv, this.firstChild);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error al guardar institución:', error);
+                        // Mostrar mensaje de error general
+                        const errorDiv = document.createElement('div');
+                        errorDiv.className = 'bg-red-50 border-l-4 border-red-500 p-4 mb-4';
+                        errorDiv.innerHTML = `
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-5 w-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                    </svg>
+                                </div>
+                                <div class="ml-3">
+                                    <h3 class="text-sm font-medium text-red-800">Error al guardar la institución</h3>
+                                    <p class="text-sm text-red-700">Ha ocurrido un error al procesar la solicitud. Intente nuevamente.</p>
+                                </div>
+                            </div>
+                        `;
+                        
+                        // Remover mensajes de error anteriores
+                        const previousError = this.querySelector('.bg-red-50');
+                        if (previousError) {
+                            previousError.remove();
+                        }
+                        
+                        this.insertBefore(errorDiv, this.firstChild);
+                    })
+                    .finally(() => {
+                        // Restaurar botón
+                        submitBtn.innerHTML = originalBtnText;
+                        submitBtn.disabled = false;
+                    });
+            });
         });
     </script>
     @endpush
