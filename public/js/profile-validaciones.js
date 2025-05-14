@@ -190,33 +190,36 @@ function handleFormSubmit(e) {
     })
     .then(data => {
         if (data.success) {
+            // Actualizar campos de visibilidad
+            const user = data.user;
+            const camposVisibles = {
+                'telefono': user.show_telefono,
+                'cif': user.empresa && user.empresa.show_cif,
+                'ciudad': user.show_ciudad,
+                'direccion': user.show_direccion,
+                'web': user.show_web
+            };
+
+            // Actualizar la visibilidad de cada campo
+            Object.entries(camposVisibles).forEach(([campo, visible]) => {
+                const elemento = document.querySelector(`[data-campo="${campo}"]`);
+                if (elemento) {
+                    elemento.style.display = visible ? 'flex' : 'none';
+                }
+            });
+
+            // Mostrar mensaje de éxito sin recargar
             Swal.fire({
                 title: '¡Éxito!',
                 text: 'Los cambios se han guardado correctamente',
                 icon: 'success',
                 confirmButtonColor: '#7C3AED'
-            }).then(() => {
-                // Actualizar campos de visibilidad antes de recargar
-                const user = data.user;
-                const camposVisibles = {
-                    'telefono': user.show_telefono,
-                    'cif': user.empresa && user.empresa.show_cif,
-                    'ciudad': user.show_ciudad,
-                    'direccion': user.show_direccion,
-                    'web': user.show_web
-                };
-
-                // Actualizar la visibilidad de cada campo
-                Object.entries(camposVisibles).forEach(([campo, visible]) => {
-                    const elemento = document.querySelector(`[data-campo="${campo}"]`);
-                    if (elemento) {
-                        elemento.style.display = visible ? 'flex' : 'none';
-                    }
-                });
-
-                // Recargar la página después de actualizar la visibilidad
-                window.location.reload();
             });
+
+            // Cerrar el modal si existe
+            if (typeof closeEditModal === 'function') {
+                closeEditModal();
+            }
         } else if (data.errors) {
             // Mostrar errores de validación
             Object.entries(data.errors).forEach(([field, messages]) => {
