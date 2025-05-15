@@ -36,18 +36,6 @@
     </div>
 
             <div class="relative">
-                <label for="filtro_email" class="block text-sm font-medium text-purple-700 mb-2">Email</label>
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg class="h-5 w-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                        </svg>
-                    </div>
-                    <input type="text" id="filtro_email" class="pl-10 w-full rounded-lg border-purple-200 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50" placeholder="Buscar por email...">
-                </div>
-            </div>
-
-            <div class="relative">
                 <label for="filtro_codigo_centro" class="block text-sm font-medium text-purple-700 mb-2">Código Centro</label>
                 <div class="relative">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -324,7 +312,7 @@
     <div id="modal-eliminar" class="hidden fixed inset-0 bg-black bg-opacity-50 overflow-y-auto h-full w-full z-50">
         <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
             <div class="flex justify-between items-center border-b pb-3">
-                <h3 class="text-lg font-medium text-gray-700">Confirmar Eliminación</h3>
+                <h3 class="text-xl font-medium text-gray-700">Confirmar Eliminación</h3>
                 <button id="modal-eliminar-close" class="text-gray-400 hover:text-gray-500">
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -435,7 +423,6 @@
             window.actualizarTabla = function(url = null) {
                 // Obtener valores de filtros
                 const filtro_nombre = document.getElementById('filtro_nombre')?.value || '';
-                const filtro_email = document.getElementById('filtro_email')?.value || '';
                 const filtro_codigo_centro = document.getElementById('filtro_codigo_centro')?.value || '';
                 const filtro_ciudad = document.getElementById('filtro_ciudad')?.value || '';
                 // Temporalmente deshabilitado
@@ -447,7 +434,6 @@
                 // Construir URL con parámetros
                 const params = new URLSearchParams();
                 if (filtro_nombre) params.append('nombre', filtro_nombre);
-                if (filtro_email) params.append('email', filtro_email);
                 if (filtro_codigo_centro) params.append('codigo_centro', filtro_codigo_centro);
                 if (filtro_ciudad) params.append('ciudad', filtro_ciudad);
                 if (filtro_tipo_institucion) params.append('tipo_institucion', filtro_tipo_institucion);
@@ -531,9 +517,6 @@
             document.getElementById('filtro_nombre').addEventListener('input', debounce(function(event) {
                 actualizarTabla();
             }, 500));
-            document.getElementById('filtro_email').addEventListener('input', debounce(function(event) {
-                actualizarTabla();
-            }, 500));
             document.getElementById('filtro_codigo_centro').addEventListener('input', debounce(function(event) {
                 actualizarTabla();
             }, 500));
@@ -552,7 +535,6 @@
             // Botón para reiniciar filtros
             document.getElementById('reset-filtros').addEventListener('click', function() {
                 document.getElementById('filtro_nombre').value = '';
-                document.getElementById('filtro_email').value = '';
                 document.getElementById('filtro_codigo_centro').value = '';
                 document.getElementById('filtro_ciudad').value = '';
                 // document.getElementById('filtro_tipo_institucion').value = '';
@@ -576,142 +558,76 @@
             
             // Función para asignar eventos a los botones de la tabla
             function asignarEventosTabla() {
+                // Se ejecutará la función original de tabla.blade.php
+                if (typeof window._asignarEventosTabla === 'function') {
+                    window._asignarEventosTabla();
+                }
+                
                 // Botón de crear institución
-                document.getElementById('btn-crear-institucion')?.addEventListener('click', function() {
-                    // Limpiar el formulario
-                    document.getElementById('form-institucion').reset();
-                    document.getElementById('form_method').value = 'POST';
-                    document.getElementById('form-institucion').action = '{{ route("admin.instituciones.store") }}';
-                    document.getElementById('modal-titulo').textContent = 'Nueva Institución';
-                    
-                    // Si hay imagen previa, ocultarla
-                    document.getElementById('imagen-actual-container').classList.add('hidden');
-                    
-                    // Mostrar modal
-                    document.getElementById('modal-institucion').classList.remove('hidden');
-                });
-                
-                // Botones de editar institución
-                document.querySelectorAll('.btn-editar').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        editarInstitucion(this.getAttribute('data-id'));
-                    });
-                });
-                
-                // Botones de verificar institución
-                document.querySelectorAll('.btn-verificar').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        const id = this.getAttribute('data-id');
+                const btnCrearInstitucion = document.getElementById('btn-crear-institucion');
+                if (btnCrearInstitucion) {
+                    btnCrearInstitucion.addEventListener('click', function() {
+                        // Limpiar el formulario
+                        document.getElementById('form-institucion').reset();
+                        document.getElementById('form_method').value = 'POST';
+                        document.getElementById('form-institucion').action = '{{ route("admin.instituciones.store") }}';
+                        document.getElementById('modal-titulo').textContent = 'Nueva Institución';
                         
-                        // Hacer petición para cambiar estado de verificación
-                        fetch(`{{ url('admin/instituciones') }}/${id}/verificar`, {
-                    method: 'POST',
-                    headers: {
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                'Content-Type': 'application/json',
-                                'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                            if(data.success) {
-                                // Mostrar mensaje de éxito
-                                document.getElementById('success-message-text').textContent = data.message;
-                                document.getElementById('success-message').style.display = 'block';
-                                
-                                // Actualizar tabla
-                        actualizarTabla();
-                                
-                                // Ocultar mensaje después de 3 segundos
-                                setTimeout(() => {
-                                    document.getElementById('success-message').style.display = 'none';
-                                }, 3000);
-                    }
-                })
-                .catch(error => {
-                            console.error('Error al cambiar verificación:', error);
-                        });
-                });
-            });
-            
-                // Botones de cambiar estado
-                document.querySelectorAll('.btn-cambiar-estado').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        const id = this.getAttribute('data-id');
-                        const activo = this.getAttribute('data-active') === '1' ? 'desactivar' : 'activar';
+                        // Si hay imagen previa, ocultarla
+                        document.getElementById('imagen-actual-container').classList.add('hidden');
                         
-                        if (confirm(`¿Está seguro que desea ${activo} esta institución?`)) {
-                            // Enviar solicitud AJAX para cambiar estado
-                            fetch(`{{ url('admin/instituciones') }}/${id}/cambiar-estado`, {
-                    method: 'POST',
-                    headers: {
-                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                    'Content-Type': 'application/json',
-                                    'Accept': 'application/json'
-                                }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                                    // Mostrar mensaje de éxito
-                                    document.getElementById('success-message-text').textContent = data.message || `Institución ${activo}da correctamente`;
-                                    document.getElementById('success-message').style.display = 'block';
-                                    
-                                    // Actualizar tabla
-                        actualizarTabla();
-                                    
-                                    // Ocultar mensaje después de 3 segundos
-                                    setTimeout(() => {
-                                        document.getElementById('success-message').style.display = 'none';
-                                    }, 3000);
-                    } else {
-                                    alert('Error: ' + data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                                alert('Ocurrió un error al procesar la solicitud');
-                            });
-                        }
-                });
-            });
-            
-                // Botones de categorías
-                document.querySelectorAll('.btn-categorias').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        abrirModalCategorias(this.getAttribute('data-id'));
+                        // Mostrar modal
+                        document.getElementById('modal-institucion').classList.remove('hidden');
                     });
-                });
+                }
                 
                 // Botón cerrar modal de eliminación
-                document.getElementById('modal-eliminar-close')?.addEventListener('click', function() {
-                    document.getElementById('modal-eliminar').classList.add('hidden');
-                });
+                const modalEliminarClose = document.getElementById('modal-eliminar-close');
+                if (modalEliminarClose) {
+                    modalEliminarClose.addEventListener('click', function() {
+                        document.getElementById('modal-eliminar').classList.add('hidden');
+                    });
+                }
                 
                 // Botón cancelar eliminación
-                document.getElementById('btn-cancelar-eliminar')?.addEventListener('click', function() {
-                    document.getElementById('modal-eliminar').classList.add('hidden');
-                });
+                const btnCancelarEliminar = document.getElementById('btn-cancelar-eliminar');
+                if (btnCancelarEliminar) {
+                    btnCancelarEliminar.addEventListener('click', function() {
+                        document.getElementById('modal-eliminar').classList.add('hidden');
+                    });
+                }
                 
                 // Botón cerrar modal de institución
-                document.getElementById('modal-close')?.addEventListener('click', function() {
-                    document.getElementById('modal-institucion').classList.add('hidden');
-                });
+                const modalClose = document.getElementById('modal-close');
+                if (modalClose) {
+                    modalClose.addEventListener('click', function() {
+                        document.getElementById('modal-institucion').classList.add('hidden');
+                    });
+                }
                 
                 // Botón cancelar formulario
-                document.getElementById('btn-cancelar')?.addEventListener('click', function() {
-                    document.getElementById('modal-institucion').classList.add('hidden');
-                });
+                const btnCancelar = document.getElementById('btn-cancelar');
+                if (btnCancelar) {
+                    btnCancelar.addEventListener('click', function() {
+                        document.getElementById('modal-institucion').classList.add('hidden');
+                    });
+                }
                 
                 // Botón cerrar modal de categorías
-                document.getElementById('modal-categorias-close')?.addEventListener('click', function() {
-                    document.getElementById('modal-categorias').classList.add('hidden');
-                });
+                const modalCategoriasClose = document.getElementById('modal-categorias-close');
+                if (modalCategoriasClose) {
+                    modalCategoriasClose.addEventListener('click', function() {
+                        document.getElementById('modal-categorias').classList.add('hidden');
+                    });
+                }
                 
                 // Botón cancelar categorías
-                document.getElementById('btn-cancelar-categorias')?.addEventListener('click', function() {
-                    document.getElementById('modal-categorias').classList.add('hidden');
-                });
+                const btnCancelarCategorias = document.getElementById('btn-cancelar-categorias');
+                if (btnCancelarCategorias) {
+                    btnCancelarCategorias.addEventListener('click', function() {
+                        document.getElementById('modal-categorias').classList.add('hidden');
+                    });
+                }
             }
             
             // Función global para editar institución (disponible para tabla.blade.php)
@@ -820,7 +736,6 @@
                     if (data.institucion && data.institucion.user) {
                         // Datos de usuario
                         setValueIfExists('nombre', data.institucion.user.nombre);
-                        setValueIfExists('email', data.institucion.user.email);
                         setValueIfExists('dni', data.institucion.user.dni);
                         setValueIfExists('ciudad', data.institucion.user.ciudad);
                         setValueIfExists('telefono', data.institucion.user.telefono);

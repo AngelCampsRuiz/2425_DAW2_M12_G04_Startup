@@ -6,6 +6,31 @@
     </button>
 </div>
 
+<!-- Modal de Confirmación de Activación/Desactivación -->
+<div id="modal-estado" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-8 max-w-md w-full">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-semibold text-gray-800" id="estado-titulo">Confirmar Desactivación</h3>
+            <button id="modal-estado-close" class="text-gray-500 hover:text-gray-700">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        
+        <p class="text-gray-600 mb-6" id="estado-mensaje">¿Estás seguro de que deseas desactivar esta institución? Las instituciones desactivadas no serán visibles para los usuarios.</p>
+        
+        <div class="flex justify-end space-x-3">
+            <button type="button" id="btn-cancelar-estado" class="px-4 py-2 text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200">
+                Cancelar
+            </button>
+            <button type="button" id="btn-confirmar-estado" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
+                Desactivar
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- Tabla para pantallas medianas y grandes -->
 <div class="hidden md:block">
     <div class="overflow-x-auto">
@@ -14,7 +39,6 @@
                 <tr>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Código Centro</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ciudad</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Verificada</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
@@ -37,7 +61,6 @@
                             </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $institucion->codigo_centro }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $institucion->tipo_institucion }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $institucion->user ? $institucion->user->ciudad : 'N/A' }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             @if($institucion->verificada)
@@ -141,7 +164,7 @@
                         {{ $institucion->user ? $institucion->user->nombre : 'N/A' }}
                     </p>
                     <p class="text-sm text-gray-500 truncate">
-                        {{ $institucion->codigo_centro }} - {{ $institucion->tipo_institucion }}
+                        {{ $institucion->codigo_centro }}
                     </p>
                     <p class="text-sm text-gray-500 truncate">
                         {{ $institucion->user ? $institucion->user->ciudad : 'N/A' }}
@@ -205,11 +228,71 @@
         document.querySelectorAll('.btn-cambiar-estado').forEach(btn => {
             btn.addEventListener('click', function() {
                 const id = this.getAttribute('data-id');
-                const activo = this.getAttribute('data-active') === '1' ? 'desactivar' : 'activar';
+                const isActive = this.getAttribute('data-active') === '1';
                 
-                if (confirm(`¿Está seguro que desea ${activo} esta institución?`)) {
+                // Función para abrir modal de activación/desactivación
+                function openActivateModal(id, isActive) {
+                    // Configurar modal de estado
+                    const modalEstado = document.getElementById('modal-estado');
+                    const estadoTitulo = document.getElementById('estado-titulo');
+                    const estadoMensaje = document.getElementById('estado-mensaje');
+                    const btnConfirmarEstado = document.getElementById('btn-confirmar-estado');
+                    
+                    if (!modalEstado || !estadoTitulo || !estadoMensaje || !btnConfirmarEstado) {
+                        console.error('Modal no encontrado', modalEstado, estadoTitulo, estadoMensaje, btnConfirmarEstado);
+                        // Si no encontramos el modal, usamos el confirm tradicional
+                        const mensaje = isActive ? 
+                            '¿Está seguro que desea desactivar esta institución?' : 
+                            '¿Está seguro que desea activar esta institución?';
+                            
+                        if (confirm(mensaje)) {
+                            cambiarEstado(id);
+                        }
+                        return;
+                    }
+                    
+                    // Configurar contenido del modal según acción
+                    if (isActive) {
+                        estadoTitulo.textContent = 'Confirmar Desactivación';
+                        estadoMensaje.textContent = '¿Estás seguro de que deseas desactivar esta institución? Las instituciones desactivadas no serán visibles para los usuarios.';
+                        btnConfirmarEstado.textContent = 'Desactivar';
+                        btnConfirmarEstado.classList.remove('bg-green-600', 'hover:bg-green-700');
+                        btnConfirmarEstado.classList.add('bg-red-600', 'hover:bg-red-700');
+                    } else {
+                        estadoTitulo.textContent = 'Confirmar Activación';
+                        estadoMensaje.textContent = '¿Estás seguro de que deseas activar esta institución? Las instituciones activas serán visibles para los usuarios.';
+                        btnConfirmarEstado.textContent = 'Activar';
+                        btnConfirmarEstado.classList.remove('bg-red-600', 'hover:bg-red-700');
+                        btnConfirmarEstado.classList.add('bg-green-600', 'hover:bg-green-700');
+                    }
+                    
+                    // Mostrar modal
+                    modalEstado.classList.remove('hidden');
+                    modalEstado.classList.add('flex');
+                    
+                    // Configurar botón de confirmar
+                    btnConfirmarEstado.onclick = function() {
+                        // Cerrar modal
+                        modalEstado.classList.remove('flex');
+                        modalEstado.classList.add('hidden');
+                        cambiarEstado(id);
+                    };
+                    
+                    // Configurar botones para cerrar modal
+                    const cerrarModal = function() {
+                        modalEstado.classList.remove('flex');
+                        modalEstado.classList.add('hidden');
+                    };
+                    
+                    document.getElementById('modal-estado-close').onclick = cerrarModal;
+                    document.getElementById('btn-cancelar-estado').onclick = cerrarModal;
+                }
+                
+                // Función para cambiar estado
+                function cambiarEstado(id) {
                     // Mostrar indicador de carga
-                    this.innerHTML = '<svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
+                    const currentButton = btn;
+                    currentButton.innerHTML = '<svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
                     
                     // Enviar solicitud AJAX para cambiar estado
                     fetch(`/admin/instituciones/${id}/cambiar-estado`, {
@@ -228,16 +311,23 @@
                         } else {
                             alert('Error: ' + data.message);
                             // Restaurar botón
-                            this.innerHTML = '<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>';
+                            currentButton.innerHTML = isActive ? 
+                                '<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>' :
+                                '<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
                         }
                     })
                     .catch(error => {
                         console.error('Error:', error);
                         alert('Ocurrió un error al procesar la solicitud');
                         // Restaurar botón
-                        this.innerHTML = '<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>';
+                        currentButton.innerHTML = isActive ? 
+                            '<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>' :
+                            '<svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
                     });
                 }
+                
+                // Abrir modal
+                openActivateModal(id, isActive);
             });
         });
         
@@ -295,4 +385,7 @@
             });
         });
     }
+    
+    // Exponer la función para que sea accesible desde index.blade.php
+    window._asignarEventosTabla = asignarEventosTabla;
 </script> 
