@@ -28,7 +28,6 @@
     <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio,line-clamp"></script>
     <script>
         tailwind.config = {
-            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
@@ -151,15 +150,16 @@
     <!-- Dark Mode Script -->
     <script src="{{ asset('js/darkMode.js') }}"></script>
 
+
     <!-- Styles -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
 </head>
-<body class="font-sans antialiased min-h-full bg-gray-100 dark:bg-gray-900">
+<body class="font-sans antialiased min-h-full bg-gray-100">
     <div class="min-h-screen flex flex-col">
         @include('partials.header')
 
         <!-- Page Content -->
-        <main class="flex-grow dark:bg-gray-900 dark:text-white">
+        <main class="flex-grow">
             @yield('content')
         </main>
 

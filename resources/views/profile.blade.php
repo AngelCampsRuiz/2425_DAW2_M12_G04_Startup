@@ -538,7 +538,7 @@
                             <div class="absolute -bottom-20 left-8">
                                 <div class="w-40 h-40 rounded-full bg-white border-4 border-white shadow-xl flex items-center justify-center overflow-hidden transform transition-transform duration-300 hover:scale-105">
                                     @if($user->imagen)
-                                        <img src="{{ asset('public/profile_images/' . $user->imagen) }}"
+                                        <img src="{{ asset('/public/profile_images/' . $user->imagen) }}"
                                              alt="Logo empresa"
                                              class="w-full h-full object-cover">
                                     @else
@@ -828,7 +828,7 @@
                                 <div class="flex items-center">
                                     <div class="w-12 h-12 rounded-full bg-gradient-to-br from-purple-100 to-indigo-100 flex items-center justify-center overflow-hidden ring-4 ring-white shadow-md">
                                         @if($valoracion->emisor->imagen)
-                                            <img src="{{ asset('public/profile_images/' . $valoracion->emisor->imagen) }}"
+                                            <img src="{{ asset('/public/profile_images/' . $valoracion->emisor->imagen) }}"
                                                  alt="Avatar"
                                                  class="w-full h-full object-cover">
                                         @else
@@ -1056,7 +1056,7 @@
 
                                     <label class="flex items-center space-x-3 p-4 bg-gradient-to-br from-white to-purple-50 rounded-xl hover:bg-purple-50 transition-all duration-200 cursor-pointer">
                                         <input type="checkbox" name="show_cif" value="1"
-                                               {{ $user->empresa->show_cif ? 'checked' : '' }}
+                                               {{ optional($user->empresa)->show_cif ? 'checked' : '' }}
                                                class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-500 focus:ring-purple-500">
                                         <span class="text-sm font-medium text-gray-700">Mostrar CIF</span>
                                     </label>
@@ -1157,7 +1157,7 @@
                                         <label class="block text-sm font-medium text-gray-700 mb-2">Banner de Perfil</label>
                                         @if($user->banner)
                                             <div class="mt-2 mb-4">
-                                                <img src="{{ asset('public/profile_banners/' . $user->banner) }}"
+                                                <img src="{{ asset('/public/profile_banners/' . $user->banner) }}"
                                                      alt="Banner actual"
                                                      class="w-full h-32 object-cover rounded-lg border-4 border-purple-100 shadow-md">
                                             </div>
@@ -1178,7 +1178,7 @@
                                         <label class="block text-sm font-medium text-gray-700 mb-2">Foto de Perfil Actual</label>
                                         @if($user->imagen)
                                             <div class="mt-2 mb-4">
-                                                <img src="{{ asset('public/profile_images/' . $user->imagen) }}"
+                                                <img src="{{ asset('/public/profile_images/' . $user->imagen) }}"
                                                      alt="Foto actual"
                                                      class="h-24 w-24 rounded-full object-cover border-4 border-purple-100 shadow-md">
                                             </div>
@@ -1587,7 +1587,7 @@
                         if (user.imagen) {
                             const imagenPerfil = document.querySelector('.w-40.h-40.rounded-full img');
                             if (imagenPerfil) {
-                                imagenPerfil.src = `{{ asset('public/profile_images/') }}/${user.imagen}`;
+                                imagenPerfil.src = `{{ asset('/public/profile_images/') }}/${user.imagen}`;
                             }
                         }
 
