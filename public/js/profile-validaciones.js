@@ -326,12 +326,23 @@ function handleFormSubmit(e) {
     if (imagenInput?.files?.length && !validarArchivo(imagenInput, 'imagen')) isValid = false;
 
     if (!isValid) {
-        Swal.fire({
-            title: 'Error de validación',
-            text: 'Por favor, completa correctamente todos los campos obligatorios (*)',
-            icon: 'error',
-            confirmButtonColor: '#7C3AED'
-        });
+        try {
+            Swal.fire({
+                title: 'Error de validación',
+                text: 'Por favor, completa correctamente todos los campos obligatorios (*)',
+                icon: 'error',
+                confirmButtonColor: '#7C3AED',
+                customClass: {
+                    confirmButton: 'rounded-xl px-6 py-3 font-medium text-white shadow-lg hover:shadow-purple-500/30 transition-all duration-200'
+                }
+            }).then(() => {
+                // Callback después de cerrar el alert
+            });
+        } catch (error) {
+            console.error('Error al mostrar SweetAlert:', error);
+            // Fallback por si SweetAlert falla
+            alert('Por favor, completa correctamente todos los campos obligatorios (*)');
+        }
         return;
     }
 
@@ -473,6 +484,30 @@ function setupVisibilityToggles() {
             });
         });
     });
+}
+
+// Función para validar nombre
+function validarNombre(field) {
+    if (!field) return true;
+    
+    const valor = field.value.trim();
+    if (!valor) {
+        showError(field, "El nombre es obligatorio");
+        return false;
+    }
+    
+    if (valor.length < 2) {
+        showError(field, "El nombre debe tener al menos 2 caracteres");
+        return false;
+    }
+    
+    if (valor.length > 100) {
+        showError(field, "El nombre no puede exceder los 100 caracteres");
+        return false;
+    }
+    
+    hideError(field);
+    return true;
 }
 
 // Inicialización de validaciones
