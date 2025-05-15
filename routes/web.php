@@ -464,22 +464,3 @@ Route::get('/run-migrations-safe', function () {
     }
 });
 
-Route::get('/run-composer', function () {
-    if (request('key') !== env('DEPLOY_KEY')) {
-        abort(403, 'Acceso no autorizado');
-    }
-
-    try {
-        exec('composer install --no-interaction --prefer-dist');
-        return response()->json(['message' => 'Composer ejecutado correctamente']);
-    } catch (\Exception $e) {
-        return response()->json(['error' => 'Error al ejecutar composer: ' . $e->getMessage()], 500);
-    }
-});
-
-    // Rutas de chat
-    Route::middleware(['auth'])->prefix('chat')->name('chat.')->group(function () {
-        Route::get('/', [App\Http\Controllers\ChatController::class, 'index'])->name('index');
-        Route::get('/create/{receiver_id}', [App\Http\Controllers\ChatController::class, 'create'])->name('create');
-        Route::post('/send', [App\Http\Controllers\ChatController::class, 'send'])->name('send');
-    });
