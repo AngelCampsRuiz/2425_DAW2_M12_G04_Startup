@@ -31,12 +31,17 @@ class PublicacionController extends Controller
             });
         }
 
-        if ($request->filled('categoria')) {
-            $query->where('categoria_id', $request->categoria);
+        if ($request->filled('categoria_id')) {
+            $query->where('categoria_id', $request->categoria_id);
         }
 
-        if ($request->filled('subcategoria')) {
-            $query->where('subcategoria_id', $request->subcategoria);
+        if ($request->filled('subcategoria_id')) {
+            $query->where('subcategoria_id', $request->subcategoria_id);
+        }
+        
+        // Filtrar por estado activo/inactivo
+        if ($request->filled('activa')) {
+            $query->where('activa', $request->activa);
         }
 
         $publicaciones = $query->orderBy('id', 'asc')->paginate(10);
