@@ -383,13 +383,10 @@
                                             </div>
                                         </div>
 
-                                        {{-- Checkbox para mostrar/ocultar CIF --}}
-                                        @if($user->role_id == 2)
+                                        @if(auth()->user()->role_id == 2)
                                             <label class="flex items-center space-x-3 p-4 bg-gradient-to-br from-white to-purple-50 rounded-xl hover:bg-purple-50 transition-all duration-200 cursor-pointer">
-                                                <input type="checkbox" 
-                                                       name="show_cif" 
-                                                       value="1"
-                                                       {{ optional($user->empresa)->show_cif ? 'checked' : '' }}
+                                                <input type="checkbox" name="show_cif" value="1"
+                                                       {{ $user->empresa && $user->empresa->show_cif ? 'checked' : '' }}
                                                        class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-500 focus:ring-purple-500">
                                                 <span class="text-sm font-medium text-gray-700">Mostrar CIF</span>
                                             </label>
@@ -1003,37 +1000,48 @@
 
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Nombre</label>
+                                        <label for="nombre" class="block text-sm font-medium text-gray-700 mb-2">Nombre</label>
                                         <input type="text" name="nombre" id="nombre" value="{{ $user->nombre }}"
                                                class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 transition-all duration-200"
                                                onblur="validarNombre(this)">
                                         <span id="error-nombre" class="error-message text-xs text-red-500 mt-1 hidden"></span>
-                                        @error('nombre')
-                                            <span class="error-message text-xs text-red-500 mt-1">{{ $message }}</span>
-                                        @enderror
                                     </div>
 
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                                        <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email</label>
                                         <input type="email" name="email" id="email" value="{{ $user->email }}"
                                                class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 transition-all duration-200"
                                                onblur="validarEmail(this)">
                                         <span id="error-email" class="error-message text-xs text-red-500 mt-1 hidden"></span>
-                                        @error('email')
-                                            <span class="error-message text-xs text-red-500 mt-1">{{ $message }}</span>
-                                        @enderror
                                     </div>
 
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
-                                        <textarea name="descripcion" id="descripcion" rows="3"
-                                                  class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 transition-all duration-200"
-                                                  onblur="validarDescripcion(this)">{{ $user->descripcion }}</textarea>
-                                        <span id="error-descripcion" class="error-message text-xs text-red-500 mt-1 hidden"></span>
-                                        @error('descripcion')
-                                            <span class="error-message text-xs text-red-500 mt-1">{{ $message }}</span>
-                                        @enderror
-                                    </div>
+                                    @if(auth()->user()->role_id == 2)
+                                        <div>
+                                            <label for="cif" class="block text-sm font-medium text-gray-700 mb-2">CIF</label>
+                                            <input type="text" name="cif" id="cif" value="{{ $user->empresa->cif ?? '' }}"
+                                                   class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 transition-all duration-200"
+                                                   onblur="validarCIF(this)">
+                                            <span id="error-cif" class="error-message text-xs text-red-500 mt-1 hidden"></span>
+                                        </div>
+                                    @else
+                                        <div>
+                                            <label for="dni" class="block text-sm font-medium text-gray-700 mb-2">DNI</label>
+                                            <input type="text" name="dni" id="dni" value="{{ $user->dni ?? '' }}"
+                                                   class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 transition-all duration-200"
+                                                   onblur="validarDNI(this)">
+                                            <span id="error-dni" class="error-message text-xs text-red-500 mt-1 hidden"></span>
+                                        </div>
+                                    @endif
+
+                                    @if($user->role_id == 3)
+                                        <div>
+                                            <label for="cv_pdf" class="block text-sm font-medium text-gray-700 mb-2">Curriculum Vitae</label>
+                                            <input type="file" name="cv_pdf" id="cv_pdf" accept=".pdf"
+                                                   class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 transition-all duration-200"
+                                                   onchange="validarCV(this)">
+                                            <span id="error-cv_pdf" class="error-message text-xs text-red-500 mt-1 hidden"></span>
+                                        </div>
+                                    @endif
                                 </div>
                             </div>
 
@@ -1058,7 +1066,7 @@
 
                                     <label class="flex items-center space-x-3 p-4 bg-gradient-to-br from-white to-purple-50 rounded-xl hover:bg-purple-50 transition-all duration-200 cursor-pointer">
                                         <input type="checkbox" name="show_cif" value="1"
-                                               {{ $user->empresa->show_cif ? 'checked' : '' }}
+                                               {{ $user->empresa && $user->empresa->show_cif ? 'checked' : '' }}
                                                class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-500 focus:ring-purple-500">
                                         <span class="text-sm font-medium text-gray-700">Mostrar CIF</span>
                                     </label>
@@ -1099,25 +1107,19 @@
 
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Teléfono</label>
+                                        <label for="telefono" class="block text-sm font-medium text-gray-700 mb-2">
+                                            Teléfono
+                                            <span class="text-sm text-gray-500"></span>
+                                        </label>
                                         <input type="text" name="telefono" id="telefono" value="{{ $user->telefono }}"
                                                class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 transition-all duration-200"
-                                               onblur="validarTelefono(this)">
+                                               onblur="validarTelefono(this)"
+                                               placeholder="Ej: 612345678">
                                         <span id="error-telefono" class="error-message text-xs text-red-500 mt-1 hidden"></span>
-                                        @error('telefono')
-                                            <span class="error-message text-xs text-red-500 mt-1">{{ $message }}</span>
-                                        @enderror
                                     </div>
 
                                     @if(auth()->user()->role_id == 2)
-                                        {{-- Campo CIF para empresas --}}
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-2">CIF</label>
-                                            <input type="text" name="cif" id="cif" value="{{ $user->empresa->cif ?? '' }}"
-                                                   class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 transition-all duration-200"
-                                                   onblur="validarCIF(this)">
-                                            <span id="error-cif" class="error-message text-xs text-red-500 mt-1 hidden"></span>
-                                        </div>
+                                      
                                     @else
                                         {{-- Campo DNI para otros usuarios --}}
                                         <div>
@@ -1258,10 +1260,7 @@
                                             <label for="direccion" class="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
                                             <input type="text" name="direccion" id="direccion" value="{{ $user->direccion }}" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" readonly>
                                         </div>
-                                        <div>
-                                            <label for="ciudad_mapa" class="block text-sm font-medium text-gray-700 mb-1">Ciudad</label>
-                                            <input type="text" name="ciudad_mapa" id="ciudad_mapa" value="{{ $user->ciudad }}" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" readonly>
-                                        </div>
+                                
                                     </div>
 
                                     {{-- Campos ocultos para las coordenadas --}}
@@ -1555,7 +1554,7 @@
                         // Actualizar campos de visibilidad
                         const camposVisibles = {
                             'telefono': user.show_telefono,
-                            'cif': user.empresa.show_cif,
+                            'cif': user.empresa && $user->empresa->show_cif,
                             'ciudad': user.show_ciudad,
                             'direccion': user.show_direccion,
                             'web': user.show_web

@@ -119,6 +119,11 @@ class ProfileController extends Controller
                 'show_web' => $request->boolean('show_web'),
             ];
 
+            // Solo incluir show_cif si es una empresa
+            if ($user->role_id == 2) {
+                $updateData['show_cif'] = $request->boolean('show_cif');
+            }
+
             if (isset($validatedData['imagen'])) {
                 $updateData['imagen'] = $validatedData['imagen'];
             }
