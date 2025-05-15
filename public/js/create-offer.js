@@ -8,7 +8,6 @@ const initializeForm = () => {
 
     // Si no encontramos los elementos necesarios, salir
     if (!categoriaSelect || !subcategoriaSelect) {
-        console.log('Elementos de formulario no encontrados, no inicializando');
         return;
     }
 
@@ -23,7 +22,6 @@ const initializeForm = () => {
 
     // Crear un identificador único para esta sesión
     const sessionId = Math.random().toString(36).substring(2, 15);
-    console.log(`ID de sesión único para prevenir duplicados: ${sessionId}`);
 
     // Registrar en localStorage todas las ofertas enviadas en las últimas 24 horas
     const ofertasEnviadas = JSON.parse(localStorage.getItem('ofertasEnviadas') || '[]');
@@ -83,7 +81,6 @@ const initializeForm = () => {
     } else if (formSubmittedTimestamp) {
         // Si pasó más de 1 minuto desde el último envío, limpiar el storage
         localStorage.removeItem('formSubmittedTimestamp');
-        console.log('Formulario enviado hace más de 1 minuto, permitiendo nuevos envíos');
     }
 
     // VERIFICACIÓN DE DUPLICADOS EN TIEMPO REAL
@@ -108,7 +105,6 @@ const initializeForm = () => {
             const warningElement = document.getElementById('duplicado-warning');
 
             if (duplicado) {
-                console.log('⚠️ Posible duplicado detectado localmente', duplicado);
 
                 if (!warningElement) {
                     const warning = document.createElement('div');
@@ -168,7 +164,6 @@ const initializeForm = () => {
     const SUBMIT_THROTTLE = 2000; // 2 segundos mínimo entre envíos
 
     if (form) {
-        console.log('Adjuntando manejador de envío al formulario con protección anti-duplicados');
 
         // Eliminar event listeners existentes clonando el elemento
         const newForm = form.cloneNode(true);
@@ -189,27 +184,23 @@ const initializeForm = () => {
             // 1. Verificar si el formulario ya fue enviado en el último minuto
             if (localStorage.getItem('formSubmittedTimestamp') &&
                 now - parseInt(localStorage.getItem('formSubmittedTimestamp')) < ONE_MINUTE) {
-                console.log(`[${formId}] 🚫 Formulario ya fue enviado recientemente, bloqueando`);
                 alert('DUPLICADO: Por favor, espera al menos 1 minuto antes de enviar otro formulario.');
                 return false;
             }
 
             // 2. Verificar si pasó suficiente tiempo desde el último intento de envío
             if (now - lastSubmitTime < SUBMIT_THROTTLE) {
-                console.log(`[${formId}] 🚫 Demasiados intentos rápidos, bloqueando`);
                 alert('Estás enviando demasiado rápido. Espera unos segundos.');
                 return false;
             }
 
             // 3. Verificar si ya hay una solicitud en progreso
             if (requestInProgress) {
-                console.log(`[${formId}] 🚫 Ya hay una solicitud en progreso, bloqueando`);
                 return false;
             }
 
             // 4. Verificar si el formulario ya tiene la clase de procesamiento
             if (this.classList.contains('submitting')) {
-                console.log(`[${formId}] 🚫 Formulario ya está siendo enviado (clase), bloqueando`);
                 return false;
             }
 
@@ -223,7 +214,6 @@ const initializeForm = () => {
             });
 
             if (duplicadoLocal) {
-                console.log(`[${formId}] 🚫 Duplicado local detectado, bloqueando`, duplicadoLocal);
                 alert('DUPLICADO DETECTADO: Ya has enviado una oferta similar hace poco tiempo. ' +
                       'Cambia el título y descripción significativamente.');
                 return false;
@@ -245,7 +235,6 @@ const initializeForm = () => {
                 // Si por alguna razón no se procesa correctamente, restaurar después de 15 segundos
                 setTimeout(() => {
                     if (requestInProgress) {
-                        console.log(`[${formId}] Restaurando estado del formulario por timeout`);
                         requestInProgress = false;
                         this.classList.remove('submitting');
 
@@ -260,7 +249,6 @@ const initializeForm = () => {
 
             // Guardar timestamp del envío en localStorage
             localStorage.setItem('formSubmittedTimestamp', now.toString());
-            console.log(`[${formId}] Marcado formulario como enviado en localStorage`);
 
             // Preparar los datos del formulario
             const formData = new FormData(this);
@@ -290,7 +278,6 @@ const initializeForm = () => {
                 });
             })
             .then(result => {
-                console.log(`[${formId}] Respuesta recibida:`, result);
 
                 // Eliminar el aviso de procesamiento
                 processingNotice.remove();
@@ -305,9 +292,34 @@ const initializeForm = () => {
                     });
                     localStorage.setItem('ofertasEnviadas', JSON.stringify(ofertasRecientes));
 
-                    // Mostrar mensaje y redirigir
-                    alert('✅ Oferta creada exitosamente');
-                    window.location.href = '/empresa/dashboard';
+                    // Mostrar mensaje de éxito
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Éxito!',
+                        text: result.data.message || 'Oferta creada correctamente',
+                        showConfirmButton: false,
+                        timer: 1500
+                    }).then(() => {
+                        // Emitir evento de creación exitosa
+                        window.dispatchEvent(new CustomEvent('publicationCreated'));
+                    });
+
+                    // Registrar en localStorage
+                    localStorage.setItem('formSubmittedTimestamp', Date.now().toString());
+                    const oferta = {
+                        titulo: formData.get('titulo'),
+                        descripcion: formData.get('descripcion'),
+                        timestamp: Date.now()
+                    };
+                    ofertasRecientes.push(oferta);
+                    localStorage.setItem('ofertasEnviadas', JSON.stringify(ofertasRecientes));
+
+                    // Cerrar el modal
+                    closeModal();
+
+                    // Limpiar el formulario
+                    newForm.reset();
+                    resetSelect(subcategoriaSelect, 'Selecciona una subcategoría');
                 } else {
                     // Error: Mostrar mensaje y restaurar el formulario
                     let errorMessage = 'Error al crear la oferta';
@@ -392,7 +404,6 @@ const initializeForm = () => {
 
             // Generar un identificador único para esta solicitud para depuración
             const requestId = Date.now();
-            console.log(`[${requestId}] Cargando subcategorías para categoría ${categoriaId}`);
 
             // Realizar la petición
             const response = await fetch(`/empresa/get-subcategorias/${categoriaId}`);
@@ -402,7 +413,6 @@ const initializeForm = () => {
             }
 
             const data = await response.json();
-            console.log(`[${requestId}] Respuesta recibida:`, data);
 
             // Verificar si hay un error en la respuesta
             if (data.error) {
@@ -427,8 +437,6 @@ const initializeForm = () => {
                 }
             });
 
-            console.log(`[${requestId}] Agregadas ${addedIds.size} subcategorías únicas al select`);
-
             if (subcategorias.length === 0) {
                 resetSelect(subcategoriaSelect, 'No hay subcategorías disponibles');
             }
@@ -441,7 +449,6 @@ const initializeForm = () => {
 
     // Añadir event listener para cambios en el select de categoría
     if (categoriaSelect) {
-        console.log('Configurando listener de cambio de categoría');
         // Eliminar event listeners existentes clonando el elemento
         const newCategoriaSelect = categoriaSelect.cloneNode(true);
         if (categoriaSelect.parentNode) {
@@ -462,15 +469,12 @@ const initializeForm = () => {
 
 // Asegurarnos de que el script solo se ejecute una vez cuando el DOM esté listo
 try {
-    console.log('Inicializando create-offer.js');
 
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('DOM cargado, inicializando formulario');
             initializeForm();
         });
     } else {
-        console.log('DOM ya cargado, inicializando formulario inmediatamente');
         initializeForm();
     }
 } catch (error) {
@@ -612,6 +616,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Cerrar el modal
                     closeModal();
 
+                    // Emitir evento de creación exitosa inmediatamente
+                    window.dispatchEvent(new CustomEvent('publicationCreated'));
+
                     // Mostrar alerta de éxito
                     Swal.fire({
                         title: '¡Éxito!',
@@ -620,11 +627,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         confirmButtonText: 'Continuar',
                         confirmButtonColor: '#7E22CE'
                     });
-
-                    // Actualizar la tabla de ofertas si existe la función
-                    if (typeof updateOffersTable === 'function') {
-                        updateOffersTable();
-                    }
 
                     // Limpiar el formulario
                     formNuevaOferta.reset();
