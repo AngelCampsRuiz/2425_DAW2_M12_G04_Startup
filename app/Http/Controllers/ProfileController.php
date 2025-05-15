@@ -115,11 +115,15 @@ class ProfileController extends Controller
                 'ciudad' => $validatedData['ciudad'] ?? null,
                 'sitio_web' => $validatedData['sitio_web'] ?? null,
                 'show_telefono' => $request->boolean('show_telefono'),
-                'show_cif' => $request->boolean('show_cif'),
                 'show_ciudad' => $request->boolean('show_ciudad'),
                 'show_direccion' => $request->boolean('show_direccion'),
                 'show_web' => $request->boolean('show_web'),
             ];
+
+            // Solo incluir show_cif si es una empresa
+            if ($user->role_id == 2) {
+                $updateData['show_cif'] = $request->boolean('show_cif');
+            }
 
             if (isset($validatedData['imagen'])) {
                 $updateData['imagen'] = $validatedData['imagen'];

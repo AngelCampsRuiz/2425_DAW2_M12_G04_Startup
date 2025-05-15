@@ -118,7 +118,134 @@ function showErrorByName(field, message) {
     }
 }
 
-// Función para manejar el envío del formulario
+// Función para validar teléfono
+function validarTelefono(field) {
+    if (!field || !field.value.trim()) return true;
+    const valor = field.value.trim();
+    
+    // Expresión regular para teléfonos móviles españoles (comienzan con 6 o 7)
+    const telefonoRegex = /^[67][0-9]{8}$/;
+    if (!telefonoRegex.test(valor)) {
+        showError(field, "El teléfono debe ser un número móvil válido (9 dígitos comenzando por 6 o 7)");
+        return false;
+    }
+    
+    hideError(field);
+    return true;
+}
+
+// Función para validar sitio web
+function validarSitioWeb(field) {
+    if (!field || !field.value.trim()) return true;
+    const valor = field.value.trim();
+    
+    try {
+        new URL(valor);
+        hideError(field);
+        return true;
+    } catch (e) {
+        showError(field, "La URL no es válida");
+        return false;
+    }
+}
+
+// Función para validar descripción
+function validarDescripcion(field) {
+    if (!field || !field.value.trim()) return true;
+    const valor = field.value.trim();
+    
+    if (valor.length < 10) {
+        showError(field, "La descripción debe tener al menos 10 caracteres");
+        return false;
+    }
+    
+    if (valor.length > 500) {
+        showError(field, "La descripción no puede exceder los 500 caracteres");
+        return false;
+    }
+    
+    hideError(field);
+    return true;
+}
+
+// Función para validar archivos
+function validarArchivo(field, tipo) {
+    if (!field || !field.files || !field.files[0]) return true;
+    const file = field.files[0];
+    
+    if (tipo === 'imagen') {
+        const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        if (!validTypes.includes(file.type)) {
+            showError(field, "El archivo debe ser una imagen (JPG, PNG, GIF o WEBP)");
+            return false;
+        }
+        if (file.size > 2 * 1024 * 1024) { // 2MB
+            showError(field, "La imagen no puede exceder los 2MB");
+            return false;
+        }
+    } else if (tipo === 'cv') {
+        if (file.type !== 'application/pdf') {
+            showError(field, "El archivo debe ser un PDF");
+            return false;
+        }
+        if (file.size > 5 * 1024 * 1024) { // 5MB
+            showError(field, "El CV no puede exceder los 5MB");
+            return false;
+        }
+    }
+    
+    hideError(field);
+    return true;
+}
+
+// Modificar el CSS para los campos obligatorios
+const style = document.createElement('style');
+style.textContent = `
+    .required-field {
+        position: relative;
+        font-weight: 500;
+    }
+    .required-field::after {
+        content: ' *';
+        color: #EF4444;
+        margin-left: 4px;
+        font-size: 1.2em;
+        font-weight: bold;
+    }
+`;
+document.head.appendChild(style);
+
+// Función para añadir asteriscos a campos obligatorios
+function marcarCamposObligatorios() {
+    const isEmpresa = document.querySelector('[data-role="empresa"]') !== null;
+    
+    // Campos siempre obligatorios
+    const camposObligatorios = [
+        { id: 'nombre', label: 'Nombre' },
+        { id: 'email', label: 'Email' }
+    ];
+
+    // Campos obligatorios según el tipo de usuario
+    if (isEmpresa) {
+        camposObligatorios.push({ id: 'cif', label: 'CIF' });
+    } else {
+        camposObligatorios.push({ id: 'dni', label: 'DNI' });
+        // Si es estudiante, el CV es obligatorio
+        if (document.querySelector('[data-role="estudiante"]')) {
+            camposObligatorios.push({ id: 'cv_pdf', label: 'Curriculum Vitae' });
+        }
+    }
+
+    // Actualizar las etiquetas
+    camposObligatorios.forEach(campo => {
+        const label = document.querySelector(`label[for="${campo.id}"]`);
+        if (label) {
+            label.classList.add('required-field');
+        }
+    });
+}
+
+// Modificar la función handleFormSubmit para validar campos obligatorios
 function handleFormSubmit(e) {
     e.preventDefault();
 
@@ -127,34 +254,99 @@ function handleFormSubmit(e) {
     const form = e.target;
     const isEmpresa = document.querySelector('[data-role="empresa"]') !== null;
     
-    // Campos comunes
-    const nombreInput = form.querySelector('[name="nombre"]');
+    // Resetear errores
+    resetAllErrors();
     
-    // Validar campos obligatorios
+    // Validar todos los campos
     let isValid = true;
     
-    // Validar nombre
+    // Campos obligatorios
+    const nombreInput = form.querySelector('[name="nombre"]');
+    const emailInput = form.querySelector('[name="email"]');
+    
+    // Validar campos obligatorios
     if (!nombreInput || !nombreInput.value.trim()) {
         showError(nombreInput, 'El nombre es obligatorio');
         isValid = false;
     }
+    
+    if (!emailInput || !emailInput.value.trim()) {
+        showError(emailInput, 'El email es obligatorio');
+        isValid = false;
+    } else if (!validarEmail(emailInput)) {
+        isValid = false;
+    }
+    
+    // Validar CIF/DNI según el tipo de usuario
+    if (isEmpresa) {
+        const cifInput = form.querySelector('[name="cif"]');
+        if (!cifInput || !cifInput.value.trim()) {
+            showError(cifInput, 'El CIF es obligatorio');
+            isValid = false;
+        } else if (!validarCIF(cifInput)) {
+            isValid = false;
+        }
+    } else {
+        const dniInput = form.querySelector('[name="dni"]');
+        if (!dniInput || !dniInput.value.trim()) {
+            showError(dniInput, 'El DNI es obligatorio');
+            isValid = false;
+        } else if (!validarDNI(dniInput)) {
+            isValid = false;
+        }
+        
+        // Validar CV si es estudiante
+        if (document.querySelector('[data-role="estudiante"]')) {
+            const cvInput = form.querySelector('[name="cv_pdf"]');
+            const cvActual = document.querySelector('[data-cv-actual]');
+            if (!cvInput?.files?.length && !cvActual) {
+                showError(cvInput, 'El CV es obligatorio');
+                isValid = false;
+            } else if (cvInput?.files?.length && !validarArchivo(cvInput, 'cv')) {
+                isValid = false;
+            }
+        }
+    }
+
+    // Validar campos opcionales si tienen valor
+    const telefonoInput = form.querySelector('[name="telefono"]');
+    if (telefonoInput?.value.trim() && !validarTelefono(telefonoInput)) isValid = false;
+
+    const descripcionInput = form.querySelector('[name="descripcion"]');
+    if (descripcionInput?.value.trim() && !validarDescripcion(descripcionInput)) isValid = false;
+
+    const sitioWebInput = form.querySelector('[name="sitio_web"]');
+    if (sitioWebInput?.value.trim() && !validarSitioWeb(sitioWebInput)) isValid = false;
+
+    const ciudadInput = form.querySelector('[name="ciudad"]');
+    if (ciudadInput?.value.trim() && !validarCampo(ciudadInput, 'ciudad', 2, 100)) isValid = false;
+
+    // Validar imagen si se ha seleccionado
+    const imagenInput = form.querySelector('[name="imagen"]');
+    if (imagenInput?.files?.length && !validarArchivo(imagenInput, 'imagen')) isValid = false;
 
     if (!isValid) {
         Swal.fire({
             title: 'Error de validación',
-            text: 'Por favor, completa todos los campos obligatorios',
+            text: 'Por favor, completa correctamente todos los campos obligatorios (*)',
             icon: 'error',
             confirmButtonColor: '#7C3AED'
         });
         return;
     }
 
-    // Preparar envío
+    // Si todas las validaciones pasan, continuar con el envío
     window.isFormSubmitting = true;
     const submitButton = form.querySelector('button[type="submit"]');
     if (submitButton) {
         submitButton.disabled = true;
-        submitButton.innerHTML = 'Guardando...';
+        submitButton.innerHTML = `
+            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Guardando...
+        `;
     }
 
     // Preparar los datos del formulario
@@ -169,6 +361,10 @@ function handleFormSubmit(e) {
     // Asegurarse de que sitio_web se envíe aunque esté vacío
     if (!formData.has('sitio_web')) {
         formData.append('sitio_web', '');
+    }
+
+    if (!isEmpresa) {
+        formData.delete('show_cif');
     }
 
     // Realizar la petición fetch
@@ -281,6 +477,8 @@ function setupVisibilityToggles() {
 
 // Inicialización de validaciones
 document.addEventListener('DOMContentLoaded', function() {
+    marcarCamposObligatorios();
+    
     // Configurar el formulario
     const profileForm = document.getElementById('profileForm');
     if (profileForm) {
