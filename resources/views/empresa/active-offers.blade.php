@@ -286,6 +286,12 @@
                                                             </svg>
                                                             Ver detalles
                                                         </a>
+                                                        <button onclick="window.openModalEditOffer({{ $publication->id }})" type="button" class="edit-offer-btn inline-flex items-center justify-center w-full px-4 py-2 bg-white border border-yellow-300 rounded-lg text-yellow-600 hover:bg-yellow-50 hover:border-yellow-400 transition-colors shadow-sm" data-id="{{ $publication->id }}">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13l6-6m2 2l-6 6m2-2l-6 6" />
+                                                            </svg>
+                                                            Editar
+                                                        </button>
                                                         <form action="{{ route('empresa.offers.toggle', $publication->id) }}" method="POST" class="inline toggle-form">
                                                             @csrf
                                                             <button type="button" data-id="{{ $publication->id }}" class="toggle-button inline-flex items-center justify-center w-full px-4 py-2 bg-white border border-red-300 rounded-lg text-red-600 hover:bg-red-50 hover:border-red-400 transition-colors shadow-sm">
@@ -346,6 +352,7 @@
 
 <!-- Incluir el componente del modal -->
 @include('components.create-offer-modal')
+@include('components.edit-offer-modal')
 
 <!-- Sweet Alert -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-material-ui@5/material-ui.min.css">
@@ -356,6 +363,7 @@
 
 <!-- Script del modal -->
 <script src="{{ asset('js/create-offer.js') }}"></script>
+<script src="{{ asset('js/edit-offer.js') }}"></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -371,6 +379,11 @@
         window.addEventListener('publicationCreated', function() {
             console.log('Nueva publicación creada, actualizando lista...');
             currentPage = 1; // Volver a la primera página
+            fetchData(); // Recargar los datos
+        });
+
+        // Escuchar el evento de actualización de publicación
+        window.addEventListener('publicationUpdated', function() {
             fetchData(); // Recargar los datos
         });
 
@@ -559,6 +572,12 @@
                                     </svg>
                                     Ver detalles
                                 </a>
+                                <button onclick="window.openModalEditOffer(${publication.id})" type="button" class="edit-offer-btn inline-flex items-center justify-center w-full px-4 py-2 bg-white border border-yellow-300 rounded-lg text-yellow-600 hover:bg-yellow-50 hover:border-yellow-400 transition-colors shadow-sm" data-id="{{ $publication->id }}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13l6-6m2 2l-6 6m2-2l-6 6" />
+                                    </svg>
+                                    Editar
+                                </button>
                                 <button type="button" onclick="window.togglePublicationStatus(${publication.id})" class="inline-flex items-center justify-center w-full px-4 py-2 bg-white border border-red-300 rounded-lg text-red-600 hover:bg-red-50 hover:border-red-400 transition-colors shadow-sm">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
