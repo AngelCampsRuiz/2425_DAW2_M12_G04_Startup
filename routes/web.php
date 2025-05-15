@@ -244,6 +244,10 @@
                     Route::get('/empresa/ofertas/crear', [CompanyDashboardController::class, 'createOffer'])->name('empresa.offers.create');
                 // RUTA CREAR OFERTA
                     Route::post('/empresa/ofertas', [CompanyDashboardController::class, 'storeOffer'])->name('empresa.offers.store');
+                // RUTA EDITAR OFERTA
+                    Route::get('/empresa/ofertas/{id}/edit', [CompanyDashboardController::class, 'editOffer'])->name('empresa.offers.edit');
+                // RUTA ACTUALIZAR OFERTA
+                    Route::put('/empresa/ofertas/{id}', [CompanyDashboardController::class, 'updateOffer'])->name('empresa.offers.update');
                 // RUTA VER SOLICITUDES
                     Route::get('/empresa/ofertas/{publication}/solicitudes', [CompanyDashboardController::class, 'viewApplications'])->name('empresa.applications.view');
                 // RUTA CAMBIAR ESTADO DE PUBLICACIÓN

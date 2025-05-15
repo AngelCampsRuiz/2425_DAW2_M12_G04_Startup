@@ -225,6 +225,7 @@
 
 <!-- Incluir el componente del modal -->
 @include('components.create-offer-modal')
+@include('components.edit-offer-modal')
 
 <!-- Sweet Alert -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-material-ui@5/material-ui.min.css">
@@ -235,7 +236,7 @@
 
 <!-- Script del modal -->
 <script src="{{ asset('js/create-offer.js') }}"></script>
-
+<script src="{{ asset('js/edit-offer.js') }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Variables para el estado del filtro y paginación
@@ -251,6 +252,11 @@
         const filterHorario = document.getElementById('filter_horario');
         const filterCategoria = document.getElementById('filter_categoria');
         const btnResetFilters = document.getElementById('btnResetFilters');
+
+        // Escuchar el evento de actualización de publicación
+        window.addEventListener('publicationUpdated', function() {
+            fetchData(); // Recargar los datos
+        });
 
         // Función principal para cargar datos
         function fetchData() {
@@ -514,6 +520,12 @@
                                     </svg>
                                     Ver detalles
                                 </a>
+                                <button onclick="window.openModalEditOffer(${offer.id})" type="button" class="edit-offer-btn inline-flex items-center justify-center w-full px-4 py-2 bg-white border border-yellow-300 rounded-lg text-yellow-600 hover:bg-yellow-50 hover:border-yellow-400 transition-colors shadow-sm" data-id="${offer.id}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13l6-6m2 2l-6 6m2-2l-6 6" />
+                                    </svg>
+                                    Editar
+                                </button>
                                 <form action="/empresa/ofertas/${offer.id}/toggle" method="POST" class="inline toggle-form">
                                     @csrf
                                     <button type="button" data-id="${offer.id}" class="toggle-button inline-flex items-center justify-center w-full px-4 py-2 bg-white border border-green-300 rounded-lg text-green-600 hover:bg-green-50 hover:border-green-400 transition-colors shadow-sm">
