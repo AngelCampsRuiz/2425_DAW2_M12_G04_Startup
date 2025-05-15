@@ -50,11 +50,14 @@ class DocenteController extends Controller
             'cargo' => 'required|string|max:100',
         ]);
 
+        // Generar contraseña aleatoria
+        $password = Str::random(10);
+
         // Crear usuario
         $user = User::create([
             'nombre' => $request->nombre,
             'email' => $request->email,
-            'password' => Hash::make(Str::random(10)),
+            'password' => Hash::make($password),
             'role_id' => Rol::where('nombre_rol', 'docente')->first()->id,
             'fecha_nacimiento' => $request->fecha_nacimiento ?? now()->subYears(30),
             'ciudad' => $institucion->provincia,
@@ -69,7 +72,6 @@ class DocenteController extends Controller
             'user_id' => $user->id,
             'institucion_id' => $institucion->id,
             'departamento_id' => $request->departamento_id,
-            'departamento' => $request->departamento_id ? null : $request->departamento,
             'especialidad' => $request->especialidad,
             'cargo' => $request->cargo,
             'activo' => true,
@@ -79,16 +81,28 @@ class DocenteController extends Controller
         // TODO: implementar envío de email
 
         return redirect()->route('institucion.docentes.index')
-            ->with('success', 'Docente creado correctamente. Se ha enviado un email con las credenciales de acceso.');
+            ->with('success', 'Docente creado correctamente. Se ha enviado un email con las credenciales de acceso.')
+            ->with('password', $password)
+            ->with('email', $user->email);
     }
 
     // Ver docente
     public function show($id)
     {
         $institucion = Auth::user()->institucion;
-        $docente = $institucion->docentes()->with(['user', 'departamentoObj', 'clases', 'estudiantes'])->findOrFail($id);
+        $docente = $institucion->docentes()->with(['user', 'clases', 'estudiantes.user', 'departamentoObj'])->findOrFail($id);
+        $departamentos = $institucion->departamentos;
         
-        return view('institucion.docentes.show', compact('docente'));
+        // Obtener niveles educativos de la institución
+        $nivelesEducativos = $institucion->nivelesEducativos;
+        
+        // Obtener categorías (cursos) organizadas por nivel educativo
+        $categoriasPorNivel = [];
+        foreach ($nivelesEducativos as $nivel) {
+            $categoriasPorNivel[$nivel->id] = $institucion->categoriasPorNivel($nivel->id)->get();
+        }
+        
+        return view('institucion.docentes.show', compact('docente', 'departamentos', 'nivelesEducativos', 'categoriasPorNivel'));
     }
 
     // Editar docente
@@ -129,7 +143,6 @@ class DocenteController extends Controller
         // Actualizar docente
         $docente->update([
             'departamento_id' => $request->departamento_id,
-            'departamento' => $request->departamento_id ? null : $request->departamento,
             'especialidad' => $request->especialidad,
             'cargo' => $request->cargo,
         ]);

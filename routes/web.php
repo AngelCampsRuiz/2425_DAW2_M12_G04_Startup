@@ -2,6 +2,7 @@
     // RUTAS DE LA APLICACIÓN
     use Illuminate\Support\Facades\Route;
     use Illuminate\Support\Facades\DB;
+    use Illuminate\Support\Facades\Log;
     use Illuminate\Support\Facades\Http;
     use Illuminate\Support\Facades\Artisan;
         // CONTROLADORES
@@ -47,6 +48,8 @@
                 use App\Http\Controllers\CalendarController;
             // CONTROLADOR DE RECORDATORIOS
                 use App\Http\Controllers\ReminderController;
+            // CONTROLADOR ESTUDIANTE (EMPRESA)
+                use App\Http\Controllers\Empresa\EstudianteController;
                 use Illuminate\Http\Response;
 
     // RUTAS DE LA APLICACIÓN
@@ -78,7 +81,7 @@
                             })
                             ->with('user:id,nombre')
                             ->get(['id', 'user_id']);
-            
+
             return response()->json($instituciones);
         })->name('api.instituciones');
 
@@ -96,11 +99,11 @@
 
         Route::get('/api/categorias/{nivel_id?}/{institucion_id?}', function($nivel_id = null, $institucion_id = null) {
             // Log para depuración
-            \Log::info('API Categorias - Request params', [
+            Log::info('API Categorias - Request params', [
                 'nivel_id' => $nivel_id,
                 'institucion_id' => $institucion_id
             ]);
-            
+
             // Si se proporciona tanto el ID de institución como el ID de nivel
             if ($nivel_id && $institucion_id) {
                 // Obtener categorías asociadas a esta institución y nivel específico
@@ -112,32 +115,32 @@
                     ->select('c.id', 'c.nombre_categoria')
                     ->distinct()
                     ->get();
-                
-                \Log::info('API Categorias - Resultados', [
+
+                Log::info('API Categorias - Resultados', [
                     'count' => $categorias->count(),
                     'data' => $categorias
                 ]);
-                
+
                 return response()->json($categorias);
             }
-            
+
             // Si solo se proporciona el nivel educativo
             $query = App\Models\Categoria::select('categorias.id', 'categorias.nombre_categoria');
-            
+
             if ($nivel_id) {
                 $query->where('nivel_educativo_id', $nivel_id);
             }
-            
+
             if ($institucion_id) {
                 $query->join('institucion_categoria', 'categorias.id', '=', 'institucion_categoria.categoria_id')
                       ->where('institucion_categoria.institucion_id', $institucion_id)
                       ->where('institucion_categoria.activo', true);
-                      
+
                 if ($nivel_id) {
                     $query->where('institucion_categoria.nivel_educativo_id', $nivel_id);
                 }
             }
-            
+
             $categorias = $query->distinct()->get();
             return response()->json($categorias);
         })->name('api.categorias');
@@ -192,8 +195,7 @@
                     Route::get('/profile/{id}', [HomeController::class, 'profile'])->name('profile.view');
                     Route::get('/profile/{user}', [ProfileController::class, 'show'])->name('profile.show');
                     Route::put('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
-                    Route::post('/profile/update-location', [ProfileController::class, 'updateLocation'])
-                        ->name('profile.update-location');
+                    Route::post('/profile/update-location', [ProfileController::class, 'updateLocation'])->name('profile.update-location');
 
                 // PUBLICACIONES VISIBLES PARA TODOS LOS USUARIOS
                     Route::get('/publication/{id}', [PublicationController::class, 'show'])->name('publication.show');
@@ -236,6 +238,8 @@
             Route::middleware(['auth', \App\Http\Middleware\CheckRole::class.':empresa'])->group(function () {
                 // RUTA DASHBOARD EMPRESA
                     Route::get('/empresa/dashboard', [CompanyDashboardController::class, 'index'])->name('empresa.dashboard');
+                // RUTA OBTENER ESTADÍSTICAS DEL DASHBOARD
+                    Route::get('/empresa/get-dashboard-stats', [CompanyDashboardController::class, 'getDashboardStats'])->name('empresa.dashboard.stats');
                 // RUTA CREAR OFERTA
                     Route::get('/empresa/ofertas/crear', [CompanyDashboardController::class, 'createOffer'])->name('empresa.offers.create');
                 // RUTA CREAR OFERTA
@@ -251,13 +255,26 @@
                         ->name('empresa.subcategorias');
                 // RUTA CALENDARIO
                     Route::get('/empresa/calendar', [CalendarController::class, 'index'])->name('empresa.calendar');
+                // RUTA OFERTAS ACTIVAS
+                    Route::get('/empresa/ofertas/activas', [CompanyDashboardController::class, 'activeOffers'])->name('empresa.offers.active');
+                // RUTA OFERTAS INACTIVAS
+                    Route::get('/empresa/ofertas/inactivas', [CompanyDashboardController::class, 'inactiveOffers'])->name('empresa.offers.inactive');
+                    Route::get('/empresa/ofertas/activas/data', [App\Http\Controllers\Admin\EmpresaController::class, 'getActiveOffers'])->name('empresa.offers.active.data');
                     Route::prefix('empresa/calendar')->group(function () {
                         Route::get('/reminders', [CalendarController::class, 'getReminders']);
                         Route::post('/reminders', [CalendarController::class, 'store']);
                         Route::put('/reminders/{reminder}', [CalendarController::class, 'update']);
                         Route::delete('/reminders/{reminder}', [CalendarController::class, 'destroy']);
                     });
+                // Ruta para ver perfil de estudiante
+                Route::get('/estudiante/{id}', [App\Http\Controllers\Empresa\EstudianteController::class, 'show'])
+                    ->name('estudiante.perfil');
             });
+
+            // Ruta para búsqueda de estudiantes (API) - Fuera del grupo para evitar el prefijo 'empresa.'
+            Route::middleware(['auth', \App\Http\Middleware\CheckRole::class.':empresa'])->post('/empresa/api/estudiantes/search', 
+                [App\Http\Controllers\Empresa\EstudianteController::class, 'search'])
+                ->name('api.estudiantes.search');
 
         // RUTAS PROTEGIDAS PARA ADMINISTRADORES
             Route::middleware(['auth', \App\Http\Middleware\CheckRole::class.':admin'])->prefix('admin')->name('admin.')->group(function () {
@@ -289,7 +306,7 @@
                         Route::delete('empresas/eliminar-sql/{empresa}', [App\Http\Controllers\Admin\EmpresaController::class, 'destroySQL'])->name('empresas.destroySQL');
                     // RUTA GESTIONAR EMPRESAS
                         Route::resource('empresas', App\Http\Controllers\Admin\EmpresaController::class);
-                        
+
                 // RUTAS PARA GESTIONAR LAS INSTITUCIONES
                     // RUTA CAMBIAR VERIFICACIÓN
                         Route::post('instituciones/cambiar-verificacion/{id}', [App\Http\Controllers\Admin\InstitucionController::class, 'cambiarVerificacion'])->name('instituciones.cambiar-verificacion');
@@ -383,6 +400,7 @@
         Route::post('/clases/{id}/toggle-active', [App\Http\Controllers\ClaseController::class, 'toggleActive'])->name('clases.toggle-active');
         Route::get('/clases/{id}/asignar-estudiantes', [App\Http\Controllers\ClaseController::class, 'asignarEstudiantes'])->name('clases.asignar-estudiantes');
         Route::post('/clases/{id}/asignar-estudiantes', [App\Http\Controllers\ClaseController::class, 'guardarAsignacionEstudiantes'])->name('clases.guardar-asignacion-estudiantes');
+        Route::get('/clases/{id}/getData', [App\Http\Controllers\ClaseController::class, 'getData'])->name('clases.getData');
 
         // Solicitudes de estudiantes
         Route::get('/solicitudes', [App\Http\Controllers\SolicitudEstudianteController::class, 'index'])->name('solicitudes.index');
@@ -458,3 +476,10 @@ Route::get('/run-composer', function () {
         return response()->json(['error' => 'Error al ejecutar composer: ' . $e->getMessage()], 500);
     }
 });
+
+    // Rutas de chat
+    Route::middleware(['auth'])->prefix('chat')->name('chat.')->group(function () {
+        Route::get('/', [App\Http\Controllers\ChatController::class, 'index'])->name('index');
+        Route::get('/create/{receiver_id}', [App\Http\Controllers\ChatController::class, 'create'])->name('create');
+        Route::post('/send', [App\Http\Controllers\ChatController::class, 'send'])->name('send');
+    });

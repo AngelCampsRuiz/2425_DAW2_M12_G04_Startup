@@ -29,16 +29,16 @@ class CompanyDashboardController extends Controller
             ->where('activa', true)
             ->withCount('solicitudes')
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->paginate(4);
 
         $inactivePublications = Publicacion::where('empresa_id', $company->id)
             ->where('activa', false)
             ->withCount('solicitudes')
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->paginate(4);
 
         $categorias = Categoria::all();
-        
+
         // Cargar los niveles educativos para el filtro de búsqueda de candidatos
         $nivelesEducativos = \App\Models\NivelEducativo::all();
 
@@ -333,7 +333,11 @@ class CompanyDashboardController extends Controller
             if (request()->ajax()) {
                 return response()->json([
                     'success' => true,
-                    'message' => "Oferta {$status} exitosamente"
+                    'message' => "Oferta {$status} exitosamente",
+                    'publication' => [
+                        'id' => $publication->id,
+                        'activa' => $publication->activa
+                    ]
                 ]);
             }
 
@@ -343,14 +347,172 @@ class CompanyDashboardController extends Controller
         } catch (\Exception $e) {
             if (request()->ajax()) {
                 return response()->json([
-                    'error' => true,
-                    'message' => 'Error al cambiar el estado de la oferta'
+                    'success' => false,
+                    'message' => 'Error al cambiar el estado de la oferta: ' . $e->getMessage()
                 ], 500);
             }
 
             return redirect()->back()
                 ->withErrors(['error' => 'Error al cambiar el estado de la oferta']);
         }
+    }
+
+    /**
+     * Show all active offers for the company.
+     *
+     * @return \Illuminate\Contracts\Support\Renderable|\Illuminate\Http\JsonResponse
+     */
+    public function activeOffers(Request $request)
+    {
+        $company = Auth::user();
+        $query = Publicacion::where('empresa_id', $company->id)
+            ->where('activa', true)
+            ->withCount('solicitudes');
+
+        // Apply filters if present
+        if ($request->has('titulo') && !empty($request->titulo)) {
+            $query->where('titulo', 'like', '%' . $request->titulo . '%');
+        }
+
+        if ($request->has('horario') && !empty($request->horario)) {
+            $query->where('horario', $request->horario);
+        }
+
+        if ($request->has('categoria_id') && !empty($request->categoria_id)) {
+            $query->where('categoria_id', $request->categoria_id);
+        }
+
+        // Apply sorting
+        $sortField = $request->input('sort_field', 'created_at');
+        $sortDirection = $request->input('sort_direction', 'desc');
+
+        // Validate sort field to prevent SQL injection
+        $allowedSortFields = [
+            'titulo', 'horario', 'created_at', 'horas_totales', 'solicitudes_count'
+        ];
+
+        if (in_array($sortField, $allowedSortFields)) {
+            $query->orderBy($sortField, $sortDirection);
+        } else {
+            $query->orderBy('created_at', 'desc');
+        }
+
+        // Paginate results - use per_page from request or default to 4 items
+        $perPage = $request->input('per_page', 4);
+        $activePublications = $query->paginate($perPage);
+
+        // Return JSON for Ajax requests
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'data' => $activePublications->items(),
+                'pagination' => [
+                    'total' => $activePublications->total(),
+                    'per_page' => $activePublications->perPage(),
+                    'current_page' => $activePublications->currentPage(),
+                    'last_page' => $activePublications->lastPage(),
+                    'from' => $activePublications->firstItem(),
+                    'to' => $activePublications->lastItem()
+                ]
+            ]);
+        }
+
+        // For regular page load
+        $categorias = Categoria::all();
+
+        return view('empresa.active-offers', compact('activePublications', 'categorias'));
+    }
+
+    /**
+     * Show all inactive offers for the company.
+     *
+     * @return \Illuminate\Contracts\Support\Renderable
+     */
+    public function inactiveOffers(Request $request)
+    {
+        $company = Auth::user();
+        $query = Publicacion::where('empresa_id', $company->id)
+            ->where('activa', false)
+            ->withCount('solicitudes');
+
+        // Apply filters if present
+        if ($request->has('titulo') && !empty($request->titulo)) {
+            $query->where('titulo', 'like', '%' . $request->titulo . '%');
+        }
+
+        if ($request->has('horario') && !empty($request->horario)) {
+            $query->where('horario', $request->horario);
+        }
+
+        if ($request->has('categoria_id') && !empty($request->categoria_id)) {
+            $query->where('categoria_id', $request->categoria_id);
+        }
+
+        // Apply sorting
+        $sortField = $request->input('sort_field', 'created_at');
+        $sortDirection = $request->input('sort_direction', 'desc');
+
+        // Validate sort field to prevent SQL injection
+        $allowedSortFields = [
+            'titulo', 'horario', 'created_at', 'horas_totales', 'solicitudes_count'
+        ];
+
+        if (in_array($sortField, $allowedSortFields)) {
+            $query->orderBy($sortField, $sortDirection);
+        } else {
+            $query->orderBy('created_at', 'desc');
+        }
+
+        // Paginate with 4 items per page
+        $perPage = $request->input('per_page', 4);
+        $inactivePublications = $query->paginate($perPage);
+
+        // Return JSON for Ajax requests
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'data' => $inactivePublications->items(),
+                'pagination' => [
+                    'total' => $inactivePublications->total(),
+                    'per_page' => $inactivePublications->perPage(),
+                    'current_page' => $inactivePublications->currentPage(),
+                    'last_page' => $inactivePublications->lastPage(),
+                    'from' => $inactivePublications->firstItem(),
+                    'to' => $inactivePublications->lastItem()
+                ]
+            ]);
+        }
+
+        $categorias = Categoria::all();
+
+        return view('empresa.inactive-offers', compact('inactivePublications', 'categorias'));
+    }
+
+    public function getDashboardStats()
+    {
+        $company = Auth::user();
+
+        // Obtener las solicitudes aceptadas y rechazadas
+        $solicitudesAceptadas = Solicitud::whereHas('publicacion', function($query) use ($company) {
+            $query->where('empresa_id', $company->id);
+        })->where('estado', 'aceptada')->count();
+
+        $solicitudesRechazadas = Solicitud::whereHas('publicacion', function($query) use ($company) {
+            $query->where('empresa_id', $company->id);
+        })->where('estado', 'rechazada')->count();
+
+        $stats = [
+            'activePublications' => Publicacion::where('empresa_id', $company->id)
+                ->where('activa', true)
+                ->count(),
+            'inactivePublications' => Publicacion::where('empresa_id', $company->id)
+                ->where('activa', false)
+                ->count(),
+            'activeSolicitudes' => $solicitudesAceptadas,
+            'inactiveSolicitudes' => $solicitudesRechazadas
+        ];
+
+        return response()->json($stats);
     }
 }
 

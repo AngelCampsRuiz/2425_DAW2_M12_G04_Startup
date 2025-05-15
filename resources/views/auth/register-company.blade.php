@@ -12,6 +12,18 @@
         <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Registro de Empresa</h2>
         <p class="text-gray-600 text-center mb-6">Paso 2 de 2: Completa la información de tu empresa</p>
 
+        <!-- Mensajes de error generales -->
+        @if ($errors->any())
+        <div class="mb-6 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded" role="alert">
+            <p class="font-bold">Ha ocurrido un error</p>
+            <ul>
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+        @endif
+
         <form method="POST" action="{{ route('company.register') }}" id="companyRegisterForm" class="space-y-6">
             @csrf
             <div class="grid md:grid-cols-2 gap-6">
@@ -323,6 +335,18 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+    
+    // Marcar los campos con errores de servidor
+    const serverErrors = document.querySelectorAll('.text-red-500:not([id*="-error"])');
+    serverErrors.forEach(errorElement => {
+        const parentField = errorElement.closest('.mb-4');
+        if (parentField) {
+            const input = parentField.querySelector('input, select');
+            if (input) {
+                input.classList.add('border-red-500');
+            }
+        }
+    });
 });
 </script>
 @endsection

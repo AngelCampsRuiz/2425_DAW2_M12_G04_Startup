@@ -351,7 +351,60 @@
 
 @push('scripts')
 <script>
+    // Definición global de openEditModal
+    function openEditModal(departamentoId) {
+        const modal = document.getElementById('modalEditarDepartamento');
+        if (modal) {
+            // Cargar datos del departamento
+            fetch(`/institucion/departamentos/${departamentoId}/get-data`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Configurar formulario
+                        const form = document.getElementById('formEditarDepartamento');
+                        form.action = `/institucion/departamentos/${departamentoId}`;
+                        
+                        // Llenar campos
+                        document.getElementById('edit_departamento_id').value = departamentoId;
+                        document.getElementById('edit_nombre').value = data.departamento.nombre;
+                        document.getElementById('edit_codigo').value = data.departamento.codigo || '';
+                        document.getElementById('edit_descripcion').value = data.departamento.descripcion || '';
+                        document.getElementById('edit_jefe_departamento_id').value = data.departamento.jefe_departamento_id || '';
+                        
+                        // Mostrar modal
+                        modal.classList.remove('hidden');
+                        document.body.classList.add('overflow-hidden');
+                        
+                        // Animación de entrada
+                        setTimeout(() => {
+                            const modalContent = modal.querySelector('.relative');
+                            if (modalContent) {
+                                modalContent.classList.add('animate-fadeIn');
+                            }
+                        }, 10);
+                    } else {
+                        // Mostrar error
+                        alert('Error al cargar los datos del departamento');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al cargar los datos del departamento');
+                });
+        }
+    }
+    
     document.addEventListener('DOMContentLoaded', function() {
+        // Comprobar parámetros URL para abrir modal automáticamente
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('editModal') && urlParams.get('editModal') === 'true') {
+            const id = urlParams.get('id');
+            if (id) {
+                console.log("Detectado parámetro editModal=true con id=", id);
+                openEditModal(id);
+            }
+        }
+        
         // Búsqueda de departamentos
         const searchInput = document.getElementById('searchInput');
         const departamentosTable = document.getElementById('departamentosTable');
@@ -445,49 +498,6 @@
             });
         }
 
-        // Funciones para el modal de edición
-        window.openEditModal = function(departamentoId) {
-            const modal = document.getElementById('modalEditarDepartamento');
-            if (modal) {
-                // Cargar datos del departamento
-                fetch(`/institucion/departamentos/${departamentoId}/get-data`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            // Configurar formulario
-                            const form = document.getElementById('formEditarDepartamento');
-                            form.action = `/institucion/departamentos/${departamentoId}`;
-                            
-                            // Llenar campos
-                            document.getElementById('edit_departamento_id').value = departamentoId;
-                            document.getElementById('edit_nombre').value = data.departamento.nombre;
-                            document.getElementById('edit_codigo').value = data.departamento.codigo || '';
-                            document.getElementById('edit_descripcion').value = data.departamento.descripcion || '';
-                            document.getElementById('edit_jefe_departamento_id').value = data.departamento.jefe_departamento_id || '';
-                            
-                            // Mostrar modal
-                            modal.classList.remove('hidden');
-                            document.body.classList.add('overflow-hidden');
-                            
-                            // Animación de entrada
-                            setTimeout(() => {
-                                const modalContent = modal.querySelector('.relative');
-                                if (modalContent) {
-                                    modalContent.classList.add('animate-fadeIn');
-                                }
-                            }, 10);
-                        } else {
-                            // Mostrar error
-                            alert('Error al cargar los datos del departamento');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('Error al cargar los datos del departamento');
-                    });
-            }
-        };
-        
         window.closeEditModal = function() {
             const modal = document.getElementById('modalEditarDepartamento');
             if (modal) {

@@ -195,19 +195,13 @@
                     <div class="bg-gray-50 p-4 rounded-lg space-y-4">
                         <div>
                             <label for="departamento_id" class="block text-sm font-medium text-gray-700 mb-1">Departamento</label>
-                            <select name="departamento_id" id="departamento_id" onchange="toggleDepartamentoManual()"
+                            <select name="departamento_id" id="departamento_id"
                                     class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-sm transition-all">
                                 <option value="">-- Seleccionar Departamento --</option>
                                 @foreach($departamentos as $departamento)
                                     <option value="{{ $departamento->id }}">{{ $departamento->nombre }}</option>
                                 @endforeach
                             </select>
-                        </div>
-                        
-                        <div id="departamento_manual_container">
-                            <label for="departamento" class="block text-sm font-medium text-gray-700 mb-1">Nombre del Departamento (si no está en la lista)</label>
-                            <input type="text" name="departamento" id="departamento" 
-                                   class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-sm transition-all">
                         </div>
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -400,6 +394,65 @@
 
 @push('scripts')
 <script>
+    // Si hay información de contraseña, mostrarla en la consola
+    @if(session('password') && session('email'))
+        console.log('%c CREDENCIALES DEL NUEVO DOCENTE ', 'background: #4CAF50; color: white; font-size: 12px; font-weight: bold; padding: 5px;');
+        console.log('%c Email: ' + '{{ session('email') }}', 'color: #333; font-size: 14px; font-weight: bold;');
+        console.log('%c Contraseña: ' + '{{ session('password') }}', 'color: #E91E63; font-size: 14px; font-weight: bold;');
+        console.log('%c Guarde estas credenciales ya que no se mostrarán nuevamente. ', 'background: #FFC107; color: #333; font-size: 12px; padding: 3px;');
+    @endif
+    
+    // Definición global de openEditModal
+    function openEditModal(docenteId) {
+        const modal = document.getElementById('modalEditarDocente');
+        if (modal) {
+            // Cargar datos del docente
+            fetch(`/institucion/docentes/${docenteId}/get-data`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Configurar formulario
+                        const form = document.getElementById('formEditarDocente');
+                        form.action = `/institucion/docentes/${docenteId}`;
+                        
+                        // Llenar campos
+                        document.getElementById('edit_docente_id').value = docenteId;
+                        document.getElementById('edit_nombre').value = data.docente.user.nombre;
+                        document.getElementById('edit_email').value = data.docente.user.email;
+                        document.getElementById('edit_dni').value = data.docente.user.dni;
+                        document.getElementById('edit_telefono').value = data.docente.user.telefono;
+                        document.getElementById('edit_departamento_id').value = data.docente.departamento_id || '';
+                        document.getElementById('edit_departamento').value = data.docente.departamento || '';
+                        document.getElementById('edit_especialidad').value = data.docente.especialidad;
+                        document.getElementById('edit_cargo').value = data.docente.cargo;
+                        document.getElementById('edit_activo').checked = data.docente.activo ? true : false;
+                        
+                        // Mostrar/ocultar campo departamento manual
+                        toggleEditDepartamentoManual();
+                        
+                        // Mostrar modal
+                        modal.classList.remove('hidden');
+                        document.body.classList.add('overflow-hidden');
+                        
+                        // Animación de entrada
+                        setTimeout(() => {
+                            const modalContent = modal.querySelector('.relative');
+                            if (modalContent) {
+                                modalContent.classList.add('animate-fadeIn');
+                            }
+                        }, 10);
+                    } else {
+                        // Mostrar error
+                        alert('Error al cargar los datos del docente');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al cargar los datos del docente');
+                });
+        }
+    }
+    
     // Funciones para el modal de docente
     window.openModalDocente = function() {
         const modal = document.getElementById('modalNuevoDocente');
@@ -461,10 +514,60 @@
             }
         }
     };
+    
+    window.toggleEditDepartamentoManual = function() {
+        const departamentoSelect = document.getElementById('edit_departamento_id');
+        const departamentoManualContainer = document.getElementById('edit_departamento_manual_container');
+        
+        if (departamentoSelect && departamentoManualContainer) {
+            if (departamentoSelect.value) {
+                departamentoManualContainer.style.display = 'none';
+            } else {
+                departamentoManualContainer.style.display = '';
+            }
+        }
+    };
+    
+    window.closeEditModal = function() {
+        const modal = document.getElementById('modalEditarDocente');
+        if (modal) {
+            // Animación de salida
+            const modalContent = modal.querySelector('.relative');
+            if (modalContent) {
+                modalContent.classList.remove('animate-fadeIn');
+                modalContent.classList.add('animate-fadeOut');
+            }
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+                
+                if (modalContent) {
+                    modalContent.classList.remove('animate-fadeOut');
+                }
+                
+                // Limpiar formulario
+                const form = document.getElementById('formEditarDocente');
+                if (form) {
+                    form.reset();
+                }
+            }, 200);
+        }
+    };
 
     document.addEventListener('DOMContentLoaded', function() {
         // Configuración al cargar la página
         toggleDepartamentoManual();
+        
+        // Comprobar parámetros URL para abrir modal automáticamente
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('editModal') && urlParams.get('editModal') === 'true') {
+            const id = urlParams.get('id');
+            if (id) {
+                console.log("Detectado parámetro editModal=true con id=", id);
+                openEditModal(id);
+            }
+        }
         
         // Cerrar modal al hacer clic fuera
         const modalNuevoDocente = document.getElementById('modalNuevoDocente');
@@ -545,97 +648,6 @@
             });
         });
 
-        // Funciones para el modal de edición
-        window.openEditModal = function(docenteId) {
-            const modal = document.getElementById('modalEditarDocente');
-            if (modal) {
-                // Cargar datos del docente
-                fetch(`/institucion/docentes/${docenteId}/get-data`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            // Configurar formulario
-                            const form = document.getElementById('formEditarDocente');
-                            form.action = `/institucion/docentes/${docenteId}`;
-                            
-                            // Llenar campos
-                            document.getElementById('edit_docente_id').value = docenteId;
-                            document.getElementById('edit_nombre').value = data.docente.user.nombre;
-                            document.getElementById('edit_email').value = data.docente.user.email;
-                            document.getElementById('edit_dni').value = data.docente.user.dni;
-                            document.getElementById('edit_telefono').value = data.docente.user.telefono;
-                            document.getElementById('edit_departamento_id').value = data.docente.departamento_id || '';
-                            document.getElementById('edit_departamento').value = data.docente.departamento || '';
-                            document.getElementById('edit_especialidad').value = data.docente.especialidad;
-                            document.getElementById('edit_cargo').value = data.docente.cargo;
-                            document.getElementById('edit_activo').checked = data.docente.activo ? true : false;
-                            
-                            // Mostrar/ocultar campo departamento manual
-                            toggleEditDepartamentoManual();
-                            
-                            // Mostrar modal
-                            modal.classList.remove('hidden');
-                            document.body.classList.add('overflow-hidden');
-                            
-                            // Animación de entrada
-                            setTimeout(() => {
-                                const modalContent = modal.querySelector('.relative');
-                                if (modalContent) {
-                                    modalContent.classList.add('animate-fadeIn');
-                                }
-                            }, 10);
-                        } else {
-                            // Mostrar error
-                            alert('Error al cargar los datos del docente');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('Error al cargar los datos del docente');
-                    });
-            }
-        };
-        
-        window.closeEditModal = function() {
-            const modal = document.getElementById('modalEditarDocente');
-            if (modal) {
-                // Animación de salida
-                const modalContent = modal.querySelector('.relative');
-                if (modalContent) {
-                    modalContent.classList.remove('animate-fadeIn');
-                    modalContent.classList.add('animate-fadeOut');
-                }
-                
-                setTimeout(() => {
-                    modal.classList.add('hidden');
-                    document.body.classList.remove('overflow-hidden');
-                    
-                    if (modalContent) {
-                        modalContent.classList.remove('animate-fadeOut');
-                    }
-                    
-                    // Limpiar formulario
-                    const form = document.getElementById('formEditarDocente');
-                    if (form) {
-                        form.reset();
-                    }
-                }, 200);
-            }
-        };
-        
-        window.toggleEditDepartamentoManual = function() {
-            const departamentoSelect = document.getElementById('edit_departamento_id');
-            const departamentoManualContainer = document.getElementById('edit_departamento_manual_container');
-            
-            if (departamentoSelect && departamentoManualContainer) {
-                if (departamentoSelect.value) {
-                    departamentoManualContainer.style.display = 'none';
-                } else {
-                    departamentoManualContainer.style.display = '';
-                }
-            }
-        };
-        
         // Cerrar modal al hacer clic fuera
         const modalEditarDocente = document.getElementById('modalEditarDocente');
         if (modalEditarDocente) {

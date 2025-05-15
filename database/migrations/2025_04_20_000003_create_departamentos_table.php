@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('institucion_id')->constrained('instituciones')->onDelete('cascade');
             $table->string('nombre');
-            $table->string('codigo')->unique();
+            $table->string('codigo');
             $table->text('descripcion')->nullable();
             $table->boolean('activo')->default(true);
             $table->timestamps();

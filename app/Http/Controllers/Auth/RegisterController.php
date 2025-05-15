@@ -260,6 +260,7 @@ class RegisterController extends Controller
             'niveles_educativos.*' => ['exists:niveles_educativos,id'],
             'direccion' => ['required', 'string', 'max:255'],
             'provincia' => ['required', 'string', 'max:100'],
+            'ciudad' => ['required', 'string', 'max:100'],
             'codigo_postal' => ['required', 'string', 'max:5'],
             'representante_legal' => ['required', 'string', 'max:255'],
             'cargo_representante' => ['required', 'string', 'max:255'],
@@ -271,6 +272,8 @@ class RegisterController extends Controller
             'password.confirmed' => 'Las contraseñas no coinciden',
             'niveles_educativos.required' => 'Debes seleccionar al menos un nivel educativo',
             'niveles_educativos.min' => 'Debes seleccionar al menos un nivel educativo',
+            'provincia.required' => 'Debes seleccionar una provincia',
+            'ciudad.required' => 'Debes seleccionar una ciudad',
         ]);
         
         if ($validator->fails()) {
@@ -286,7 +289,7 @@ class RegisterController extends Controller
             'password' => Hash::make($request->password),
             'role_id' => Rol::where('nombre_rol', 'Institucion')->first()->id,
             'fecha_nacimiento' => now()->subYears(rand(25, 50)),
-            'ciudad' => $request->provincia,
+            'ciudad' => $request->ciudad,
             'dni' => 'INST' . rand(10000000, 99999999),
             'activo' => true,
             'telefono' => '9' . rand(10000000, 99999999),
@@ -299,7 +302,7 @@ class RegisterController extends Controller
             'user_id' => $user->id,
             'codigo_centro' => $request->codigo_centro,
             'direccion' => $request->direccion,
-            'ciudad' => $request->provincia,
+            'ciudad' => $request->ciudad,
             'codigo_postal' => $request->codigo_postal,
             'representante_legal' => $request->representante_legal,
             'cargo_representante' => $request->cargo_representante,

@@ -4,13 +4,23 @@
 {{-- CONTENIDO --}}
 @section('content')
 <div class="min-h-screen bg-gradient-to-br from-gray-50 to-purple-50">
+    {{-- MIGAS DE PAN STICKY --}}
+    <div class="bg-white shadow-sm sticky top-0 z-10">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex items-center text-sm">
+                <a href="{{ route('home') }}" class="text-gray-500 hover:text-purple-700 transition-colors duration-200">
+                    <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                    </svg>
+                    Inicio
+                </a>
+                <span class="mx-2 text-gray-400">/</span>
+                <span class="text-purple-700 font-medium">Dashboard</span>
+            </div>
+        </div>
+    </div>
+
     <div class="container mx-auto px-4 py-8">
-        <!-- Breadcrumbs -->
-        @component('components.breadcrumb')
-            @slot('items')
-                [{"name": "Dashboard"}]
-            @endslot
-        @endcomponent
 
         <div class="flex flex-col md:flex-row gap-6">
             <!-- Sidebar -->
@@ -18,20 +28,20 @@
                 <div class="bg-white rounded-xl shadow-lg p-6 mb-6 hover:shadow-xl transition-shadow duration-300">
                     <div class="flex items-center space-x-4 mb-6">
                         @if(Auth::user()->imagen)
-                            <div class="relative">
-                                <img src="{{ asset('public/profile_images/' . Auth::user()->imagen) }}" alt="Logo empresa" class="w-16 h-16 rounded-full object-cover border-2 border-purple-200">
+                            <div class="relative flex items-center justify-center w-16 h-16 rounded-full bg-purple-50 border-2 border-purple-200 overflow-hidden">
+                                <img src="{{ asset('public/profile_images/' . Auth::user()->imagen) }}" alt="Logo empresa" class="w-full h-full object-contain">
                                 <div class="absolute bottom-0 right-0 w-4 h-4 bg-green-400 rounded-full border-2 border-white"></div>
                             </div>
                         @else
                             <div class="relative">
                                 <div class="w-16 h-16 rounded-full bg-gradient-to-br from-purple-400 to-indigo-500 flex items-center justify-center text-white text-xl font-bold shadow-md">
-                                    {{ strtoupper(substr(Auth::user()->name, 0, 2)) }}
+                                    {{ strtoupper(substr(Auth::user()->nombre, 0, 2)) }}
                                 </div>
                                 <div class="absolute bottom-0 right-0 w-4 h-4 bg-green-400 rounded-full border-2 border-white"></div>
                             </div>
                         @endif
                         <div>
-                            <h2 class="text-lg font-bold text-gray-800">{{ Auth::user()->name }}</h2>
+                            <h2 class="text-lg font-bold text-gray-800">{{ Auth::user()->nombre }}</h2>
                             <p class="text-indigo-600 font-medium">Empresa</p>
                         </div>
                     </div>
@@ -42,12 +52,12 @@
                             </svg>
                             CIF: <span class="font-medium text-gray-800 ml-1">{{ Auth::user()->empresa->cif ?? 'No especificado' }}</span>
                         </p>
-                        <p class="text-gray-600 mb-2 flex items-center">
+                        {{-- <p class="text-gray-600 mb-2 flex items-center">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                             </svg>
                             Sector: <span class="font-medium text-gray-800 ml-1">{{ Auth::user()->empresa->sector ?? 'No especificado' }}</span>
-                        </p>
+                        </p> --}}
                         <p class="text-gray-600 flex items-center">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -96,6 +106,18 @@
                                 </svg>
                                 Publicar oferta
                             </a></li>
+                            <li><a href="{{ route('empresa.offers.active') }}" class="flex items-center p-2 {{ Route::currentRouteName() == 'empresa.offers.active' ? 'bg-gradient-to-r from-purple-50 to-purple-100 text-purple-700 border-l-4 border-purple-600' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3 {{ Route::currentRouteName() == 'empresa.offers.active' ? 'text-purple-600' : 'text-gray-500' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Ofertas Activas
+                            </a></li>
+                            <li><a href="{{ route('empresa.offers.inactive') }}" class="flex items-center p-2 {{ Route::currentRouteName() == 'empresa.offers.inactive' ? 'bg-gradient-to-r from-purple-50 to-purple-100 text-purple-700 border-l-4 border-purple-600' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3 {{ Route::currentRouteName() == 'empresa.offers.inactive' ? 'text-purple-600' : 'text-gray-500' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Ofertas Inactivas
+                            </a></li>
                             <li><a href="{{ route('chat.index') }}" class="flex items-center p-2 {{ Route::currentRouteName() == 'chat.index' ? 'bg-gradient-to-r from-purple-50 to-purple-100 text-purple-700 border-l-4 border-purple-600' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg transition-colors">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3 {{ Route::currentRouteName() == 'chat.index' ? 'text-purple-600' : 'text-gray-500' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
@@ -123,7 +145,7 @@
                             <div class="flex items-center justify-between">
                                 <div>
                                     <h3 class="font-medium text-purple-800 mb-1">Ofertas activas</h3>
-                                    <p class="text-3xl font-bold text-purple-900">{{ $activePublications->count() }}</p>
+                                    <p class="text-3xl font-bold text-purple-900" id="activePublicationsCount">{{ $activePublications->count() }}</p>
                                 </div>
                                 <div class="bg-white p-3 rounded-lg shadow-sm">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -144,7 +166,7 @@
                             <div class="flex items-center justify-between">
                                 <div>
                                     <h3 class="font-medium text-green-800 mb-1">Total solicitudes</h3>
-                                    <p class="text-3xl font-bold text-green-900">{{ $activePublications->sum('solicitudes_count') + $inactivePublications->sum('solicitudes_count') }}</p>
+                                    <p class="text-3xl font-bold text-green-900" id="totalSolicitudesCount">{{ $activePublications->sum('solicitudes_count') + $inactivePublications->sum('solicitudes_count') }}</p>
                                 </div>
                                 <div class="bg-white p-3 rounded-lg shadow-sm">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -165,7 +187,7 @@
                             <div class="flex items-center justify-between">
                                 <div>
                                     <h3 class="font-medium text-blue-800 mb-1">Solicitudes pendientes</h3>
-                                    <p class="text-3xl font-bold text-blue-900">{{ $activePublications->sum('solicitudes_count') }}</p>
+                                    <p class="text-3xl font-bold text-blue-900" id="activeSolicitudesCount">{{ $activePublications->sum('solicitudes_count') }}</p>
                                 </div>
                                 <div class="bg-white p-3 rounded-lg shadow-sm">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -183,7 +205,7 @@
                             <div class="flex items-center justify-between">
                                 <div>
                                     <h3 class="font-medium text-amber-800 mb-1">Ofertas inactivas</h3>
-                                    <p class="text-3xl font-bold text-amber-900">{{ $inactivePublications->count() }}</p>
+                                    <p class="text-3xl font-bold text-amber-900" id="inactivePublicationsCount">{{ $inactivePublications->count() }}</p>
                                 </div>
                                 <div class="bg-white p-3 rounded-lg shadow-sm">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -199,252 +221,45 @@
                         </div>
                     </div>
 
-                    <!-- Gráfico de Actividad -->
-                    <div class="bg-white rounded-xl shadow-md p-6 mb-8 border border-gray-100 transform transition-all duration-300 hover:shadow-lg">
-                        <h2 class="text-xl font-bold text-gray-800 mb-6 flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                            </svg>
-                            Resumen de Actividad
-                        </h2>
-
-                        <div class="flex flex-col md:flex-row gap-6">
-                            <!-- Gráfico de solicitudes por oferta -->
-                            <div class="w-full md:w-1/2 bg-gradient-to-br from-white to-purple-50 p-5 rounded-xl border border-purple-100 shadow-sm transition-all duration-300 hover:shadow-md">
-                                <h3 class="text-sm font-semibold text-purple-800 mb-4 flex items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
-                                    </svg>
-                                    Distribución de Ofertas
-                                </h3>
-                                <div class="relative h-64 md:h-72 lg:h-80">
-                                    <canvas id="solicitudesChart"></canvas>
-                                </div>
+                    <!-- Resumen de Actividad -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                        <!-- Gráfico de distribución de ofertas -->
+                        <div class="bg-white p-6 rounded-xl shadow-md">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Distribución de Ofertas</h3>
+                            <div class="relative" style="height: 300px;">
+                                <canvas id="solicitudesChart"></canvas>
                             </div>
-                            <!-- Distribución de estados -->
-                            <div class="w-full md:w-1/2 bg-gradient-to-br from-white to-blue-50 p-5 rounded-xl border border-blue-100 shadow-sm transition-all duration-300 hover:shadow-md">
-                                <h3 class="text-sm font-semibold text-blue-800 mb-4 flex items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                                    </svg>
-                                    Distribución de Solicitudes
-                                </h3>
-                                <div class="relative h-64 md:h-72 lg:h-80">
-                                    <canvas id="estadosChart"></canvas>
+                            <!-- Estadísticas detalladas -->
+                            <div class="mt-6 grid grid-cols-2 gap-4">
+                                <div class="p-4 bg-purple-50 rounded-lg">
+                                    <p class="text-sm text-purple-600 font-medium">Ofertas Activas</p>
+                                    <p class="text-2xl font-bold text-purple-900" id="activePublicationsDetail">0</p>
+                                </div>
+                                <div class="p-4 bg-amber-50 rounded-lg">
+                                    <p class="text-sm text-amber-600 font-medium">Ofertas Inactivas</p>
+                                    <p class="text-2xl font-bold text-amber-900" id="inactivePublicationsDetail">0</p>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Ofertas Activas -->
-                    <div class="mb-8">
-                        <div class="flex justify-between items-center mb-6">
-                            <h2 class="text-xl font-bold text-gray-800 flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                Ofertas Activas
-                            </h2>
-                            <button id="btnNuevaOferta" class="group flex items-center text-white bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg text-sm font-medium shadow-md hover:shadow-lg transition-all duration-300">
-                                <span class="flex items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1.5 group-hover:animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                                    </svg>
-                                    Publicar nueva
-                                </span>
-                            </button>
+                        <!-- Gráfico de distribución de solicitudes -->
+                        <div class="bg-white p-6 rounded-xl shadow-md">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Distribución de Solicitudes</h3>
+                            <div class="relative" style="height: 300px;">
+                                <canvas id="estadosChart"></canvas>
+                            </div>
+                            <!-- Estadísticas detalladas -->
+                            <div class="mt-6 grid grid-cols-2 gap-4">
+                                <div class="p-4 bg-green-50 rounded-lg">
+                                    <p class="text-sm text-green-600 font-medium">Solicitudes Aceptadas</p>
+                                    <p class="text-2xl font-bold text-green-900" id="activeSolicitudesDetail">0</p>
+                                </div>
+                                <div class="p-4 bg-blue-50 rounded-lg">
+                                    <p class="text-sm text-blue-600 font-medium">Solicitudes Rechazadas</p>
+                                    <p class="text-2xl font-bold text-blue-900" id="inactiveSolicitudesDetail">0</p>
+                                </div>
+                            </div>
                         </div>
-
-                        @if($activePublications->isEmpty())
-                            <div class="bg-white text-center py-16 rounded-xl shadow-md border border-gray-100">
-                                <div class="inline-flex items-center justify-center p-4 bg-purple-100 rounded-full mb-6">
-                                    <svg class="h-14 w-14 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                                    </svg>
-                                </div>
-                                <h3 class="text-xl font-medium text-gray-900 mb-2">No hay ofertas activas</h3>
-                                <p class="text-gray-500 max-w-md mx-auto mb-8">Comienza publicando tu primera oferta de prácticas y conecta con los mejores estudiantes para impulsar tu empresa.</p>
-                                <button id="btnPrimeraOferta" class="inline-flex items-center px-5 py-3 shadow-md text-base font-medium rounded-lg text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors">
-                                    <svg class="-ml-1 mr-3 h-5 w-5 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                                    </svg>
-                                    Nueva oferta
-                                </button>
-                            </div>
-                        @else
-                            <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
-                                <div class="overflow-x-auto">
-                                    <table class="min-w-full divide-y divide-gray-200">
-                                        <thead class="bg-gray-50">
-                                            <tr>
-                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Título</th>
-                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Horario</th>
-                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Solicitudes</th>
-                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="bg-white divide-y divide-gray-200">
-                                            @foreach($activePublications as $publication)
-                                                <tr class="hover:bg-gray-50 transition-colors">
-                                                    <td class="px-6 py-4">
-                                                        <div class="text-sm font-medium text-gray-900 mb-1">{{ $publication->titulo }}</div>
-                                                        <div class="text-xs text-gray-500 max-w-xs">{{ Str::limit($publication->descripcion, 60) }}</div>
-                                                    </td>
-                                                    <td class="px-6 py-4 whitespace-nowrap">
-                                                        <div class="flex items-center">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-indigo-500 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                            </svg>
-                                                            <div>
-                                                                <div class="text-sm text-gray-900">{{ ucfirst($publication->horario) }}</div>
-                                                                <div class="text-xs text-gray-500">{{ $publication->horas_totales }} horas</div>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td class="px-6 py-4 whitespace-nowrap">
-                                                        <span class="px-3 py-1 inline-flex items-center rounded-full bg-green-100 text-green-800 text-xs font-medium">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                                            </svg>
-                                                            Activa
-                                                        </span>
-                                                    </td>
-                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                        <div class="flex items-center">
-                                                            <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">{{ $publication->solicitudes_count }}</span>
-                                                            @if($publication->solicitudes_count > 0)
-                                                                <span class="ml-2 text-xs text-gray-500">
-                                                                    {{ $publication->solicitudes_count == 1 ? '1 solicitud' : $publication->solicitudes_count . ' solicitudes' }}
-                                                                </span>
-                                                            @endif
-                                                        </div>
-                                                    </td>
-                                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                        <div class="flex space-x-3">
-                                                            <a href="{{ route('empresa.applications.view', $publication->id) }}" class="flex items-center text-purple-600 hover:text-purple-900 transition-colors">
-                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                                                </svg>
-                                                                Ver
-                                                            </a>
-                                                            <form action="{{ route('empresa.offers.toggle', $publication->id) }}" method="POST" class="inline">
-                                                                @csrf
-                                                                <button type="submit" class="flex items-center text-red-600 hover:text-red-900 transition-colors">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-                                                                    </svg>
-                                                                    Desactivar
-                                                                </button>
-                                                            </form>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        @endif
-                    </div>
-
-                    <!-- Ofertas Inactivas -->
-                    <div class="mb-8">
-                        <div class="flex justify-between items-center mb-6">
-                            <h2 class="text-xl font-bold text-gray-800 flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                Ofertas Inactivas
-                            </h2>
-                        </div>
-
-                        @if($inactivePublications->isEmpty())
-                            <div class="bg-white text-center py-10 rounded-xl shadow-md border border-gray-100">
-                                <div class="inline-flex items-center justify-center p-3 bg-gray-100 rounded-full mb-4">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
-                                    </svg>
-                                </div>
-                                <p class="text-gray-500">No hay ofertas inactivas.</p>
-                            </div>
-                        @else
-                            <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
-                                <div class="overflow-x-auto">
-                                    <table class="min-w-full divide-y divide-gray-200">
-                                        <thead class="bg-gray-50">
-                                            <tr>
-                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Título</th>
-                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Horario</th>
-                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Solicitudes</th>
-                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="bg-white divide-y divide-gray-200">
-                                            @foreach($inactivePublications as $publication)
-                                                <tr class="hover:bg-gray-50 transition-colors">
-                                                    <td class="px-6 py-4">
-                                                        <div class="text-sm font-medium text-gray-900 mb-1">{{ $publication->titulo }}</div>
-                                                        <div class="text-xs text-gray-500 max-w-xs">{{ Str::limit($publication->descripcion, 60) }}</div>
-                                                    </td>
-                                                    <td class="px-6 py-4 whitespace-nowrap">
-                                                        <div class="flex items-center">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                            </svg>
-                                                            <div>
-                                                                <div class="text-sm text-gray-900">{{ ucfirst($publication->horario) }}</div>
-                                                                <div class="text-xs text-gray-500">{{ $publication->horas_totales }} horas</div>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td class="px-6 py-4 whitespace-nowrap">
-                                                        <span class="px-3 py-1 inline-flex items-center rounded-full bg-gray-100 text-gray-800 text-xs font-medium">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
-                                                            </svg>
-                                                            Inactiva
-                                                        </span>
-                                                    </td>
-                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                        <div class="flex items-center">
-                                                            <span class="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded-full">{{ $publication->solicitudes_count }}</span>
-                                                            @if($publication->solicitudes_count > 0)
-                                                                <span class="ml-2 text-xs text-gray-500">
-                                                                    {{ $publication->solicitudes_count == 1 ? '1 solicitud' : $publication->solicitudes_count . ' solicitudes' }}
-                                                                </span>
-                                                            @endif
-                                                        </div>
-                                                    </td>
-                                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                        <div class="flex space-x-3">
-                                                            <a href="{{ route('empresa.applications.view', $publication->id) }}" class="flex items-center text-purple-600 hover:text-purple-900 transition-colors">
-                                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                                                </svg>
-                                                                Ver
-                                                            </a>
-                                                            <form action="{{ route('empresa.offers.toggle', $publication->id) }}" method="POST" class="inline">
-                                                                @csrf
-                                                                <button type="submit" class="flex items-center text-emerald-600 hover:text-emerald-900 transition-colors">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                                    </svg>
-                                                                    Activar
-                                                                </button>
-                                                            </form>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        @endif
                     </div>
 
                     <!-- Panel de Recomendaciones y Consejos -->
@@ -684,7 +499,7 @@
                     <div class="w-full md:w-1/4">
                         <div class="bg-gray-50 rounded-lg p-4">
                             <h3 class="text-lg font-medium text-gray-800 mb-4">Filtros</h3>
-                            
+
                             <!-- Filtro de Nivel de Estudios (ahora primero) -->
                             <div class="mb-4">
                                 <h4 class="text-sm font-medium text-gray-600 mb-2">Nivel de Estudios</h4>
@@ -695,13 +510,13 @@
                                         <label for="education_{{ $nivel->id }}" class="ml-2 text-sm text-gray-700">{{ $nivel->nombre_nivel }}</label>
                                     </div>
                                     @endforeach
-                                    
+
                                     @if(empty($nivelesEducativos))
                                     <div class="text-sm text-gray-500">No hay niveles educativos disponibles</div>
                                     @endif
                                 </div>
                             </div>
-                            
+
                             <!-- Filtro de Habilidades (ahora muestra categorías filtradas por nivel) -->
                             <div class="mb-4">
                                 <h4 class="text-sm font-medium text-gray-600 mb-2">Habilidades</h4>
@@ -712,17 +527,17 @@
                                         <label for="skill_{{ $categoria->id }}" class="ml-2 text-sm text-gray-700">{{ $categoria->nombre_categoria }}</label>
                                     </div>
                                     @endforeach
-                                    
+
                                     <div id="no-categorias-message" class="hidden text-sm text-gray-500">
                                         Selecciona al menos un Nivel de Estudios para ver las categorías disponibles
                                     </div>
-                                    
+
                                     @if(empty($categorias))
                                     <div class="text-sm text-gray-500">No hay categorías disponibles</div>
                                     @endif
                                 </div>
                             </div>
-                            
+
                             <!-- Filtro de Disponibilidad -->
                             <div class="mb-4">
                                 <h4 class="text-sm font-medium text-gray-600 mb-2">Disponibilidad</h4>
@@ -750,7 +565,7 @@
                                     @foreach($ciudades ?? [] as $ciudad)
                                     <option value="{{ $ciudad->id }}">{{ $ciudad->nombre }}</option>
                                     @endforeach
-                                    
+
                                     @if(empty($ciudades))
                                     <option value="barcelona">Barcelona</option>
                                     <option value="madrid">Madrid</option>
@@ -761,7 +576,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Resultados de búsqueda -->
                     <div class="w-full md:w-3/4">
                         <div id="searchResults" class="bg-white rounded-lg">
@@ -838,7 +653,7 @@
         categoriasItems.forEach(item => {
             item.classList.add('hidden');
         });
-        
+
         // Mostrar mensaje de no categorías al inicio
         const noCategoriasMensaje = document.getElementById('no-categorias-message');
         if (noCategoriasMensaje) {
@@ -1092,20 +907,34 @@
                                         icon: 'success',
                                         confirmButtonText: 'Continuar',
                                         confirmButtonColor: '#7E22CE'
-                                    }).then(() => {
-                                        window.location.reload();
                                     });
+
+                                    // Actualizar los contadores y gráficos sin recargar
+                                    if (document.getElementById('solicitudesChart')) {
+                                        initializeCharts();
+                                    }
                                 } else {
                                     alert(data.message || 'Oferta creada exitosamente');
-                                    window.location.reload();
                                 }
                             } else {
                                 throw new Error(data.message || 'Error al crear la oferta');
                             }
                         });
                     } else {
-                        console.log(`[${uniqueId}] Respuesta no es JSON, recargando página`);
-                        window.location.reload();
+                        console.log(`[${uniqueId}] Respuesta no es JSON`);
+                        closeModal();
+                        Swal.fire({
+                            title: '¡Éxito!',
+                            text: 'Oferta creada exitosamente',
+                            icon: 'success',
+                            confirmButtonText: 'Continuar',
+                            confirmButtonColor: '#7E22CE'
+                        });
+
+                        // Actualizar los contadores y gráficos sin recargar
+                        if (document.getElementById('solicitudesChart')) {
+                            initializeCharts();
+                        }
                     }
                 })
                 .catch(error => {
@@ -1144,355 +973,165 @@
 
         // Inicializar gráficos con estilos mejorados y animaciones
         function initializeCharts() {
-            // Obtener datos para los gráficos
-            const activas = {{ $activePublications->count() }};
-            const inactivas = {{ $inactivePublications->count() }};
-            const solicitudesActivas = {{ $activePublications->sum('solicitudes_count') }};
-            const solicitudesInactivas = {{ $inactivePublications->sum('solicitudes_count') }};
-
-            // Paleta de colores personalizada con degradados
-            const chartPalette = {
-                purple: {
-                    primary: 'rgba(124, 58, 237, 0.9)',
-                    secondary: 'rgba(139, 92, 246, 0.6)',
-                    gradient: createGradient('solicitudesChart', [
-                        'rgba(124, 58, 237, 0.7)',
-                        'rgba(139, 92, 246, 0.3)'
-                    ])
-                },
-                amber: {
-                    primary: 'rgba(217, 119, 6, 0.9)',
-                    secondary: 'rgba(245, 158, 11, 0.6)',
-                    gradient: createGradient('solicitudesChart', [
-                        'rgba(217, 119, 6, 0.7)',
-                        'rgba(251, 191, 36, 0.3)'
-                    ])
-                },
-                blue: {
-                    primary: 'rgba(59, 130, 246, 0.9)',
-                    secondary: 'rgba(96, 165, 250, 0.6)',
-                    gradient: createGradient('estadosChart', [
-                        'rgba(59, 130, 246, 0.7)',
-                        'rgba(96, 165, 250, 0.3)'
-                    ])
-                },
-                gray: {
-                    primary: 'rgba(107, 114, 128, 0.9)',
-                    secondary: 'rgba(156, 163, 175, 0.6)',
-                    gradient: createGradient('estadosChart', [
-                        'rgba(107, 114, 128, 0.7)',
-                        'rgba(156, 163, 175, 0.3)'
-                    ])
-                }
-            };
-
-            // Crear degradados para los gráficos
-            function createGradient(chartId, colorStops) {
-                const ctx = document.getElementById(chartId).getContext('2d');
-                const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-
-                colorStops.forEach((color, index) => {
-                    gradient.addColorStop(index / (colorStops.length - 1), color);
-                });
-
-                return gradient;
+            // Destruir gráficos existentes si existen
+            const existingSolicitudesChart = Chart.getChart('solicitudesChart');
+            if (existingSolicitudesChart) {
+                existingSolicitudesChart.destroy();
             }
 
-            // Configurar Chart.js con defaults globales
-            Chart.defaults.font.family = "'Inter', 'Helvetica', 'Arial', sans-serif";
-            Chart.defaults.color = '#6B7280';
-            Chart.defaults.elements.arc.borderWidth = 0;
-            Chart.defaults.elements.arc.hoverBorderWidth = 3;
-            Chart.defaults.elements.arc.hoverBorderColor = '#FFF';
-            Chart.defaults.elements.arc.borderRadius = 4;
-
-            // Gráfico de distribución de ofertas
-            const solicitudesChart = new Chart(
-                document.getElementById('solicitudesChart').getContext('2d'),
-                {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Ofertas Activas', 'Ofertas Inactivas'],
-                        datasets: [{
-                            data: [activas, inactivas],
-                            backgroundColor: [
-                                chartPalette.purple.gradient,
-                                chartPalette.amber.gradient
-                            ],
-                            borderColor: [
-                                chartPalette.purple.primary,
-                                chartPalette.amber.primary
-                            ],
-                            hoverBackgroundColor: [
-                                chartPalette.purple.primary,
-                                chartPalette.amber.primary
-                            ],
-                            hoverOffset: 10,
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        layout: {
-                            padding: 20
-                        },
-                        plugins: {
-                            legend: {
-                                position: 'bottom',
-                                labels: {
-                                    boxWidth: 12,
-                                    padding: 15,
-                                    font: {
-                                        size: 12,
-                                        weight: '500'
-                                    }
-                                }
-                            },
-                            title: {
-                                display: false
-                            },
-                            tooltip: {
-                                enabled: true,
-                                backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                                titleColor: '#1F2937',
-                                bodyColor: '#4B5563',
-                                padding: 12,
-                                cornerRadius: 8,
-                                boxWidth: 10,
-                                boxHeight: 10,
-                                boxPadding: 3,
-                                usePointStyle: true,
-                                borderColor: 'rgba(229, 231, 235, 1)',
-                                borderWidth: 1,
-                                titleFont: {
-                                    size: 14,
-                                    weight: 'bold'
-                                },
-                                bodyFont: {
-                                    size: 13
-                                },
-                                callbacks: {
-                                    label: function(context) {
-                                        const total = context.dataset.data.reduce((acc, val) => acc + val, 0);
-                                        const value = context.raw;
-                                        const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
-                                        return `${context.label}: ${value} (${percentage}%)`;
-                                    }
-                                },
-                                displayColors: false
-                            }
-                        },
-                        cutout: '70%',
-                        animation: {
-                            animateScale: true,
-                            animateRotate: true,
-                            duration: 1500,
-                            easing: 'easeOutCirc',
-                            delay: function(context) {
-                                return context.dataIndex * 100;
-                            }
-                        }
-                    },
-                    plugins: [{
-                        id: 'centreTitlePlugin',
-                        beforeDraw: function(chart) {
-                            // Si no hay datos, no dibujar nada
-                            if (chart.data.datasets[0].data.length === 0) return;
-
-                            const width = chart.width;
-                            const height = chart.height;
-                            const ctx = chart.ctx;
-                            const centerX = width / 2;
-                            const centerY = height / 2;
-                            const total = chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
-
-                            // Configuración del texto
-                            ctx.textAlign = 'center';
-                            ctx.textBaseline = 'middle';
-
-                            // Dibujar el valor total
-                            ctx.font = 'bold 30px Inter';
-                            ctx.fillStyle = '#1F2937';
-                            ctx.fillText(total, centerX, centerY - 10);
-
-                            // Texto "Total" debajo
-                            ctx.font = '14px Inter';
-                            ctx.fillStyle = '#6B7280';
-                            ctx.fillText('Total', centerX, centerY + 15);
-                        }
-                    }]
-                }
-            );
-
-            // Gráfico de distribución de solicitudes
-            const estadosChart = new Chart(
-                document.getElementById('estadosChart').getContext('2d'),
-                {
-                    type: 'bar',
-                    data: {
-                        labels: ['Solicitudes Activas', 'Solicitudes Inactivas'],
-                        datasets: [{
-                            label: 'Solicitudes',
-                            data: [solicitudesActivas, solicitudesInactivas],
-                            backgroundColor: [
-                                chartPalette.blue.gradient,
-                                chartPalette.gray.gradient
-                            ],
-                            borderColor: [
-                                chartPalette.blue.primary,
-                                chartPalette.gray.primary
-                            ],
-                            borderWidth: 1,
-                            borderRadius: 8,
-                            borderSkipped: false,
-                            hoverBackgroundColor: [
-                                chartPalette.blue.primary,
-                                chartPalette.gray.primary
-                            ]
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        indexAxis: 'y',
-                        layout: {
-                            padding: {
-                                top: 20,
-                                bottom: 20,
-                                left: 20,
-                                right: 20
-                            }
-                        },
-                        plugins: {
-                            legend: {
-                                display: false
-                            },
-                            title: {
-                                display: false
-                            },
-                            tooltip: {
-                                enabled: true,
-                                backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                                titleColor: '#1F2937',
-                                bodyColor: '#4B5563',
-                                padding: 12,
-                                cornerRadius: 8,
-                                boxWidth: 10,
-                                boxHeight: 10,
-                                boxPadding: 3,
-                                usePointStyle: true,
-                                borderColor: 'rgba(229, 231, 235, 1)',
-                                borderWidth: 1,
-                                callbacks: {
-                                    label: function(context) {
-                                        const total = context.dataset.data.reduce((acc, val) => acc + val, 0);
-                                        const value = context.raw;
-                                        const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
-                                        return `${value} solicitudes (${percentage}%)`;
-                                    }
-                                },
-                                displayColors: false
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                grid: {
-                                    display: false,
-                                    drawBorder: false
-                                },
-                                ticks: {
-                                    font: {
-                                        size: 12,
-                                        weight: '500'
-                                    },
-                                    color: '#4B5563',
-                                    padding: 8
-                                }
-                            },
-                            x: {
-                                beginAtZero: true,
-                                grid: {
-                                    color: 'rgba(243, 244, 246, 0.8)',
-                                    drawBorder: false
-                                },
-                                ticks: {
-                                    font: {
-                                        size: 11
-                                    },
-                                    color: '#9CA3AF',
-                                    padding: 8,
-                                    callback: function(value) {
-                                        return value % 1 === 0 ? value : '';
-                                    }
-                                }
-                            }
-                        },
-                        animation: {
-                            delay: function(context) {
-                                return context.dataIndex * 200;
-                            },
-                            easing: 'easeOutQuart',
-                            duration: 1500
-                        }
-                    },
-                    plugins: [{
-                        id: 'valueLabels',
-                        afterDatasetsDraw: function(chart) {
-                            const ctx = chart.ctx;
-
-                            chart.data.datasets.forEach((dataset, datasetIndex) => {
-                                const meta = chart.getDatasetMeta(datasetIndex);
-
-                                if (!meta.hidden) {
-                                    meta.data.forEach((element, index) => {
-                                        const value = dataset.data[index];
-                                        if (value === 0) return;
-
-                                        // Obtener posición para el texto
-                                        const position = element.getCenterPoint();
-                                        const xPos = position.x + 20;
-                                        const yPos = position.y;
-
-                                        // Configuración del texto
-                                        ctx.fillStyle = '#1F2937';
-                                        ctx.textAlign = 'left';
-                                        ctx.textBaseline = 'middle';
-                                        ctx.font = 'bold 14px Inter';
-
-                                        // Dibujar valor
-                                        ctx.fillText(value, xPos, yPos);
-                                    });
-                                }
-                            });
-                        }
-                    }]
-                }
-            );
-
-            // Añadir animación a los gráficos cuando están visibles en la pantalla
-            const chartsSection = document.querySelector('.bg-white.rounded-xl.shadow-md.p-6.mb-8');
-            if (chartsSection) {
-                const observer = new IntersectionObserver((entries) => {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) {
-                            // Reiniciar gráficos cuando son visibles
-                            solicitudesChart.reset();
-                            estadosChart.reset();
-                            setTimeout(() => {
-                                solicitudesChart.update();
-                                estadosChart.update();
-                            }, 100);
-
-                            // Dejar de observar una vez que se han animado
-                            observer.unobserve(entry.target);
-                        }
-                    });
-                }, { threshold: 0.2 });
-
-                observer.observe(chartsSection);
+            const existingEstadosChart = Chart.getChart('estadosChart');
+            if (existingEstadosChart) {
+                existingEstadosChart.destroy();
             }
+
+            // Obtener datos actualizados mediante AJAX
+            fetch('/empresa/get-dashboard-stats', {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Actualizar los contadores en la interfaz
+                document.getElementById('activePublicationsCount').textContent = data.activePublications;
+                document.getElementById('totalSolicitudesCount').textContent = data.activeSolicitudes + data.inactiveSolicitudes;
+                document.getElementById('activeSolicitudesCount').textContent = data.activeSolicitudes;
+                document.getElementById('inactivePublicationsCount').textContent = data.inactivePublications;
+
+                // Actualizar los números detallados
+                document.getElementById('activePublicationsDetail').textContent = data.activePublications;
+                document.getElementById('inactivePublicationsDetail').textContent = data.inactivePublications;
+                document.getElementById('activeSolicitudesDetail').textContent = data.activeSolicitudes;
+                document.getElementById('inactiveSolicitudesDetail').textContent = data.inactiveSolicitudes;
+
+                // Paleta de colores personalizada con degradados
+                const chartPalette = {
+                    purple: {
+                        primary: 'rgba(124, 58, 237, 0.9)',
+                        secondary: 'rgba(139, 92, 246, 0.6)',
+                        gradient: createGradient('solicitudesChart', [
+                            'rgba(124, 58, 237, 0.7)',
+                            'rgba(139, 92, 246, 0.3)'
+                        ])
+                    },
+                    amber: {
+                        primary: 'rgba(217, 119, 6, 0.9)',
+                        secondary: 'rgba(245, 158, 11, 0.6)',
+                        gradient: createGradient('solicitudesChart', [
+                            'rgba(217, 119, 6, 0.7)',
+                            'rgba(251, 191, 36, 0.3)'
+                        ])
+                    }
+                };
+
+                // Crear gráfico de distribución de ofertas
+                const solicitudesChart = new Chart(
+                    document.getElementById('solicitudesChart'),
+                    {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Ofertas Activas', 'Ofertas Inactivas'],
+                            datasets: [{
+                                data: [data.activePublications, data.inactivePublications],
+                                backgroundColor: [
+                                    chartPalette.purple.gradient,
+                                    chartPalette.amber.gradient
+                                ],
+                                borderWidth: 0,
+                                borderRadius: 4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            layout: {
+                                padding: 20
+                            },
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                        usePointStyle: true,
+                                        padding: 20
+                                    }
+                                }
+                            }
+                        }
+                    }
+                );
+
+                // Crear gráfico de distribución de solicitudes
+                const estadosChart = new Chart(
+                    document.getElementById('estadosChart'),
+                    {
+                        type: 'bar',
+                        data: {
+                            labels: ['Solicitudes Aceptadas', 'Solicitudes Rechazadas'],
+                            datasets: [{
+                                data: [data.activeSolicitudes, data.inactiveSolicitudes],
+                                backgroundColor: [
+                                    'rgba(34, 197, 94, 0.7)',
+                                    'rgba(239, 68, 68, 0.7)'
+                                ],
+                                borderWidth: 0,
+                                borderRadius: 4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            layout: {
+                                padding: 20
+                            },
+                            plugins: {
+                                legend: {
+                                    display: false
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    grid: {
+                                        display: true,
+                                        color: 'rgba(0, 0, 0, 0.1)'
+                                    }
+                                },
+                                x: {
+                                    grid: {
+                                        display: false
+                                    }
+                                }
+                            }
+                        }
+                    }
+                );
+            })
+            .catch(error => {
+                console.error('Error al obtener las estadísticas:', error);
+            });
         }
+
+        // Crear degradados para los gráficos
+        function createGradient(chartId, colorStops) {
+            const ctx = document.getElementById(chartId).getContext('2d');
+            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+
+            colorStops.forEach((color, index) => {
+                gradient.addColorStop(index / (colorStops.length - 1), color);
+            });
+
+            return gradient;
+        }
+
+        // Inicializar los gráficos cuando se carga la página
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts();
+        });
+
+        // Actualizar los gráficos cada 5 minutos
+        setInterval(initializeCharts, 300000);
 
         // Estas funciones ya no se usan
         function renderizarGraficos() {
@@ -1519,9 +1158,12 @@
                     const searchInput = document.getElementById('searchCandidatesInput');
                     if (searchInput) searchInput.focus();
                 }, 300);
+                
+                // Cargar automáticamente todos los candidatos al abrir el modal
+                buscarCandidatos();
             }
         };
-
+        
         // Función para cerrar el modal de búsqueda de candidatos
         window.closeSearchCandidatesModal = function() {
             const modalSearchCandidates = document.getElementById('modalSearchCandidates');
@@ -1543,220 +1185,215 @@
                 }, 200);
             }
         };
+        
+        // Nueva función para buscar candidatos
+        function buscarCandidatos(page = 1) {
+            // Ocultar mensaje inicial
+            const initialSearchMessage = document.getElementById('initialSearchMessage');
+            if (initialSearchMessage) initialSearchMessage.classList.add('hidden');
+
+            // Mostrar spinner de carga
+            const loadingResults = document.getElementById('loadingResults');
+            if (loadingResults) loadingResults.classList.remove('hidden');
+
+            // Ocultar otros contenedores
+            const resultsContainer = document.getElementById('resultsContainer');
+            const noResults = document.getElementById('noResults');
+            if (resultsContainer) resultsContainer.classList.add('hidden');
+            if (noResults) noResults.classList.add('hidden');
+
+            // Recoger valores de los filtros
+            const searchTerm = document.getElementById('searchCandidatesInput')?.value.trim() || '';
+            const selectedNiveles = Array.from(document.querySelectorAll('input[name="nivel_educativo[]"]:checked')).map(cb => cb.value);
+            const selectedCategorias = Array.from(document.querySelectorAll('input[name="categoria[]"]:checked')).map(cb => cb.value);
+            const selectedDisponibilidad = Array.from(document.querySelectorAll('input[id^="availability_"]:checked')).map(cb => cb.id.replace('availability_', ''));
+            const ubicacion = document.getElementById('location_select')?.value || '';
+
+            // Preparar datos para la petición
+            const searchData = {
+                search: searchTerm,
+                niveles: selectedNiveles,
+                categorias: selectedCategorias,
+                disponibilidad: selectedDisponibilidad,
+                ubicacion: ubicacion,
+                page: page,
+                _token: '{{ csrf_token() }}'
+            };
+
+            console.log('Buscando con los parámetros:', searchData);
+
+            // Realizar petición AJAX a la API
+            fetch('{{ route("api.estudiantes.search") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(searchData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Error en la respuesta: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Ocultar spinner
+                if (loadingResults) loadingResults.classList.add('hidden');
+
+                if (!data.estudiantes || data.estudiantes.length === 0) {
+                    // Mostrar mensaje de no resultados
+                    if (noResults) noResults.classList.remove('hidden');
+                } else {
+                    // Mostrar resultados
+                    const candidatesList = document.getElementById('candidatesList');
+                    if (candidatesList) {
+                        // Limpiar resultados anteriores
+                        candidatesList.innerHTML = '';
+
+                        // Actualizar contador
+                        const resultCount = document.getElementById('resultCount');
+                        if (resultCount) resultCount.textContent = data.total || data.estudiantes.length;
+
+                        // Mostrar cada estudiante
+                        data.estudiantes.forEach(estudiante => {
+                            // Verificar si hay habilidades disponibles
+                            const habilidadesHTML = estudiante.habilidades && estudiante.habilidades.length > 0
+                                ? estudiante.habilidades.map(habilidad => `
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                        ${habilidad}
+                                    </span>
+                                `).join('')
+                                : '<span class="text-xs text-gray-500">No se han especificado habilidades</span>';
+
+                            // Crear elemento HTML para el estudiante
+                            const estudianteElement = document.createElement('div');
+                            estudianteElement.className = 'p-4 hover:bg-gray-50 transition-colors';
+                            estudianteElement.innerHTML = `
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0 mr-4">
+                                        ${estudiante.imagen
+                                            ? `<img src="{{ asset('public/profile_images/') }}/${estudiante.imagen}" class="h-12 w-12 rounded-full object-cover border-2 border-purple-100">`
+                                            : `<div class="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-700 font-bold text-lg">
+                                                ${estudiante.nombre ? estudiante.nombre.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase() : 'N/A'}
+                                              </div>`
+                                        }
+                                    </div>
+                                    <div class="flex-1">
+                                        <h4 class="text-lg font-medium text-gray-900">${estudiante.nombre || 'Sin nombre'}</h4>
+                                        <p class="text-sm text-gray-500">${estudiante.titulo || 'Sin formación'} ${estudiante.ubicacion ? '· ' + estudiante.ubicacion : ''}</p>
+                                        <div class="mt-2 flex flex-wrap gap-1">
+                                            ${habilidadesHTML}
+                                        </div>
+                                    </div>
+                                    <div class="ml-4">
+                                        <button class="px-3 py-1 bg-purple-600 text-white text-sm rounded hover:bg-purple-700 transition-colors" 
+                                                onclick="verPerfilEstudiante(${estudiante.id})">
+                                            Ver perfil
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+
+                            candidatesList.appendChild(estudianteElement);
+                        });
+                        
+                        // Añadir paginación si existe
+                        if (data.last_page && data.last_page > 1) {
+                            const paginationContainer = document.createElement('div');
+                            paginationContainer.className = 'flex justify-center items-center mt-6 mb-4 space-x-1';
+                            
+                            // Botón anterior
+                            if (data.current_page > 1) {
+                                const prevButton = document.createElement('button');
+                                prevButton.className = 'px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors';
+                                prevButton.textContent = 'Anterior';
+                                prevButton.onclick = function() {
+                                    buscarCandidatos(data.current_page - 1);
+                                };
+                                paginationContainer.appendChild(prevButton);
+                            }
+                            
+                            // Números de página
+                            for (let i = 1; i <= data.last_page; i++) {
+                                const pageButton = document.createElement('button');
+                                if (i === data.current_page) {
+                                    pageButton.className = 'px-3 py-1 bg-purple-600 text-white rounded';
+                                } else {
+                                    pageButton.className = 'px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors';
+                                }
+                                pageButton.textContent = i;
+                                pageButton.onclick = function() {
+                                    buscarCandidatos(i);
+                                };
+                                paginationContainer.appendChild(pageButton);
+                            }
+                            
+                            // Botón siguiente
+                            if (data.current_page < data.last_page) {
+                                const nextButton = document.createElement('button');
+                                nextButton.className = 'px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors';
+                                nextButton.textContent = 'Siguiente';
+                                nextButton.onclick = function() {
+                                    buscarCandidatos(data.current_page + 1);
+                                };
+                                paginationContainer.appendChild(nextButton);
+                            }
+                            
+                            candidatesList.appendChild(paginationContainer);
+                        }
+
+                        // Mostrar contenedor de resultados
+                        if (resultsContainer) resultsContainer.classList.remove('hidden');
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error en la búsqueda de estudiantes:', error);
+                
+                // Ocultar spinner
+                if (loadingResults) loadingResults.classList.add('hidden');
+                
+                // Mostrar mensaje de error
+                if (noResults) {
+                    noResults.classList.remove('hidden');
+                    
+                    // Actualizar el mensaje para indicar que hubo un error
+                    const errorTitle = noResults.querySelector('h3');
+                    const errorMsg = noResults.querySelector('p');
+                    
+                    if (errorTitle) errorTitle.textContent = '¡Ha ocurrido un error!';
+                    if (errorMsg) errorMsg.textContent = 'No se pudo completar la búsqueda. Intente de nuevo más tarde.';
+                }
+                
+                // Mostrar una alerta al usuario
+                if (window.Swal) {
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'No se pudieron obtener los resultados: ' + error.message,
+                        icon: 'error',
+                        confirmButtonColor: '#7E22CE'
+                    });
+                }
+            });
+        }
 
         // Simulación de búsqueda de candidatos
         const searchCandidatesButton = document.getElementById('searchCandidatesButton');
         const clearCandidateSearchButton = document.getElementById('clearCandidateSearchButton');
-        
+
         if (searchCandidatesButton) {
             searchCandidatesButton.addEventListener('click', function() {
-                // Ocultar mensaje inicial
-                const initialSearchMessage = document.getElementById('initialSearchMessage');
-                if (initialSearchMessage) initialSearchMessage.classList.add('hidden');
-                
-                // Mostrar spinner de carga
-                const loadingResults = document.getElementById('loadingResults');
-                if (loadingResults) loadingResults.classList.remove('hidden');
-                
-                // Ocultar otros contenedores
-                const resultsContainer = document.getElementById('resultsContainer');
-                const noResults = document.getElementById('noResults');
-                if (resultsContainer) resultsContainer.classList.add('hidden');
-                if (noResults) noResults.classList.add('hidden');
-                
-                // Recoger valores de los filtros
-                const searchTerm = document.getElementById('searchCandidatesInput').value.trim();
-                const selectedNiveles = Array.from(document.querySelectorAll('input[name="nivel_educativo[]"]:checked')).map(cb => cb.value);
-                const selectedCategorias = Array.from(document.querySelectorAll('input[name="categoria[]"]:checked')).map(cb => cb.value);
-                const selectedDisponibilidad = Array.from(document.querySelectorAll('input[id^="availability_"]:checked')).map(cb => cb.id.replace('availability_', ''));
-                const ubicacion = document.getElementById('location_select').value;
-                
-                // Preparar datos para la petición
-                const searchData = {
-                    search: searchTerm,
-                    niveles: selectedNiveles,
-                    categorias: selectedCategorias,
-                    disponibilidad: selectedDisponibilidad,
-                    ubicacion: ubicacion,
-                    _token: '{{ csrf_token() }}'
-                };
-                
-                console.log('Buscando con los parámetros:', searchData);
-                
-                // Simular petición AJAX (en un entorno real, esto sería un fetch a un endpoint del servidor)
-                setTimeout(() => {
-                    // Ocultar spinner
-                    if (loadingResults) loadingResults.classList.add('hidden');
-                    
-                    // Simular respuesta del servidor
-                    const simulatedResponse = simulateServerResponse(searchData);
-                    
-                    if (simulatedResponse.estudiantes.length === 0) {
-                        // Mostrar mensaje de no resultados
-                        if (noResults) noResults.classList.remove('hidden');
-                    } else {
-                        // Mostrar resultados
-                        const candidatesList = document.getElementById('candidatesList');
-                        if (candidatesList) {
-                            // Limpiar resultados anteriores
-                            candidatesList.innerHTML = '';
-                            
-                            // Actualizar contador
-                            const resultCount = document.getElementById('resultCount');
-                            if (resultCount) resultCount.textContent = simulatedResponse.estudiantes.length;
-                            
-                            // Mostrar cada estudiante
-                            simulatedResponse.estudiantes.forEach(estudiante => {
-                                // Crear elemento HTML para el estudiante
-                                const estudianteElement = document.createElement('div');
-                                estudianteElement.className = 'p-4 hover:bg-gray-50 transition-colors';
-                                estudianteElement.innerHTML = `
-                                    <div class="flex items-start">
-                                        <div class="flex-shrink-0 mr-4">
-                                            ${estudiante.imagen 
-                                                ? `<img src="${estudiante.imagen}" class="h-12 w-12 rounded-full object-cover border-2 border-purple-100">` 
-                                                : `<div class="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-700 font-bold text-lg">
-                                                    ${estudiante.nombre.split(' ').map(n => n[0]).join('')}
-                                                  </div>`
-                                            }
-                                        </div>
-                                        <div class="flex-1">
-                                            <h4 class="text-lg font-medium text-gray-900">${estudiante.nombre}</h4>
-                                            <p class="text-sm text-gray-500">${estudiante.titulo} · ${estudiante.ubicacion}</p>
-                                            <div class="mt-2 flex flex-wrap gap-1">
-                                                ${estudiante.habilidades.map(habilidad => `
-                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                                                        ${habilidad}
-                                                    </span>
-                                                `).join('')}
-                                            </div>
-                                        </div>
-                                        <div class="ml-4">
-                                            <button class="px-3 py-1 bg-purple-600 text-white text-sm rounded hover:bg-purple-700 transition-colors">
-                                                Ver perfil
-                                            </button>
-                                        </div>
-                                    </div>
-                                `;
-                                
-                                candidatesList.appendChild(estudianteElement);
-                            });
-                            
-                            // Mostrar contenedor de resultados
-                            if (resultsContainer) resultsContainer.classList.remove('hidden');
-                        }
-                    }
-                }, 1500); // Simular tiempo de carga
+                buscarCandidatos();
             });
         }
-        
-        // Función para simular una respuesta del servidor
-        function simulateServerResponse(searchData) {
-            // Base de datos simulada de estudiantes
-            const estudiantesDB = [
-                {
-                    id: 1,
-                    nombre: "Ana García Martínez",
-                    titulo: "Grado en Ingeniería Informática",
-                    ubicacion: "Barcelona",
-                    nivel_educativo_id: "1", // ID del nivel educativo
-                    habilidades: ["Java", "Python", "SQL", "Spring Boot"],
-                    disponibilidad: "morning",
-                    imagen: null
-                },
-                {
-                    id: 2,
-                    nombre: "Carlos Rodríguez López",
-                    titulo: "Ciclo Superior en DAW",
-                    ubicacion: "Madrid",
-                    nivel_educativo_id: "2", // ID del nivel educativo
-                    habilidades: ["JavaScript", "React", "Node.js", "MongoDB"],
-                    disponibilidad: "afternoon",
-                    imagen: null
-                },
-                {
-                    id: 3,
-                    nombre: "Laura Martínez Sánchez",
-                    titulo: "Máster en Ciberseguridad",
-                    ubicacion: "Valencia",
-                    nivel_educativo_id: "3", // ID del nivel educativo
-                    habilidades: ["Seguridad de redes", "Pentesting", "Análisis de malware"],
-                    disponibilidad: "flexible",
-                    imagen: null
-                },
-                {
-                    id: 4,
-                    nombre: "Miguel López Fernández",
-                    titulo: "Ciclo Superior en DAM",
-                    ubicacion: "Sevilla",
-                    nivel_educativo_id: "2", // ID del nivel educativo
-                    habilidades: ["Java", "Kotlin", "Android", "Firebase"],
-                    disponibilidad: "morning",
-                    imagen: null
-                },
-                {
-                    id: 5,
-                    nombre: "Elena Sánchez Ruiz",
-                    titulo: "Grado en Diseño",
-                    ubicacion: "Barcelona",
-                    nivel_educativo_id: "1", // ID del nivel educativo
-                    habilidades: ["Photoshop", "Illustrator", "Figma", "UI/UX"],
-                    disponibilidad: "flexible",
-                    imagen: null
-                },
-                {
-                    id: 6,
-                    nombre: "Javier Fernández González",
-                    titulo: "Máster en IA",
-                    ubicacion: "Madrid",
-                    nivel_educativo_id: "3", // ID del nivel educativo
-                    habilidades: ["Python", "TensorFlow", "Machine Learning", "NLP"],
-                    disponibilidad: "afternoon",
-                    imagen: null
-                }
-            ];
-            
-            // Filtrar estudiantes basados en los criterios de búsqueda
-            let resultados = estudiantesDB;
-            
-            // Filtrar por término de búsqueda
-            if (searchData.search) {
-                const searchLower = searchData.search.toLowerCase();
-                resultados = resultados.filter(est => 
-                    est.nombre.toLowerCase().includes(searchLower) || 
-                    est.titulo.toLowerCase().includes(searchLower) || 
-                    est.habilidades.some(h => h.toLowerCase().includes(searchLower))
-                );
-            }
-            
-            // Filtrar por niveles educativos
-            if (searchData.niveles && searchData.niveles.length > 0) {
-                resultados = resultados.filter(est => 
-                    searchData.niveles.includes(est.nivel_educativo_id)
-                );
-            }
-            
-            // Filtrar por disponibilidad
-            if (searchData.disponibilidad && searchData.disponibilidad.length > 0) {
-                resultados = resultados.filter(est => 
-                    searchData.disponibilidad.includes(est.disponibilidad)
-                );
-            }
-            
-            // Filtrar por ubicación
-            if (searchData.ubicacion) {
-                resultados = resultados.filter(est => 
-                    est.ubicacion.toLowerCase() === searchData.ubicacion.toLowerCase()
-                );
-            }
-            
-            // Devolver respuesta simulada
-            return {
-                success: true,
-                estudiantes: resultados,
-                total: resultados.length
-            };
-        }
+
+        // Función para ver el perfil de un estudiante
+        window.verPerfilEstudiante = function(estudianteId) {
+            // Redireccionar a la página de perfil del estudiante
+            window.location.href = `{{ url('/empresa/estudiante') }}/${estudianteId}`;
+        };
 
         // Limpiar búsqueda
         if (clearCandidateSearchButton) {
@@ -1764,30 +1401,30 @@
                 // Limpiar campo de búsqueda
                 const searchInput = document.getElementById('searchCandidatesInput');
                 if (searchInput) searchInput.value = '';
-                
+
                 // Limpiar checkboxes de categorías y niveles educativos
                 const checkboxesCategorias = document.querySelectorAll('input[name="categoria[]"]');
                 const checkboxesNiveles = document.querySelectorAll('input[name="nivel_educativo[]"]');
                 checkboxesCategorias.forEach(checkbox => checkbox.checked = false);
                 checkboxesNiveles.forEach(checkbox => checkbox.checked = false);
-                
+
                 // Restaurar visibilidad de todas las categorías
                 const categoriasItems = document.querySelectorAll('.categoria-item');
                 categoriasItems.forEach(item => {
                     item.classList.remove('hidden');
                 });
                 document.getElementById('no-categorias-message').classList.add('hidden');
-                
+
                 // Resetear selector de ubicación
                 const locationSelect = document.getElementById('location_select');
                 if (locationSelect) locationSelect.value = '';
-                
+
                 // Mostrar mensaje inicial
                 const initialSearchMessage = document.getElementById('initialSearchMessage');
                 const loadingResults = document.getElementById('loadingResults');
                 const resultsContainer = document.getElementById('resultsContainer');
                 const noResults = document.getElementById('noResults');
-                
+
                 if (initialSearchMessage) initialSearchMessage.classList.remove('hidden');
                 if (loadingResults) loadingResults.classList.add('hidden');
                 if (resultsContainer) resultsContainer.classList.add('hidden');
@@ -1800,7 +1437,7 @@
             const checkboxesNiveles = document.querySelectorAll('.nivel-educativo-checkbox:checked');
             const categoriasItems = document.querySelectorAll('.categoria-item');
             const noCategoriasMensaje = document.getElementById('no-categorias-message');
-            
+
             // Si no hay niveles seleccionados, ocultar todas las categorías y mostrar mensaje
             if (checkboxesNiveles.length === 0) {
                 categoriasItems.forEach(item => {
@@ -1809,17 +1446,17 @@
                 noCategoriasMensaje.classList.remove('hidden');
                 return;
             }
-            
+
             // Crear array con los IDs de los niveles seleccionados
             const nivelesSeleccionados = Array.from(checkboxesNiveles).map(checkbox => checkbox.value);
-            
+
             // Contador para categorías visibles
             let categoriasVisibles = 0;
-            
+
             // Filtrar las categorías según los niveles seleccionados
             categoriasItems.forEach(item => {
                 const nivelId = item.getAttribute('data-nivel-id');
-                
+
                 // Comprobamos si el ID está en el array - convertimos a string para asegurar comparación correcta
                 if (nivelesSeleccionados.includes(nivelId) || nivelesSeleccionados.includes(String(nivelId))) {
                     item.classList.remove('hidden');
@@ -1828,14 +1465,14 @@
                     item.classList.add('hidden');
                 }
             });
-            
+
             // Mostrar/ocultar mensaje si no hay categorías disponibles
             if (categoriasVisibles === 0) {
                 noCategoriasMensaje.classList.remove('hidden');
             } else {
                 noCategoriasMensaje.classList.add('hidden');
             }
-            
+
             console.log('Niveles seleccionados:', nivelesSeleccionados);
             console.log('Categorías visibles:', categoriasVisibles);
         };
