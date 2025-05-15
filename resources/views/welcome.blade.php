@@ -54,7 +54,7 @@
                                                     <div class="bg-white mb-10 p-6 pb-8 rounded-lg shadow-md text-center transform transition-all hover:shadow-xl hover:-translate-y-1 h-full flex flex-col justify-between">
                                                         <div class="relative">
                                                             @if($empresa->user->imagen)
-                                                                <img src="{{ asset('public/profile_images/' . $empresa->user->imagen) }}" alt="{{ $empresa->user->nombre }}" class="h-16 mx-auto mb-4">
+                                                                <img src="{{ asset('profile_images/' . $empresa->user->imagen) }}" alt="{{ $empresa->user->nombre }}" class="h-16 mx-auto mb-4">
                                                             @else
                                                                 <div class="h-16 mx-auto mb-4 flex items-center justify-center bg-gray-200 text-gray-500 rounded">
                                                                     {{ substr($empresa->user->nombre, 0, 2) }}
