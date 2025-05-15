@@ -140,7 +140,7 @@
                                 Limpiar filtros
                             </button>
                         </div>
-                        
+
                         <div class="bg-gray-50 p-4 rounded-lg border border-gray-100 mb-4">
                             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                                 <div class="col-span-2">
@@ -189,18 +189,6 @@
                                         @endforeach
                                     </select>
                                 </div>
-                            </div>
-                        </div>
-                        
-                        <div class="flex justify-between items-center">
-                            <p class="text-sm text-gray-600" id="offersCount">Gestiona tus ofertas de prácticas activas</p>
-                            <div class="flex items-center space-x-3">
-                                <button id="btnApplyFilters" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm flex items-center shadow-sm hover:shadow-md transition-all duration-200">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                                    </svg>
-                                    Aplicar filtros
-                                </button>
                             </div>
                         </div>
                     </div>
@@ -261,7 +249,7 @@
                                                                 <p class="text-sm text-gray-600 mt-1 line-clamp-2">{{ $publication->descripcion }}</p>
                                                             </div>
                                                         </div>
-                                                        
+
                                                         <!-- Detalles y meta información -->
                                                         <div class="flex flex-wrap gap-3 mt-3 ml-13">
                                                             <div class="inline-flex items-center px-3 py-1 rounded-md bg-gray-100 text-sm text-gray-700">
@@ -270,14 +258,14 @@
                                                                 </svg>
                                                                 {{ ucfirst($publication->horario) }} • {{ $publication->horas_totales }} horas
                                                             </div>
-                                                            
+
                                                             <div class="inline-flex items-center px-3 py-1 rounded-md bg-blue-50 text-sm text-blue-700">
                                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                                                                 </svg>
                                                                 {{ $publication->solicitudes_count }} {{ $publication->solicitudes_count == 1 ? 'solicitud' : 'solicitudes' }}
                                                             </div>
-                                                            
+
                                                             @if($publication->categoria)
                                                             <div class="inline-flex items-center px-3 py-1 rounded-md bg-purple-50 text-sm text-purple-700">
                                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -288,7 +276,7 @@
                                                             @endif
                                                         </div>
                                                     </div>
-                                                    
+
                                                     <!-- Acciones -->
                                                     <div class="flex flex-row md:flex-col gap-2 mt-2 md:mt-0 justify-end md:min-w-[120px]">
                                                         <a href="{{ route('empresa.applications.view', $publication->id) }}" class="inline-flex items-center justify-center px-4 py-2 bg-white border border-purple-300 rounded-lg text-purple-600 hover:bg-purple-50 hover:border-purple-400 transition-colors shadow-sm">
@@ -315,11 +303,11 @@
                                 </div>
 
                                 <!-- Paginación -->
-                                <div class="mt-6 bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+                                <div id="paginationBlock" class="mt-6 bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
                                     <div class="flex flex-col sm:flex-row justify-between items-center">
                                         <div class="text-sm text-gray-600 mb-3 sm:mb-0" id="paginationInfo">
-                                            Mostrando <span class="font-medium text-gray-900" id="paginationFrom">{{ $activePublications->firstItem() ?? 1 }}</span> a 
-                                            <span class="font-medium text-gray-900" id="paginationTo">{{ $activePublications->lastItem() ?? count($activePublications) }}</span> de 
+                                            Mostrando <span class="font-medium text-gray-900" id="paginationFrom">{{ $activePublications->firstItem() ?? 1 }}</span> a
+                                            <span class="font-medium text-gray-900" id="paginationTo">{{ $activePublications->lastItem() ?? count($activePublications) }}</span> de
                                             <span class="font-medium text-gray-900" id="paginationTotal">{{ $activePublications->total() }}</span> ofertas
                                         </div>
                                         <div class="flex items-center space-x-2" id="paginationControls">
@@ -329,7 +317,7 @@
                                                 </svg>
                                                 <span>Anterior</span>
                                             </button>
-                                            
+
                                             <div class="flex space-x-1" id="paginationPages">
                                                 @for ($i = 1; $i <= $activePublications->lastPage(); $i++)
                                                     <button type="button" class="pagination-page-btn flex items-center justify-center w-8 h-8 text-sm rounded {{ $activePublications->currentPage() == $i ? 'bg-purple-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-300' }}" data-page="{{ $i }}">
@@ -337,7 +325,7 @@
                                                     </button>
                                                 @endfor
                                             </div>
-                                            
+
                                             <button type="button" id="nextPageBtn" class="flex items-center px-2 py-1 text-sm rounded border {{ !$activePublications->hasMorePages() ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-600 hover:bg-gray-50 border-gray-300' }}" {{ !$activePublications->hasMorePages() ? 'disabled' : '' }} data-page="{{ $activePublications->currentPage() + 1 }}">
                                                 <span>Siguiente</span>
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -356,116 +344,45 @@
     </div>
 </div>
 
+<!-- Incluir el componente del modal -->
+@include('components.create-offer-modal')
+
+<!-- Sweet Alert -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-material-ui@5/material-ui.min.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<!-- Estilos de animaciones -->
+<link rel="stylesheet" href="{{ asset('css/modal-animations.css') }}">
+
+<!-- Script del modal -->
+<script src="{{ asset('js/create-offer.js') }}"></script>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Variables para el estado del filtro y paginación
         let currentPage = 1;
         let debounceTimer;
-        const debounceDelay = 300; // Delay before searching after typing (in ms)
+        const debounceDelay = 300;
         let sortField = 'created_at';
         let sortDirection = 'desc';
-        const itemsPerPage = 4; // Cambiar a 4 publicaciones por página
-        
+        const itemsPerPage = 4;
+
+        // Escuchar el evento de creación de publicación
+        window.addEventListener('publicationCreated', function() {
+            console.log('Nueva publicación creada, actualizando lista...');
+            currentPage = 1; // Volver a la primera página
+            fetchData(); // Recargar los datos
+        });
+
         // Configurar eventos para los campos de filtro (live search)
         const filterTitulo = document.getElementById('filter_titulo');
         const filterHorario = document.getElementById('filter_horario');
         const filterCategoria = document.getElementById('filter_categoria');
-        
-        // Aplicar debounce para el filtro de texto (buscar mientras escribe)
-        filterTitulo.addEventListener('input', function() {
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(() => {
-                currentPage = 1; // Resetear a la primera página
-                fetchData();
-            }, debounceDelay);
-        });
-        
-        // Aplicar filtros inmediatamente al cambiar selects
-        filterHorario.addEventListener('change', function() {
-            currentPage = 1;
-            fetchData();
-        });
-        
-        filterCategoria.addEventListener('change', function() {
-            currentPage = 1;
-            fetchData();
-        });
-        
-        // Evento para resetear filtros
-        document.getElementById('btnResetFilters').addEventListener('click', function() {
-            filterTitulo.value = '';
-            filterHorario.value = '';
-            filterCategoria.value = '';
-            currentPage = 1;
-            fetchData();
-        });
-        
-        // Ya no es necesario el botón de aplicar filtros, pero lo mantenemos por compatibilidad
-        document.getElementById('btnApplyFilters').addEventListener('click', function() {
-            currentPage = 1;
-            fetchData();
-        });
-        
-        // Delegación de eventos para los botones de paginación y toggle (evento global)
-        document.addEventListener('click', function(e) {
-            // Botón "Anterior"
-            if (e.target.closest('#prevPageBtn') && !e.target.closest('#prevPageBtn').disabled) {
-                currentPage--;
-                fetchData();
-                return;
-            }
-            
-            // Botón "Siguiente"
-            if (e.target.closest('#nextPageBtn') && !e.target.closest('#nextPageBtn').disabled) {
-                currentPage++;
-                fetchData();
-                return;
-            }
-            
-            // Botones de número de página
-            const pageBtn = e.target.closest('.pagination-page-btn');
-            if (pageBtn) {
-                const page = parseInt(pageBtn.dataset.page);
-                if (currentPage !== page) {
-                    currentPage = page;
-                    fetchData();
-                }
-                return;
-            }
-            
-            // Botones de toggle para desactivar publicación
-            const toggleButton = e.target.closest('.toggle-button');
-            if (toggleButton) {
-                e.preventDefault();
-                const publicationId = toggleButton.dataset.id;
-                togglePublicationStatus(publicationId);
-                return;
-            }
-        });
-        
-        // Delegación de eventos para ordenar por columnas
-        document.querySelector('table thead').addEventListener('click', function(e) {
-            const th = e.target.closest('th');
-            if (th && th.dataset.sort) {
-                const field = th.dataset.sort;
-                
-                // Cambiar dirección si es el mismo campo
-                if (sortField === field) {
-                    sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
-                } else {
-                    sortField = field;
-                    sortDirection = 'asc';
-                }
-                
-                currentPage = 1; // Resetear paginación
-                fetchData();
-            }
-        });
-        
-        // Función principal para cargar datos mediante fetch
-        function fetchData() {
+
+        // Hacer fetchData accesible globalmente
+        window.fetchData = function() {
             showLoading();
-            
+
             const params = new URLSearchParams({
                 titulo: filterTitulo.value,
                 horario: filterHorario.value,
@@ -473,10 +390,10 @@
                 sort_field: sortField,
                 sort_direction: sortDirection,
                 page: currentPage,
-                per_page: itemsPerPage // Añadir parámetro per_page con valor 4
+                per_page: itemsPerPage
             });
-            
-            fetch(`/empresa/ofertas/activas?${params.toString()}`, {
+
+            fetch(`/empresa/ofertas/activas/data?${params.toString()}`, {
                 method: 'GET',
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
@@ -506,105 +423,162 @@
             .finally(() => {
                 hideLoading();
             });
-        }
-        
-        // Función para renderizar la tabla con los datos
+        };
+
+        // Delegación de eventos para los botones de paginación
+        document.addEventListener('click', function(e) {
+            // Botón "Anterior"
+            const prevBtn = e.target.closest('#prevPageBtn');
+            if (prevBtn && !prevBtn.disabled) {
+                currentPage--;
+                fetchData();
+                return;
+            }
+
+            // Botón "Siguiente"
+            const nextBtn = e.target.closest('#nextPageBtn');
+            if (nextBtn && !nextBtn.disabled) {
+                currentPage++;
+                fetchData();
+                return;
+            }
+
+            // Botones de número de página
+            const pageBtn = e.target.closest('.pagination-page-btn');
+            if (pageBtn) {
+                const page = parseInt(pageBtn.dataset.page);
+                if (currentPage !== page) {
+                    currentPage = page;
+                    fetchData();
+                }
+                return;
+            }
+        });
+
+        // Aplicar debounce para el filtro de texto
+        filterTitulo.addEventListener('input', function() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                currentPage = 1;
+                fetchData();
+            }, debounceDelay);
+        });
+
+        // Aplicar filtros inmediatamente al cambiar selects
+        filterHorario.addEventListener('change', function() {
+            currentPage = 1;
+            fetchData();
+        });
+
+        filterCategoria.addEventListener('change', function() {
+            currentPage = 1;
+            fetchData();
+        });
+
+        // Evento para resetear filtros
+        document.getElementById('btnResetFilters').addEventListener('click', function() {
+            filterTitulo.value = '';
+            filterHorario.value = '';
+            filterCategoria.value = '';
+            currentPage = 1;
+            fetchData();
+        });
+
+        // Función para renderizar la tabla de ofertas
         function renderTable(data) {
             const tableBody = document.getElementById('offersTableBody');
-            tableBody.innerHTML = '';
-            
+            if (!tableBody) return;
+
             if (!data || data.length === 0) {
                 renderEmptyTable();
                 return;
             }
-            
-            // Renderizar filas de datos
-            data.forEach(offer => {
-                const offerCard = document.createElement('div');
-                offerCard.className = 'offer-card p-5 hover:bg-gray-50 transition-all duration-200';
-                
-                offerCard.innerHTML = `
-                    <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-                        <!-- Información principal -->
-                        <div class="flex-1">
-                            <div class="flex items-start mb-2">
-                                <div class="flex-shrink-0 mt-1">
-                                    <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                        </svg>
+
+            let html = '';
+            data.forEach(publication => {
+                html += `
+                    <div class="offer-card p-5 hover:bg-gray-50 transition-all duration-200">
+                        <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                            <!-- Información principal -->
+                            <div class="flex-1">
+                                <div class="flex items-start mb-2">
+                                    <div class="flex-shrink-0 mt-1">
+                                        <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <div class="ml-3 flex-1">
+                                        <h3 class="text-lg font-semibold text-gray-900 group">
+                                            ${publication.titulo}
+                                            <span class="px-2.5 py-0.5 ml-2 text-xs font-medium rounded-full bg-green-100 text-green-800 inline-flex items-center">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                                </svg>
+                                                Activa
+                                            </span>
+                                        </h3>
+                                        <p class="text-sm text-gray-600 mt-1 line-clamp-2">${publication.descripcion}</p>
                                     </div>
                                 </div>
-                                <div class="ml-3 flex-1">
-                                    <h3 class="text-lg font-semibold text-gray-900 group">
-                                        ${offer.titulo}
-                                        <span class="px-2.5 py-0.5 ml-2 text-xs font-medium rounded-full bg-green-100 text-green-800 inline-flex items-center">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                            </svg>
-                                            Activa
-                                        </span>
-                                    </h3>
-                                    <p class="text-sm text-gray-600 mt-1 line-clamp-2">${offer.descripcion}</p>
-                                </div>
-                            </div>
-                            
-                            <!-- Detalles y meta información -->
-                            <div class="flex flex-wrap gap-3 mt-3 ml-13">
-                                <div class="inline-flex items-center px-3 py-1 rounded-md bg-gray-100 text-sm text-gray-700">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                    ${capitalizeFirstLetter(offer.horario)} • ${offer.horas_totales} horas
-                                </div>
-                                
-                                <div class="inline-flex items-center px-3 py-1 rounded-md bg-blue-50 text-sm text-blue-700">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                                    </svg>
-                                    ${offer.solicitudes_count} ${offer.solicitudes_count == 1 ? 'solicitud' : 'solicitudes'}
-                                </div>
-                                
-                                ${offer.categoria ? 
-                                    `<div class="inline-flex items-center px-3 py-1 rounded-md bg-purple-50 text-sm text-purple-700">
+
+                                <!-- Detalles y meta información -->
+                                <div class="flex flex-wrap gap-3 mt-3 ml-13">
+                                    <div class="inline-flex items-center px-3 py-1 rounded-md bg-gray-100 text-sm text-gray-700">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        ${capitalizeFirstLetter(publication.horario)} • ${publication.horas_totales} horas
+                                    </div>
+
+                                    <div class="inline-flex items-center px-3 py-1 rounded-md bg-blue-50 text-sm text-blue-700">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                        </svg>
+                                        ${publication.solicitudes_count} ${publication.solicitudes_count === 1 ? 'solicitud' : 'solicitudes'}
+                                    </div>
+
+                                    ${publication.categoria ? `
+                                    <div class="inline-flex items-center px-3 py-1 rounded-md bg-purple-50 text-sm text-purple-700">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                                         </svg>
-                                        ${offer.categoria.nombre_categoria || 'Categoría'}
-                                    </div>` : ''
-                                }
+                                        ${publication.categoria.nombre_categoria}
+                                    </div>
+                                    ` : ''}
+                                </div>
                             </div>
-                        </div>
-                        
-                        <!-- Acciones -->
-                        <div class="flex flex-row md:flex-col gap-2 mt-2 md:mt-0 justify-end md:min-w-[120px]">
-                            <a href="/empresa/ofertas/${offer.id}/solicitudes" class="inline-flex items-center justify-center px-4 py-2 bg-white border border-purple-300 rounded-lg text-purple-600 hover:bg-purple-50 hover:border-purple-400 transition-colors shadow-sm">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                </svg>
-                                Ver detalles
-                            </a>
-                            <form action="/empresa/ofertas/${offer.id}/toggle" method="POST" class="inline toggle-form">
-                                @csrf
-                                <button type="button" data-id="${offer.id}" class="toggle-button inline-flex items-center justify-center w-full px-4 py-2 bg-white border border-red-300 rounded-lg text-red-600 hover:bg-red-50 hover:border-red-400 transition-colors shadow-sm">
+
+                            <!-- Acciones -->
+                            <div class="flex flex-row md:flex-col gap-2 mt-2 md:mt-0 justify-end md:min-w-[120px]">
+                                <a href="/empresa/ofertas/${publication.id}/solicitudes" class="inline-flex items-center justify-center px-4 py-2 bg-white border border-purple-300 rounded-lg text-purple-600 hover:bg-purple-50 hover:border-purple-400 transition-colors shadow-sm">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                    Ver detalles
+                                </a>
+                                <button type="button" onclick="window.togglePublicationStatus(${publication.id})" class="inline-flex items-center justify-center w-full px-4 py-2 bg-white border border-red-300 rounded-lg text-red-600 hover:bg-red-50 hover:border-red-400 transition-colors shadow-sm">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                                     </svg>
                                     Desactivar
                                 </button>
-                            </form>
+                            </div>
                         </div>
                     </div>
                 `;
-                
-                tableBody.appendChild(offerCard);
             });
+
+            tableBody.innerHTML = html;
         }
-        
-        // Función para renderizar un mensaje cuando no hay datos
+
+        // Función para renderizar tabla vacía
         function renderEmptyTable() {
             const tableBody = document.getElementById('offersTableBody');
+            if (!tableBody) return;
+
             tableBody.innerHTML = `
                 <div class="bg-white text-center py-16 rounded-xl shadow-md border border-gray-100">
                     <div class="inline-flex items-center justify-center p-5 bg-purple-50 rounded-full mb-6">
@@ -616,32 +590,39 @@
                     <p class="text-gray-500 max-w-md mx-auto">No se encontraron ofertas activas que cumplan con los criterios de búsqueda.</p>
                 </div>
             `;
+
+            // OCULTAR paginación
+            const paginationBlock = document.getElementById('paginationBlock');
+            if (paginationBlock) {
+                paginationBlock.style.display = 'none';
+            }
         }
-        
+
         // Función para renderizar la paginación
         function renderPagination(pagination) {
             const paginationInfo = document.getElementById('paginationInfo');
             const paginationPages = document.getElementById('paginationPages');
             const prevButton = document.getElementById('prevPageBtn');
             const nextButton = document.getElementById('nextPageBtn');
-            
+
             if (!pagination || pagination.total === 0) {
-                paginationInfo.innerHTML = 'No hay ofertas que mostrar';
-                prevButton.disabled = true;
-                nextButton.disabled = true;
-                paginationPages.innerHTML = '';
+                // OCULTAR paginación
+                if (paginationBlock) paginationBlock.style.display = 'none';
                 return;
             }
-            
+
+            // MOSTRAR paginación
+            if (paginationBlock) paginationBlock.style.display = 'block';
+
             // Actualizar información de paginación
-            paginationInfo.innerHTML = `Mostrando <span class="font-medium text-gray-900">${pagination.from}</span> a 
-                <span class="font-medium text-gray-900">${pagination.to}</span> de 
+            paginationInfo.innerHTML = `Mostrando <span class="font-medium text-gray-900">${pagination.from}</span> a
+                <span class="font-medium text-gray-900">${pagination.to}</span> de
                 <span class="font-medium text-gray-900">${pagination.total}</span> ofertas`;
-            
+
             // Actualizar estado de botones
             prevButton.disabled = pagination.current_page <= 1;
             nextButton.disabled = pagination.current_page >= pagination.last_page;
-            
+
             // Actualizar clases visuales para los botones de navegación
             if (pagination.current_page <= 1) {
                 prevButton.classList.add('bg-gray-100', 'text-gray-400', 'cursor-not-allowed');
@@ -650,7 +631,7 @@
                 prevButton.classList.remove('bg-gray-100', 'text-gray-400', 'cursor-not-allowed');
                 prevButton.classList.add('bg-white', 'text-gray-600', 'hover:bg-gray-50', 'border-gray-300');
             }
-            
+
             if (pagination.current_page >= pagination.last_page) {
                 nextButton.classList.add('bg-gray-100', 'text-gray-400', 'cursor-not-allowed');
                 nextButton.classList.remove('bg-white', 'text-gray-600', 'hover:bg-gray-50', 'border-gray-300');
@@ -658,22 +639,22 @@
                 nextButton.classList.remove('bg-gray-100', 'text-gray-400', 'cursor-not-allowed');
                 nextButton.classList.add('bg-white', 'text-gray-600', 'hover:bg-gray-50', 'border-gray-300');
             }
-            
+
             // Actualizar atributos data-page para los botones de navegación
             prevButton.setAttribute('data-page', pagination.current_page - 1);
             nextButton.setAttribute('data-page', pagination.current_page + 1);
-            
+
             // Generar botones de páginas
             paginationPages.innerHTML = '';
-            
+
             // Estrategia para mostrar páginas (máximo 5 botones)
             let startPage = Math.max(1, pagination.current_page - 2);
             let endPage = Math.min(pagination.last_page, startPage + 4);
-            
+
             if (endPage - startPage < 4 && pagination.last_page > 5) {
                 startPage = Math.max(1, endPage - 4);
             }
-            
+
             // Añadir botones de páginas
             for (let i = startPage; i <= endPage; i++) {
                 const pageButton = document.createElement('button');
@@ -688,7 +669,7 @@
                 paginationPages.appendChild(pageButton);
             }
         }
-        
+
         // Función para actualizar el contador de ofertas
         function updateOffersCount(total) {
             const offersCount = document.getElementById('offersCount');
@@ -702,16 +683,16 @@
                 }
             }
         }
-        
+
         // Función para cambiar estado de publicación con Ajax
-        function togglePublicationStatus(publicationId) {
+        window.togglePublicationStatus = function(publicationId) {
             showLoading();
-            
+
             // Crear FormData para enviar el token CSRF correctamente
             const formData = new FormData();
             const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
             formData.append('_token', csrfToken);
-            
+
             fetch(`/empresa/ofertas/${publicationId}/toggle`, {
                 method: 'POST',
                 headers: {
@@ -731,7 +712,7 @@
                 if (data.success) {
                     // Mostrar notificación de éxito
                     showNotification('Oferta desactivada correctamente', 'success');
-                    
+
                     // Volver a cargar los datos
                     fetchData();
                 } else {
@@ -745,44 +726,46 @@
             .finally(() => {
                 hideLoading();
             });
-        }
-        
+        };
+
         // Funciones auxiliares
         function limitText(text, length) {
             return text.length > length ? text.substring(0, length) + '...' : text;
         }
-        
+
         function capitalizeFirstLetter(string) {
             return string.charAt(0).toUpperCase() + string.slice(1);
         }
-        
+
         function showLoading() {
             document.getElementById('loadingSpinner').classList.remove('hidden');
+            document.getElementById('offersTableContent').classList.add('hidden');
         }
-        
+
         function hideLoading() {
             document.getElementById('loadingSpinner').classList.add('hidden');
+            document.getElementById('offersTableContent').classList.remove('hidden');
         }
-        
+
         function showNotification(message, type = 'success') {
             // Crear elemento de notificación
             const notification = document.createElement('div');
             notification.className = `fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-lg text-white ${
                 type === 'success' ? 'bg-green-600' : 'bg-red-600'
             } transition-opacity duration-500 flex items-center z-50`;
-            
+
             // Icono según tipo
-            const iconSvg = type === 'success' 
+            const iconSvg = type === 'success'
                 ? `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                    </svg>`
                 : `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                    </svg>`;
-            
+
             notification.innerHTML = iconSvg + message;
             document.body.appendChild(notification);
-            
+
             // Ocultar después de 3 segundos
             setTimeout(() => {
                 notification.classList.add('opacity-0');
@@ -796,4 +779,4 @@
         fetchData();
     });
 </script>
-@endsection 
+@endsection

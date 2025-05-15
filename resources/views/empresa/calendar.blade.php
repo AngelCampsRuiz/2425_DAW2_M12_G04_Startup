@@ -131,21 +131,116 @@ document.addEventListener('DOMContentLoaded', function() {
     calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
         locale: 'es',
-        buttonText: {
-            today: 'Hoy',
-            month: 'Mes',
-            week: 'Semana',
-            day: 'Día',
-            list: 'Lista'
+        height: 800,
+        customButtons: {
+            mesButton: {
+                text: 'Mes',
+                click: function(e) {
+                    const button = e.currentTarget;
+                    const rect = button.getBoundingClientRect();
+                    
+                    // Crear y mostrar el desplegable de meses
+                    let dropdown = document.getElementById('mes-dropdown');
+                    if (!dropdown) {
+                        dropdown = document.createElement('div');
+                        dropdown.id = 'mes-dropdown';
+                        dropdown.style.position = 'absolute';
+                        dropdown.style.backgroundColor = 'white';
+                        dropdown.style.border = '1px solid #ddd';
+                        dropdown.style.borderRadius = '4px';
+                        dropdown.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
+                        dropdown.style.zIndex = 1000;
+                        
+                        const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
+                                     'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+                        
+                        meses.forEach((mes, index) => {
+                            const item = document.createElement('div');
+                            item.className = 'mes-item';
+                            item.style.padding = '8px 16px';
+                            item.style.cursor = 'pointer';
+                            item.style.hover = 'background-color: #f0f0f0';
+                            item.innerText = mes;
+                            
+                            item.addEventListener('mouseover', () => {
+                                item.style.backgroundColor = '#f0f0f0';
+                            });
+                            item.addEventListener('mouseout', () => {
+                                item.style.backgroundColor = 'white';
+                            });
+                            
+                            item.addEventListener('click', () => {
+                                const date = calendar.getDate();
+                                calendar.gotoDate(new Date(date.getFullYear(), index, 1));
+                                dropdown.remove();
+                            });
+                            
+                            dropdown.appendChild(item);
+                        });
+                        
+                        document.body.appendChild(dropdown);
+                    }
+                    
+                    dropdown.style.top = `${rect.bottom + window.scrollY}px`;
+                    dropdown.style.left = `${rect.left}px`;
+                }
+            },
+            yearButton: {
+                text: 'Año',
+                click: function(e) {
+                    const button = e.currentTarget;
+                    const rect = button.getBoundingClientRect();
+                    
+                    // Crear y mostrar el desplegable de años
+                    let dropdown = document.getElementById('year-dropdown');
+                    if (!dropdown) {
+                        dropdown = document.createElement('div');
+                        dropdown.id = 'year-dropdown';
+                        dropdown.style.position = 'absolute';
+                        dropdown.style.backgroundColor = 'white';
+                        dropdown.style.border = '1px solid #ddd';
+                        dropdown.style.borderRadius = '4px';
+                        dropdown.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
+                        dropdown.style.zIndex = 1000;
+                        dropdown.style.maxHeight = '200px';
+                        dropdown.style.overflowY = 'auto';
+                        
+                        const currentYear = new Date().getFullYear();
+                        for (let year = currentYear - 5; year <= currentYear + 5; year++) {
+                            const item = document.createElement('div');
+                            item.className = 'year-item';
+                            item.style.padding = '8px 16px';
+                            item.style.cursor = 'pointer';
+                            item.innerText = year;
+                            
+                            item.addEventListener('mouseover', () => {
+                                item.style.backgroundColor = '#f0f0f0';
+                            });
+                            item.addEventListener('mouseout', () => {
+                                item.style.backgroundColor = 'white';
+                            });
+                            
+                            item.addEventListener('click', () => {
+                                const date = calendar.getDate();
+                                calendar.gotoDate(new Date(year, date.getMonth(), 1));
+                                dropdown.remove();
+                            });
+                            
+                            dropdown.appendChild(item);
+                        }
+                        
+                        document.body.appendChild(dropdown);
+                    }
+                    
+                    dropdown.style.top = `${rect.bottom + window.scrollY}px`;
+                    dropdown.style.left = `${rect.left}px`;
+                }
+            }
         },
-        monthNames: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'],
-        monthNamesShort: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
-        dayNames: ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'],
-        dayNamesShort: ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'],
         headerToolbar: {
             left: 'prev,next today',
             center: 'title',
-            right: 'dayGridMonth'
+            right: 'mesButton,yearButton'
         },
         dateClick: function(info) {
             openModal(info.dateStr);
@@ -162,6 +257,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 `
             };
+        }
+    });
+    
+    // Cerrar los desplegables al hacer clic fuera de ellos
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.fc-mesButton-button') && !e.target.closest('#mes-dropdown')) {
+            const mesDropdown = document.getElementById('mes-dropdown');
+            if (mesDropdown) mesDropdown.remove();
+        }
+        if (!e.target.closest('.fc-yearButton-button') && !e.target.closest('#year-dropdown')) {
+            const yearDropdown = document.getElementById('year-dropdown');
+            if (yearDropdown) yearDropdown.remove();
         }
     });
     
