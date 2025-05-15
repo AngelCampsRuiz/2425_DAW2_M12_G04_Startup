@@ -194,7 +194,7 @@ function handleFormSubmit(e) {
             const user = data.user;
             const camposVisibles = {
                 'telefono': user.show_telefono,
-                'cif': user.empresa && user.empresa.show_cif,
+                'cif': user.empresa ? user.empresa.show_cif : false,
                 'ciudad': user.show_ciudad,
                 'direccion': user.show_direccion,
                 'web': user.show_web

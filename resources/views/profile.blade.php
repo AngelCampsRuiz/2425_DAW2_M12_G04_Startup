@@ -384,18 +384,20 @@
                                         </div>
 
                                         {{-- Checkbox para mostrar/ocultar CIF --}}
-                                        <label class="flex items-center space-x-3 p-4 bg-gradient-to-br from-white to-purple-50 rounded-xl hover:bg-purple-50 transition-all duration-200 cursor-pointer">
-                                            <input type="checkbox" 
-                                                   name="show_cif" 
-                                                   value="1"
-                                                   {{ $user->empresa && $user->empresa->show_cif ? 'checked' : '' }}
-                                                   class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-500 focus:ring-purple-500">
-                                            <span class="text-sm font-medium text-gray-700">Mostrar CIF</span>
-                                        </label>
+                                        @if($user->role_id == 2)
+                                            <label class="flex items-center space-x-3 p-4 bg-gradient-to-br from-white to-purple-50 rounded-xl hover:bg-purple-50 transition-all duration-200 cursor-pointer">
+                                                <input type="checkbox" 
+                                                       name="show_cif" 
+                                                       value="1"
+                                                       {{ optional($user->empresa)->show_cif ? 'checked' : '' }}
+                                                       class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-500 focus:ring-purple-500">
+                                                <span class="text-sm font-medium text-gray-700">Mostrar CIF</span>
+                                            </label>
+                                        @endif
 
                                         {{-- Sección donde se muestra el CIF --}}
                                         @php
-                                            $showCif = $user->empresa && $user->empresa->show_cif;
+                                            $showCif = optional($user->empresa)->show_cif;
                                         @endphp
 
                                         <div class="flex items-start" 
@@ -408,7 +410,7 @@
                                             </div>
                                             <div class="ml-4">
                                                 <p class="text-sm text-gray-500">CIF</p>
-                                                <p class="font-medium text-gray-900">{{ $user->empresa ? $user->empresa->cif : 'No especificado' }}</p>
+                                                <p class="font-medium text-gray-900">{{ optional($user->empresa)->cif ?? 'No especificado' }}</p>
                                             </div>
                                         </div>
                                     </div>

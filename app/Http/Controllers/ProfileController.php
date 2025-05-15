@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\UpdateProfileRequest;
 use App\Models\User;
+use App\Models\Empresa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -67,9 +68,9 @@ class ProfileController extends Controller
 
             // Añadir reglas específicas según el rol
             if ($user->role_id == 2) {
-                $rules['cif'] = 'required|string|max:9'; // Para empresas
+                $rules['cif'] = 'nullable|string|max:9';
             } else {
-                $rules['dni'] = 'required|string|max:9'; // Para otros roles
+                $rules['dni'] = 'nullable|string|max:9';
             }
 
             $validatedData = $request->validate($rules);
@@ -79,7 +80,6 @@ class ProfileController extends Controller
                 $imageName = time() . '_' . $request->file('imagen')->getClientOriginalName();
                 $request->file('imagen')->move(public_path('profile_images'), $imageName);
 
-                // Eliminar la imagen anterior si existe
                 if ($user->imagen) {
                     $oldImagePath = public_path('profile_images/' . $user->imagen);
                     if (file_exists($oldImagePath)) {
@@ -95,7 +95,6 @@ class ProfileController extends Controller
                 $bannerName = time() . '_banner_' . $request->file('banner')->getClientOriginalName();
                 $request->file('banner')->move(public_path('profile_banners'), $bannerName);
 
-                // Eliminar el banner anterior si existe
                 if ($user->banner) {
                     $oldBannerPath = public_path('profile_banners/' . $user->banner);
                     if (file_exists($oldBannerPath)) {
@@ -115,7 +114,6 @@ class ProfileController extends Controller
                 'ciudad' => $validatedData['ciudad'] ?? null,
                 'sitio_web' => $validatedData['sitio_web'] ?? null,
                 'show_telefono' => $request->boolean('show_telefono'),
-                'show_cif' => $request->boolean('show_cif'),
                 'show_ciudad' => $request->boolean('show_ciudad'),
                 'show_direccion' => $request->boolean('show_direccion'),
                 'show_web' => $request->boolean('show_web'),
@@ -129,27 +127,29 @@ class ProfileController extends Controller
                 $updateData['banner'] = $validatedData['banner'];
             }
 
-            // Si es una empresa, actualizar el CIF y show_cif
-            if ($user->role_id == 2 && isset($validatedData['cif'])) {
-                $user->empresa()->update([
-                    'cif' => $validatedData['cif'],
-                    'show_cif' => $request->boolean('show_cif')
-                ]);
+            // Si es una empresa
+            if ($user->role_id == 2) {
+                // Crear o actualizar la empresa usando el ID del usuario
+                $empresa = Empresa::firstOrNew(['id' => $user->id]);
+                $empresa->cif = $validatedData['cif'] ?? $empresa->cif;
+                $empresa->show_cif = $request->boolean('show_cif');
+                $empresa->save();
             } elseif (isset($validatedData['dni'])) {
                 $updateData['dni'] = $validatedData['dni'];
             }
-
-            // Remover show_cif del updateData si existe
-            unset($updateData['show_cif']);
             
-            $user->update($updateData);
+            $user->fill($updateData);
+            $user->save();
 
             DB::commit();
+
+            // Recargar el usuario con sus relaciones
+            $user = $user->load('empresa');
 
             return response()->json([
                 'success' => true,
                 'message' => 'Perfil actualizado correctamente',
-                'user' => $user->fresh()->load('empresa')
+                'user' => $user
             ]);
 
         } catch (\Exception $e) {

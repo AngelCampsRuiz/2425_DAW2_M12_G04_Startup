@@ -20,13 +20,22 @@ class Empresa extends Model
         'provincia',
         'show_cif'
     ];
-    
-    // Indicar que la clave primaria no es autoincremental
+
+    protected $casts = [
+        'show_cif' => 'boolean',
+        'latitud' => 'decimal:8',
+        'longitud' => 'decimal:8'
+    ];
+
+    // La clave primaria es también la clave foránea a users
+    protected $primaryKey = 'id';
+
+    // No queremos que se autoincremente ya que usamos el ID del usuario
     public $incrementing = false;
 
     public function user()
     {
-        return $this->belongsTo(User::class, 'id', 'id');
+        return $this->belongsTo(User::class, 'id');
     }
 
     public function convenios()
