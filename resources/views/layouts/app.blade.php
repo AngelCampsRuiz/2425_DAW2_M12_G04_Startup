@@ -4,7 +4,7 @@
     <!-- Script para prevenir el parpadeo en modo oscuro -->
     <script>
         // Verificar inmediatamente si el modo oscuro está activado
-        if (localStorage.getItem('darkMode') === 'dark' || 
+        if (localStorage.getItem('darkMode') === 'dark' ||
             (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
         }
@@ -13,16 +13,16 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    
-    <title>{{ config('app.name', 'Laravel') }}</title>
-    
+
+    <title>{{ config('app.name', 'NextGen') }}</title>
+
     <!-- Favicon -->
     <link rel="icon" href="{{ asset('assets/images/logo.svg') }}" type="image/svg+xml">
-    
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
-    
+
     <!-- Tailwind CSS -->
     <!-- Use production CDN version of Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio,line-clamp"></script>
@@ -46,7 +46,7 @@
             background-color: #000000 !important;
             color: #ffffff !important;
         }
-        
+
         /* Asegurar que todo el texto sea blanco en modo oscuro */
         .dark * {
             color: #ffffff !important;
@@ -66,7 +66,7 @@
         .dark svg:not([class*="text-white"]) {
             color: #ffffff !important;
         }
-        
+
         .dark .bg-gradient-to-r {
             background-image: none !important;
             background-color: #000000 !important;
@@ -138,16 +138,16 @@
             background-color: #000000 !important;
         }
     </style>
-    
+
     <!-- Swiper.js para sliders -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
-    
+
     <link href="{{ asset('css/high-contrast.css') }}" rel="stylesheet">
     <script src="{{ asset('js/high-contrast.js') }}"></script>
-    
+
     @stack('scripts')
-    
+
     <!-- Dark Mode Script -->
     <script src="{{ asset('js/darkMode.js') }}"></script>
 
@@ -162,11 +162,11 @@
         <main class="flex-grow dark:bg-gray-900 dark:text-white">
             @yield('content')
         </main>
-        
+
         <!-- Footer -->
         @include('partials.footer')
     </div>
-    
+
     <!-- Scripts de validación -->
     <script src="{{ asset('js/auth/login-validation.js') }}"></script>
     <script src="{{ asset('js/auth/register-validation.js') }}"></script>
@@ -174,7 +174,7 @@
     <script src="{{ asset('js/auth/register-step2-validation.js') }}"></script>
     <script src="{{ asset('js/location-selector.js') }}"></script>
     <script src="{{ asset('js/date-restriction.js') }}"></script>
-    
+
     <!-- Scripts específicos de cada página -->
     <script src="{{ asset('js/auth/register-student-validation.js') }}"></script>
     <script src="{{ asset('js/auth/register-company-validation.js') }}"></script>
