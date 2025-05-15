@@ -99,6 +99,27 @@
                     </div>
                 </div>
             </div>
+            
+            <div class="relative">
+                <label for="filtro_estado" class="block text-sm font-medium text-purple-700 mb-2">Estado</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <select id="filtro_estado" class="pl-10 w-full rounded-lg border-purple-200 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50 appearance-none bg-white">
+                        <option value="">Todos</option>
+                        <option value="1">Activas</option>
+                        <option value="0">Inactivas</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                        <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     
@@ -260,28 +281,18 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Variable para controlar si ya se han cargado los event listeners
-        let listenersLoaded = false;
+        // Inicializar variables
         let timeoutId = null;
+        let listenersLoaded = false;
         
-        // Inicializar los event listeners
+        // Configurar event listeners
         setupEventListeners();
+        setupFilterListeners();
         
-        // Cargar las subcategorías cuando cambia la categoría
+        // Event listeners para el formulario
         document.getElementById('categoria_id').addEventListener('change', function() {
             cargarSubcategorias(this.value);
         });
-        
-        // Lo mismo para los filtros
-        document.getElementById('filtro_categoria').addEventListener('change', function() {
-            cargarSubcategoriasFiltro(this.value);
-        });
-
-        // Eventos para filtrado automático
-        document.getElementById('filtro_titulo').addEventListener('input', debounceFilter);
-        document.getElementById('filtro_empresa').addEventListener('input', debounceFilter);
-        document.getElementById('filtro_categoria').addEventListener('change', aplicarFiltros);
-        document.getElementById('filtro_subcategoria').addEventListener('change', aplicarFiltros);
         
         // Manejar envío del formulario
         document.getElementById('form-publicacion').addEventListener('submit', function(e) {
@@ -301,7 +312,8 @@
             document.getElementById('filtro_empresa').value = '';
             document.getElementById('filtro_categoria').value = '';
             document.getElementById('filtro_subcategoria').value = '';
-        aplicarFiltros();
+            document.getElementById('filtro_estado').value = '';
+            aplicarFiltros();
         });
 
         // Función para debounce en campos de texto
@@ -316,6 +328,9 @@
         
         function setupEventListeners() {
             if (listenersLoaded) return;
+            
+            // Configurar event listeners para filtros
+            setupFilterListeners();
             
             // Delegar eventos para los botones
             document.addEventListener('click', function(e) {
@@ -535,18 +550,19 @@
                 return;
             }
             
+            // Preparar los datos, solo enviando lo mínimo necesario
+            const formData = new FormData();
+            formData.append('_method', 'PUT');
+            formData.append('activa', isActive ? 0 : 1);
+            
             // Enviar solicitud para activar/desactivar
             fetch(`/admin/publicaciones/${id}`, {
                 method: 'POST',
+                body: formData,
                 headers: {
-                    'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                     'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: JSON.stringify({
-                    _method: 'PUT',
-                    activo: isActive ? 0 : 1
-                })
+                }
             })
             .then(response => response.json())
             .then(data => {
@@ -560,7 +576,7 @@
                     mostrarMensajeExito(data.message || mensaje);
                     
                     // Actualizar tabla
-                    refreshPublicacionesTable();
+                    aplicarFiltros();
                 } else {
                     // Mostrar mensaje de error
                     alert(data.message || 'Ha ocurrido un error al procesar la solicitud');
@@ -662,10 +678,11 @@
 
     function aplicarFiltros() {
         const filtros = {
-            titulo: document.getElementById('filtro_titulo').value,
-            empresa: document.getElementById('filtro_empresa').value,
-            categoria: document.getElementById('filtro_categoria').value,
-            subcategoria: document.getElementById('filtro_subcategoria').value
+            titulo: document.getElementById('filtro_titulo')?.value || '',
+            empresa: document.getElementById('filtro_empresa')?.value || '',
+            categoria_id: document.getElementById('filtro_categoria')?.value || '',
+            subcategoria_id: document.getElementById('filtro_subcategoria')?.value || '',
+            activa: document.getElementById('filtro_estado')?.value || ''
         };
 
         const params = new URLSearchParams();
@@ -724,6 +741,41 @@
         // Mostrar el modal
         modal.classList.remove('hidden');
         modal.classList.add('flex');
+    }
+
+    // Configurar event listeners para filtros
+    function setupFilterListeners() {
+        // Filtro de título
+        const filtroTitulo = document.getElementById('filtro_titulo');
+        if (filtroTitulo) {
+            filtroTitulo.addEventListener('input', debounceFilter);
+        }
+        
+        // Filtro de empresa
+        const filtroEmpresa = document.getElementById('filtro_empresa');
+        if (filtroEmpresa) {
+            filtroEmpresa.addEventListener('input', debounceFilter);
+        }
+        
+        // Filtro de categoría
+        const filtroCategoria = document.getElementById('filtro_categoria');
+        if (filtroCategoria) {
+            filtroCategoria.addEventListener('change', function() {
+                cargarSubcategoriasFiltro(this.value);
+            });
+        }
+        
+        // Filtro de subcategoría
+        const filtroSubcategoria = document.getElementById('filtro_subcategoria');
+        if (filtroSubcategoria) {
+            filtroSubcategoria.addEventListener('change', aplicarFiltros);
+        }
+        
+        // Filtro de estado
+        const filtroEstado = document.getElementById('filtro_estado');
+        if (filtroEstado) {
+            filtroEstado.addEventListener('change', aplicarFiltros);
+        }
     }
     });
 </script>

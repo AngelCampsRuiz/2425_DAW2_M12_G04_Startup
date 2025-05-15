@@ -144,14 +144,14 @@ class PublicacionController extends Controller
     }
 
     /**
-     * Actualiza una publicación
+     * Actualiza una publicación existente
      */
     public function update(Request $request, $id)
     {
         $publicacion = Publication::findOrFail($id);
         
         // Si la solicitud solo contiene el campo 'activa', es una operación de activar/desactivar
-        if ($request->has('activa') && count(array_filter($request->except(['_method', '_token']))) <= 1) {
+        if ($request->has('activa') && count($request->except(['_method', '_token'])) <= 1) {
             try {
                 $publicacion->update([
                     'activa' => $request->activa
@@ -159,7 +159,7 @@ class PublicacionController extends Controller
                 
                 $mensaje = $request->activa ? 'Oferta activada exitosamente' : 'Oferta desactivada exitosamente';
                 
-                if ($request->ajax()) {
+                if ($request->ajax() || $request->wantsJson()) {
                     return response()->json([
                         'success' => true,
                         'message' => $mensaje
@@ -169,7 +169,9 @@ class PublicacionController extends Controller
                 return redirect()->route('admin.publicaciones.index')
                     ->with('success', $mensaje);
             } catch (\Exception $e) {
-                if ($request->ajax()) {
+                \Log::error('Error al cambiar estado de la publicación: ' . $e->getMessage());
+                
+                if ($request->ajax() || $request->wantsJson()) {
                     return response()->json([
                         'success' => false,
                         'message' => 'Error al actualizar el estado de la oferta: ' . $e->getMessage()
@@ -205,7 +207,7 @@ class PublicacionController extends Controller
             
             DB::commit();
             
-            if ($request->ajax()) {
+            if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => true,
                     'message' => 'Oferta actualizada correctamente'
@@ -216,8 +218,9 @@ class PublicacionController extends Controller
                 ->with('success', 'Oferta actualizada correctamente');
         } catch (\Exception $e) {
             DB::rollBack();
+            \Log::error('Error al actualizar publicación: ' . $e->getMessage());
             
-            if ($request->ajax()) {
+            if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Error al actualizar la oferta: ' . $e->getMessage()
