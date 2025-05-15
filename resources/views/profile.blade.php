@@ -1056,7 +1056,7 @@
 
                                     <label class="flex items-center space-x-3 p-4 bg-gradient-to-br from-white to-purple-50 rounded-xl hover:bg-purple-50 transition-all duration-200 cursor-pointer">
                                         <input type="checkbox" name="show_cif" value="1"
-                                               {{ $user->empresa->show_cif ? 'checked' : '' }}
+                                               {{ optional($user->empresa)->show_cif ? 'checked' : '' }}
                                                class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-500 focus:ring-purple-500">
                                         <span class="text-sm font-medium text-gray-700">Mostrar CIF</span>
                                     </label>
