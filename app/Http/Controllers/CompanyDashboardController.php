@@ -514,5 +514,67 @@ class CompanyDashboardController extends Controller
 
         return response()->json($stats);
     }
+
+    public function editOffer($id)
+    {
+        try {
+            $publication = Publicacion::where('empresa_id', Auth::id())
+                ->findOrFail($id);
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'id' => $publication->id,
+                    'titulo' => $publication->titulo,
+                    'descripcion' => $publication->descripcion,
+                    'horario' => $publication->horario,
+                    'horas_totales' => $publication->horas_totales,
+                    'categoria_id' => $publication->categoria_id,
+                    'subcategoria_id' => $publication->subcategoria_id
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al cargar los datos de la oferta: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function updateOffer(Request $request, $id)
+    {
+        try {
+            $publication = Publicacion::where('empresa_id', Auth::id())
+                ->findOrFail($id);
+
+            $validated = $request->validate([
+                'titulo' => 'required|string|max:100',
+                'descripcion' => 'required|string|min:10',
+                'horario' => 'required|in:mañana,tarde,flexible',
+                'horas_totales' => 'required|integer|min:100|max:400',
+                'categoria_id' => 'required|exists:categorias,id',
+                'subcategoria_id' => 'required|exists:subcategorias,id'
+            ]);
+
+            $publication->update($validated);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Oferta actualizada exitosamente',
+                'publication' => $publication
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error de validación',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al actualizar la oferta: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
 
