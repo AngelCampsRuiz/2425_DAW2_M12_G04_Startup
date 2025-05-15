@@ -1,13 +1,16 @@
 // Asegurarnos de que el script solo se ejecute una vez
-const initializeForm = () => {
+const initializeFormEditOffer = () => {
     // Verificar si estamos en la página correcta
-    const categoriaSelect = document.getElementById('categoria_id');
-    const subcategoriaSelect = document.getElementById('subcategoria_id');
-    const tituloInput = document.getElementById('titulo');
-    const descripcionInput = document.getElementById('descripcion');
+    const categoriaSelect = document.getElementById('categoria_idEditOffer');
+    const subcategoriaSelect = document.getElementById('subcategoria_idEditOffer');
+    const tituloInput = document.getElementById('tituloEditOffer');
+    const descripcionInput = document.getElementById('descripcionEditOffer');
+    const horarioSelect = document.getElementById('horarioEditOffer');
+    const horasTotalesInput = document.getElementById('horas_totalesEditOffer');
+    const editForm = document.getElementById('formEditarOfertaEditOffer');
 
     // Si no encontramos los elementos necesarios, salir
-    if (!categoriaSelect || !subcategoriaSelect) {
+    if (!categoriaSelect || !subcategoriaSelect || !editForm) {
         return;
     }
 
@@ -249,6 +252,7 @@ const initializeForm = () => {
 
             // Preparar los datos del formulario
             const formData = new FormData(this);
+            const data = Object.fromEntries(formData.entries());
 
             // Mostrar al usuario que se está procesando
             const processingNotice = document.createElement('div');
@@ -259,14 +263,20 @@ const initializeForm = () => {
             // Enviar la solicitud con fetch para tener más control
             fetch(this.action, {
                 method: 'POST',
-                body: formData,
+                body: JSON.stringify(data),
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
-                    'X-Session-ID': sessionId // ID de sesión único para detectar duplicados
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                 }
             })
             .then(response => {
                 return response.json().then(data => {
+                    console.log('Respuesta del backend:', data);
+                    if (data.errors) {
+                        alert('Errores de validación: ' + JSON.stringify(data.errors));
+                    }
                     return {
                         status: response.status,
                         ok: response.ok,
@@ -304,15 +314,15 @@ const initializeForm = () => {
                     // Registrar en localStorage
                     localStorage.setItem('formSubmittedTimestamp', Date.now().toString());
                     const oferta = {
-                        titulo: formData.get('titulo'),
-                        descripcion: formData.get('descripcion'),
+                        titulo: data.titulo,
+                        descripcion: data.descripcion,
                         timestamp: Date.now()
                     };
                     ofertasRecientes.push(oferta);
                     localStorage.setItem('ofertasEnviadas', JSON.stringify(ofertasRecientes));
 
                     // Cerrar el modal
-                    closeModal();
+                    closeModalEditOffer();
 
                     // Limpiar el formulario
                     newForm.reset();
@@ -335,8 +345,8 @@ const initializeForm = () => {
                         // Registrar la oferta como duplicada en localStorage
                         ofertasRecientes.push({
                             id: 'rechazado-' + Date.now(),
-                            titulo: tituloValue,
-                            descripcion: descripcionValue,
+                            titulo: data.titulo,
+                            descripcion: data.descripcion,
                             timestamp: Date.now(),
                             rechazado: true
                         });
@@ -377,6 +387,47 @@ const initializeForm = () => {
         });
     }
 
+    // Función para cargar los datos de la oferta
+    window.loadOfferDataEditOffer = async function(offerId) {
+        try {
+            const response = await fetch(`/empresa/ofertas/${offerId}/edit`);
+            const data = await response.json();
+
+            console.log(data);
+
+            if (data.success) {
+                const offer = data.data;
+
+                // Llenar los campos del formulario
+                tituloInput.value = offer.titulo;
+                descripcionInput.value = offer.descripcion;
+                horarioSelect.value = offer.horario;
+                horasTotalesInput.value = offer.horas_totales;
+                categoriaSelect.value = offer.categoria_id;
+
+                // Cargar las subcategorías y seleccionar la correcta
+                await loadSubcategorias(offer.categoria_id);
+                setTimeout(() => {
+                    subcategoriaSelect.value = offer.subcategoria_id;
+                }, 500);
+
+                // Actualizar la acción del formulario
+                editForm.action = `/empresa/ofertas/${offerId}`;
+            } else {
+                throw new Error(data.message || 'Error al cargar los datos de la oferta');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            Swal.fire({
+                title: '¡Error!',
+                text: 'No se pudieron cargar los datos de la oferta',
+                icon: 'error',
+                confirmButtonText: 'Entendido',
+                confirmButtonColor: '#7E22CE'
+            });
+        }
+    };
+
     // Función para limpiar y establecer una opción por defecto en el select
     const resetSelect = (select, defaultText) => {
         if (!select) return;
@@ -398,9 +449,6 @@ const initializeForm = () => {
 
             // Resetear el select de subcategorías
             resetSelect(subcategoriaSelect, 'Cargando subcategorías...');
-
-            // Generar un identificador único para esta solicitud para depuración
-            const requestId = Date.now();
 
             // Realizar la petición
             const response = await fetch(`/empresa/get-subcategorias/${categoriaId}`);
@@ -446,48 +494,134 @@ const initializeForm = () => {
 
     // Añadir event listener para cambios en el select de categoría
     if (categoriaSelect) {
-        // Eliminar event listeners existentes clonando el elemento
-        const newCategoriaSelect = categoriaSelect.cloneNode(true);
-        if (categoriaSelect.parentNode) {
-            categoriaSelect.parentNode.replaceChild(newCategoriaSelect, categoriaSelect);
+        categoriaSelect.addEventListener('change', (e) => {
+            loadSubcategorias(e.target.value);
+        });
+    }
 
-            // Añadir el nuevo event listener
-            newCategoriaSelect.addEventListener('change', (e) => {
-                loadSubcategorias(e.target.value);
-            });
+    // Manejar el envío del formulario
+    if (editForm) {
+        editForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
 
-            // Si hay una categoría seleccionada al cargar la página
-            if (newCategoriaSelect.value) {
-                loadSubcategorias(newCategoriaSelect.value);
+            // Deshabilitar el botón de submit
+            const submitButton = this.querySelector('button[type="submit"]');
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.innerHTML = `
+                    <div class="flex items-center">
+                        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Actualizando oferta...
+                    </div>
+                `;
             }
-        }
+
+            try {
+                const formData = new FormData(this);
+                const data = Object.fromEntries(formData.entries());
+
+                const response = await fetch(this.action, {
+                    method: 'PUT',
+                    body: JSON.stringify(data),
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                });
+
+                const dataResponse = await response.json();
+
+                console.log('Respuesta del backend:', dataResponse);
+                if (dataResponse.errors) {
+                    alert('Errores de validación: ' + JSON.stringify(dataResponse.errors));
+                }
+
+                if (dataResponse.success) {
+                    // Cerrar el modal
+                    closeModalEditOffer();
+
+                    // Emitir evento de actualización exitosa
+                    window.dispatchEvent(new CustomEvent('publicationUpdated'));
+
+                    // Mostrar alerta de éxito
+                    Swal.fire({
+                        title: '¡Éxito!',
+                        text: dataResponse.message || 'Oferta actualizada exitosamente',
+                        icon: 'success',
+                        confirmButtonText: 'Continuar',
+                        confirmButtonColor: '#7E22CE'
+                    });
+                } else {
+                    throw new Error(dataResponse.message || 'Error al actualizar la oferta');
+                }
+            } catch (error) {
+                Swal.fire({
+                    title: '¡Error!',
+                    text: error.message || 'Ha ocurrido un error al actualizar la oferta',
+                    icon: 'error',
+                    confirmButtonText: 'Entendido',
+                    confirmButtonColor: '#7E22CE'
+                });
+            } finally {
+                // Restaurar el botón de submit
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = `
+                        <div class="flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            Actualizar oferta
+                        </div>
+                    `;
+                }
+            }
+        });
     }
 };
 
 // Asegurarnos de que el script solo se ejecute una vez cuando el DOM esté listo
 try {
-
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => {
-            initializeForm();
+            initializeFormEditOffer();
+            // Cerrar modal al hacer clic fuera
+            const modalEditarOferta = document.getElementById('modalEditarOferta');
+            if (modalEditarOferta) {
+                modalEditarOferta.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        closeModalEditOffer();
+                    }
+                });
+            }
         });
     } else {
-        initializeForm();
+        initializeFormEditOffer();
     }
 } catch (error) {
     console.error('Error en la inicialización del formulario:', error);
 }
 
 // Función para abrir el modal
-window.openModal = function() {
-    const modalNuevaOferta = document.getElementById('modalNuevaOferta');
-    if (modalNuevaOferta) {
-        modalNuevaOferta.classList.remove('hidden');
+window.openModalEditOffer = function(offerId) {
+    const modalEditarOferta = document.getElementById('modalEditarOferta');
+    if (modalEditarOferta) {
+        modalEditarOferta.classList.remove('hidden');
         document.body.classList.add('overflow-hidden');
+
+        // Cargar los datos de la oferta
+        if (offerId) {
+            loadOfferDataEditOffer(offerId);
+        }
 
         // Animación de entrada
         setTimeout(() => {
-            const modalContent = modalNuevaOferta.querySelector('.relative');
+            const modalContent = modalEditarOferta.querySelector('.relative');
             if (modalContent) {
                 modalContent.classList.add('animate-fadeIn');
             }
@@ -495,42 +629,42 @@ window.openModal = function() {
 
         // Focus primer input
         setTimeout(() => {
-            const firstInput = modalNuevaOferta.querySelector('input, select, textarea');
+            const firstInput = modalEditarOferta.querySelector('input, select, textarea');
             if (firstInput) firstInput.focus();
         }, 300);
     }
 };
 
 // Función para cerrar el modal
-window.closeModal = function() {
-    const modalNuevaOferta = document.getElementById('modalNuevaOferta');
-    if (modalNuevaOferta) {
-        const modalContent = modalNuevaOferta.querySelector('.relative');
+window.closeModalEditOffer = function() {
+    const modalEditarOferta = document.getElementById('modalEditarOferta');
+    if (modalEditarOferta) {
+        const modalContent = modalEditarOferta.querySelector('.relative');
         if (modalContent) {
             modalContent.classList.remove('animate-fadeIn');
             modalContent.classList.add('animate-fadeOut');
         }
 
         setTimeout(() => {
-            modalNuevaOferta.classList.add('hidden');
+            modalEditarOferta.classList.add('hidden');
             document.body.classList.remove('overflow-hidden');
 
             if (modalContent) {
                 modalContent.classList.remove('animate-fadeOut');
             }
 
-            const formNuevaOferta = document.getElementById('formNuevaOferta');
-            if (formNuevaOferta) {
-                formNuevaOferta.reset();
+            const editForm = document.getElementById('formEditarOfertaEditOffer');
+            if (editForm) {
+                editForm.reset();
             }
         }, 200);
     }
 };
 
 // Función para cargar subcategorías
-window.cargarSubcategorias = function() {
-    const categoriaId = document.getElementById('categoria_id');
-    const subcategoriasSelect = document.getElementById('subcategoria_id');
+window.cargarSubcategoriasEditOffer = function() {
+    const categoriaId = document.getElementById('categoria_idEditOffer');
+    const subcategoriasSelect = document.getElementById('subcategoria_idEditOffer');
 
     if (!categoriaId || !subcategoriasSelect) return;
 
@@ -572,105 +706,3 @@ window.cargarSubcategorias = function() {
         subcategoriasSelect.disabled = false;
     });
 };
-
-// Inicializar cuando el DOM esté listo
-document.addEventListener('DOMContentLoaded', function() {
-    // Manejar envío del formulario
-    const formNuevaOferta = document.getElementById('formNuevaOferta');
-    if (formNuevaOferta) {
-        formNuevaOferta.addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            // Deshabilitar el botón de submit
-            const submitButton = this.querySelector('button[type="submit"]');
-            if (submitButton) {
-                submitButton.disabled = true;
-                submitButton.innerHTML = `
-                    <div class="flex items-center">
-                        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Publicando oferta...
-                    </div>
-                `;
-            }
-
-            const formData = new FormData(this);
-
-            fetch('/empresa/ofertas', {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Cerrar el modal
-                    closeModal();
-
-                    // Emitir evento de creación exitosa inmediatamente
-                    window.dispatchEvent(new CustomEvent('publicationCreated'));
-
-                    // Mostrar alerta de éxito
-                    Swal.fire({
-                        title: '¡Éxito!',
-                        text: data.message || 'Oferta creada exitosamente',
-                        icon: 'success',
-                        confirmButtonText: 'Continuar',
-                        confirmButtonColor: '#7E22CE'
-                    });
-
-                    // Limpiar el formulario
-                    formNuevaOferta.reset();
-                } else {
-                    throw new Error(data.message || 'Error al crear la oferta');
-                }
-            })
-            .catch(error => {
-                Swal.fire({
-                    title: '¡Error!',
-                    text: error.message || 'Ha ocurrido un error al publicar la oferta',
-                    icon: 'error',
-                    confirmButtonText: 'Entendido',
-                    confirmButtonColor: '#7E22CE'
-                });
-            })
-            .finally(() => {
-                // Restaurar el botón de submit
-                if (submitButton) {
-                    submitButton.disabled = false;
-                    submitButton.innerHTML = `
-                        <div class="flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                            </svg>
-                            Publicar oferta
-                        </div>
-                    `;
-                }
-            });
-        });
-    }
-
-    // Cerrar modal al hacer clic fuera
-    const modalNuevaOferta = document.getElementById('modalNuevaOferta');
-    if (modalNuevaOferta) {
-        modalNuevaOferta.addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeModal();
-            }
-        });
-    }
-
-    // Cerrar modal con Escape
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && modalNuevaOferta && !modalNuevaOferta.classList.contains('hidden')) {
-            closeModal();
-        }
-    });
-});

@@ -557,14 +557,19 @@ document.addEventListener('DOMContentLoaded', function() {
         roundTripTime: 0
     };
     
-    // Conexión con socket.io para señalización
-    const socket = io('http://localhost:3000', {
-        reconnectionAttempts: 5,
-        timeout: 10000,
+    // Configuración de Socket.io - Usar configuración del servidor si está disponible
+    const socketServerUrl = window.socketServerUrl || 'http://localhost:3000';
+    console.log('Conectando a servidor Socket.io:', socketServerUrl);
+    
+    // Conexión con socket.io para señalización con mejor manejo de errores
+    const socket = io(socketServerUrl, {
+        reconnectionAttempts: 8,
+        timeout: 15000,
         transports: ['websocket', 'polling'],
         autoConnect: true,
         reconnection: true,
-        reconnectionDelay: 1000
+        reconnectionDelay: 1000,
+        forceNew: true
     });
 
     // Manejo de eventos de conexión

@@ -26,10 +26,9 @@
                         <img src="{{ asset('assets/images/empresas.jpg') }}" alt="Empresas" class="rounded-lg shadow-xl w-full max-w-md">
                     </div>
                     <div class="md:w-1/2 space-y-6 md:pr-12 flex flex-col justify-center text-right">
-                        <div class="text-2xl font-semibold text-[#7705B6]">🏢 {{ $totalEmpresas }} empresas confían en nosotros</div>
+                        {{-- <div class="text-2xl font-semibold text-[#7705B6]">🏢 {{ $totalEmpresas }} empresas confían en nosotros</div> --}}
                         <div class="text-lg">💼 {{ $totalOfertas }} ofertas publicadas</div>
                         <div class="text-lg">🤝 {{ $porcentajeRepiten }}% de empresas repiten</div>
-                        <div class="text-lg">🌍 Presencia en {{ $totalProvincias }} provincias</div>
                     </div>
                 </div>
 
@@ -46,13 +45,13 @@
                             <!-- Slider principal -->
                             <div class="relative">
                                 <!-- Contenedor principal del slider con clase personalizada -->
-                                <div class="empresas-slider-container mb-6 w-full relative">
+                                <div class="empresas-slider-container mb-12 w-full relative">
                                     <!-- Contenedor del slider -->
-                                    <div class="swiper-container empresas-slider w-full overflow-hidden">
+                                    <div class="swiper-container empresas-slider w-full overflow-hidden mb-8">
                                         <div class="swiper-wrapper">
                                             @foreach($empresasDestacadas->sortByDesc('alumnos_contratados') as $empresa)
                                                 <div class="swiper-slide">
-                                                    <div class="bg-white p-6 rounded-lg shadow-md text-center transform transition-all hover:shadow-xl hover:-translate-y-1 h-full flex flex-col justify-between">
+                                                    <div class="bg-white mb-10 p-6 pb-8 rounded-lg shadow-md text-center transform transition-all hover:shadow-xl hover:-translate-y-1 h-full flex flex-col justify-between">
                                                         <div class="relative">
                                                             @if($empresa->user->imagen)
                                                                 <img src="{{ asset('public/profile_images/' . $empresa->user->imagen) }}" alt="{{ $empresa->user->nombre }}" class="h-16 mx-auto mb-4">
@@ -80,7 +79,7 @@
                                     </div>
 
                                     <!-- Paginación -->
-                                    <div class="swiper-pagination mt-4 text-center"></div>
+                                    <div class="swiper-pagination mt-8 text-center"></div>
 
                                     <!-- Controles de navegación -->
                                     <div class="swiper-button-next text-[#7705B6] absolute top-1/2 -mt-6 right-0 z-10"></div>

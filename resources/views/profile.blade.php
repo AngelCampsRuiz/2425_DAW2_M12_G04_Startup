@@ -4,9 +4,7 @@
 {{-- CONTENIDO --}}
     <link rel="stylesheet" href="{{ asset('css/profile.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="{{ asset('js/profile.js') }}"></script>
-    <script src="{{ asset('js/profile-functions.js') }}"></script>
-    <script src="{{ asset('js/profile-edit.js') }}"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     @section('content')
         <div class="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-50">
             {{-- MIGAS DE PAN --}}
@@ -264,7 +262,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
                                         </svg>
                                     </div>
-                                    <h2 class="text-2xl font-bold text-gray-900">Información Académica</h2>
+                                    <h2 class="text-2xl font-bold text-gray-900">{{ __('messages.academic_information') }}</h2>
                                 </div>
                                 <div class="space-y-4">
                                     @if($user->estudiante)
@@ -272,7 +270,7 @@
                                             <svg class="w-5 h-5 text-purple-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                             </svg>
-                                            <span class="text-gray-700">Ciclo: {{ $user->estudiante->ciclo }}</span>
+                                            <span class="text-gray-700">{{ __('messages.cycle') }}: {{ $user->estudiante->ciclo }}</span>
                                         </div>
                                         @if($user->estudiante->cv_pdf)
                                             <div class="flex items-center">
@@ -282,7 +280,7 @@
                                                 <a href="{{ asset('public/cv_pdfs/' . $user->estudiante->cv_pdf) }}"
                                                    class="text-purple-600 hover:text-purple-800"
                                                    target="_blank">
-                                                    Ver CV
+                                                    {{ __('messages.view_cv') }}
                                                 </a>
                                             </div>
                                         @endif
@@ -299,17 +297,17 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                                             </svg>
                                         </div>
-                                        <h2 class="text-2xl font-bold text-gray-900">Experiencias de Estudiantes</h2>
+                                        <h2 class="text-2xl font-bold text-gray-900">{{ __('messages.student_experiences') }}</h2>
                                     </div>
                                     <div class="overflow-x-auto">
                                         <table class="min-w-full divide-y divide-gray-200">
                                             <thead class="bg-gray-50">
                                                 <tr>
-                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estudiante</th>
-                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Puesto</th>
-                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha de Inicio</th>
-                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha de Fin</th>
-                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descripción</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('messages.student') }}</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('messages.position') }}</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('messages.start_date') }}</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('messages.end_date') }}</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('messages.description') }}</th>
                                                 </tr>
                                             </thead>
                                             <tbody class="bg-white divide-y divide-gray-200">
@@ -366,7 +364,7 @@
                                                 </div>
                                             </div>
                                             <div class="ml-4">
-                                                <p class="text-sm font-medium text-gray-500">Ciudad</p>
+                                                <p class="text-sm font-medium text-gray-500">{{ __('messages.city_profile') }}</p>
                                                 <p class="text-lg font-semibold text-gray-900" data-valor="ciudad">{{ $user->ciudad ?? 'No especificada' }}</p>
                                             </div>
                                         </div>
@@ -380,22 +378,37 @@
                                                 </div>
                                             </div>
                                             <div class="ml-4">
-                                                <p class="text-sm font-medium text-gray-500">Teléfono</p>
+                                                <p class="text-sm font-medium text-gray-500">{{ __('messages.phone') }}</p>
                                                 <p class="text-lg font-semibold text-gray-900" data-valor="telefono">{{ $user->telefono ?? 'No especificado' }}</p>
                                             </div>
                                         </div>
 
-                                        <div class="flex items-start" data-campo="dni" style="display: {{ $user->show_dni ? 'flex' : 'none' }}">
+                                        {{-- Checkbox para mostrar/ocultar CIF --}}
+                                        <label class="flex items-center space-x-3 p-4 bg-gradient-to-br from-white to-purple-50 rounded-xl hover:bg-purple-50 transition-all duration-200 cursor-pointer">
+                                            <input type="checkbox" 
+                                                   name="show_cif" 
+                                                   value="1"
+                                                   {{ $user->empresa && $user->empresa->show_cif ? 'checked' : '' }}
+                                                   class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-500 focus:ring-purple-500">
+                                            <span class="text-sm font-medium text-gray-700">Mostrar CIF</span>
+                                        </label>
+
+                                        {{-- Sección donde se muestra el CIF --}}
+                                        @php
+                                            $showCif = $user->empresa && $user->empresa->show_cif;
+                                        @endphp
+
+                                        <div class="flex items-start" 
+                                             data-campo="cif" 
+                                             style="display: {{ $showCif ? 'flex' : 'none' }}">
                                             <div class="flex-shrink-0">
-                                                <div class="bg-purple-100 p-2 rounded-lg">
-                                                    <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/>
-                                                    </svg>
-                                                </div>
+                                                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                </svg>
                                             </div>
                                             <div class="ml-4">
-                                                <p class="text-sm font-medium text-gray-500">DNI</p>
-                                                <p class="text-lg font-semibold text-gray-900" data-valor="dni">{{ $user->dni ?? 'No especificado' }}</p>
+                                                <p class="text-sm text-gray-500">CIF</p>
+                                                <p class="font-medium text-gray-900">{{ $user->empresa ? $user->empresa->cif : 'No especificado' }}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -410,12 +423,12 @@
                                                 </div>
                                             </div>
                                             <div class="ml-4">
-                                                <p class="text-sm font-medium text-gray-500">Dirección</p>
+                                                <p class="text-sm font-medium text-gray-500">{{ __('messages.address_profile') }}</p>
                                                 <p class="text-lg font-semibold text-gray-900" data-valor="direccion">{{ $user->direccion ?? 'No especificada' }}</p>
                                             </div>
                                         </div>
 
-                                        <div class="flex items-start" data-campo="sitio_web" style="display: {{ $user->show_web ? 'flex' : 'none' }}">
+                                        <div class="flex items-start" data-campo="web" style="display: {{ $user->show_web ? 'flex' : 'none' }}">
                                             <div class="flex-shrink-0">
                                                 <div class="bg-purple-100 p-2 rounded-lg">
                                                     <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -424,8 +437,11 @@
                                                 </div>
                                             </div>
                                             <div class="ml-4">
-                                                <p class="text-sm font-medium text-gray-500">Página Web</p>
-                                                <p class="text-lg font-semibold text-gray-900" data-valor="sitio_web">{{ $user->sitio_web ?? 'No especificado' }}</p>
+                                                <p class="text-sm font-medium text-gray-500">Sitio Web</p>
+                                                <input type="url" name="sitio_web" id="sitio_web" value="{{ $user->sitio_web }}"
+                                                       class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                                                       placeholder="https://ejemplo.com">
+                                                <span id="error-sitio_web" class="error-message text-xs text-red-500 mt-1 hidden"></span>
                                             </div>
                                         </div>
                                     </div>
@@ -591,7 +607,7 @@
                                         <h3 class="text-xl font-semibold text-gray-900 ml-4">Información de la Empresa</h3>
                                     </div>
                                     <div class="space-y-4">
-                                        <div class="flex items-start">
+                                        <div class="flex items-start" data-campo="empresa-cif">
                                             <div class="flex-shrink-0">
                                                 <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -603,15 +619,8 @@
                                             </div>
                                         </div>
                                         <div class="flex items-start">
-                                            <div class="flex-shrink-0">
-                                                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                                                </svg>
-                                            </div>
-                                            <div class="ml-4">
-                                                <p class="text-sm text-gray-500">Sector</p>
-                                                <p class="font-medium text-gray-900">{{ $user->empresa->sector ?? 'No especificado' }}</p>
-                                            </div>
+                                          
+                                            
                                         </div>
                                     </div>
                                 </div>
@@ -663,17 +672,18 @@
                                             </div>
                                         </div>
 
-                                        <div class="flex items-start" data-campo="sitio_web" style="display: {{ $user->show_web ? 'flex' : 'none' }}">
+                                        <div class="flex items-start" data-campo="web" style="display: {{ $user->show_web ? 'flex' : 'none' }}">
                                             <div class="flex-shrink-0">
-                                                <div class="bg-purple-100 p-2 rounded-lg">
-                                                    <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
-                                                    </svg>
-                                                </div>
+                                                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
+                                                </svg>
                                             </div>
                                             <div class="ml-4">
-                                                <p class="text-sm font-medium text-gray-500">Página Web</p>
-                                                <p class="text-lg font-semibold text-gray-900" data-valor="sitio_web">{{ $user->sitio_web ?? 'No especificado' }}</p>
+                                                <p class="text-sm font-medium text-gray-500">Sitio Web</p>
+                                                <input type="url" name="sitio_web" id="sitio_web" value="{{ $user->sitio_web }}"
+                                                       class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                                                       placeholder="https://ejemplo.com">
+                                                <span id="error-sitio_web" class="error-message text-xs text-red-500 mt-1 hidden"></span>
                                             </div>
                                         </div>
                                     </div>
@@ -971,7 +981,10 @@
 
                     {{-- Contenido del Modal --}}
                     <div class="p-8">
-                        <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data" id="profileForm" class="space-y-8">
+                        <form id="profileForm" 
+                              action="{{ route('profile.update') }}" 
+                              method="POST" 
+                              enctype="multipart/form-data">
                             @csrf
                             @method('PUT')
 
@@ -999,10 +1012,11 @@
                                     </div>
 
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Correo electrónico</label>
-                                        <input type="email" name="email" id="email" value="{{ old('email', $user->email) }}"
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                                        <input type="email" name="email" id="email" value="{{ $user->email }}"
                                                class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 transition-all duration-200"
-                                               required>
+                                               onblur="validarEmail(this)">
+                                        <span id="error-email" class="error-message text-xs text-red-500 mt-1 hidden"></span>
                                         @error('email')
                                             <span class="error-message text-xs text-red-500 mt-1">{{ $message }}</span>
                                         @enderror
@@ -1041,10 +1055,10 @@
                                     </label>
 
                                     <label class="flex items-center space-x-3 p-4 bg-gradient-to-br from-white to-purple-50 rounded-xl hover:bg-purple-50 transition-all duration-200 cursor-pointer">
-                                        <input type="checkbox" name="show_dni" value="1"
-                                               {{ $user->show_dni ? 'checked' : '' }}
+                                        <input type="checkbox" name="show_cif" value="1"
+                                               {{ $user->empresa->show_cif ? 'checked' : '' }}
                                                class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-500 focus:ring-purple-500">
-                                        <span class="text-sm font-medium text-gray-700">Mostrar DNI</span>
+                                        <span class="text-sm font-medium text-gray-700">Mostrar CIF</span>
                                     </label>
 
                                     <label class="flex items-center space-x-3 p-4 bg-gradient-to-br from-white to-purple-50 rounded-xl hover:bg-purple-50 transition-all duration-200 cursor-pointer">
@@ -1093,19 +1107,28 @@
                                         @enderror
                                     </div>
 
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">DNI</label>
-                                        <input type="text" name="dni" id="dni" value="{{ $user->dni }}"
-                                               class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 transition-all duration-200"
-                                               onblur="validarDNI(this)">
-                                        <span id="error-dni" class="error-message text-xs text-red-500 mt-1 hidden"></span>
-                                        @error('dni')
-                                            <span class="error-message text-xs text-red-500 mt-1">{{ $message }}</span>
-                                        @enderror
-                                    </div>
+                                    @if(auth()->user()->role_id == 2)
+                                        {{-- Campo CIF para empresas --}}
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">CIF</label>
+                                            <input type="text" name="cif" id="cif" value="{{ $user->empresa->cif ?? '' }}"
+                                                   class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 transition-all duration-200"
+                                                   onblur="validarCIF(this)">
+                                            <span id="error-cif" class="error-message text-xs text-red-500 mt-1 hidden"></span>
+                                        </div>
+                                    @else
+                                        {{-- Campo DNI para otros usuarios --}}
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">DNI</label>
+                                            <input type="text" name="dni" id="dni" value="{{ $user->dni ?? '' }}"
+                                                   class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 transition-all duration-200"
+                                                   onblur="validarDNI(this)">
+                                            <span id="error-dni" class="error-message text-xs text-red-500 mt-1 hidden"></span>
+                                        </div>
+                                    @endif
 
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Ciudad</label>
+                                        <label for="ciudad" class="block text-sm font-medium text-gray-700 mb-2">Ciudad</label>
                                         <input type="text" name="ciudad" id="ciudad" value="{{ $user->ciudad }}"
                                                class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 transition-all duration-200"
                                                onblur="validarCiudad(this)">
@@ -1207,13 +1230,14 @@
                                 <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
                                     <div class="flex items-center justify-between mb-6">
                                         <h3 class="text-xl font-semibold text-gray-900 flex items-center">
+                                            {{-- Ubicación del mapa --}}
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
                                             </svg>
                                             Ubicación
                                         </h3>
-                                        <button onclick="saveLocation()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center">
+                                        <button type="button" onclick="saveLocation()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                                             </svg>
@@ -1222,7 +1246,7 @@
                                     </div>
 
                                     {{-- Contenedor del mapa --}}
-                                    <div class="w-full h-[400px] rounded-xl overflow-hidden shadow-md mb-4">
+                                    <div class="w-full rounded-xl overflow-hidden shadow-md mb-4" style="height: 400px;">
                                         <div id="locationMap" class="w-full h-full"></div>
                                     </div>
 
@@ -1230,15 +1254,11 @@
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                                         <div>
                                             <label for="direccion" class="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
-                                            <input type="text" name="direccion" id="direccion" value="{{ $user->direccion }}"
-                                                   class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
-                                                   readonly>
+                                            <input type="text" name="direccion" id="direccion" value="{{ $user->direccion }}" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" readonly>
                                         </div>
                                         <div>
-                                            <label for="ciudad" class="block text-sm font-medium text-gray-700 mb-1">Ciudad</label>
-                                            <input type="text" name="ciudad" id="ciudad" value="{{ $user->ciudad }}"
-                                                   class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
-                                                   readonly>
+                                            <label for="ciudad_mapa" class="block text-sm font-medium text-gray-700 mb-1">Ciudad</label>
+                                            <input type="text" name="ciudad_mapa" id="ciudad_mapa" value="{{ $user->ciudad }}" class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500" readonly>
                                         </div>
                                     </div>
 
@@ -1368,20 +1388,27 @@
 
             function validarDNI(field) {
                 if (field.value.trim()) {
-                    const dniRegex = /^[0-9]{8}[A-Za-z]$/;
-                    const nieRegex = /^[XYZxyz][0-9]{7}[A-Za-z]$/;
-
-                    if (!dniRegex.test(field.value.trim()) && !nieRegex.test(field.value.trim())) {
-                        showError(field, "Formato de DNI/NIE no válido");
-                        return false;
-                    } else {
-                        hideError(field);
-                        return true;
-                    }
-                } else {
+                    @if(auth()->user()->role_id == 2)
+                        // Validación de CIF
+                        const cifRegex = /^[A-HJNP-SUVW][0-9]{7}[0-9A-J]$/;
+                        if (!cifRegex.test(field.value.trim().toUpperCase())) {
+                            showError(field, "Formato de CIF no válido");
+                            return false;
+                        }
+                    @else
+                        // Validación de DNI/NIE
+                        const dniRegex = /^[0-9]{8}[A-Za-z]$/;
+                        const nieRegex = /^[XYZxyz][0-9]{7}[A-Za-z]$/;
+                        if (!dniRegex.test(field.value.trim()) && !nieRegex.test(field.value.trim())) {
+                            showError(field, "Formato de DNI/NIE no válido");
+                            return false;
+                        }
+                    @endif
                     hideError(field);
                     return true;
                 }
+                hideError(field);
+                return true;
             }
 
             function validarCiudad(field) {
@@ -1526,10 +1553,10 @@
                         // Actualizar campos de visibilidad
                         const camposVisibles = {
                             'telefono': user.show_telefono,
-                            'dni': user.show_dni,
+                            'cif': user.empresa.show_cif,
                             'ciudad': user.show_ciudad,
                             'direccion': user.show_direccion,
-                            'sitio_web': user.show_web
+                            'web': user.show_web
                         };
 
                         // Actualizar la visibilidad de cada campo
@@ -1543,10 +1570,10 @@
                         // Actualizar valores de los campos
                         const camposValores = {
                             'telefono': user.telefono,
-                            'dni': user.dni,
+                            'cif': user.empresa.cif,
                             'ciudad': user.ciudad,
                             'direccion': user.direccion,
-                            'sitio_web': user.sitio_web
+                            'web': user.web
                         };
 
                         Object.entries(camposValores).forEach(([campo, valor]) => {
@@ -1639,11 +1666,11 @@
                         showError(telefonoInput, "Este número de teléfono ya está registrado");
                         return;
                     }
-                } else if (errorMsg.includes('Duplicate entry') && errorMsg.includes('user_dni_unique')) {
+                } else if (errorMsg.includes('Duplicate entry') && errorMsg.includes('user_cif_unique')) {
                     // Error de DNI duplicado
-                    const dniInput = document.getElementById('dni');
-                    if (dniInput) {
-                        showError(dniInput, "Este DNI/NIE ya está registrado");
+                    const cifInput = document.getElementById('cif');
+                    if (cifInput) {
+                        showError(cifInput, "Este CIF ya está registrado");
                         return;
                     }
                 } else if (errorMsg.includes('Duplicate entry') && errorMsg.includes('user_email_unique')) {
@@ -1690,7 +1717,6 @@
         </script>
 
         @if(auth()->user()->role_id == 2)
-            <script src="{{ asset('js/profile-map.js') }}"></script>
         @endif
 
         <!-- Sección del Mapa de Solo Lectura -->
@@ -1718,3 +1744,116 @@
             </div>
         @endif
     @endsection
+
+@push('scripts')
+    {{-- Cargar las dependencias --}}
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    {{-- Cargar los scripts en orden --}}
+    <script src="{{ asset('js/profile-validaciones.js') }}?v={{ time() }}"></script>
+    <script src="{{ asset('js/profile.js') }}?v={{ time() }}"></script>
+@endpush
+
+@prepend('scripts')
+    {{-- Leaflet CSS --}}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    
+    {{-- SweetAlert2 CSS --}}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+@endprepend
+
+@if(auth()->user()->role_id == 2)
+    <div data-role="empresa" class="hidden"></div>
+@endif
+
+<script>
+    function handleFormSubmit(e) {
+        e.preventDefault();
+
+        if (window.isFormSubmitting) return;
+
+        const form = e.target;
+        
+        const emailInput = form.querySelector('input[name="email"]') || 
+                          form.querySelector('#email') ||
+                          form.querySelector('input[type="email"]');
+                          
+        const nombreInput = form.querySelector('input[name="nombre"]') ||
+                           form.querySelector('#nombre') ||
+                           form.querySelector('input[name="name"]');
+
+        if (!emailInput) {
+            Swal.fire({
+                title: 'Error',
+                text: 'No se encontró el campo de email en el formulario',
+                icon: 'error',
+                confirmButtonColor: '#7C3AED'
+            });
+            return;
+        }
+
+        if (!nombreInput) {
+            Swal.fire({
+                title: 'Error',
+                text: 'No se encontró el campo de nombre en el formulario',
+                icon: 'error',
+                confirmButtonColor: '#7C3AED'
+            });
+            return;
+        }
+
+        const formData = new FormData(form);
+
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire({
+                    title: '¡Éxito!',
+                    text: 'Los cambios se han guardado correctamente',
+                    icon: 'success',
+                    confirmButtonColor: '#7C3AED'
+                }).then(() => {
+                    window.location.reload();
+                });
+            } else {
+                throw new Error(data.message || 'Error al guardar los cambios');
+            }
+        })
+        .catch(error => {
+            Swal.fire({
+                title: 'Error',
+                text: error.message || 'Ha ocurrido un error al guardar los cambios',
+                icon: 'error',
+                confirmButtonColor: '#7C3AED'
+            });
+        })
+        .finally(() => {
+            const submitButton = form.querySelector('button[type="submit"]');
+            if (submitButton) {
+                submitButton.disabled = false;
+                submitButton.innerHTML = 'Guardar cambios';
+            }
+            window.isFormSubmitting = false;
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const profileForm = document.getElementById('profileForm');
+        
+        if (profileForm) {
+            const newForm = profileForm.cloneNode(true);
+            profileForm.parentNode.replaceChild(newForm, profileForm);
+            newForm.addEventListener('submit', handleFormSubmit);
+        }
+    });
+</script>
