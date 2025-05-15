@@ -91,6 +91,27 @@
                     </div>
                 </div>
             </div>
+            
+            <div class="relative">
+                <label for="filtro_estado" class="block text-sm font-medium text-purple-700 mb-2">Estado</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <select id="filtro_estado" class="pl-10 w-full rounded-lg border-purple-200 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50 appearance-none bg-white">
+                        <option value="">Todas</option>
+                        <option value="1">Activas</option>
+                        <option value="0">Inactivas</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                        <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -539,12 +560,14 @@ let timeoutId = null;
 document.getElementById('filtro_nombre').addEventListener('input', debounceFilter);
 document.getElementById('filtro_categoria').addEventListener('change', aplicarFiltros);
 document.getElementById('filtro_publicaciones').addEventListener('change', aplicarFiltros);
+document.getElementById('filtro_estado').addEventListener('change', aplicarFiltros);
 
 // Resetear filtros
 document.getElementById('reset-filtros').addEventListener('click', function() {
     document.getElementById('filtro_nombre').value = '';
     document.getElementById('filtro_categoria').value = '';
     document.getElementById('filtro_publicaciones').value = '';
+    document.getElementById('filtro_estado').value = '';
     aplicarFiltros();
 });
 
@@ -562,7 +585,8 @@ function aplicarFiltros() {
     const filtros = {
         nombre: document.getElementById('filtro_nombre').value,
         categoria: document.getElementById('filtro_categoria').value,
-        publicaciones: document.getElementById('filtro_publicaciones').value
+        publicaciones: document.getElementById('filtro_publicaciones').value,
+        activo: document.getElementById('filtro_estado').value
     };
     
     const params = new URLSearchParams();

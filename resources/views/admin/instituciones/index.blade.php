@@ -494,9 +494,9 @@
                         link.addEventListener('click', function(e) {
                             e.preventDefault();
                             actualizarTabla(this.getAttribute('href'));
-                        });
-                    });
-                    
+                });
+            });
+            
                     // Volver a asignar eventos a los botones
                     asignarEventosTabla();
                 })
@@ -709,12 +709,12 @@
                 
                 // Cargar datos de la institución
                 fetch(`{{ url('admin/instituciones') }}/${id}/edit`, {
-                    headers: {
+                headers: {
                         'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
                     // Eliminar indicador de carga
                     const loadingIndicator = document.getElementById('loading-indicator');
                     if (loadingIndicator) {
@@ -756,7 +756,7 @@
                             if (data.institucion.user.imagen) {
                                 imagenActual.src = `{{ asset('public/profile_images') }}/${data.institucion.user.imagen}`;
                                 imagenContainer.classList.remove('hidden');
-                            } else {
+                } else {
                                 imagenContainer.classList.add('hidden');
                             }
                         }
@@ -873,7 +873,7 @@
                 
                 // Cargar categorías
                 fetch(`{{ url('admin/instituciones') }}/${id}/categorias`, {
-                    headers: {
+                headers: {
                         'X-Requested-With': 'XMLHttpRequest'
                     }
                 })
@@ -883,7 +883,7 @@
                     }
                     return response.json();
                 })
-                .then(data => {
+            .then(data => {
                     if(data.success) {
                         // Actualizar el contenido del modal con las categorías
                         if (contenedor) {

@@ -29,6 +29,11 @@ class CategoriaController extends Controller
                 $query->has('subcategorias');
             }
         }
+        
+        // Filtrar por estado activo/inactivo
+        if ($request->has('activo') && $request->activo !== '') {
+            $query->where('activo', $request->activo);
+        }
 
         $categorias = $query->paginate(10);
 

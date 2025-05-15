@@ -37,6 +37,11 @@ class SubcategoriaController extends Controller
                 $query->whereHas('publicaciones');
             }
         }
+        
+        // Aplicar filtro por estado activo/inactivo
+        if ($request->has('activo') && $request->activo !== '') {
+            $query->where('activo', $request->activo);
+        }
 
         // Usar selectRaw para el conteo de publicaciones directamente
         $query->selectRaw('subcategorias.*, (SELECT COUNT(*) FROM publicaciones WHERE publicaciones.subcategoria_id = subcategorias.id) as publicaciones_count');
