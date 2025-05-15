@@ -20,7 +20,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
                 Reiniciar filtros
-            </button>
+        </button>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             <div class="relative">
@@ -33,8 +33,8 @@
                     </div>
                     <input type="text" id="filtro_nombre" class="pl-10 w-full rounded-lg border-purple-200 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50" placeholder="Buscar por nombre...">
                 </div>
-            </div>
-            
+    </div>
+
             <div class="relative">
                 <label for="filtro_email" class="block text-sm font-medium text-purple-700 mb-2">Email</label>
                 <div class="relative">
@@ -434,15 +434,15 @@
             // Función para actualizar la tabla mediante AJAX
             window.actualizarTabla = function(url = null) {
                 // Obtener valores de filtros
-                const filtro_nombre = document.getElementById('filtro_nombre').value;
-                const filtro_email = document.getElementById('filtro_email').value;
-                const filtro_codigo_centro = document.getElementById('filtro_codigo_centro').value;
-                const filtro_ciudad = document.getElementById('filtro_ciudad').value;
+                const filtro_nombre = document.getElementById('filtro_nombre')?.value || '';
+                const filtro_email = document.getElementById('filtro_email')?.value || '';
+                const filtro_codigo_centro = document.getElementById('filtro_codigo_centro')?.value || '';
+                const filtro_ciudad = document.getElementById('filtro_ciudad')?.value || '';
                 // Temporalmente deshabilitado
                 // const filtro_tipo_institucion = document.getElementById('filtro_tipo_institucion').value;
                 const filtro_tipo_institucion = ""; // Valor vacío por defecto
-                const filtro_estado = document.getElementById('filtro_estado').value;
-                const filtro_verificada = document.getElementById('filtro_verificada').value;
+                const filtro_estado = document.getElementById('filtro_estado')?.value || '';
+                const filtro_verificada = document.getElementById('filtro_verificada')?.value || '';
                 
                 // Construir URL con parámetros
                 const params = new URLSearchParams();
@@ -457,33 +457,50 @@
                 // Determinar la URL
                 let fetchUrl = url || '{{ route("admin.instituciones.index") }}';
                 
-                // Si no hay url específica, añadir los parámetros a la URL actual
-                if (!url) {
-                    fetchUrl = `${fetchUrl}?${params.toString()}`;
-                } else if (typeof url === 'string' && url.includes('?')) {
-                    // Si la URL ya tiene parámetros, añadir los nuevos
-                    fetchUrl = `${url}&${params.toString()}`;
-                } else {
-                    // Si la URL no tiene parámetros, añadirlos
-                    fetchUrl = `${url}?${params.toString()}`;
+                // Añadir los parámetros a la URL
+                if (params.toString()) {
+                    if (!url) {
+                        // Si no hay url específica, usar la ruta base con parámetros
+                        fetchUrl = `{{ route("admin.instituciones.index") }}?${params.toString()}`;
+                    } else if (typeof url === 'string' && url.includes('?')) {
+                        // Si la URL ya tiene parámetros, añadir los nuevos con &
+                        fetchUrl = `${url}&${params.toString()}`;
+                    } else {
+                        // Si la URL no tiene parámetros, añadirlos con ?
+                        fetchUrl = `${url}?${params.toString()}`;
+                    }
                 }
                 
                 // Mostrar indicador de carga
-                document.getElementById('tabla-instituciones-container').innerHTML = `
-                    <div class="flex justify-center items-center py-12">
-                        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-700"></div>
-                    </div>
-                `;
+                const tablaContainer = document.getElementById('tabla-instituciones-container');
+                if (tablaContainer) {
+                    tablaContainer.innerHTML = `
+                        <div class="flex justify-center items-center py-12">
+                            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-700"></div>
+                        </div>
+                    `;
+                } else {
+                    console.error('No se encontró el contenedor de la tabla');
+                    return;
+                }
                 
                 // Realizar petición AJAX
                 fetch(fetchUrl, {
                     headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
                     }
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error en la respuesta del servidor: ' + response.status);
+                    }
+                    return response.json();
+                })
                 .then(data => {
-                    document.getElementById('tabla-instituciones-container').innerHTML = data.tabla;
+                    if (tablaContainer) {
+                        tablaContainer.innerHTML = data.tabla;
+                    }
                     
                     // Convertir enlaces de paginación a AJAX
                     document.querySelectorAll('.pagination a').forEach(link => {
@@ -499,24 +516,38 @@
                 })
                 .catch(error => {
                     console.error('Error al cargar tabla:', error);
-                    document.getElementById('tabla-instituciones-container').innerHTML = `
-                        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative my-6">
-                            <strong class="font-bold">Error:</strong>
-                            <span class="block sm:inline">Ha ocurrido un error al cargar los datos.</span>
-                        </div>
-                    `;
+                    if (tablaContainer) {
+                        tablaContainer.innerHTML = `
+                            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative my-6">
+                                <strong class="font-bold">Error:</strong>
+                                <span class="block sm:inline">Ha ocurrido un error al cargar los datos: ${error.message}</span>
+                            </div>
+                        `;
+                    }
                 });
             }
             
             // Eventos para los campos de filtro
-            document.getElementById('filtro_nombre').addEventListener('input', debounce(actualizarTabla, 500));
-            document.getElementById('filtro_email').addEventListener('input', debounce(actualizarTabla, 500));
-            document.getElementById('filtro_codigo_centro').addEventListener('input', debounce(actualizarTabla, 500));
-            document.getElementById('filtro_ciudad').addEventListener('change', actualizarTabla);
+            document.getElementById('filtro_nombre').addEventListener('input', debounce(function(event) {
+                actualizarTabla();
+            }, 500));
+            document.getElementById('filtro_email').addEventListener('input', debounce(function(event) {
+                actualizarTabla();
+            }, 500));
+            document.getElementById('filtro_codigo_centro').addEventListener('input', debounce(function(event) {
+                actualizarTabla();
+            }, 500));
+            document.getElementById('filtro_ciudad').addEventListener('change', function() {
+                actualizarTabla();
+            });
             // Temporalmente deshabilitado
             // document.getElementById('filtro_tipo_institucion').addEventListener('change', actualizarTabla);
-            document.getElementById('filtro_estado').addEventListener('change', actualizarTabla);
-            document.getElementById('filtro_verificada').addEventListener('change', actualizarTabla);
+            document.getElementById('filtro_estado').addEventListener('change', function() {
+                actualizarTabla();
+            });
+            document.getElementById('filtro_verificada').addEventListener('change', function() {
+                actualizarTabla();
+            });
             
             // Botón para reiniciar filtros
             document.getElementById('reset-filtros').addEventListener('click', function() {
@@ -574,35 +605,35 @@
                         
                         // Hacer petición para cambiar estado de verificación
                         fetch(`{{ url('admin/instituciones') }}/${id}/verificar`, {
-                            method: 'POST',
-                            headers: {
+                    method: 'POST',
+                    headers: {
                                 'X-CSRF-TOKEN': '{{ csrf_token() }}',
                                 'Content-Type': 'application/json',
                                 'X-Requested-With': 'XMLHttpRequest'
-                            }
-                        })
-                        .then(response => response.json())
-                        .then(data => {
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
                             if(data.success) {
                                 // Mostrar mensaje de éxito
                                 document.getElementById('success-message-text').textContent = data.message;
                                 document.getElementById('success-message').style.display = 'block';
                                 
                                 // Actualizar tabla
-                                actualizarTabla();
+                        actualizarTabla();
                                 
                                 // Ocultar mensaje después de 3 segundos
                                 setTimeout(() => {
                                     document.getElementById('success-message').style.display = 'none';
                                 }, 3000);
-                            }
-                        })
-                        .catch(error => {
+                    }
+                })
+                .catch(error => {
                             console.error('Error al cambiar verificación:', error);
                         });
-                    });
                 });
-                
+            });
+            
                 // Botones de cambiar estado
                 document.querySelectorAll('.btn-cambiar-estado').forEach(btn => {
                     btn.addEventListener('click', function() {
@@ -612,39 +643,39 @@
                         if (confirm(`¿Está seguro que desea ${activo} esta institución?`)) {
                             // Enviar solicitud AJAX para cambiar estado
                             fetch(`{{ url('admin/instituciones') }}/${id}/cambiar-estado`, {
-                                method: 'POST',
-                                headers: {
+                    method: 'POST',
+                    headers: {
                                     'X-CSRF-TOKEN': '{{ csrf_token() }}',
                                     'Content-Type': 'application/json',
                                     'Accept': 'application/json'
                                 }
-                            })
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.success) {
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
                                     // Mostrar mensaje de éxito
                                     document.getElementById('success-message-text').textContent = data.message || `Institución ${activo}da correctamente`;
                                     document.getElementById('success-message').style.display = 'block';
                                     
                                     // Actualizar tabla
-                                    actualizarTabla();
+                        actualizarTabla();
                                     
                                     // Ocultar mensaje después de 3 segundos
                                     setTimeout(() => {
                                         document.getElementById('success-message').style.display = 'none';
                                     }, 3000);
-                                } else {
+                    } else {
                                     alert('Error: ' + data.message);
-                                }
-                            })
-                            .catch(error => {
-                                console.error('Error:', error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
                                 alert('Ocurrió un error al procesar la solicitud');
                             });
                         }
-                    });
                 });
-                
+            });
+            
                 // Botones de categorías
                 document.querySelectorAll('.btn-categorias').forEach(btn => {
                     btn.addEventListener('click', function() {
@@ -685,10 +716,17 @@
             
             // Función global para editar institución (disponible para tabla.blade.php)
             window.editarInstitucion = function(id) {
-                document.getElementById('modal-titulo').textContent = 'Editar Institución';
+                // Actualizar título y mostrar modal
+                const modalTitulo = document.getElementById('modal-titulo');
+                if (modalTitulo) {
+                    modalTitulo.textContent = 'Editar Institución';
+                }
                 
                 // Mostrar modal primero para asegurarnos de que todos los elementos del DOM estén visibles
-                document.getElementById('modal-institucion').classList.remove('hidden');
+                const modal = document.getElementById('modal-institucion');
+                if (modal) {
+                    modal.classList.remove('hidden');
+                }
                 
                 // Establecer método PUT para actualización y guardar ID
                 const formMethodInput = document.getElementById('form_method');
@@ -703,9 +741,12 @@
                 
                 // Actualizar action del formulario
                 const formInstitucion = document.getElementById('form-institucion');
-                if (formInstitucion) {
-                    formInstitucion.action = `{{ url('admin/instituciones') }}/${id}`;
+                if (!formInstitucion) {
+                    console.error('No se encontró el formulario de institución');
+                    return;
                 }
+                
+                formInstitucion.action = `{{ url('admin/instituciones') }}/${id}`;
                 
                 // Mostrar indicador de carga
                 const loadingIndicator = `
@@ -718,7 +759,9 @@
                 // Ocultar contenido del formulario y mostrar indicador de carga
                 const formContent = document.querySelectorAll('#form-institucion .grid');
                 formContent.forEach(element => {
-                    element.style.display = 'none';
+                    if (element) {
+                        element.style.display = 'none';
+                    }
                 });
                 
                 const submitButtons = document.querySelector('#form-institucion .flex.justify-end');
@@ -726,11 +769,27 @@
                     submitButtons.style.display = 'none';
                 }
                 
+                // Eliminar indicador anterior si existe
+                const prevIndicator = document.getElementById('loading-indicator');
+                if (prevIndicator) {
+                    prevIndicator.remove();
+                }
+                
                 // Insertar indicador de carga
                 const loadingDiv = document.createElement('div');
                 loadingDiv.id = 'loading-indicator';
                 loadingDiv.innerHTML = loadingIndicator;
                 formInstitucion.appendChild(loadingDiv);
+                
+                // Función auxiliar para establecer valores en elementos del DOM solo si existen
+                function setValueIfExists(id, value) {
+                    const element = document.getElementById(id);
+                    if (element && value !== undefined && value !== null) {
+                        element.value = value || '';
+                        return true;
+                    }
+                    return false;
+                }
                 
                 // Cargar datos de la institución
                 fetch(`{{ url('admin/instituciones') }}/${id}/edit`, {
@@ -748,7 +807,9 @@
                     
                     // Mostrar contenido del formulario
                     formContent.forEach(element => {
-                        element.style.display = 'grid';
+                        if (element) {
+                            element.style.display = 'grid';
+                        }
                     });
                     
                     if (submitButtons) {
@@ -812,7 +873,9 @@
                         // Marcar niveles educativos seleccionados
                         const nivelesSeleccionados = data.niveles_seleccionados || [];
                         document.querySelectorAll('input[name="niveles_educativos[]"]').forEach(checkbox => {
-                            checkbox.checked = nivelesSeleccionados.includes(parseInt(checkbox.value));
+                            if (checkbox) {
+                                checkbox.checked = nivelesSeleccionados.includes(parseInt(checkbox.value));
+                            }
                         });
                     }
                 })
@@ -827,7 +890,9 @@
                     
                     // Mostrar contenido del formulario
                     formContent.forEach(element => {
-                        element.style.display = 'grid';
+                        if (element) {
+                            element.style.display = 'grid';
+                        }
                     });
                     
                     if (submitButtons) {
@@ -861,11 +926,29 @@
             
             // Función global para abrir modal de categorías (disponible para tabla.blade.php)
             window.abrirModalCategorias = function(id) {
-                // Mostrar modal
-                document.getElementById('modal-categorias').classList.remove('hidden');
-                document.getElementById('contenedor-categorias-institucion').classList.add('hidden');
-                document.getElementById('mensaje-cargando-categorias').classList.remove('hidden');
-                document.getElementById('error-categorias').classList.add('hidden');
+                // Verificar que el ID sea válido
+                if (!id) {
+                    console.error('ID de institución no válido');
+                    return;
+                }
+                
+                // Obtener referencias a elementos DOM
+                const modal = document.getElementById('modal-categorias');
+                const contenedor = document.getElementById('contenedor-categorias-institucion');
+                const mensajeCarga = document.getElementById('mensaje-cargando-categorias');
+                const errorBox = document.getElementById('error-categorias');
+                
+                // Verificar que los elementos existan
+                if (!modal || !contenedor || !mensajeCarga || !errorBox) {
+                    console.error('No se encontraron los elementos necesarios para el modal de categorías');
+                    return;
+                }
+                
+                // Mostrar modal y ocultar contenido
+                modal.classList.remove('hidden');
+                contenedor.classList.add('hidden');
+                mensajeCarga.classList.remove('hidden');
+                errorBox.classList.add('hidden');
                 
                 // Guardar ID de institución en campo oculto
                 const idField = document.getElementById('institucion_id_categorias');
@@ -879,15 +962,18 @@
                         'X-Requested-With': 'XMLHttpRequest'
                     }
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error al obtener las categorías. Código: ' + response.status);
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     if(data.success) {
                         // Actualizar el contenido del modal con las categorías
-                        const contenedor = document.getElementById('contenedor-categorias-institucion');
                         if (contenedor) {
                             contenedor.classList.remove('hidden');
                         }
-                        const mensajeCarga = document.getElementById('mensaje-cargando-categorias');
                         if (mensajeCarga) {
                             mensajeCarga.classList.add('hidden');
                         }
@@ -963,8 +1049,8 @@
                                 
                                 htmlCategorias += `
                                         </div>
-                                    </div>
-                                `;
+                        </div>
+                    `;
                             });
                         }
                         
@@ -1006,9 +1092,9 @@
                                 if (!nivelId) {
                                     selectCategorias.innerHTML = '<option value="">Seleccione primero un nivel</option>';
                                     selectCategorias.disabled = true;
-                                    return;
-                                }
-                                
+                    return;
+                }
+                
                                 // Indicador de carga
                                 selectCategorias.innerHTML = '<option value="">Cargando categorías...</option>';
                                 selectCategorias.disabled = true;
@@ -1031,7 +1117,7 @@
                                             }
                                         });
                                         selectCategorias.disabled = false;
-                                    } else {
+                            } else {
                                         options = '<option value="">No hay categorías disponibles</option>';
                                         selectCategorias.disabled = true;
                                     }
@@ -1042,10 +1128,10 @@
                                     console.error('Error al cargar categorías:', error);
                                     selectCategorias.innerHTML = '<option value="">Error al cargar categorías</option>';
                                     selectCategorias.disabled = true;
-                                });
-                            });
-                        }
-                        
+                });
+            });
+        }
+        
                         // Manejar formulario para agregar nueva categoría
                         const formNuevaCategoria = document.getElementById('form-agregar-categoria');
                         if (formNuevaCategoria) {
@@ -1061,44 +1147,44 @@
                                     return;
                                 }
                                 
-                                // Mostrar indicador de carga
+            // Mostrar indicador de carga
                                 const submitBtn = this.querySelector('button[type="submit"]');
                                 if (submitBtn) {
                                     const originalText = submitBtn.textContent;
                                     submitBtn.innerHTML = `
                                         <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                        </svg>
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
                                         Agregando...
-                                    `;
+            `;
                                     submitBtn.disabled = true;
                                 }
-                                
+            
                                 // Enviar solicitud para agregar categoría
                                 fetch(`{{ url('admin/instituciones') }}/${id}/categorias`, {
-                                    method: 'POST',
-                                    headers: {
+                method: 'POST',
+                headers: {
                                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
-                                        'Content-Type': 'application/json',
+                    'Content-Type': 'application/json',
                                         'Accept': 'application/json'
-                                    },
-                                    body: JSON.stringify({
+                },
+                body: JSON.stringify({
                                         categorias: [{
                                             nivel_id: nivelId,
                                             categoria_id: categoriaId,
                                             activo: activo
                                         }]
-                                    })
-                                })
-                                .then(response => response.json())
-                                .then(data => {
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
                                     if (submitBtn) {
                                         submitBtn.innerHTML = 'Agregar Categoría';
                                         submitBtn.disabled = false;
                                     }
-                                    
-                                    if (data.success) {
+                
+                if (data.success) {
                                         // Recargar modal de categorías
                                         window.abrirModalCategorias(id);
                                         
@@ -1110,12 +1196,12 @@
                                             document.getElementById('nueva-categoria-id').value = '';
                                             document.getElementById('nueva-categoria-id').disabled = true;
                                         }
-                                    } else {
+                } else {
                                         alert(data.message || 'Error al agregar categoría');
-                                    }
-                                })
-                                .catch(error => {
-                                    console.error('Error:', error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
                                     alert('Error al agregar la categoría');
                                     
                                     if (submitBtn) {
@@ -1136,8 +1222,8 @@
                                     
                                     // Enviar solicitud para activar/desactivar
                                     fetch(`{{ url('admin/instituciones') }}/${id}/categorias/${categoriaId}/toggle`, {
-                                        method: 'POST',
-                                        headers: {
+                method: 'POST',
+                headers: {
                                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
                                             'Content-Type': 'application/json',
                                             'Accept': 'application/json'
@@ -1146,17 +1232,17 @@
                                             nivel_id: nivelId,
                                             activo: isActive
                                         })
-                                    })
-                                    .then(response => response.json())
-                                    .then(data => {
+            })
+            .then(response => response.json())
+            .then(data => {
                                         if (!data.success) {
                                             // Revertir cambio si hay error
                                             this.checked = !isActive;
                                             alert(data.message || 'Error al cambiar estado de la categoría');
-                                        }
-                                    })
-                                    .catch(error => {
-                                        console.error('Error:', error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
                                         // Revertir cambio en caso de error
                                         this.checked = !isActive;
                                         alert('Error al actualizar la categoría');
@@ -1168,8 +1254,8 @@
                         throw new Error(data.message || 'Error al cargar categorías');
                     }
                 })
-                .catch(error => {
-                    console.error('Error:', error);
+            .catch(error => {
+                console.error('Error:', error);
                     
                     const mensajeCarga = document.getElementById('mensaje-cargando-categorias');
                     if (mensajeCarga) {
@@ -1216,15 +1302,15 @@
                 const fetchOptions = {
                     method: method === 'PUT' ? 'POST' : method,
                     body: formData,
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
                 };
                 
                 fetch(actionUrl, fetchOptions)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
                             // Mostrar mensaje de éxito
                             document.getElementById('success-message-text').textContent = data.message || 'Institución guardada correctamente';
                             document.getElementById('success-message').style.display = 'block';
@@ -1273,9 +1359,9 @@
                             }
                             
                             this.insertBefore(errorDiv, this.firstChild);
-                        }
-                    })
-                    .catch(error => {
+                }
+            })
+            .catch(error => {
                         console.error('Error al guardar institución:', error);
                         // Mostrar mensaje de error general
                         const errorDiv = document.createElement('div');
