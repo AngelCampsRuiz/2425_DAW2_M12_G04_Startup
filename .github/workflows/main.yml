@@ -28,6 +28,3 @@ jobs:
       - name: Ejecutar migraciones en el servidor
         run: curl -X GET "https://g03.daw2j23.es/run-migrations-safe?key=${{ secrets.DEPLOY_KEY }}"
 
-      - name: Ejecutar composer install en el servidor
-        run: curl "https://g03.daw2j23.es/run-composer?key=${{ secrets.DEPLOY_KEY }}"
-
