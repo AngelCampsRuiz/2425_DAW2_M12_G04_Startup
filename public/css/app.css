@@ -19,22 +19,8 @@
     box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
-.dark #radiusMap,
-.dark #locationMap,
-.dark #viewLocationMap {
-    border-color: #333333;
-}
-
 .leaflet-container {
     border-radius: 0.5rem;
-}
-
-.dark .leaflet-container {
-    background-color: #1a1a1a !important;
-}
-
-.dark .leaflet-tile {
-    filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7) !important;
 }
 
 .leaflet-control-zoom {
@@ -48,26 +34,43 @@
     border: 1px solid #e5e7eb !important;
 }
 
-.dark .leaflet-control-zoom a {
-    background-color: #333333 !important;
-    color: #ffffff !important;
-    border-color: #444444 !important;
-}
-
 .leaflet-control-zoom a:hover {
     background-color: #f3f4f6 !important;
 }
 
-.dark .leaflet-control-zoom a:hover {
-    background-color: #444444 !important;
+#locationMap {
+    height: 400px;
+    width: 100%;
+    max-height: 400px;
+    min-height: 300px;
 }
 
-.dark .leaflet-control-attribution {
-    background-color: rgba(0, 0, 0, 0.8) !important;
-    color: #ffffff !important;
+#viewLocationMap {
+    height: 300px;
+    width: 100%;
+    max-height: 300px;
 }
 
-.dark .leaflet-control-attribution a {
-    color: #ffffff !important;
+.map-container {
+    position: relative;
+}
+
+.save-location-btn {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    padding: 10px 20px;
+    background-color: #7C3AED;
+    color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.save-location-btn:hover {
+    background-color: #6D28D9;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 

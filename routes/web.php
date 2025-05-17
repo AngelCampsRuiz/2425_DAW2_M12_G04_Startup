@@ -192,8 +192,7 @@
                     Route::get('/profile/{id}', [HomeController::class, 'profile'])->name('profile.view');
                     Route::get('/profile/{user}', [ProfileController::class, 'show'])->name('profile.show');
                     Route::put('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
-                    Route::post('/profile/update-location', [ProfileController::class, 'updateLocation'])
-                        ->name('profile.update-location');
+                    Route::post('/profile/update-location', [ProfileController::class, 'updateLocation'])->name('profile.update-location');
 
                 // PUBLICACIONES VISIBLES PARA TODOS LOS USUARIOS
                     Route::get('/publication/{id}', [PublicationController::class, 'show'])->name('publication.show');
@@ -242,6 +241,10 @@
                     Route::get('/empresa/ofertas/crear', [CompanyDashboardController::class, 'createOffer'])->name('empresa.offers.create');
                 // RUTA CREAR OFERTA
                     Route::post('/empresa/ofertas', [CompanyDashboardController::class, 'storeOffer'])->name('empresa.offers.store');
+                // RUTA EDITAR OFERTA
+                    Route::get('/empresa/ofertas/{id}/edit', [CompanyDashboardController::class, 'editOffer'])->name('empresa.offers.edit');
+                // RUTA ACTUALIZAR OFERTA
+                    Route::put('/empresa/ofertas/{id}', [CompanyDashboardController::class, 'updateOffer'])->name('empresa.offers.update');
                 // RUTA VER SOLICITUDES
                     Route::get('/empresa/ofertas/{publication}/solicitudes', [CompanyDashboardController::class, 'viewApplications'])->name('empresa.applications.view');
                 // RUTA CAMBIAR ESTADO DE PUBLICACIÓN
@@ -450,3 +453,10 @@
         Route::get('/create/{receiver_id}', [App\Http\Controllers\ChatController::class, 'create'])->name('create');
         Route::post('/send', [App\Http\Controllers\ChatController::class, 'send'])->name('send');
     });
+
+    // Rutas para puntuaciones del juego 404
+    Route::post('/game-scores', [App\Http\Controllers\GameScoreController::class, 'store']);
+    Route::get('/game-scores/top', [App\Http\Controllers\GameScoreController::class, 'getTopScores']);
+    Route::get('/page-not-found', [App\Http\Controllers\ErrorController::class, 'notFound'])->name('game.error-page');
+    Route::get('/save-score', [App\Http\Controllers\GameScoreController::class, 'saveScore'])->name('game.save-score');
+    Route::get('/ranking', [App\Http\Controllers\GameScoreController::class, 'showRanking'])->name('game.ranking');
