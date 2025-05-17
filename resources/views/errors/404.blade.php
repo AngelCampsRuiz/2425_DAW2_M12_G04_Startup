@@ -24,6 +24,30 @@
                         ¡Comenzar!
                     </button>
                 </div>
+                
+                <!-- Overlay de Game Over con formulario -->
+                <div id="gameOverScreen" class="hidden absolute inset-0 bg-primary/90 text-white flex flex-col items-center justify-center rounded-xl">
+                    <h2 class="text-3xl font-bold mb-2">¡Game Over!</h2>
+                    <p class="text-xl mb-4">Puntuación: <span id="finalScore">0</span></p>
+                    <p class="text-xl mb-6">Obstáculos esquivados: <span id="finalObstacles">0</span></p>
+                    
+                    <!-- Formulario para guardar puntuación -->
+                    <form id="scoreForm" action="{{ url('/save-score') }}" method="GET" class="w-3/4 mb-6">
+                        <input type="hidden" id="scoreInput" name="score" value="0">
+                        <input type="hidden" id="obstaclesInput" name="obstacles_avoided" value="0">
+                        <div class="mb-4">
+                            <input type="text" id="playerName" name="player_name" placeholder="Tu nombre" 
+                                class="w-full px-4 py-2 bg-white text-primary rounded-md focus:outline-none focus:ring-2 focus:ring-secondary">
+                        </div>
+                        <button type="submit" id="saveScoreBtn" class="px-6 py-2 bg-secondary text-white font-bold rounded-full hover:bg-secondary-dark transition-all transform hover:scale-105">
+                            Guardar puntuación
+                        </button>
+                    </form>
+                    
+                    <button id="restartFromOverBtn" class="px-6 py-2 bg-white text-primary font-bold rounded-full hover:bg-primary/10 transition-all transform hover:scale-105">
+                        Jugar de nuevo
+                    </button>
+                </div>
             </div>
             
             <!-- Controles del juego -->
@@ -44,6 +68,39 @@
                     Volver a casa
                 </a>
             </div>
+            
+            <!-- Tabla de clasificación -->
+            <div class="mt-10 py-6 px-8 bg-white/60 rounded-xl shadow-lg">
+                <h2 class="text-2xl font-bold text-primary mb-6">Ranking de Jugadores</h2>
+                <div class="overflow-hidden">
+                    <table id="rankingTable" class="min-w-full bg-white rounded-lg overflow-hidden">
+                        <thead class="bg-primary text-white">
+                            <tr>
+                                <th class="py-3 px-4 text-left font-semibold">#</th>
+                                <th class="py-3 px-4 text-left font-semibold">Jugador</th>
+                                <th class="py-3 px-4 text-right font-semibold">Puntuación</th>
+                                <th class="py-3 px-4 text-right font-semibold">Obstáculos</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rankingBody">
+                            @if(isset($topScores) && count($topScores) > 0)
+                                @foreach($topScores as $index => $score)
+                                    <tr class="{{ $index % 2 == 0 ? 'bg-gray-50' : 'bg-white' }}">
+                                        <td class="py-3 px-4 {{ $index < 3 ? ($index == 0 ? 'font-bold text-yellow-500' : ($index == 1 ? 'font-bold text-gray-500' : 'font-bold text-amber-700')) : '' }}">{{ $index + 1 }}</td>
+                                        <td class="py-3 px-4 {{ $index < 3 ? ($index == 0 ? 'font-bold text-yellow-500' : ($index == 1 ? 'font-bold text-gray-500' : 'font-bold text-amber-700')) : '' }}">{{ $score->player_name }}</td>
+                                        <td class="py-3 px-4 text-right {{ $index < 3 ? ($index == 0 ? 'font-bold text-yellow-500' : ($index == 1 ? 'font-bold text-gray-500' : 'font-bold text-amber-700')) : '' }}">{{ $score->score }}</td>
+                                        <td class="py-3 px-4 text-right {{ $index < 3 ? ($index == 0 ? 'font-bold text-yellow-500' : ($index == 1 ? 'font-bold text-gray-500' : 'font-bold text-amber-700')) : '' }}">{{ $score->obstacles_avoided }}</td>
+                                    </tr>
+                                @endforeach
+                            @else
+                                <tr>
+                                    <td colspan="4" class="py-4 px-4 text-center">Aún no hay puntuaciones. ¡Sé el primero en jugar!</td>
+                                </tr>
+                            @endif
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -58,6 +115,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const restartButton = document.getElementById('restartButton');
     const startButton = document.getElementById('startButton');
     const instructions = document.getElementById('instructions');
+    const gameOverScreen = document.getElementById('gameOverScreen');
+    const finalScore = document.getElementById('finalScore');
+    const finalObstacles = document.getElementById('finalObstacles');
+    const scoreForm = document.getElementById('scoreForm');
+    const playerNameInput = document.getElementById('playerName');
+    const scoreInput = document.getElementById('scoreInput');
+    const obstaclesInput = document.getElementById('obstaclesInput');
+    const restartFromOverBtn = document.getElementById('restartFromOverBtn');
     
     let score = 0;
     let obstaclesAvoided = 0;
@@ -95,6 +160,28 @@ document.addEventListener('DOMContentLoaded', function() {
     
     window.addEventListener('keyup', (e) => {
         keys[e.key] = false;
+    });
+    
+    // Actualizar valores del formulario cuando se muestra la pantalla de Game Over
+    function showGameOver() {
+        finalScore.textContent = score;
+        finalObstacles.textContent = obstaclesAvoided;
+        
+        // Actualizar valores del formulario
+        scoreInput.value = score;
+        obstaclesInput.value = obstaclesAvoided;
+        
+        gameOverScreen.classList.remove('hidden');
+    }
+    
+    // Evento para validar el formulario antes de enviar
+    scoreForm.addEventListener('submit', function(e) {
+        if (!playerNameInput.value.trim()) {
+            e.preventDefault();
+            alert('Por favor, ingresa tu nombre');
+            return false;
+        }
+        return true;
     });
     
     // Función para crear partículas
@@ -229,6 +316,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 rocket.y + rocket.height > obstacle.y) {
                 gameOver = true;
                 createParticles(rocket.x, rocket.y, '#7705B6');
+                showGameOver();
             }
             
             // Contar obstáculos esquivados
@@ -266,19 +354,6 @@ document.addEventListener('DOMContentLoaded', function() {
         drawRocket();
         drawObstacles();
         drawParticles();
-        
-        if (gameOver) {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            ctx.fillStyle = '#FFFFFF';
-            ctx.font = 'bold 48px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText('¡Game Over!', canvas.width/2, canvas.height/2 - 40);
-            ctx.font = '24px Arial';
-            ctx.fillText(`Puntuación: ${score}`, canvas.width/2, canvas.height/2 + 20);
-            ctx.fillText(`Obstáculos esquivados: ${obstaclesAvoided}`, canvas.width/2, canvas.height/2 + 60);
-        }
     }
     
     // Bucle del juego
@@ -301,6 +376,7 @@ document.addEventListener('DOMContentLoaded', function() {
         scoreElement.textContent = '0';
         obstaclesAvoidedElement.textContent = '0';
         instructions.style.display = 'flex';
+        gameOverScreen.classList.add('hidden');
         gameStarted = false;
     }
     
@@ -311,6 +387,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     restartButton.addEventListener('click', restartGame);
+    restartFromOverBtn.addEventListener('click', restartGame);
     
     // Iniciar el juego
     gameLoop();
