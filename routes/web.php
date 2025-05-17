@@ -468,3 +468,16 @@ Route::get('/run-migrations-safe', function () {
     }
 });
 
+    // Rutas de chat
+    Route::middleware(['auth'])->prefix('chat')->name('chat.')->group(function () {
+        Route::get('/', [App\Http\Controllers\ChatController::class, 'index'])->name('index');
+        Route::get('/create/{receiver_id}', [App\Http\Controllers\ChatController::class, 'create'])->name('create');
+        Route::post('/send', [App\Http\Controllers\ChatController::class, 'send'])->name('send');
+    });
+
+    // Rutas para puntuaciones del juego 404
+    Route::post('/game-scores', [App\Http\Controllers\GameScoreController::class, 'store']);
+    Route::get('/game-scores/top', [App\Http\Controllers\GameScoreController::class, 'getTopScores']);
+    Route::get('/page-not-found', [App\Http\Controllers\ErrorController::class, 'notFound'])->name('game.error-page');
+    Route::get('/save-score', [App\Http\Controllers\GameScoreController::class, 'saveScore'])->name('game.save-score');
+    Route::get('/ranking', [App\Http\Controllers\GameScoreController::class, 'showRanking'])->name('game.ranking');
