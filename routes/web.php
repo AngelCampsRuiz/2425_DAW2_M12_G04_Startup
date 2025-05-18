@@ -272,6 +272,15 @@
                 // Ruta para ver perfil de estudiante
                 Route::get('/estudiante/{id}', [App\Http\Controllers\Empresa\EstudianteController::class, 'show'])
                     ->name('estudiante.perfil');
+
+                // Rutas para los convenios
+                Route::get('/empresa/convenios', [App\Http\Controllers\ConvenioController::class, 'index'])->name('empresa.convenios');
+                Route::post('/empresa/convenios/search', [App\Http\Controllers\ConvenioController::class, 'search'])->name('empresa.convenios.search');
+                Route::post('/empresa/convenios', [App\Http\Controllers\ConvenioController::class, 'store'])->name('empresa.convenios.store');
+                Route::get('/empresa/convenios/{id}', [App\Http\Controllers\ConvenioController::class, 'show'])->name('empresa.convenios.show');
+                Route::get('/empresa/convenios/{id}/edit', [App\Http\Controllers\ConvenioController::class, 'edit'])->name('empresa.convenios.edit');
+                Route::put('/empresa/convenios/{id}', [App\Http\Controllers\ConvenioController::class, 'update'])->name('empresa.convenios.update');
+                Route::get('/empresa/convenios/{id}/download', [App\Http\Controllers\ConvenioController::class, 'download'])->name('empresa.convenios.download');
             });
 
             // Ruta para búsqueda de estudiantes (API) - Fuera del grupo para evitar el prefijo 'empresa.'
