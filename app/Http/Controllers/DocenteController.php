@@ -79,6 +79,7 @@ class DocenteController extends Controller
             // Crear el docente
             $docente = new Docente();
             $docente->id = $user->id;
+            $docente->user_id = $user->id;
             $docente->institucion_id = Auth::user()->institucion->id;
             $docente->departamento_id = $request->departamento_id ?: null;
             $docente->departamento = empty($request->departamento_id) ? $request->departamento : null;
@@ -272,11 +273,33 @@ class DocenteController extends Controller
             $query->where('docente_id', $user->id);
         })->where('estado', 'pendiente')->count();
 
+        // Obtener las clases del docente
+        $clasesIds = Clase::where('docente_id', $user->id)->pluck('id');
+        
+        // Obtener los IDs de estudiantes que pertenecen a esas clases
+        $estudiantesIds = Estudiante::whereHas('clases', function($query) use ($clasesIds) {
+            $query->whereIn('clases.id', $clasesIds);
+        })->pluck('id');
+        
+        // Obtener los convenios pendientes relacionados con los estudiantes del docente
+        $conveniosPendientes = \App\Models\Convenio::whereIn('estudiante_id', $estudiantesIds)
+            ->where('estado', 'pendiente')
+            ->with(['estudiante', 'empresa', 'oferta'])
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
+
         $clases = Clase::where('docente_id', $user->id)
             ->withCount('estudiantes')
             ->get();
 
-        return view('docentes.dashboard', compact('totalAlumnos', 'totalClases', 'solicitudesPendientes', 'clases'));
+        return view('docentes.dashboard', compact(
+            'totalAlumnos', 
+            'totalClases', 
+            'solicitudesPendientes', 
+            'clases',
+            'conveniosPendientes'
+        ));
     }
 
     public function alumnos()

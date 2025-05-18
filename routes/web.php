@@ -377,6 +377,9 @@
         Route::put('/perfil', [App\Http\Controllers\InstitucionController::class, 'actualizarPerfil'])->name('perfil.update');
         Route::put('/perfil/password', [App\Http\Controllers\InstitucionController::class, 'cambiarPassword'])->name('perfil.password');
 
+        // Rutas de API para JavaScript
+        Route::get('/api/categorias/{nivel_id}', [App\Http\Controllers\InstitucionController::class, 'getCategoriasPorNivel'])->name('api.categorias');
+        
         // Docentes
         Route::get('/docentes', [App\Http\Controllers\DocenteController::class, 'index'])->name('docentes.index');
         Route::get('/docentes/create', [App\Http\Controllers\DocenteController::class, 'create'])->name('docentes.create');
@@ -457,6 +460,13 @@
         Route::get('/solicitudes/{id}', [App\Http\Controllers\DocenteController::class, 'showSolicitud'])->name('solicitudes.show');
         Route::post('/solicitudes/{id}/aprobar', [App\Http\Controllers\DocenteController::class, 'aprobarSolicitud'])->name('solicitudes.aprobar');
         Route::post('/solicitudes/{id}/rechazar', [App\Http\Controllers\DocenteController::class, 'rechazarSolicitud'])->name('solicitudes.rechazar');
+
+        // Convenios
+        Route::get('/convenios', [App\Http\Controllers\Docente\ConvenioController::class, 'index'])->name('convenios.index');
+        Route::get('/convenios/{convenio}', [App\Http\Controllers\Docente\ConvenioController::class, 'show'])->name('convenios.show');
+        Route::post('/convenios/{convenio}/aprobar', [App\Http\Controllers\Docente\ConvenioController::class, 'aprobar'])->name('convenios.aprobar');
+        Route::post('/convenios/{convenio}/rechazar', [App\Http\Controllers\Docente\ConvenioController::class, 'rechazar'])->name('convenios.rechazar');
+        Route::get('/convenios/{convenio}/download', [App\Http\Controllers\Docente\ConvenioController::class, 'download'])->name('convenios.download');
     });
 
     // Rutas de chat
