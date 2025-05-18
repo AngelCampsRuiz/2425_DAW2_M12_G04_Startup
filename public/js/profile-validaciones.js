@@ -104,6 +104,28 @@ function validarCIF(field) {
     return true;
 }
 
+function validarBanner(field) {
+    if (field.files.length > 0) {
+        const file = field.files[0];
+        const fileType = file.type;
+        const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+
+        if (!validImageTypes.includes(fileType)) {
+            showError(field, "El archivo debe ser una imagen (JPG, PNG, GIF o WEBP)");
+            return false;
+        } else if (file.size > 5 * 1024 * 1024) { // 5MB
+            showError(field, "La imagen no puede exceder los 5MB");
+            return false;
+        } else {
+            hideError(field);
+            return true;
+        }
+    } else {
+        hideError(field);
+        return true;
+    }
+}
+
 // Función para mostrar errores usando el nombre del campo
 function showErrorByName(field, message) {
     if (!field) return;

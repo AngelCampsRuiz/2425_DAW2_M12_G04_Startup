@@ -549,7 +549,7 @@
                 
                 // Manejar la imagen
                 if (profesor.imagen) {
-                    document.getElementById('imagen-preview-img').src = `/public/profile_images/${profesor.imagen}`;
+                    document.getElementById('imagen-preview-img').src = `/profile_images/${profesor.imagen}`;
                     document.getElementById('imagen-preview').classList.remove('hidden');
                 } else {
                     document.getElementById('imagen-preview').classList.add('hidden');

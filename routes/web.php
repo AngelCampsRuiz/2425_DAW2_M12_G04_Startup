@@ -204,6 +204,8 @@
                     Route::get('/chat/{chat}/messages', [ChatController::class, 'getMessages'])->name('chat.messages');
                     Route::post('/chat/create/{solicitud}', [ChatController::class, 'createChat'])->name('chat.create');
                     Route::post('/chat/create-docente', [ChatController::class, 'createDocenteChat'])->name('chat.create.docente');
+                    Route::get('/chat/check-new', [ChatController::class, 'checkNewMessages'])->name('chat.check_new');
+                    Route::get('/chat/refresh', [ChatController::class, 'refreshChats'])->name('chat.refresh');
 
                 // RUTAS PARA VALORACIONES
                     Route::post('/valoraciones', [ValoracionController::class, 'store'])->name('valoraciones.store');
@@ -453,3 +455,10 @@
         Route::get('/create/{receiver_id}', [App\Http\Controllers\ChatController::class, 'create'])->name('create');
         Route::post('/send', [App\Http\Controllers\ChatController::class, 'send'])->name('send');
     });
+
+    // Rutas para puntuaciones del juego 404
+    Route::post('/game-scores', [App\Http\Controllers\GameScoreController::class, 'store']);
+    Route::get('/game-scores/top', [App\Http\Controllers\GameScoreController::class, 'getTopScores']);
+    Route::get('/page-not-found', [App\Http\Controllers\ErrorController::class, 'notFound'])->name('game.error-page');
+    Route::get('/save-score', [App\Http\Controllers\GameScoreController::class, 'saveScore'])->name('game.save-score');
+    Route::get('/ranking', [App\Http\Controllers\GameScoreController::class, 'showRanking'])->name('game.ranking');

@@ -69,7 +69,7 @@
                         <div class="flex items-center space-x-4 mb-6">
                             @if(Auth::user()->imagen)
                                 <div class="relative">
-                                    <img src="{{ asset('public/profile_images/' . Auth::user()->imagen) }}" alt="Logo institución" class="w-16 h-16 rounded-full object-cover border-2 border-purple-200">
+                                    <img src="{{ asset('profile_images/' . Auth::user()->imagen) }}" alt="Logo institución" class="w-16 h-16 rounded-full object-cover border-2 border-purple-200">
                                     <div class="absolute bottom-0 right-0 w-4 h-4 bg-green-400 rounded-full border-2 border-white"></div>
                                 </div>
                             @else

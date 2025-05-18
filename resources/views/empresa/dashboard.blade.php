@@ -29,7 +29,7 @@
                     <div class="flex items-center space-x-4 mb-6">
                         @if(Auth::user()->imagen)
                             <div class="relative flex items-center justify-center w-16 h-16 rounded-full bg-purple-50 border-2 border-purple-200 overflow-hidden">
-                                <img src="{{ asset('public/profile_images/' . Auth::user()->imagen) }}" alt="Logo empresa" class="w-full h-full object-contain">
+                                <img src="{{ asset('profile_images/' . Auth::user()->imagen) }}" alt="Logo empresa" class="w-full h-full object-contain">
                                 <div class="absolute bottom-0 right-0 w-4 h-4 bg-green-400 rounded-full border-2 border-white"></div>
                             </div>
                         @else
@@ -1274,7 +1274,7 @@
                                 <div class="flex items-start">
                                     <div class="flex-shrink-0 mr-4">
                                         ${estudiante.imagen
-                                            ? `<img src="{{ asset('public/profile_images/') }}/${estudiante.imagen}" class="h-12 w-12 rounded-full object-cover border-2 border-purple-100">`
+                                            ? `<img src="{{ asset('profile_images/') }}/${estudiante.imagen}" class="h-12 w-12 rounded-full object-cover border-2 border-purple-100">`
                                             : `<div class="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-700 font-bold text-lg">
                                                 ${estudiante.nombre ? estudiante.nombre.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase() : 'N/A'}
                                               </div>`

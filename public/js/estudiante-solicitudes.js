@@ -121,7 +121,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <div class="flex-shrink-0 h-12 w-12 relative">
                                 <img class="h-12 w-12 rounded-full object-cover border-2 border-white shadow" 
                                     src="${solicitud.publicacion?.empresa?.user?.imagen ? 
-                                        '/public/profile_images/' + solicitud.publicacion.empresa.user.imagen : 
+                                        '/profile_images/' + solicitud.publicacion.empresa.user.imagen : 
                                         '/img/company-default.png'}" 
                                     alt="Logo empresa">
                                 <div class="absolute bottom-0 right-0 rounded-full bg-white p-0.5 shadow">

@@ -67,7 +67,7 @@
                             <div class="flex items-center">
                                 @if($alumno->imagen)
                                     <div class="flex-shrink-0 h-10 w-10">
-                                        <img class="h-10 w-10 rounded-full object-cover" src="{{ asset('public/profile_images/' . $alumno->imagen) }}" alt="">
+                                        <img class="h-10 w-10 rounded-full object-cover" src="{{ asset('profile_images/' . $alumno->imagen) }}" alt="">
                                     </div>
                                 @else
                                     <div class="flex-shrink-0 h-10 w-10 bg-purple-200 rounded-full flex items-center justify-center">

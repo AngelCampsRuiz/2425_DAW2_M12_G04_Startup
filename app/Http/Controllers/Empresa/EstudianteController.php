@@ -196,7 +196,7 @@ class EstudianteController extends Controller
                     $posibleImagen = $nombreNormalizado . '.jpg';
                     
                     // Verificar si existe en el sistema de archivos (solo para depuración)
-                    $rutaImagen = public_path('public/profile_images/' . $posibleImagen);
+                    $rutaImagen = public_path('profile_images/' . $posibleImagen);
                     
                     if (file_exists($rutaImagen)) {
                         $imagen = $posibleImagen;

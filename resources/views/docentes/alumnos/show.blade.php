@@ -21,7 +21,7 @@
             <div class="flex flex-col items-center text-center mb-6">
                 @if($alumno->imagen)
                     <div class="w-24 h-24 mb-3">
-                        <img class="w-24 h-24 rounded-full object-cover" src="{{ asset('public/profile_images/' . $alumno->imagen) }}" alt="{{ $alumno->nombre }}">
+                        <img class="w-24 h-24 rounded-full object-cover" src="{{ asset('profile_images/' . $alumno->imagen) }}" alt="{{ $alumno->nombre }}">
                     </div>
                 @else
                     <div class="w-24 h-24 rounded-full bg-gradient-to-r from-purple-400 to-indigo-500 flex items-center justify-center text-white text-xl font-bold mb-3">
