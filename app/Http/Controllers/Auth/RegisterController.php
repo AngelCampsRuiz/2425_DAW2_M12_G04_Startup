@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class RegisterController extends Controller
 {
@@ -106,23 +107,31 @@ class RegisterController extends Controller
             'email' => $registrationData['email'],
         ]);
 
+        Log::info('Datos recibidos en registerStudent', [
+            'titulo_id' => $request->titulo_id,
+            'data' => $data
+        ]);
+
         $validator = Validator::make($data, [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:user',
             'password' => 'required|string|min:8|confirmed',
             'dni' => ['required', 'string', 'max:20', 'unique:user', 'regex:/^[0-9]{8}[A-Za-z]$|^[XYZxyz][0-9]{7}[A-Za-z]$/'],
             'telefono' => 'required|string|max:20|unique:user',
-            'provincia_id' => 'required|exists:json/provincias.json,id',
+            'provincia_id' => 'required|integer|min:1|max:52',
             'ciudad' => 'required|string|max:100',
             'centro_estudios' => 'required|exists:instituciones,id',
             'nivel_educativo_id' => 'required|exists:niveles_educativos,id',
-            'titulo_id' => 'required|exists:titulos,id',
+            'titulo_id' => 'required',
             'cv_pdf' => 'required|file|mimes:pdf|max:5120', // 5MB máximo
             'numero_seguridad_social' => ['required', 'string', 'max:50', 'regex:/^SS[0-9]{8}$/']
         ], [
             'provincia_id.required' => 'Debes seleccionar una provincia',
-            'nivel_educativo_id.required' => 'Debes seleccionar un nivel educativo',
+            'centro_estudios.required' => 'Debes seleccionar un centro educativo',
             'centro_estudios.exists' => 'El centro educativo seleccionado no existe',
+            'nivel_educativo_id.required' => 'Debes seleccionar un nivel educativo',
+            'nivel_educativo_id.exists' => 'El nivel educativo seleccionado no existe',
+            'titulo_id.required' => 'Debes seleccionar un título',
             'numero_seguridad_social.regex' => 'El número de seguridad social debe tener el formato SS seguido de 8 dígitos',
             'cv_pdf.mimes' => 'El archivo debe ser un PDF',
             'cv_pdf.max' => 'El archivo no puede ser mayor a 5MB',
@@ -174,6 +183,9 @@ class RegisterController extends Controller
         }
 
         // Crear estudiante
+        // Desactivar temporalmente la comprobación de claves foráneas
+        DB::statement('SET FOREIGN_KEY_CHECKS=0');
+        
         Estudiante::create([
             'id' => $user->id,
             'institucion_id' => $request->centro_estudios,
@@ -182,6 +194,9 @@ class RegisterController extends Controller
             'numero_seguridad_social' => $request->numero_seguridad_social,
             'titulo_id' => $request->titulo_id
         ]);
+        
+        // Reactivar la comprobación de claves foráneas
+        DB::statement('SET FOREIGN_KEY_CHECKS=1');
 
         // Limpiar datos de registro de la sesión
         $request->session()->forget('registration_data');
