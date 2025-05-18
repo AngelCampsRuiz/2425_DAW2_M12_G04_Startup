@@ -41,7 +41,7 @@
                     <a href="{{ auth()->user()->role_id == 2 ? route('profile.view', $otherUser->id) : route('profile.view', $otherUser->id) }}" class="relative group">
                         <div class="w-16 h-16 rounded-full bg-gradient-to-br from-purple-200 to-indigo-200 flex items-center justify-center overflow-hidden ring-4 ring-white shadow-xl transform transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3">
                             @if($otherUser->imagen)
-                                <img src="{{ asset('public/profile_images/' . $otherUser->imagen) }}"
+                                <img src="{{ asset('profile_images/' . $otherUser->imagen) }}"
                                     alt="Foto de perfil"
                                     class="w-full h-full object-cover">
                             @else
@@ -155,7 +155,7 @@
             <div class="mr-4 relative">
                 <div class="w-12 h-12 rounded-full bg-gradient-to-br from-purple-200 to-indigo-200 flex items-center justify-center overflow-hidden ring-2 ring-purple-100">
                     @if($otherUser->imagen)
-                        <img src="{{ asset('public/profile_images/' . $otherUser->imagen) }}"
+                        <img src="{{ asset('profile_images/' . $otherUser->imagen) }}"
                             alt="Foto de perfil"
                             class="w-full h-full object-cover">
                     @else

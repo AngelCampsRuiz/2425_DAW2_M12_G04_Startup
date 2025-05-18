@@ -79,7 +79,7 @@
                                 @if($solicitud->publicacion->empresa->user->imagen ?? null)
                                     <div class="h-20 w-20 rounded-xl overflow-hidden shadow-md border-2 border-white relative">
                                         <div class="absolute inset-0 bg-gradient-to-br from-[#5e0490]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10"></div>
-                                        <img class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" src="{{ asset('public/profile_images/' . $solicitud->publicacion->empresa->user->imagen) }}" alt="Logo empresa">
+                                        <img class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" src="{{ asset('profile_images/' . $solicitud->publicacion->empresa->user->imagen) }}" alt="Logo empresa">
                                     </div>
                                 @else
                                     <div class="h-20 w-20 rounded-xl bg-gradient-to-br from-purple-100 to-purple-50 flex items-center justify-center text-[#5e0490] shadow-md border-2 border-white group-hover:from-purple-200 group-hover:to-purple-100 transition-all duration-300">

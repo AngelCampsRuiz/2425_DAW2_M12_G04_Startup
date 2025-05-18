@@ -162,7 +162,7 @@
                                     <div class="w-16 h-16 rounded-full bg-gradient-to-br from-purple-100 to-indigo-100 flex items-center justify-center overflow-hidden ring-4 ring-white shadow-md transition-transform duration-300 hover:scale-105">
                                         @if(auth()->user()->empresa)
                                             @if($chat->solicitud->estudiante->user->imagen)
-                                                <img src="{{ asset('public/profile_images/' . $chat->solicitud->estudiante->user->imagen) }}" 
+                                                <img src="{{ asset('profile_images/' . $chat->solicitud->estudiante->user->imagen) }}" 
                                                      alt="Foto de perfil" 
                                                      class="w-full h-full object-cover">
                                             @else
@@ -172,7 +172,7 @@
                                             @endif
                                         @else
                                             @if($chat->solicitud->publicacion->empresa->user->imagen)
-                                                <img src="{{ asset('public/profile_images/' . $chat->solicitud->publicacion->empresa->user->imagen) }}" 
+                                                <img src="{{ asset('profile_images/' . $chat->solicitud->publicacion->empresa->user->imagen) }}" 
                                                      alt="Foto de perfil" 
                                                      class="w-full h-full object-cover">
                                             @else
