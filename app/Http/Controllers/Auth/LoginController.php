@@ -40,8 +40,7 @@ class LoginController extends Controller
                 case 'Institución':
                     return redirect()->intended(route('institucion.dashboard'));
                 case 'Docente':
-                    // Implementar ruta para docentes cuando sea necesario
-                    return redirect()->intended('/');
+                    return redirect()->intended(route('docente.dashboard'));
                 default:
                     return redirect()->intended('/');
             }
