@@ -162,7 +162,7 @@ class RegisterController extends Controller
             'fecha_nacimiento' => now()->subYears(rand(18, 25)),
             'ciudad' => $nombreCiudad,
             'dni' => $request->dni,
-            'activo' => true,
+            'activo' => false,
             'telefono' => $request->telefono,
             'descripcion' => 'Estudiante',
             'imagen' => null
