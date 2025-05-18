@@ -204,6 +204,8 @@
                     Route::get('/chat/{chat}/messages', [ChatController::class, 'getMessages'])->name('chat.messages');
                     Route::post('/chat/create/{solicitud}', [ChatController::class, 'createChat'])->name('chat.create');
                     Route::post('/chat/create-docente', [ChatController::class, 'createDocenteChat'])->name('chat.create.docente');
+                    Route::get('/chat/check-new', [ChatController::class, 'checkNewMessages'])->name('chat.check_new');
+                    Route::get('/chat/refresh', [ChatController::class, 'refreshChats'])->name('chat.refresh');
 
                 // RUTAS PARA VALORACIONES
                     Route::post('/valoraciones', [ValoracionController::class, 'store'])->name('valoraciones.store');
@@ -270,6 +272,15 @@
                 // Ruta para ver perfil de estudiante
                 Route::get('/estudiante/{id}', [App\Http\Controllers\Empresa\EstudianteController::class, 'show'])
                     ->name('estudiante.perfil');
+
+                // Rutas para los convenios
+                Route::get('/empresa/convenios', [App\Http\Controllers\ConvenioController::class, 'index'])->name('empresa.convenios');
+                Route::post('/empresa/convenios/search', [App\Http\Controllers\ConvenioController::class, 'search'])->name('empresa.convenios.search');
+                Route::post('/empresa/convenios', [App\Http\Controllers\ConvenioController::class, 'store'])->name('empresa.convenios.store');
+                Route::get('/empresa/convenios/{id}', [App\Http\Controllers\ConvenioController::class, 'show'])->name('empresa.convenios.show');
+                Route::get('/empresa/convenios/{id}/edit', [App\Http\Controllers\ConvenioController::class, 'edit'])->name('empresa.convenios.edit');
+                Route::put('/empresa/convenios/{id}', [App\Http\Controllers\ConvenioController::class, 'update'])->name('empresa.convenios.update');
+                Route::get('/empresa/convenios/{id}/download', [App\Http\Controllers\ConvenioController::class, 'download'])->name('empresa.convenios.download');
             });
 
             // Ruta para búsqueda de estudiantes (API) - Fuera del grupo para evitar el prefijo 'empresa.'
@@ -454,3 +465,10 @@
         Route::get('/create/{receiver_id}', [App\Http\Controllers\ChatController::class, 'create'])->name('create');
         Route::post('/send', [App\Http\Controllers\ChatController::class, 'send'])->name('send');
     });
+
+    // Rutas para puntuaciones del juego 404
+    Route::post('/game-scores', [App\Http\Controllers\GameScoreController::class, 'store']);
+    Route::get('/game-scores/top', [App\Http\Controllers\GameScoreController::class, 'getTopScores']);
+    Route::get('/page-not-found', [App\Http\Controllers\ErrorController::class, 'notFound'])->name('game.error-page');
+    Route::get('/save-score', [App\Http\Controllers\GameScoreController::class, 'saveScore'])->name('game.save-score');
+    Route::get('/ranking', [App\Http\Controllers\GameScoreController::class, 'showRanking'])->name('game.ranking');

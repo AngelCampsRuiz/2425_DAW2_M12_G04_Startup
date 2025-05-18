@@ -60,48 +60,58 @@ document.addEventListener('DOMContentLoaded', function() {
     // Funcionalidad para botones de ordenar y filtrar
     const sortButton = document.getElementById('sort-button');
     if (sortButton) {
+        let sortOrder = 'desc'; // Default: más recientes primero
+        
         sortButton.addEventListener('click', function() {
-            // Alternar entre ordenar por más reciente o más antiguo
-            const isDescending = this.querySelector('i').classList.contains('fa-sort-amount-down');
+            const chatList = document.getElementById('chat-list');
+            if (!chatList) return;
             
-            if (isDescending) {
-                // Cambiar a ascendente
-                this.querySelector('i').classList.replace('fa-sort-amount-down', 'fa-sort-amount-up');
-                this.querySelector('span').textContent = 'Antiguos';
-                sortChats(false);
-            } else {
-                // Cambiar a descendente
-                this.querySelector('i').classList.replace('fa-sort-amount-up', 'fa-sort-amount-down');
-                this.querySelector('span').textContent = 'Recientes';
-                sortChats(true);
-            }
+            const chats = Array.from(chatList.querySelectorAll('.chat-item'));
+            
+            // Cambiar el orden
+            sortOrder = sortOrder === 'desc' ? 'asc' : 'desc';
+            
+            // Actualizar el texto del botón
+            const buttonText = sortOrder === 'desc' ? 'Recientes' : 'Antiguos';
+            sortButton.querySelector('span').textContent = buttonText;
+            
+            // Ordenar los elementos
+            chats.sort((a, b) => {
+                const dateA = new Date(a.querySelector('.far.fa-clock').nextSibling.textContent.trim());
+                const dateB = new Date(b.querySelector('.far.fa-clock').nextSibling.textContent.trim());
+                
+                return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
+            });
+            
+            // Reposicionar los elementos
+            chats.forEach(chat => chatList.appendChild(chat));
         });
     }
     
-    function sortChats(descending) {
-        const chatList = document.getElementById('chat-list');
-        if (!chatList) return;
-        
-        const items = Array.from(chatItems);
-        
-        items.sort((a, b) => {
-            const dateA = a.querySelector('.text-gray-500').textContent.trim();
-            const dateB = b.querySelector('.text-gray-500').textContent.trim();
-            
-            // Este es un ordenamiento simple basado en el texto de tiempo relativo
-            // Para un ordenamiento más preciso se necesitaría un valor de fecha
-            if (descending) {
-                return dateA.localeCompare(dateB) * -1;
-            } else {
-                return dateA.localeCompare(dateB);
-            }
-        });
-        
-        // Reordenar los elementos en el DOM
-        items.forEach(item => {
-            chatList.appendChild(item);
-        });
-    }
+    // Comprobar mensajes nuevos cada 30 segundos
+    setInterval(function() {
+        const checkNewMessagesUrl = document.body.getAttribute('data-check-new-url');
+        if (checkNewMessagesUrl) {
+            fetch(checkNewMessagesUrl)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.has_new_chats) {
+                        // Solo mostrar notificación si no estamos ya en la página de chat
+                        if (!window.location.pathname.includes('/chat')) {
+                            showNotification('Tienes nuevos mensajes sin leer.', 'info');
+                        }
+                        
+                        // Actualizar el contador de mensajes en el menú si existe
+                        const notificationBadge = document.querySelector('.notification-badge');
+                        if (notificationBadge) {
+                            notificationBadge.style.display = 'flex';
+                            notificationBadge.classList.add('animate-pulse');
+                        }
+                    }
+                })
+                .catch(error => console.error('Error al verificar mensajes nuevos:', error));
+        }
+    }, 30000);
     
     // Animación de entrada para los elementos de chat
     chatItems.forEach((item, index) => {
@@ -114,4 +124,62 @@ document.addEventListener('DOMContentLoaded', function() {
             item.style.transform = 'translateY(0)';
         }, 100 + index * 50);
     });
-}); 
+});
+
+// Función para mostrar notificaciones
+function showNotification(message, type = 'info') {
+    // Crear el elemento de notificación
+    const notification = document.createElement('div');
+    
+    // Asignar clases según el tipo
+    let bgColor, borderColor, textColor, icon;
+    
+    switch(type) {
+        case 'success':
+            bgColor = 'bg-green-100';
+            borderColor = 'border-green-500';
+            textColor = 'text-green-700';
+            icon = '<svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+            break;
+        case 'error':
+            bgColor = 'bg-red-100';
+            borderColor = 'border-red-500';
+            textColor = 'text-red-700';
+            icon = '<svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+            break;
+        case 'warning':
+            bgColor = 'bg-yellow-100';
+            borderColor = 'border-yellow-500';
+            textColor = 'text-yellow-700';
+            icon = '<svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>';
+            break;
+        default: // info
+            bgColor = 'bg-blue-100';
+            borderColor = 'border-blue-500';
+            textColor = 'text-blue-700';
+            icon = '<svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+    }
+    
+    // Construir la notificación
+    notification.className = `fixed bottom-4 right-4 ${bgColor} ${textColor} px-4 py-3 rounded-lg shadow-lg z-50 border-l-4 ${borderColor} max-w-sm flex items-center animate-fade-in-up`;
+    notification.innerHTML = `
+        ${icon}
+        <div>${message}</div>
+        <button type="button" class="ml-auto" onclick="this.parentElement.remove()">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+    `;
+    
+    // Añadir al body
+    document.body.appendChild(notification);
+    
+    // Auto-eliminar después de 5 segundos
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.classList.add('animate-fade-out');
+            setTimeout(() => notification.remove(), 300);
+        }
+    }, 5000);
+} 

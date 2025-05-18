@@ -223,7 +223,7 @@ class InstitucionController extends Controller
             if ($request->hasFile('imagen')) {
                 // Eliminar imagen anterior si existe
                 if ($user->imagen) {
-                    $imagenPath = public_path('public/profile_images/' . $user->imagen);
+                    $imagenPath = public_path('profile_images/' . $user->imagen);
                     if (file_exists($imagenPath)) {
                         unlink($imagenPath);
                     }
@@ -237,7 +237,7 @@ class InstitucionController extends Controller
                 $userData['imagen'] = $imagenPath;
             } elseif ($request->has('eliminar_imagen_actual') && $user->imagen) {
                 // Si se solicita eliminar la imagen actual
-                $imagenPath = public_path('public/profile_images/' . $user->imagen);
+                $imagenPath = public_path('profile_images/' . $user->imagen);
                 if (file_exists($imagenPath)) {
                     unlink($imagenPath);
                 }

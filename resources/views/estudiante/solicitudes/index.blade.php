@@ -463,7 +463,7 @@ function renderizarFilaSolicitud(solicitud) {
                             <div class="absolute inset-0 bg-gradient-to-br from-[#5e0490]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                             <img class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110" 
                                 src="${solicitud.publicacion?.empresa?.user?.imagen ? 
-                                    '/public/profile_images/' + solicitud.publicacion.empresa.user.imagen : 
+                                    '/profile_images/' + solicitud.publicacion.empresa.user.imagen : 
                                     '/img/company-default.png'}" 
                                 alt="Logo empresa">
                         </div>

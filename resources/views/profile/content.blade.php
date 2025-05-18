@@ -5,7 +5,7 @@
         <div class="absolute -bottom-20 left-8">
             <div class="w-40 h-40 rounded-full bg-white border-4 border-white shadow-xl flex items-center justify-center overflow-hidden transform transition-transform duration-300 hover:scale-105">
                 @if($user->imagen)
-                    <img src="{{ asset('public/profile_images/' . $user->imagen) }}"
+                    <img src="{{ asset('profile_images/' . $user->imagen) }}"
                          alt="Foto de perfil"
                          class="w-full h-full object-cover"
                          loading="lazy">

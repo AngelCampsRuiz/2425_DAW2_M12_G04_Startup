@@ -25,7 +25,7 @@
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center">
                                 @if($profesor->imagen)
-                                    <img class="h-10 w-10 rounded-full object-cover mr-3" src="{{ asset('public/profile_images/' . $profesor->imagen) }}" alt="{{ $profesor->nombre }}">
+                                    <img class="h-10 w-10 rounded-full object-cover mr-3" src="{{ asset('profile_images/' . $profesor->imagen) }}" alt="{{ $profesor->nombre }}">
                                 @else
                                     <div class="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center mr-3">
                                         <span class="text-purple-800 font-medium text-sm">{{ substr($profesor->nombre, 0, 2) }}</span>
@@ -78,7 +78,7 @@
             <div class="flex items-center space-x-4">
                 <div class="flex-shrink-0">
                     @if($profesor->imagen)
-                        <img class="h-12 w-12 rounded-full object-cover" src="{{ asset('public/profile_images/' . $profesor->imagen) }}" alt="{{ $profesor->nombre }}">
+                        <img class="h-12 w-12 rounded-full object-cover" src="{{ asset('profile_images/' . $profesor->imagen) }}" alt="{{ $profesor->nombre }}">
                     @else
                         <div class="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center">
                             <span class="text-purple-800 font-medium text-sm">{{ substr($profesor->nombre, 0, 2) }}</span>

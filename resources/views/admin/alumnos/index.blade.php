@@ -511,7 +511,7 @@
             
             // Cargar y mostrar foto si existe
             if (alumno.imagen) {
-                document.getElementById('imagen-preview-img').src = `/public/profile_images/${alumno.imagen}`;
+                document.getElementById('imagen-preview-img').src = `/profile_images/${alumno.imagen}`;
                 document.getElementById('imagen-preview').classList.remove('hidden');
             } else {
                 document.getElementById('imagen-preview').classList.add('hidden');

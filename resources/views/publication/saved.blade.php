@@ -52,7 +52,7 @@
                     {{-- Imagen de la empresa --}}
                     <div class="flex-shrink-0">
                         @if($publicacion->empresa && $publicacion->empresa->user->imagen)
-                            <img src="{{ asset('public/profile_images/' . $publicacion->empresa->user->imagen) }}" alt="Logo empresa" class="w-14 h-14 rounded-full object-cover border-2 border-purple-200">
+                            <img src="{{ asset('profile_images/' . $publicacion->empresa->user->imagen) }}" alt="Logo empresa" class="w-14 h-14 rounded-full object-cover border-2 border-purple-200">
                         @else
                             {{-- Avatar por defecto --}}
                             <div class="w-14 h-14 rounded-full bg-purple-100 flex items-center justify-center border-2 border-purple-200">
