@@ -1311,6 +1311,10 @@
             function closeEditModal() {
                 document.getElementById('editModal').classList.add('hidden');
                 document.body.style.overflow = 'auto';
+                // Limpiar el mapa cuando se cierra el modal
+                if (typeof cleanupMap === 'function') {
+                    cleanupMap();
+                }
             }
 
             // Cerrar modal al hacer clic fuera
@@ -1765,6 +1769,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     {{-- Cargar los scripts en orden --}}
+    <script src="{{ asset('js/mapa.js') }}?v={{ time() }}"></script>
     <script src="{{ asset('js/profile-validaciones.js') }}?v={{ time() }}"></script>
     <script src="{{ asset('js/profile.js') }}?v={{ time() }}"></script>
 @endpush
