@@ -1,8 +1,10 @@
 /**
  * Validaciones onBlur para el formulario de subcategorías
- * Versión simplificada - Solo validación, sin modificar elementos
+ * Versión mejorada - Con validación específica para añadir
  */
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('Script de validación de subcategorías cargado correctamente');
+    
     // Configuración de validaciones
     const validaciones = {
         'nombre_subcategoria': {
@@ -10,6 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
             mensaje: 'El nombre de la subcategoría es obligatorio y debe tener al menos 3 caracteres.'
         },
         'categoria_id': {
+            // Es importante validar que se seleccione una categoría válida
             validar: (valor) => valor !== '' && valor !== 'Seleccione una categoría',
             mensaje: 'Debes seleccionar una categoría.'
         }
@@ -50,33 +53,59 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Función para inicializar validaciones
-    function inicializarValidaciones() {
-        // Agregar listeners basados en eventos, sin modificar los elementos originales
-        document.body.addEventListener('blur', function(e) {
-            const elemento = e.target;
-            
-            // Solo validar campos del formulario de subcategorías
-            if (elemento.form && elemento.form.id === 'form-subcategoria' && elemento.id && validaciones[elemento.id]) {
-                validarCampo(elemento);
-            }
-        }, true);
+    // Función para agregar eventos específicos a los campos
+    function agregarEventosCampos() {
+        const nombreSubcategoria = document.getElementById('nombre_subcategoria');
+        const categoriaId = document.getElementById('categoria_id');
         
-        document.body.addEventListener('change', function(e) {
-            const elemento = e.target;
+        // Limpiar eventos previos para evitar duplicados
+        if (nombreSubcategoria) {
+            const nuevoNombre = nombreSubcategoria.cloneNode(true);
+            nombreSubcategoria.parentNode.replaceChild(nuevoNombre, nombreSubcategoria);
             
-            // Solo validar selects del formulario de subcategorías
-            if (elemento.tagName === 'SELECT' && elemento.form && 
-                elemento.form.id === 'form-subcategoria' && elemento.id && 
-                validaciones[elemento.id]) {
-                validarCampo(elemento);
-            }
-        }, true);
+            // Añadir nuevo evento
+            nuevoNombre.addEventListener('blur', function() {
+                validarCampo(this);
+            });
+        }
         
-        // Validar al enviar el formulario
+        if (categoriaId) {
+            const nuevoCategoria = categoriaId.cloneNode(true);
+            categoriaId.parentNode.replaceChild(nuevoCategoria, categoriaId);
+            
+            // Añadir nuevo evento
+            nuevoCategoria.addEventListener('change', function() {
+                validarCampo(this);
+            });
+            
+            // Validar inicialmente para mostrar mensaje si está vacío
+            // Esto es especialmente útil para el modo "añadir"
+            if (document.getElementById('modal-titulo') && 
+                document.getElementById('modal-titulo').textContent.includes('Crear')) {
+                setTimeout(() => {
+                    validarCampo(nuevoCategoria);
+                }, 100);
+            }
+        }
+    }
+    
+    // Validar al enviar el formulario
+    function inicializarFormulario() {
         const form = document.getElementById('form-subcategoria');
         if (form) {
-            form.addEventListener('submit', function(e) {
+            // Limpiar eventos previos
+            const nuevoForm = form.cloneNode(true);
+            form.parentNode.replaceChild(nuevoForm, form);
+            
+            // Configurar nuevos campos después de clonar
+            setTimeout(() => {
+                agregarEventosCampos();
+            }, 50);
+            
+            // Añadir evento submit
+            nuevoForm.addEventListener('submit', function(e) {
+                e.preventDefault(); // Siempre prevenir el envío por defecto
+                
                 let formValido = true;
                 
                 // Validar todos los campos configurados
@@ -88,14 +117,63 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 });
                 
-                // Detener envío si hay errores
-                if (!formValido) {
-                    e.preventDefault();
+                // Solo permitir envío si todo es válido
+                if (formValido) {
+                    // Enviar formulario manualmente
+                    console.log('Formulario válido, enviando...');
+                    this.submit();
+                } else {
+                    console.log('Formulario con errores, corregir antes de enviar');
                 }
             });
         }
     }
-
-    // Inicializar validaciones cuando se cargue la página
-    inicializarValidaciones();
+    
+    // Función para manejar la apertura del modal (unificada)
+    function handleModalOpen() {
+        console.log('Modal detectado, configurando validaciones...');
+        setTimeout(() => {
+            inicializarFormulario();
+        }, 100);
+    }
+    
+    // Observar cambios en el DOM para detectar cuando se abre el modal
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.type === 'attributes' && 
+                mutation.attributeName === 'class') {
+                
+                const modal = mutation.target;
+                if (modal.id === 'modal-subcategoria' && !modal.classList.contains('hidden')) {
+                    handleModalOpen();
+                }
+            }
+        });
+    });
+    
+    // Iniciar la observación del modal
+    const modal = document.getElementById('modal-subcategoria');
+    if (modal) {
+        observer.observe(modal, {
+            attributes: true
+        });
+    }
+    
+    // Detectar clicks en los botones que abren el modal
+    document.addEventListener('click', function(e) {
+        // Botón de crear
+        if (e.target.closest('.btn-crear')) {
+            console.log('Botón crear clickeado, preparando validación');
+            handleModalOpen();
+        }
+        
+        // Botón de editar
+        if (e.target.closest('.btn-editar')) {
+            console.log('Botón editar clickeado, preparando validación');
+            handleModalOpen();
+        }
+    });
+    
+    // Inicializar eventos para formularios ya visibles
+    inicializarFormulario();
 }); 
