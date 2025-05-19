@@ -284,7 +284,7 @@
             });
 
             // Ruta para búsqueda de estudiantes (API) - Fuera del grupo para evitar el prefijo 'empresa.'
-            Route::middleware(['auth', \App\Http\Middleware\CheckRole::class.':empresa'])->post('/empresa/api/estudiantes/search', 
+            Route::middleware(['auth', \App\Http\Middleware\CheckRole::class.':empresa'])->post('/empresa/api/estudiantes/search',
                 [App\Http\Controllers\Empresa\EstudianteController::class, 'search'])
                 ->name('api.estudiantes.search');
 
@@ -322,6 +322,9 @@
                 // RUTAS PARA GESTIONAR LAS INSTITUCIONES
                     // RUTA CAMBIAR VERIFICACIÓN
                         Route::post('instituciones/cambiar-verificacion/{id}', [App\Http\Controllers\Admin\InstitucionController::class, 'cambiarVerificacion'])->name('instituciones.cambiar-verificacion');
+                        Route::post('instituciones/{id}/verificar', [App\Http\Controllers\Admin\InstitucionController::class, 'cambiarVerificacion'])->name('instituciones.verificar');
+                    // RUTA CAMBIAR ESTADO
+                        Route::post('instituciones/{id}/cambiar-estado', [App\Http\Controllers\Admin\InstitucionController::class, 'cambiarEstado'])->name('instituciones.cambiar-estado');
                     // RUTA ELIMINAR SQL
                         Route::delete('instituciones/eliminar-sql/{institucion}', [App\Http\Controllers\Admin\InstitucionController::class, 'destroySQL'])->name('instituciones.destroySQL');
                     // RUTA OBTENER CATEGORÍAS
@@ -352,11 +355,13 @@
 
                 // RUTAS PARA GESTIONAR LOS ALUMNOS
                 Route::get('alumnos', [App\Http\Controllers\Admin\AlumnoController::class, 'index'])->name('alumnos.index');
+                Route::get('alumnos/tabla', [App\Http\Controllers\Admin\AlumnoController::class, 'index'])->name('alumnos.tabla');
                 Route::post('alumnos', [App\Http\Controllers\Admin\AlumnoController::class, 'store'])->name('alumnos.store');
                 Route::get('alumnos/{alumno}/edit', [App\Http\Controllers\Admin\AlumnoController::class, 'edit'])->name('alumnos.edit');
                 Route::put('alumnos/{alumno}', [App\Http\Controllers\Admin\AlumnoController::class, 'update'])->name('alumnos.update');
                 Route::delete('alumnos/{alumno}', [App\Http\Controllers\Admin\AlumnoController::class, 'destroy'])->name('alumnos.destroy');
                 Route::delete('alumnos/eliminar-sql/{alumno}', [App\Http\Controllers\Admin\AlumnoController::class, 'destroySQL'])->name('alumnos.destroySQL');
+                Route::put('estudiantes/{estudiante}', [App\Http\Controllers\Admin\AlumnoController::class, 'update'])->name('estudiantes.update');
             });
 
         // Footer resource pages
@@ -371,14 +376,14 @@
 Route::prefix('institucion')->middleware(['auth', \App\Http\Middleware\CheckRole::class.':institucion'])->name('institucion.')->group(function () {
     // Dashboard
     Route::get('/dashboard', [App\Http\Controllers\InstitucionController::class, 'dashboard'])->name('dashboard');
-    
+
     // RUTAS PARA ESTUDIANTES PENDIENTES
     Route::prefix('estudiantes')->name('estudiantes.')->group(function() {
         Route::post('/{id}/activar', [App\Http\Controllers\Institucion\EstudiantePendienteController::class, 'activar'])->name('activar');
         Route::delete('/{id}', [App\Http\Controllers\Institucion\EstudiantePendienteController::class, 'eliminar'])->name('eliminar');
         Route::put('/{id}/actualizar', [App\Http\Controllers\Institucion\EstudiantePendienteController::class, 'actualizar'])->name('actualizar');
     });
-    
+
     // RUTAS PARA SOLICITUDES
     Route::prefix('solicitudes')->name('solicitudes.')->group(function() {
         Route::get('/', [App\Http\Controllers\Institucion\SolicitudEstudianteController::class, 'index'])->name('index');
@@ -396,7 +401,7 @@ Route::prefix('institucion')->middleware(['auth', \App\Http\Middleware\CheckRole
 
         // Rutas de API para JavaScript
         Route::get('/api/categorias/{nivel_id}', [App\Http\Controllers\InstitucionController::class, 'getCategoriasPorNivel'])->name('api.categorias');
-        
+
         // Docentes
         Route::get('/docentes', [App\Http\Controllers\DocenteController::class, 'index'])->name('docentes.index');
         Route::get('/docentes/create', [App\Http\Controllers\DocenteController::class, 'create'])->name('docentes.create');

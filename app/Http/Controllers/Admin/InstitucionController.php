@@ -21,21 +21,85 @@ class InstitucionController extends Controller
     /**
      * Muestra el listado de instituciones
      */
-    public function index()
+    public function index(Request $request)
     {
-        $instituciones = Institucion::with('user', 'nivelesEducativos')
-                ->orderBy('id', 'asc')
-                ->paginate(10);
+        $query = Institucion::with('user', 'nivelesEducativos');
         
+        // Aplicar filtro por nombre
+        if ($request->has('nombre') && !empty($request->nombre)) {
+            $query->whereHas('user', function($q) use ($request) {
+                $q->where('nombre', 'like', '%' . $request->nombre . '%');
+            });
+        }
+        
+        // Aplicar filtro por email
+        if ($request->has('email') && !empty($request->email)) {
+            $query->whereHas('user', function($q) use ($request) {
+                $q->where('email', 'like', '%' . $request->email . '%');
+            });
+        }
+        
+        // Aplicar filtro por código de centro
+        if ($request->has('codigo_centro') && !empty($request->codigo_centro)) {
+            $query->where('codigo_centro', 'like', '%' . $request->codigo_centro . '%');
+        }
+        
+        // Aplicar filtro por tipo de institución - Deshabilitado temporalmente
+        /*if ($request->has('tipo_institucion') && !empty($request->tipo_institucion)) {
+            $query->where('tipo_institucion', $request->tipo_institucion);
+        }*/
+        
+        // Aplicar filtro por ciudad
+        if ($request->has('ciudad') && !empty($request->ciudad)) {
+            $query->whereHas('user', function($q) use ($request) {
+                $q->where('ciudad', $request->ciudad);
+            });
+        }
+        
+        // Aplicar filtro por estado
+        if ($request->has('estado') && $request->estado !== '') {
+            $query->whereHas('user', function($q) use ($request) {
+                $q->where('activo', $request->estado);
+            });
+        }
+        
+        // Aplicar filtro por verificación
+        if ($request->has('verificada') && $request->verificada !== '') {
+            $query->where('verificada', $request->verificada);
+        }
+
+        // Obtener ciudades únicas para el selector de filtros
+        $ciudades = User::whereHas('institucion')
+                       ->whereNotNull('ciudad')
+                       ->where('ciudad', '!=', '')
+                       ->distinct()
+                       ->pluck('ciudad')
+                       ->sort()
+                       ->values();
+        
+        // Obtener tipos de institución para el selector
+        // Comentado temporalmente debido a que la columna no existe
+        $tipos_institucion = []; // Array vacío como fallback
+        /*$tipos_institucion = Institucion::whereNotNull('tipo_institucion')
+                      ->where('tipo_institucion', '!=', '')
+                      ->distinct()
+                      ->pluck('tipo_institucion')
+                      ->sort()
+                      ->values();*/
+                       
         $nivelesEducativos = NivelEducativo::all();
         
-        if (request()->ajax()) {
+        $instituciones = $query->orderBy('id', 'desc')
+                        ->paginate(10);
+        
+        if ($request->ajax()) {
             return response()->json([
-                'tabla' => view('admin.instituciones.tabla', compact('instituciones'))->render()
+                'tabla' => view('admin.instituciones.tabla', compact('instituciones'))->render(),
+                'pagination' => $instituciones->links()->toHtml()
             ]);
         }
         
-        return view('admin.instituciones.index', compact('instituciones', 'nivelesEducativos'));
+        return view('admin.instituciones.index', compact('instituciones', 'nivelesEducativos', 'ciudades', 'tipos_institucion'));
     }
 
     /**
@@ -53,13 +117,25 @@ class InstitucionController extends Controller
             'codigo_centro' => 'required|string|max:20|unique:instituciones,codigo_centro',
             'tipo_institucion' => 'required|string|max:50',
             'direccion' => 'required|string|max:255',
-            'provincia' => 'required|string|max:100',
+            'ciudad' => 'required|string|max:100',
             'codigo_postal' => 'required|string|max:10',
             'representante_legal' => 'required|string|max:255',
             'cargo_representante' => 'required|string|max:255',
             'niveles_educativos' => 'nullable|array',
             'niveles_educativos.*' => 'exists:niveles_educativos,id',
         ]);
+        
+        if ($validator->fails()) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error de validación',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+            
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
 
         // Iniciar transacción
         DB::beginTransaction();
@@ -77,7 +153,7 @@ class InstitucionController extends Controller
             if ($request->hasFile('imagen')) {
                 $imagen = $request->file('imagen');
                 $nombreImagen = time() . '_' . $imagen->getClientOriginalName();
-                $imagen->move(public_path('public/profile_images'), $nombreImagen);
+                $imagen->move(public_path('profile_images'), $nombreImagen);
                 $imagenPath = $nombreImagen;
             }
             
@@ -87,7 +163,7 @@ class InstitucionController extends Controller
                 'email' => $request->input('email'),
                 'password' => Hash::make($request->input('password')),
                 'fecha_nacimiento' => $request->input('fecha_nacimiento') ?? null,
-                'ciudad' => $request->input('provincia') ?? null,
+                'ciudad' => $request->input('ciudad') ?? null,
                 'dni' => $request->input('dni'),
                 'activo' => true,
                 'sitio_web' => $request->input('sitio_web') ?? null,
@@ -103,7 +179,7 @@ class InstitucionController extends Controller
                 'codigo_centro' => $request->input('codigo_centro'),
                 'tipo_institucion' => $request->input('tipo_institucion'),
                 'direccion' => $request->input('direccion'),
-                'provincia' => $request->input('provincia'),
+                'ciudad' => $request->input('ciudad'),
                 'codigo_postal' => $request->input('codigo_postal'),
                 'representante_legal' => $request->input('representante_legal'),
                 'cargo_representante' => $request->input('cargo_representante'),
@@ -124,11 +200,12 @@ class InstitucionController extends Controller
             
             DB::commit();
             
-            if ($request->ajax()) {
+            if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => true,
                     'message' => 'Institución creada correctamente',
-                    'institucion' => $institucion
+                    'institucion' => $institucion,
+                    'redirect' => route('admin.instituciones.index')
                 ]);
             }
             
@@ -139,7 +216,7 @@ class InstitucionController extends Controller
             DB::rollBack();
             Log::error('Error al crear institución: ' . $e->getMessage());
             
-            if ($request->ajax()) {
+            if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Error al crear la institución: ' . $e->getMessage(),
@@ -187,7 +264,7 @@ class InstitucionController extends Controller
             'codigo_centro' => 'required|string|max:20|unique:instituciones,codigo_centro,'.$institucion->id,
             'tipo_institucion' => 'required|string|max:50',
             'direccion' => 'required|string|max:255',
-            'provincia' => 'required|string|max:100',
+            'ciudad' => 'required|string|max:100',
             'codigo_postal' => 'required|string|max:10',
             'representante_legal' => 'required|string|max:255',
             'cargo_representante' => 'required|string|max:255',
@@ -201,6 +278,18 @@ class InstitucionController extends Controller
         }
 
         $validator = Validator::make($request->all(), $rules);
+        
+        if ($validator->fails()) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error de validación',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+            
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
 
         // Iniciar transacción
         DB::beginTransaction();
@@ -211,7 +300,7 @@ class InstitucionController extends Controller
                 'nombre' => $request->input('nombre'),
                 'email' => $request->input('email'),
                 'fecha_nacimiento' => $request->input('fecha_nacimiento') ?? null,
-                'ciudad' => $request->input('provincia') ?? null,
+                'ciudad' => $request->input('ciudad') ?? null,
                 'dni' => $request->input('dni'),
                 'activo' => $request->has('activo') ? true : false,
                 'sitio_web' => $request->input('sitio_web') ?? null,
@@ -232,7 +321,7 @@ class InstitucionController extends Controller
                 // Guardar nueva imagen
                 $imagen = $request->file('imagen');
                 $nombreImagen = time() . '_' . $imagen->getClientOriginalName();
-                $imagen->move(public_path('public/profile_images'), $nombreImagen);
+                $imagen->move(public_path('profile_images'), $nombreImagen);
                 $imagenPath = $nombreImagen;
                 $userData['imagen'] = $imagenPath;
             } elseif ($request->has('eliminar_imagen_actual') && $user->imagen) {
@@ -256,7 +345,7 @@ class InstitucionController extends Controller
                 'codigo_centro' => $request->input('codigo_centro'),
                 'tipo_institucion' => $request->input('tipo_institucion'),
                 'direccion' => $request->input('direccion'),
-                'provincia' => $request->input('provincia'),
+                'ciudad' => $request->input('ciudad'),
                 'codigo_postal' => $request->input('codigo_postal'),
                 'representante_legal' => $request->input('representante_legal'),
                 'cargo_representante' => $request->input('cargo_representante'),
@@ -284,10 +373,11 @@ class InstitucionController extends Controller
             
             DB::commit();
             
-            if ($request->ajax()) {
+            if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'Institución actualizada correctamente'
+                    'message' => 'Institución actualizada correctamente',
+                    'redirect' => route('admin.instituciones.index')
                 ]);
             }
             
@@ -298,7 +388,7 @@ class InstitucionController extends Controller
             DB::rollBack();
             Log::error('Error al actualizar institución: ' . $e->getMessage());
             
-            if ($request->ajax()) {
+            if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Error al actualizar la institución: ' . $e->getMessage(),
@@ -337,7 +427,7 @@ class InstitucionController extends Controller
             
             DB::commit();
             
-            if (request()->ajax()) {
+            if (request()->ajax() || request()->wantsJson()) {
                 return response()->json([
                     'success' => true,
                     'message' => 'Institución eliminada correctamente'
@@ -351,7 +441,7 @@ class InstitucionController extends Controller
             DB::rollBack();
             Log::error('Error al eliminar institución: ' . $e->getMessage());
             
-            if (request()->ajax()) {
+            if (request()->ajax() || request()->wantsJson()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Error al eliminar la institución: ' . $e->getMessage()
@@ -413,20 +503,32 @@ class InstitucionController extends Controller
      */
     public function cambiarVerificacion($id)
     {
-        $institucion = Institucion::findOrFail($id);
-        $institucion->verificada = !$institucion->verificada;
-        $institucion->save();
-        
-        if (request()->ajax()) {
-            return response()->json([
-                'success' => true,
-                'verificada' => $institucion->verificada,
-                'message' => 'Estado de verificación actualizado correctamente'
-            ]);
+        try {
+            $institucion = Institucion::findOrFail($id);
+            $institucion->verificada = !$institucion->verificada;
+            $institucion->save();
+            
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'verificada' => $institucion->verificada,
+                    'message' => 'Estado de verificación actualizado correctamente'
+                ]);
+            }
+            
+            return redirect()->route('admin.instituciones.index')
+                ->with('success', 'Estado de verificación actualizado correctamente');
+        } catch (\Exception $e) {
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error al actualizar estado de verificación: ' . $e->getMessage()
+                ], 500);
+            }
+            
+            return redirect()->route('admin.instituciones.index')
+                ->with('error', 'Error al actualizar estado de verificación: ' . $e->getMessage());
         }
-        
-        return redirect()->route('admin.instituciones.index')
-            ->with('success', 'Estado de verificación actualizado correctamente');
     }
 
     /**
@@ -629,6 +731,50 @@ class InstitucionController extends Controller
                 'success' => false,
                 'message' => 'Error al cambiar estado de la categoría: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    /**
+     * Cambiar estado de activo de una institución
+     */
+    public function cambiarEstado($id)
+    {
+        try {
+            DB::beginTransaction();
+            
+            $institucion = Institucion::findOrFail($id);
+            $user = $institucion->user;
+            
+            // Cambiar estado del usuario asociado
+            $user->activo = !$user->activo;
+            $user->save();
+            
+            DB::commit();
+            
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Estado de la institución actualizado correctamente',
+                    'estado' => $user->activo
+                ]);
+            }
+            
+            return redirect()->route('admin.instituciones.index')
+                ->with('success', 'Estado de la institución actualizado correctamente');
+                
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Error al cambiar estado de la institución: ' . $e->getMessage());
+            
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error al cambiar estado de la institución: ' . $e->getMessage()
+                ], 500);
+            }
+            
+            return redirect()->route('admin.instituciones.index')
+                ->with('error', 'Error al cambiar estado de la institución: ' . $e->getMessage());
         }
     }
 } 
