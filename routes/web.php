@@ -284,7 +284,7 @@
             });
 
             // Ruta para búsqueda de estudiantes (API) - Fuera del grupo para evitar el prefijo 'empresa.'
-            Route::middleware(['auth', \App\Http\Middleware\CheckRole::class.':empresa'])->post('/empresa/api/estudiantes/search', 
+            Route::middleware(['auth', \App\Http\Middleware\CheckRole::class.':empresa'])->post('/empresa/api/estudiantes/search',
                 [App\Http\Controllers\Empresa\EstudianteController::class, 'search'])
                 ->name('api.estudiantes.search');
 
@@ -376,14 +376,14 @@
 Route::prefix('institucion')->middleware(['auth', \App\Http\Middleware\CheckRole::class.':institucion'])->name('institucion.')->group(function () {
     // Dashboard
     Route::get('/dashboard', [App\Http\Controllers\InstitucionController::class, 'dashboard'])->name('dashboard');
-    
+
     // RUTAS PARA ESTUDIANTES PENDIENTES
     Route::prefix('estudiantes')->name('estudiantes.')->group(function() {
         Route::post('/{id}/activar', [App\Http\Controllers\Institucion\EstudiantePendienteController::class, 'activar'])->name('activar');
         Route::delete('/{id}', [App\Http\Controllers\Institucion\EstudiantePendienteController::class, 'eliminar'])->name('eliminar');
         Route::put('/{id}/actualizar', [App\Http\Controllers\Institucion\EstudiantePendienteController::class, 'actualizar'])->name('actualizar');
     });
-    
+
     // RUTAS PARA SOLICITUDES
     Route::prefix('solicitudes')->name('solicitudes.')->group(function() {
         Route::get('/', [App\Http\Controllers\Institucion\SolicitudEstudianteController::class, 'index'])->name('index');
@@ -401,7 +401,7 @@ Route::prefix('institucion')->middleware(['auth', \App\Http\Middleware\CheckRole
 
         // Rutas de API para JavaScript
         Route::get('/api/categorias/{nivel_id}', [App\Http\Controllers\InstitucionController::class, 'getCategoriasPorNivel'])->name('api.categorias');
-        
+
         // Docentes
         Route::get('/docentes', [App\Http\Controllers\DocenteController::class, 'index'])->name('docentes.index');
         Route::get('/docentes/create', [App\Http\Controllers\DocenteController::class, 'create'])->name('docentes.create');
