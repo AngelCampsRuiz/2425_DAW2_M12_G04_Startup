@@ -1260,8 +1260,21 @@
                                     </div>
 
                                     {{-- Contenedor del mapa --}}
-                                    <div class="w-full rounded-xl overflow-hidden shadow-md mb-4" style="height: 400px;">
-                                        <div id="locationMap" class="w-full h-full"></div>
+                                    <div class="w-full rounded-xl overflow-hidden shadow-md mb-4">
+                                        {{-- Buscador de ubicaciones --}}
+                                        <div class="relative mb-4">
+                                            <input type="text" 
+                                                   id="searchLocation" 
+                                                   class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 pl-10"
+                                                   placeholder="Buscar dirección...">
+                                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                                </svg>
+                                            </div>
+                                            <div id="searchResults" class="absolute z-10 w-full mt-1 bg-white rounded-xl shadow-lg hidden"></div>
+                                        </div>
+                                        <div id="locationMap" class="w-full h-[400px]"></div>
                                     </div>
 
                                     {{-- Campos de ubicación --}}
