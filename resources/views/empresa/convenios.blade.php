@@ -66,64 +66,64 @@ function crearConvenio(ofertaId, estudianteId) {
                     tareas: document.querySelector('.swal2-container #tareas').value,
                     objetivos: document.querySelector('.swal2-container #objetivos').value
                 };
-                
+
                 console.log('Direct form values:', formData);
-                
+
                 // Validate the data
                 let isValid = true;
                 let errorMessages = [];
-                
+
                 // Check required fields
                 if (!formData.fecha_inicio) {
                     isValid = false;
                     document.querySelector('.swal2-container #fecha_inicio').classList.add('border-red-500');
                     errorMessages.push('Fecha de inicio es obligatorio');
                 }
-                
+
                 if (!formData.fecha_fin) {
                     isValid = false;
                     document.querySelector('.swal2-container #fecha_fin').classList.add('border-red-500');
                     errorMessages.push('Fecha de fin es obligatorio');
                 }
-                
+
                 if (!formData.horario_practica) {
                     isValid = false;
                     document.querySelector('.swal2-container #horario_practica').classList.add('border-red-500');
                     errorMessages.push('Horario es obligatorio');
                 }
-                
+
                 if (!formData.tutor_empresa) {
                     isValid = false;
                     document.querySelector('.swal2-container #tutor_empresa').classList.add('border-red-500');
                     errorMessages.push('Tutor de empresa es obligatorio');
                 }
-                
+
                 if (!formData.tareas) {
                     isValid = false;
                     document.querySelector('.swal2-container #tareas').classList.add('border-red-500');
                     errorMessages.push('Tareas a realizar es obligatorio');
                 }
-                
+
                 if (!formData.objetivos) {
                     isValid = false;
                     document.querySelector('.swal2-container #objetivos').classList.add('border-red-500');
                     errorMessages.push('Objetivos formativos es obligatorio');
                 }
-                
+
                 // Date validation
                 if (formData.fecha_inicio && formData.fecha_fin) {
                     const inicio = new Date(formData.fecha_inicio);
                     const fin = new Date(formData.fecha_fin);
                     const today = new Date();
                     today.setHours(0, 0, 0, 0);
-                    
+
                     // Check if fecha_fin is after fecha_inicio
                     if (inicio >= fin) {
                         isValid = false;
                         document.querySelector('.swal2-container #fecha_fin').classList.add('border-red-500');
                         errorMessages.push('La fecha de finalización debe ser posterior a la fecha de inicio');
                     }
-                    
+
                     // Check if fecha_inicio is not in the past
                     if (inicio < today) {
                         isValid = false;
@@ -131,9 +131,9 @@ function crearConvenio(ofertaId, estudianteId) {
                         errorMessages.push('La fecha de inicio no puede ser en el pasado');
                     }
                 }
-                
+
                 console.log('Form validation result:', isValid ? 'Valid' : 'Invalid', formData);
-                
+
                 if (!isValid) {
                     let validationMessage = 'Por favor, corrige los siguientes errores:';
                     if (errorMessages.length > 0) {
@@ -146,7 +146,7 @@ function crearConvenio(ofertaId, estudianteId) {
                     Swal.showValidationMessage(validationMessage);
                     return false;
                 }
-                
+
                 return formData;
             }
         }).then((result) => {
@@ -160,10 +160,10 @@ function crearConvenio(ofertaId, estudianteId) {
                         Swal.showLoading();
                     }
                 });
-                
+
                                     // Format dates in YYYY-MM-DD format for Laravel validation                    const formattedFechaInicio = result.value.fecha_inicio;                    const formattedFechaFin = result.value.fecha_fin;                                        // Debug data being sent                    const formData = {                        oferta_id: result.value.oferta_id,                        estudiante_id: result.value.estudiante_id,                        fecha_inicio: formattedFechaInicio,                        fecha_fin: formattedFechaFin,                        horario_practica: result.value.horario_practica,                        tutor_empresa: result.value.tutor_empresa,                        tareas: result.value.tareas,                        objetivos: result.value.objetivos,                        _token: $('meta[name="csrf-token"]').attr('content')                    };
                 console.log('Sending data to server:', formData);
-                
+
                 // Send data to server using jQuery for better compatibility
                 $.ajax({
                     url: '/empresa/convenios',
@@ -183,7 +183,7 @@ function crearConvenio(ofertaId, estudianteId) {
                                 // Reload page
                                 window.location.reload();
                             });
-                            
+
                             // Automatic PDF download
                             if (data.pdf_url) {
                                 // Create a hidden iframe to trigger the download
@@ -191,7 +191,7 @@ function crearConvenio(ofertaId, estudianteId) {
                                 iframe.style.display = 'none';
                                 iframe.src = data.pdf_url;
                                 document.body.appendChild(iframe);
-                                
+
                                 // Also open a new window for viewing
                                 setTimeout(() => {
                                     // Remove iframe after a delay
@@ -204,7 +204,7 @@ function crearConvenio(ofertaId, estudianteId) {
                     },
                     error: function(xhr, status, error) {
                         let errorMessage = 'Ha ocurrido un error al crear el convenio';
-                        
+
                         // Check if we have validation errors
                         if (xhr.responseJSON && xhr.responseJSON.errors) {
                             errorMessage = '<ul class="text-left">';
@@ -215,20 +215,20 @@ function crearConvenio(ofertaId, estudianteId) {
                         } else if (xhr.responseJSON && xhr.responseJSON.message) {
                             errorMessage = xhr.responseJSON.message;
                         }
-                        
+
                         Swal.fire({
                             icon: 'error',
                             title: 'Error de validación',
                             html: errorMessage,
                             confirmButtonColor: '#6366f1'
                         });
-                        
+
                         console.log('Error response:', xhr.responseJSON);
                     }
                 });
             }
         });
-        
+
         // Set min date for fecha_inicio to today
         setTimeout(() => {
             const today = new Date().toISOString().split('T')[0];
@@ -258,30 +258,30 @@ $(document).ready(function() {
     } else {
         console.warn('Tippy.js not loaded - tooltips will not work');
     }
-    
+
     // Check for CSRF token
     if (!$('meta[name="csrf-token"]').length) {
         console.error('CSRF token meta tag not found! Adding it manually...');
         $('head').append('<meta name="csrf-token" content="{{ csrf_token() }}">');
     }
-    
+
     // Handle debounce for search
     let searchTimeout = null;
-    
+
     function performSearch() {
         // Show loading state
         $('#searchLoader').removeClass('hidden');
         $('#searchResults').addClass('opacity-50');
-        
+
         // Get search values
         const query = $('#filterConvenios').val().trim();
         const estado = $('#filterEstado').val();
-        
+
         console.log('Searching with:', {query, estado});
-        
+
         // Clear previous timeout
         clearTimeout(searchTimeout);
-        
+
         // Set debounce timeout
         searchTimeout = setTimeout(function() {
             // Send AJAX request
@@ -299,21 +299,21 @@ $(document).ready(function() {
                 },
                 success: function(data) {
                     console.log('Search success:', data);
-                    
+
                     // Hide loader
                     $('#searchLoader').addClass('hidden');
                     $('#searchResults').removeClass('opacity-50');
-                    
+
                     // Update results
                     updateResults(data);
                 },
                 error: function(xhr, status, error) {
                     console.error('Search error:', xhr.responseText, status, error);
-                    
+
                     // Hide loader
                     $('#searchLoader').addClass('hidden');
                     $('#searchResults').removeClass('opacity-50');
-                    
+
                     // Show error message
                     Swal.fire({
                         title: 'Error',
@@ -325,7 +325,7 @@ $(document).ready(function() {
             });
         }, 500);
     }
-    
+
     // Update results function
     function updateResults(data) {
         // If no results found
@@ -334,11 +334,11 @@ $(document).ready(function() {
             $('#searchResults').addClass('hidden');
             return;
         }
-        
+
         // If we have results
         $('#noResultsMessage').addClass('hidden');
         $('#searchResults').removeClass('hidden');
-        
+
         // Update ofertas section
         if ($('#ofertasConCandidatos').length) {
             if (data.ofertas.length > 0) {
@@ -352,13 +352,13 @@ $(document).ready(function() {
                   '</div>');
             }
         }
-        
+
         // Update convenios table
         if ($('#conveniosTable').length) {
             const $tbody = $('#conveniosTable tbody');
             if (data.convenios.length > 0) {
                 $tbody.html(renderConveniosHTML(data.convenios));
-                
+
                 // Update pagination if exists
                 if (data.pagination) {
                     renderPagination(data.pagination);
@@ -370,30 +370,30 @@ $(document).ready(function() {
                 $('#conveniosPagination').html('');
             }
         }
-        
+
         // Update counters
         $('#ofertasCount').text(data.ofertas.length);
         $('#conveniosCount').text(data.pagination ? data.pagination.total : data.convenios.length);
-        
+
         let totalCandidatos = 0;
         data.ofertas.forEach(function(oferta) {
             totalCandidatos += oferta.candidatos_aceptados ? oferta.candidatos_aceptados.length : 0;
         });
         $('#candidatosCount').text(totalCandidatos);
-        
+
         // Re-initialize tooltips
         if (typeof tippy === 'function') {
             tippy('[data-tippy-content]');
         }
     }
-    
+
     // Render pagination controls
     function renderPagination(pagination) {
         if (!pagination || pagination.last_page <= 1) {
             $('#conveniosPagination').html('');
             return;
         }
-        
+
         let paginationHTML = '<div class="px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 bg-gradient-to-r from-gray-50 to-indigo-50 rounded-lg shadow-sm mt-4">' +
             '<div class="flex-1 flex justify-between sm:hidden">' +
                 '<button ' + (pagination.current_page <= 1 ? 'disabled' : '') + ' data-page="' + (pagination.current_page - 1) + '" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 ' + (pagination.current_page <= 1 ? 'opacity-50 cursor-not-allowed' : '') + '">' +
@@ -423,7 +423,7 @@ $(document).ready(function() {
                         '<option value="100" ' + (pagination.per_page == 100 ? 'selected' : '') + '>100 por página</option>' +
                     '</select>' +
                     '<nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">';
-        
+
         // Previous button
         paginationHTML += '<button ' + (pagination.current_page <= 1 ? 'disabled' : '') + ' data-page="' + (pagination.current_page - 1) + '" class="relative inline-flex items-center px-3 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium ' + (pagination.current_page <= 1 ? 'text-gray-400 opacity-50 cursor-not-allowed' : 'text-indigo-600 hover:bg-indigo-50 transition-colors duration-150') + '">' +
             '<svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">' +
@@ -431,23 +431,23 @@ $(document).ready(function() {
             '</svg>' +
             '<span class="ml-1">Anterior</span>' +
         '</button>';
-        
+
         // Page numbers
         const startPage = Math.max(1, pagination.current_page - 1);
         const endPage = Math.min(pagination.last_page, pagination.current_page + 1);
-        
+
         if (startPage > 1) {
             paginationHTML += '<button data-page="1" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors duration-150">' +
                 '1' +
             '</button>';
-            
+
             if (startPage > 2) {
                 paginationHTML += '<span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">' +
                     '...' +
                 '</span>';
             }
         }
-        
+
         for (let page = startPage; page <= endPage; page++) {
             paginationHTML += (page === pagination.current_page) ?
                 '<span class="relative inline-flex items-center px-4 py-2 border border-indigo-500 bg-indigo-50 text-sm font-bold text-indigo-600">' +
@@ -457,19 +457,19 @@ $(document).ready(function() {
                     page +
                 '</button>';
         }
-        
+
         if (endPage < pagination.last_page) {
             if (endPage < pagination.last_page - 1) {
                 paginationHTML += '<span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">' +
                     '...' +
                 '</span>';
             }
-            
+
             paginationHTML += '<button data-page="' + pagination.last_page + '" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors duration-150">' +
                 pagination.last_page +
             '</button>';
         }
-        
+
         // Next button
         paginationHTML += '<button ' + (pagination.current_page >= pagination.last_page ? 'disabled' : '') + ' data-page="' + (pagination.current_page + 1) + '" class="relative inline-flex items-center px-3 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium ' + (pagination.current_page >= pagination.last_page ? 'text-gray-400 opacity-50 cursor-not-allowed' : 'text-indigo-600 hover:bg-indigo-50 transition-colors duration-150') + '">' +
             '<span class="mr-1">Siguiente</span>' +
@@ -477,39 +477,39 @@ $(document).ready(function() {
                 '<path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />' +
             '</svg>' +
         '</button>';
-        
+
         paginationHTML += '</nav></div></div></div>';
-        
+
         $('#conveniosPagination').html(paginationHTML);
-        
+
         // Add event listeners to pagination buttons
         $('#conveniosPagination button[data-page]').on('click', function() {
             if ($(this).attr('disabled')) return;
-            
+
             const page = $(this).data('page');
             loadPage(page);
         });
-        
+
         // Add event listener for per page selector
         $('#ajaxPerPageSelector').on('change', function() {
             const perPage = $(this).val();
             loadPage(1, perPage);
         });
     }
-    
+
     // Update loadPage function to include perPage parameter
     function loadPage(page, perPage) {
         // Show loading state
         $('#searchLoader').removeClass('hidden');
         $('#searchResults').addClass('opacity-50');
-        
+
         // Get search values
         const query = $('#filterConvenios').val().trim();
         const estado = $('#filterEstado').val();
         perPage = perPage || $('#ajaxPerPageSelector').val() || 10;
-        
+
         console.log('Loading page', page, 'with filters:', {query, estado, perPage});
-        
+
         // Send AJAX request
         $.ajax({
             url: '/empresa/convenios/search',
@@ -526,14 +526,14 @@ $(document).ready(function() {
             },
             success: function(data) {
                 console.log('Page load success:', data);
-                
+
                 // Hide loader
                 $('#searchLoader').addClass('hidden');
                 $('#searchResults').removeClass('opacity-50');
-                
+
                 // Update results
                 updateResults(data);
-                
+
                 // Scroll to table top
                 $('html, body').animate({
                     scrollTop: $("#conveniosTable").offset().top - 100
@@ -541,11 +541,11 @@ $(document).ready(function() {
             },
             error: function(xhr, status, error) {
                 console.error('Page load error:', xhr.responseText, status, error);
-                
+
                 // Hide loader
                 $('#searchLoader').addClass('hidden');
                 $('#searchResults').removeClass('opacity-50');
-                
+
                 // Show error message
                 Swal.fire({
                     title: 'Error',
@@ -556,18 +556,18 @@ $(document).ready(function() {
             }
         });
     }
-    
+
     // Add event listener for per page selector on initial page load
     $(document).ready(function() {
         // Initial event listeners we set up earlier...
-        
+
         // Add event listener for per page selector
         $('#perPageSelector').on('change', function() {
             const perPage = $(this).val();
             window.location.href = updateQueryStringParameter(window.location.href, 'per_page', perPage);
         });
     });
-    
+
     // Helper function to update query string parameters
     function updateQueryStringParameter(uri, key, value) {
         var re = new RegExp("([?&])" + key + "=.*?(&|$)", "i");
@@ -579,19 +579,19 @@ $(document).ready(function() {
             return uri + separator + key + "=" + value;
         }
     }
-    
+
     // Render functions for ofertas
     function renderOfertasHTML(ofertas) {
         return ofertas.map(function(oferta) {
             let candidatosHTML = '';
-            
+
             if (oferta.candidatos_aceptados && oferta.candidatos_aceptados.length > 0) {
                 candidatosHTML = oferta.candidatos_aceptados.map(function(candidato) {
                     // Display profile image if available, otherwise show initials
                     const imgHTML = candidato.imagen
-                        ? `<img src="{{ asset('profile_images/') }}/${candidato.imagen}" alt="${candidato.nombre}" class="h-10 w-10 rounded-full object-cover border border-gray-200 shadow-sm" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' viewBox=\\'0 0 100 100\\' width=\\'40\\' height=\\'40\\'><rect width=\\'100\\' height=\\'100\\' fill=\'%236366F1\\'/><text x=\\'50\\' y=\\'50\\' font-size=\\'35\\' fill=\\'white\\' text-anchor=\\'middle\\' dominant-baseline=\\'middle\\'>${candidato.nombre.substring(0, 1).toUpperCase()}${candidato.nombre.split(' ')[1] ? candidato.nombre.split(' ')[1].substring(0, 1).toUpperCase() : ''}</text></svg>';">`
+                        ? `<img src="{{ asset('profile_images/') }}/${candidato.imagen}" alt="${candidato.nombre}" class="h-10 w-10 rounded-full object-cover border border-gray-200 shadow-sm" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' viewBox=\\'0 0 100 100\\' width=\\'40\\' height=\\'40\\'><rect width=\\'100\\' height=\\'100\\' fill=\\'%236366F1\\'/><text x=\\'50\\' y=\\'50\\' font-size=\\'35\\' fill=\\'white\\' text-anchor=\\'middle\\' dominant-baseline=\\'middle\\'>${candidato.nombre.substring(0, 1).toUpperCase()}${candidato.nombre.split(' ')[1] ? candidato.nombre.split(' ')[1].substring(0, 1).toUpperCase() : ''}</text></svg>';">`
                         : `<div class="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-lg shadow-sm">${candidato.nombre.substring(0, 1).toUpperCase()}${candidato.nombre.split(' ')[1] ? candidato.nombre.split(' ')[1].substring(0, 1).toUpperCase() : ''}</div>`;
-                    
+
                     const convenioBtn = candidato.convenio
                         ? `<span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium ${candidato.convenio.estado === 'activo' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}">
                             Convenio ${candidato.convenio.estado.charAt(0).toUpperCase() + candidato.convenio.estado.slice(1)}
@@ -609,7 +609,7 @@ $(document).ready(function() {
                             </svg>
                             Crear Convenio
                            </button>`;
-                    
+
                     return `<div class="py-3 flex justify-between items-center">
                         <div class="flex items-center space-x-3">
                             ${imgHTML}
@@ -628,14 +628,14 @@ $(document).ready(function() {
                     No hay candidatos aceptados para esta oferta.
                 </div>`;
             }
-            
-            return `<div class="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 p-6 mb-6 animate-fadeIn">
-                <div class="flex justify-between items-start">
+
+            return `<div class="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 p-3 sm:p-6">
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
                     <div>
-                        <h3 class="text-lg font-medium text-gray-900">${oferta.titulo}</h3>
-                        <p class="text-sm text-gray-500 mb-2">Publicada el ${new Date(oferta.created_at).toLocaleDateString('es-ES')}</p>
-                        
-                        <div class="flex flex-wrap gap-2 mb-3">
+                        <h3 class="text-base sm:text-lg font-medium text-gray-900">${oferta.titulo}</h3>
+                        <p class="text-xs sm:text-sm text-gray-500 mb-1 sm:mb-2">Publicada el ${new Date(oferta.created_at).toLocaleDateString('es-ES')}</p>
+
+                        <div class="flex flex-wrap gap-1 sm:gap-2 mb-2 sm:mb-3">
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
                                 ${oferta.categoria ? oferta.categoria.nombre_categoria : 'Sin categoría'}
                             </span>
@@ -647,14 +647,14 @@ $(document).ready(function() {
                             </span>
                         </div>
                     </div>
-                    
-                    <div class="flex items-center">
-                        <span class="inline-block rounded-full px-3 py-1 text-sm font-medium bg-blue-100 text-blue-800">
+
+                    <div class="mt-2 sm:mt-0">
+                        <span class="inline-block rounded-full px-2 py-0.5 sm:px-3 sm:py-1 text-xs sm:text-sm font-medium bg-blue-100 text-blue-800">
                             ${oferta.candidatos_aceptados_count ?? $oferta->candidatosAceptados->count()} candidatos aceptados
                         </span>
                     </div>
                 </div>
-                
+
                 <div class="mt-4 border-t pt-4">
                     <h4 class="text-md font-medium text-gray-800 mb-3 flex items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -662,7 +662,7 @@ $(document).ready(function() {
                         </svg>
                         Candidatos Aceptados
                     </h4>
-                    
+
                     <div class="divide-y divide-gray-200">
                         ${candidatosHTML}
                     </div>
@@ -670,7 +670,7 @@ $(document).ready(function() {
             </div>`;
         }).join('');
     }
-    
+
     // Render functions for convenios
     function renderConveniosHTML(convenios) {
         return convenios.map(function(convenio) {
@@ -680,11 +680,11 @@ $(document).ready(function() {
                 : `<div class="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold shadow-sm">
                     ${convenio.estudiante.nombre.substring(0, 1).toUpperCase()}${convenio.estudiante.nombre.split(' ')[1] ? convenio.estudiante.nombre.split(' ')[1].substring(0, 1).toUpperCase() : ''}
                    </div>`;
-                
-            const estadoClass = convenio.estado === 'activo' 
-                ? 'bg-green-100 text-green-800' 
+
+            const estadoClass = convenio.estado === 'activo'
+                ? 'bg-green-100 text-green-800'
                 : (convenio.estado === 'pendiente' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800');
-                
+
             return `<tr class="hover:bg-gray-50 transition-colors duration-200 animate-fadeIn">
                 <td class="px-6 py-4 whitespace-nowrap">
                     <div class="flex items-center">
@@ -739,12 +739,12 @@ $(document).ready(function() {
             </tr>`;
         }).join('');
     }
-    
+
     // Event Listeners
     $('#filterConvenios').on('input', performSearch);
     $('#filterEstado').on('change', performSearch);
     $('#applyFilters').on('click', performSearch);
-    
+
     $('#resetFilters, #resetFiltersButton').on('click', function() {
         $('#filterConvenios').val('');
         $('#filterEstado').val('todos');
@@ -752,7 +752,7 @@ $(document).ready(function() {
         $('#searchResults').removeClass('hidden');
         performSearch();
     });
-    
+
     // Trigger initial search
     setTimeout(performSearch, 500);
 });
@@ -804,12 +804,12 @@ $(document).ready(function() {
                                 </svg>
                                 Filtros de búsqueda
                             </h3>
-                            
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div class="col-span-2">
+
+                            <div class="grid grid-cols-1 gap-3">
+                                <div>
                                     <div class="relative rounded-md shadow-sm">
-                                        <input type="text" id="filterConvenios" class="block w-full rounded-md border-gray-300 pl-10 pr-12 py-2 focus:border-indigo-500 focus:ring-indigo-500 transition-all duration-300" 
-                                            placeholder="Buscar por título de oferta, nombre de candidato, correo electrónico... (filtrado en tiempo real)" 
+                                        <input type="text" id="filterConvenios" class="block w-full rounded-md border-gray-300 pl-10 pr-12 py-2 focus:border-indigo-500 focus:ring-indigo-500 transition-all duration-300"
+                                            placeholder="Buscar por título de oferta, nombre de candidato, correo electrónico..."
                                             autofocus>
                                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                             <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -836,9 +836,9 @@ $(document).ready(function() {
                                     </select>
                                 </div>
                             </div>
-                            
-                            <div class="flex items-center justify-between mt-4">
-                                <div class="flex items-center space-x-4 text-sm">
+
+                            <div class="flex flex-col gap-3 mt-4 sm:flex-row sm:items-center sm:justify-between">
+                                <div class="flex flex-row justify-between text-sm space-x-4">
                                     <div class="flex items-center">
                                         <div class="w-3 h-3 rounded-full bg-indigo-500 mr-1"></div>
                                         <span><span id="ofertasCount">{{ $ofertas->count() }}</span> ofertas</span>
@@ -848,15 +848,14 @@ $(document).ready(function() {
                                         <span><span id="conveniosCount">{{ $convenios->count() }}</span> convenios</span>
                                     </div>
                                 </div>
-                                
-                                <div class="flex space-x-2">
-                                    <button id="resetFilters" class="inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300">
+                                <div class="flex flex-col gap-2 sm:flex-row sm:gap-2 mt-3 sm:mt-0">
+                                    <button id="resetFilters" class="inline-flex items-center justify-center w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                                         </svg>
                                         Limpiar
                                     </button>
-                                    <button id="applyFilters" class="inline-flex items-center px-3 py-1.5 border border-transparent rounded-md text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300">
+                                    <button id="applyFilters" class="inline-flex items-center justify-center w-full sm:w-auto px-3 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                         </svg>
@@ -881,18 +880,18 @@ $(document).ready(function() {
                                     <span class="font-medium text-indigo-700"><span id="candidatosCount">{{ $ofertas->sum(function($oferta) { return $oferta->candidatosAceptados->count(); }) }}</span></span> candidatos disponibles
                                 </div>
                             </div>
-                            
+
                             <!-- Lista de Ofertas -->
                             <div class="space-y-6" id="ofertasConCandidatos">
                                 <!-- Esta sección se llenará con PHP desde el controlador -->
                                 @forelse($ofertas ?? [] as $oferta)
-                                    <div class="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 p-6">
-                                        <div class="flex justify-between items-start">
+                                    <div class="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 p-3 sm:p-6">
+                                        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
                                             <div>
-                                                <h3 class="text-lg font-medium text-gray-900">{{ $oferta->titulo }}</h3>
-                                                <p class="text-sm text-gray-500 mb-2">Publicada el {{ $oferta->created_at->format('d/m/Y') }}</p>
-                                                
-                                                <div class="flex flex-wrap gap-2 mb-3">
+                                                <h3 class="text-base sm:text-lg font-medium text-gray-900">{{ $oferta->titulo }}</h3>
+                                                <p class="text-xs sm:text-sm text-gray-500 mb-1 sm:mb-2">Publicada el {{ $oferta->created_at->format('d/m/Y') }}</p>
+
+                                                <div class="flex flex-wrap gap-1 sm:gap-2 mb-2 sm:mb-3">
                                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
                                                         {{ $oferta->categoria->nombre_categoria ?? 'Sin categoría' }}
                                                     </span>
@@ -904,14 +903,14 @@ $(document).ready(function() {
                                                     </span>
                                                 </div>
                                             </div>
-                                            
-                                            <div class="flex items-center">
-                                                <span class="inline-block rounded-full px-3 py-1 text-sm font-medium bg-blue-100 text-blue-800">
+
+                                            <div class="mt-2 sm:mt-0">
+                                                <span class="inline-block rounded-full px-2 py-0.5 sm:px-3 sm:py-1 text-xs sm:text-sm font-medium bg-blue-100 text-blue-800">
                                                     {{ $oferta->candidatos_aceptados_count ?? $oferta->candidatosAceptados->count() }} candidatos aceptados
                                                 </span>
                                             </div>
                                         </div>
-                                        
+
                                         <!-- Lista de Candidatos Aceptados -->
                                         <div class="mt-4 border-t pt-4">
                                             <h4 class="text-md font-medium text-gray-800 mb-3 flex items-center">
@@ -920,11 +919,11 @@ $(document).ready(function() {
                                                 </svg>
                                                 Candidatos Aceptados
                                             </h4>
-                                            
+
                                             <div class="divide-y divide-gray-200">
                                                 @forelse($oferta->candidatosAceptados ?? [] as $candidato)
-                                                    <div class="py-3 flex justify-between items-center">
-                                                        <div class="flex items-center space-x-3">
+                                                    <div class="py-2 sm:py-3 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                                                        <div class="flex items-center space-x-2 sm:space-x-3">
                                                             @if($candidato->imagen)
                                                                 <img src="{{ asset('profile_images/' . $candidato->imagen) }}" alt="{{ $candidato->nombre }}" class="h-10 w-10 rounded-full object-cover border border-gray-200 shadow-sm" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<?xml version=\'1.0\' encoding=\'UTF-8\'?><svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\' width=\'40\' height=\'40\'><rect width=\'100\' height=\'100\' fill=\'%236366F1\'/><text x=\'50\' y=\'50\' font-size=\'35\' fill=\'white\' text-anchor=\'middle\' dominant-baseline=\'middle\'>{{ substr($candidato->nombre, 0, 1) }}{{ isset(explode(" ", $candidato->nombre)[1]) ? substr(explode(" ", $candidato->nombre)[1], 0, 1) : "" }}</text></svg>';">
                                                             @else
@@ -932,20 +931,20 @@ $(document).ready(function() {
                                                                     {{ substr($candidato->nombre, 0, 1) }}{{ isset(explode(" ", $candidato->nombre)[1]) ? substr(explode(" ", $candidato->nombre)[1], 0, 1) : "" }}
                                                                 </div>
                                                             @endif
-                                                            
+
                                                             <div>
                                                                 <h5 class="text-sm font-medium text-gray-900">{{ $candidato->nombre }}</h5>
                                                                 <p class="text-xs text-gray-500">{{ $candidato->email }}</p>
                                                             </div>
                                                         </div>
-                                                        
-                                                        <div class="flex space-x-2">
+
+                                                        <div class="flex flex-col sm:flex-row gap-2 mt-2 sm:mt-0">
                                                             @php
                                                                 $convenio = \App\Models\Convenio::where('oferta_id', $oferta->id)
                                                                     ->where('estudiante_id', $candidato->id)
                                                                     ->first();
                                                             @endphp
-                                                            
+
                                                             @if($convenio)
                                                                 <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium {{ $convenio->estado == 'activo' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800' }}">
                                                                     Convenio {{ ucfirst($convenio->estado) }}
@@ -1006,7 +1005,7 @@ $(document).ready(function() {
                                 Convenios Existentes
                             </h2>
                         </div>
-                        
+
                         <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200">
                             <div class="overflow-x-auto">
                                 <table class="min-w-full divide-y divide-gray-200" id="conveniosTable">
@@ -1067,9 +1066,9 @@ $(document).ready(function() {
                                                     {{ $convenio->fecha_fin ? \Carbon\Carbon::parse($convenio->fecha_fin)->format('d/m/Y') : 'Pendiente' }}
                                                 </td>
                                                 <td class="px-6 py-4 whitespace-nowrap">
-                                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                                        {{ $convenio->estado == 'activo' ? 'bg-green-100 text-green-800' : 
-                                                          ($convenio->estado == 'pendiente' ? 'bg-yellow-100 text-yellow-800' : 
+                                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                                                        {{ $convenio->estado == 'activo' ? 'bg-green-100 text-green-800' :
+                                                          ($convenio->estado == 'pendiente' ? 'bg-yellow-100 text-yellow-800' :
                                                           'bg-gray-100 text-gray-800') }}">
                                                         {{ ucfirst($convenio->estado) }}
                                                     </span>
@@ -1105,7 +1104,7 @@ $(document).ready(function() {
                                     </tbody>
                                 </table>
                             </div>
-                            
+
                             <!-- Pagination Container -->
                             <div id="conveniosPagination" class="mt-4 mb-6 py-2">
                                 @if(isset($convenios) && method_exists($convenios, 'links'))
@@ -1120,7 +1119,7 @@ $(document).ready(function() {
                                                     Anterior
                                                 </a>
                                             @endif
-                                            
+
                                             @if(!$convenios->hasMorePages())
                                                 <button disabled class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white opacity-50 cursor-not-allowed">
                                                     Siguiente
@@ -1167,13 +1166,13 @@ $(document).ready(function() {
                                                             <span class="ml-1">Anterior</span>
                                                         </a>
                                                     @endif
-                                
+
                                                     <!-- Numbered Pages -->
                                                     @php
                                                         $start = max(1, $convenios->currentPage() - 1);
                                                         $end = min($convenios->lastPage(), $convenios->currentPage() + 1);
                                                     @endphp
-                                
+
                                                     @if($start > 1)
                                                         <a href="{{ $convenios->url(1) }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors duration-150">
                                                             1
@@ -1184,7 +1183,7 @@ $(document).ready(function() {
                                                             </span>
                                                         @endif
                                                     @endif
-                                
+
                                                     @for($i = $start; $i <= $end; $i++)
                                                         @if($i == $convenios->currentPage())
                                                             <span class="relative inline-flex items-center px-4 py-2 border border-indigo-500 bg-indigo-50 text-sm font-bold text-indigo-600">
@@ -1196,7 +1195,7 @@ $(document).ready(function() {
                                                             </a>
                                                         @endif
                                                     @endfor
-                                
+
                                                     @if($end < $convenios->lastPage())
                                                         @if($end < $convenios->lastPage() - 1)
                                                             <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
@@ -1207,7 +1206,7 @@ $(document).ready(function() {
                                                             {{ $convenios->lastPage() }}
                                                         </a>
                                                     @endif
-                                
+
                                                     <!-- Next Page -->
                                                     @if($convenios->hasMorePages())
                                                         <a href="{{ $convenios->nextPageUrl() }}" class="relative inline-flex items-center px-3 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-indigo-600 hover:bg-indigo-50 transition-colors duration-150">
@@ -1371,37 +1370,37 @@ $(document).ready(function() {
         from { opacity: 0; transform: translateY(10px); }
         to { opacity: 1; transform: translateY(0); }
     }
-    
+
     .animate-fadeIn {
         animation: fadeIn 0.3s ease-out forwards;
     }
-    
+
     /* Add hover effects to buttons */
     button, a.inline-flex {
         transition: all 0.3s !important;
     }
-    
+
     button:hover, a.inline-flex:hover {
         transform: translateY(-1px) !important;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
     }
-    
+
     /* Improve focus states */
     button:focus, a:focus, input:focus, select:focus, textarea:focus {
         outline: none !important;
         box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3) !important;
     }
-    
+
     /* Add a subtle hover effect to table rows */
     tr:hover {
         background-color: rgba(99, 102, 241, 0.04) !important;
     }
-    
+
     /* Badge animations */
     .rounded-full {
         transition: all 0.3s !important;
     }
-    
+
     .rounded-full:hover {
         transform: scale(1.05) !important;
     }
@@ -1489,64 +1488,64 @@ $(document).ready(function() {
                         tareas: document.querySelector('.swal2-container #tareas').value,
                         objetivos: document.querySelector('.swal2-container #objetivos').value
                     };
-                    
+
                     console.log('Direct form values:', formData);
-                    
+
                     // Validate the data
                     let isValid = true;
                     let errorMessages = [];
-                    
+
                     // Check required fields
                     if (!formData.fecha_inicio) {
                         isValid = false;
                         document.querySelector('.swal2-container #fecha_inicio').classList.add('border-red-500');
                         errorMessages.push('Fecha de inicio es obligatorio');
                     }
-                    
+
                     if (!formData.fecha_fin) {
                         isValid = false;
                         document.querySelector('.swal2-container #fecha_fin').classList.add('border-red-500');
                         errorMessages.push('Fecha de fin es obligatorio');
                     }
-                    
+
                     if (!formData.horario_practica) {
                         isValid = false;
                         document.querySelector('.swal2-container #horario_practica').classList.add('border-red-500');
                         errorMessages.push('Horario es obligatorio');
                     }
-                    
+
                     if (!formData.tutor_empresa) {
                         isValid = false;
                         document.querySelector('.swal2-container #tutor_empresa').classList.add('border-red-500');
                         errorMessages.push('Tutor de empresa es obligatorio');
                     }
-                    
+
                     if (!formData.tareas) {
                         isValid = false;
                         document.querySelector('.swal2-container #tareas').classList.add('border-red-500');
                         errorMessages.push('Tareas a realizar es obligatorio');
                     }
-                    
+
                     if (!formData.objetivos) {
                         isValid = false;
                         document.querySelector('.swal2-container #objetivos').classList.add('border-red-500');
                         errorMessages.push('Objetivos formativos es obligatorio');
                     }
-                    
+
                     // Date validation
                     if (formData.fecha_inicio && formData.fecha_fin) {
                         const inicio = new Date(formData.fecha_inicio);
                         const fin = new Date(formData.fecha_fin);
                         const today = new Date();
                         today.setHours(0, 0, 0, 0);
-                        
+
                         // Check if fecha_fin is after fecha_inicio
                         if (inicio >= fin) {
                             isValid = false;
                             document.querySelector('.swal2-container #fecha_fin').classList.add('border-red-500');
                             errorMessages.push('La fecha de finalización debe ser posterior a la fecha de inicio');
                         }
-                        
+
                         // Check if fecha_inicio is not in the past
                         if (inicio < today) {
                             isValid = false;
@@ -1554,9 +1553,9 @@ $(document).ready(function() {
                             errorMessages.push('La fecha de inicio no puede ser en el pasado');
                         }
                     }
-                    
+
                     console.log('Form validation result:', isValid ? 'Valid' : 'Invalid', formData);
-                    
+
                     if (!isValid) {
                         let validationMessage = 'Por favor, corrige los siguientes errores:';
                         if (errorMessages.length > 0) {
@@ -1569,7 +1568,7 @@ $(document).ready(function() {
                         Swal.showValidationMessage(validationMessage);
                         return false;
                     }
-                    
+
                     return formData;
                 }
             }).then((result) => {
@@ -1583,15 +1582,15 @@ $(document).ready(function() {
                             Swal.showLoading();
                         }
                     });
-                    
+
                     // Add CSRF token
                     const formData = {
                         ...result.value,
                         _token: $('meta[name="csrf-token"]').attr('content')
                     };
-                    
+
                     console.log('Sending data to server:', formData);
-                    
+
                     // Send data to server
                     $.ajax({
                         url: '/empresa/convenios',
@@ -1611,7 +1610,7 @@ $(document).ready(function() {
                                     // Reload page
                                     window.location.reload();
                                 });
-                                
+
                                 // Automatic PDF download
                                 if (data.pdf_url) {
                                     // Create a hidden iframe to trigger the download
@@ -1619,7 +1618,7 @@ $(document).ready(function() {
                                     iframe.style.display = 'none';
                                     iframe.src = data.pdf_url;
                                     document.body.appendChild(iframe);
-                                    
+
                                     // Also open a new window for viewing
                                     setTimeout(() => {
                                         // Remove iframe after a delay
@@ -1632,7 +1631,7 @@ $(document).ready(function() {
                         },
                         error: function(xhr, status, error) {
                             let errorMessage = 'Ha ocurrido un error al crear el convenio';
-                            
+
                             // Check if we have validation errors
                             if (xhr.responseJSON && xhr.responseJSON.errors) {
                                 errorMessage = '<ul class="text-left">';
@@ -1643,14 +1642,14 @@ $(document).ready(function() {
                             } else if (xhr.responseJSON && xhr.responseJSON.message) {
                                 errorMessage = xhr.responseJSON.message;
                             }
-                            
+
                             Swal.fire({
                                 icon: 'error',
                                 title: 'Error de validación',
                                 html: errorMessage,
                                 confirmButtonColor: '#6366f1'
                             });
-                            
+
                             console.log('Error response:', xhr.responseJSON);
                         }
                     });
@@ -1659,4 +1658,4 @@ $(document).ready(function() {
         };
     }
 </script>
-@endsection 
+@endsection
