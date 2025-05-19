@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class RegisterController extends Controller
 {
@@ -106,23 +107,31 @@ class RegisterController extends Controller
             'email' => $registrationData['email'],
         ]);
 
+        Log::info('Datos recibidos en registerStudent', [
+            'titulo_id' => $request->titulo_id,
+            'data' => $data
+        ]);
+
         $validator = Validator::make($data, [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:user',
             'password' => 'required|string|min:8|confirmed',
             'dni' => ['required', 'string', 'max:20', 'unique:user', 'regex:/^[0-9]{8}[A-Za-z]$|^[XYZxyz][0-9]{7}[A-Za-z]$/'],
             'telefono' => 'required|string|max:20|unique:user',
-            'provincia_id' => 'required|exists:json/provincias.json,id',
+            'provincia_id' => 'required|integer|min:1|max:52',
             'ciudad' => 'required|string|max:100',
             'centro_estudios' => 'required|exists:instituciones,id',
             'nivel_educativo_id' => 'required|exists:niveles_educativos,id',
-            'titulo_id' => 'required|exists:titulos,id',
+            'titulo_id' => 'required',
             'cv_pdf' => 'required|file|mimes:pdf|max:5120', // 5MB máximo
             'numero_seguridad_social' => ['required', 'string', 'max:50', 'regex:/^SS[0-9]{8}$/']
         ], [
             'provincia_id.required' => 'Debes seleccionar una provincia',
-            'nivel_educativo_id.required' => 'Debes seleccionar un nivel educativo',
+            'centro_estudios.required' => 'Debes seleccionar un centro educativo',
             'centro_estudios.exists' => 'El centro educativo seleccionado no existe',
+            'nivel_educativo_id.required' => 'Debes seleccionar un nivel educativo',
+            'nivel_educativo_id.exists' => 'El nivel educativo seleccionado no existe',
+            'titulo_id.required' => 'Debes seleccionar un título',
             'numero_seguridad_social.regex' => 'El número de seguridad social debe tener el formato SS seguido de 8 dígitos',
             'cv_pdf.mimes' => 'El archivo debe ser un PDF',
             'cv_pdf.max' => 'El archivo no puede ser mayor a 5MB',
@@ -153,7 +162,7 @@ class RegisterController extends Controller
             'fecha_nacimiento' => now()->subYears(rand(18, 25)),
             'ciudad' => $nombreCiudad,
             'dni' => $request->dni,
-            'activo' => true,
+            'activo' => false,
             'telefono' => $request->telefono,
             'descripcion' => 'Estudiante',
             'imagen' => null
@@ -174,21 +183,30 @@ class RegisterController extends Controller
         }
 
         // Crear estudiante
+        // Desactivar temporalmente la comprobación de claves foráneas
+        DB::statement('SET FOREIGN_KEY_CHECKS=0');
+        
         Estudiante::create([
             'id' => $user->id,
             'institucion_id' => $request->centro_estudios,
             'centro_educativo' => $nombreCentro,
             'cv_pdf' => $cvFileName,
             'numero_seguridad_social' => $request->numero_seguridad_social,
-            'titulo_id' => $request->titulo_id
+            'titulo_id' => $request->titulo_id,
+            'estado' => 'pendiente'
         ]);
+        
+        // Reactivar la comprobación de claves foráneas
+        DB::statement('SET FOREIGN_KEY_CHECKS=1');
 
         // Limpiar datos de registro de la sesión
         $request->session()->forget('registration_data');
 
         event(new Registered($user));
-        Auth::login($user);
-        return redirect()->route('student.dashboard');
+        // Auth::login($user); // Comentado para evitar el inicio de sesión automático
+        
+        return redirect()->route('login')
+            ->with('success', 'Registro completado correctamente. Tu cuenta debe ser activada por tu institución antes de poder acceder.');
     }
 
     // Registro de empresa (tercer paso)
@@ -260,6 +278,7 @@ class RegisterController extends Controller
             'niveles_educativos.*' => ['exists:niveles_educativos,id'],
             'direccion' => ['required', 'string', 'max:255'],
             'provincia' => ['required', 'string', 'max:100'],
+            'ciudad' => ['required', 'string', 'max:100'],
             'codigo_postal' => ['required', 'string', 'max:5'],
             'representante_legal' => ['required', 'string', 'max:255'],
             'cargo_representante' => ['required', 'string', 'max:255'],
@@ -271,6 +290,8 @@ class RegisterController extends Controller
             'password.confirmed' => 'Las contraseñas no coinciden',
             'niveles_educativos.required' => 'Debes seleccionar al menos un nivel educativo',
             'niveles_educativos.min' => 'Debes seleccionar al menos un nivel educativo',
+            'provincia.required' => 'Debes seleccionar una provincia',
+            'ciudad.required' => 'Debes seleccionar una ciudad',
         ]);
         
         if ($validator->fails()) {
@@ -286,7 +307,7 @@ class RegisterController extends Controller
             'password' => Hash::make($request->password),
             'role_id' => Rol::where('nombre_rol', 'Institucion')->first()->id,
             'fecha_nacimiento' => now()->subYears(rand(25, 50)),
-            'ciudad' => $request->provincia,
+            'ciudad' => $request->ciudad,
             'dni' => 'INST' . rand(10000000, 99999999),
             'activo' => true,
             'telefono' => '9' . rand(10000000, 99999999),
@@ -299,7 +320,7 @@ class RegisterController extends Controller
             'user_id' => $user->id,
             'codigo_centro' => $request->codigo_centro,
             'direccion' => $request->direccion,
-            'ciudad' => $request->provincia,
+            'ciudad' => $request->ciudad,
             'codigo_postal' => $request->codigo_postal,
             'representante_legal' => $request->representante_legal,
             'cargo_representante' => $request->cargo_representante,
@@ -454,5 +475,25 @@ class RegisterController extends Controller
         } else {
             return redirect()->route('register.empresa');
         }
+    }
+
+    protected function create(array $data)
+    {
+        $user = User::create([
+            'nombre' => $data['nombre'],
+            'email' => $data['email'],
+            'password' => Hash::make($data['password']),
+            'dni' => $data['dni'],
+            'rol' => 'Estudiante',
+        ]);
+
+        Estudiante::create([
+            'user_id' => $user->id,
+            'titulo_id' => $data['titulo_id'],
+            'estado' => 'pendiente',
+            'institucion_id' => $data['institucion_id']
+        ]);
+
+        return $user;
     }
 }

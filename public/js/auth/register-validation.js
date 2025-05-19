@@ -1,4 +1,9 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Si la validación personalizada está activa, no ejecutar este script
+    if (window.customValidationActive) {
+        return;
+    }
+    
     const registerForm = document.getElementById('registerForm');
     
     if (registerForm) {

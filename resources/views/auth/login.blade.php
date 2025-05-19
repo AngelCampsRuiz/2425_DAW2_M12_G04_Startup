@@ -21,6 +21,13 @@
                     {{-- TÍTULO DE LA PÁGINA --}}
                     <h2 class="text-2xl font-bold text-center md:text-left text-gray-800 mb-6">Iniciar sesión</h2>
 
+                    {{-- MENSAJE DE ÉXITO --}}
+                    @if (session('success'))
+                    <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6" role="alert">
+                        <p>{{ session('success') }}</p>
+                    </div>
+                    @endif
+
                     <form method="POST" action="{{ route('login') }}" id="loginForm" class="space-y-5">
                         @csrf
 

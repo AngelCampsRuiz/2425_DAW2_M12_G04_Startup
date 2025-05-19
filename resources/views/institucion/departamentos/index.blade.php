@@ -177,26 +177,49 @@
 
             <form id="formNuevoDepartamento" action="{{ route('institucion.departamentos.store') }}" method="POST" class="p-6">
             @csrf
+                <!-- Mensajes de error -->
+                @if ($errors->any())
+                <div class="mb-4 bg-red-50 border-l-4 border-red-500 p-4 rounded">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-red-800">Se encontraron los siguientes errores:</h3>
+                            <ul class="mt-1 text-xs text-red-700 list-disc list-inside">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                @endif
+                
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <div class="mb-4">
                             <label for="nombre" class="block text-sm font-medium text-gray-700 mb-1">Nombre del Departamento *</label>
                             <input type="text" name="nombre" id="nombre" required 
-                                class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm transition-all">
+                                class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm transition-all"
+                                value="{{ old('nombre') }}">
                             <p class="mt-1 text-xs text-gray-500">Nombre descriptivo para el departamento</p>
                         </div>
                         
                         <div class="mb-4">
                             <label for="codigo" class="block text-sm font-medium text-gray-700 mb-1">Código del Departamento *</label>
                             <input type="text" name="codigo" id="codigo" required 
-                                class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm transition-all">
+                                class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm transition-all"
+                                value="{{ old('codigo') }}">
                             <p class="mt-1 text-xs text-gray-500">Código único del departamento (ej: DEPT-INFO)</p>
                         </div>
                         
                         <div class="mb-4">
                             <label for="descripcion" class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
                             <textarea name="descripcion" id="descripcion" rows="4" 
-                                    class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm transition-all"></textarea>
+                                    class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm transition-all">{{ old('descripcion') }}</textarea>
                             <p class="mt-1 text-xs text-gray-500">Una breve descripción de las funciones del departamento</p>
                         </div>
                     </div>
@@ -276,6 +299,22 @@
                 @method('PUT')
                 <input type="hidden" id="edit_departamento_id" name="departamento_id">
                 
+                <!-- Mensajes de error -->
+                <div id="errores-edicion-dpto" class="mb-4 bg-red-50 border-l-4 border-red-500 p-4 rounded hidden">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-red-800">Se encontraron los siguientes errores:</h3>
+                            <ul class="mt-1 text-xs text-red-700 list-disc list-inside" id="lista-errores-edicion-dpto">
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <div class="mb-4">
@@ -351,7 +390,205 @@
 
 @push('scripts')
 <script>
+    // Mostrar modal automáticamente si hay errores
+    @if ($errors->any())
+        document.addEventListener('DOMContentLoaded', function() {
+            openModalDepartamento();
+        });
+    @endif
+    
+    // Objeto global para almacenar el estado de validación de cada campo
+    window.validationErrors = {};
+
+    // Función centralizada para actualizar el estado visual de los campos
+    window.updateFieldStatus = function(input, isValid, errorMessage = '') {
+        if (!input) return;
+        
+        const fieldId = input.id;
+        let errorElement = document.getElementById(fieldId + '-error');
+        
+        // Si no existe el elemento de error, lo creamos
+        if (!errorElement) {
+            errorElement = document.createElement('span');
+            errorElement.id = fieldId + '-error';
+            errorElement.className = 'text-red-500 text-xs';
+            input.parentNode.appendChild(errorElement);
+        }
+        
+        if (!isValid) {
+            window.validationErrors[fieldId] = errorMessage;
+            input.classList.add('border-red-500');
+            errorElement.textContent = errorMessage;
+        } else {
+            delete window.validationErrors[fieldId];
+            input.classList.remove('border-red-500');
+            errorElement.textContent = '';
+        }
+    };
+
+    // Validaciones para los formularios de departamentos
+    const validateNombre = function(prefix = '') {
+        const field = document.getElementById((prefix ? prefix + '_' : '') + 'nombre');
+        if (!field) return true;
+        
+        const value = field.value.trim();
+        if (!value) {
+            window.updateFieldStatus(field, false, 'El nombre del departamento es obligatorio');
+            return false;
+        } else if (value.length < 3) {
+            window.updateFieldStatus(field, false, 'El nombre debe tener al menos 3 caracteres');
+            return false;
+        }
+        
+        window.updateFieldStatus(field, true);
+        return true;
+    };
+
+    const validateCodigo = function(prefix = '') {
+        const field = document.getElementById((prefix ? prefix + '_' : '') + 'codigo');
+        if (!field) return true;
+        
+        const value = field.value.trim();
+        if (!value) {
+            window.updateFieldStatus(field, false, 'El código del departamento es obligatorio');
+            return false;
+        } else if (value.length < 2) {
+            window.updateFieldStatus(field, false, 'El código debe tener al menos 2 caracteres');
+            return false;
+        }
+        
+        window.updateFieldStatus(field, true);
+        return true;
+    };
+
+    const validateDescripcion = function(prefix = '') {
+        const field = document.getElementById((prefix ? prefix + '_' : '') + 'descripcion');
+        if (!field) return true;
+        
+        // La descripción es opcional, pero si tiene texto, debería tener más de 10 caracteres
+        const value = field.value.trim();
+        if (value && value.length < 10) {
+            window.updateFieldStatus(field, false, 'La descripción debe tener al menos 10 caracteres');
+            return false;
+        }
+        
+        window.updateFieldStatus(field, true);
+        return true;
+    };
+
+    // Configurar validaciones para los formularios
     document.addEventListener('DOMContentLoaded', function() {
+        // Validaciones para el formulario de creación
+        const createForm = document.getElementById('formNuevoDepartamento');
+        if (createForm) {
+            const fieldsToValidate = [
+                { id: 'nombre', validate: validateNombre },
+                { id: 'codigo', validate: validateCodigo },
+                { id: 'descripcion', validate: validateDescripcion }
+            ];
+            
+            // Añadir validaciones onblur
+            fieldsToValidate.forEach(field => {
+                const element = document.getElementById(field.id);
+                if (element) {
+                    element.addEventListener('blur', () => field.validate());
+                }
+            });
+            
+            // Validar formulario al enviar
+            createForm.addEventListener('submit', function(event) {
+                const isValid = fieldsToValidate.map(field => field.validate()).every(Boolean);
+                
+                if (!isValid) {
+                    event.preventDefault();
+                    alert('Por favor, corrija los errores en el formulario antes de continuar.');
+                }
+            });
+        }
+        
+        // Validaciones para el formulario de edición
+        const editForm = document.getElementById('formEditarDepartamento');
+        if (editForm) {
+            const fieldsToValidate = [
+                { id: 'edit_nombre', validate: () => validateNombre('edit') },
+                { id: 'edit_codigo', validate: () => validateCodigo('edit') },
+                { id: 'edit_descripcion', validate: () => validateDescripcion('edit') }
+            ];
+            
+            // Añadir validaciones onblur
+            fieldsToValidate.forEach(field => {
+                const element = document.getElementById(field.id);
+                if (element) {
+                    element.addEventListener('blur', () => field.validate());
+                }
+            });
+            
+            // Validar formulario al enviar
+            editForm.addEventListener('submit', function(event) {
+                const isValid = fieldsToValidate.map(field => field.validate()).every(Boolean);
+                
+                if (!isValid) {
+                    event.preventDefault();
+                    alert('Por favor, corrija los errores en el formulario antes de continuar.');
+                }
+            });
+        }
+    });
+
+    // Definición global de openEditModal
+    function openEditModal(departamentoId) {
+        const modal = document.getElementById('modalEditarDepartamento');
+        if (modal) {
+            // Cargar datos del departamento
+            fetch(`/institucion/departamentos/${departamentoId}/get-data`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Configurar formulario
+                        const form = document.getElementById('formEditarDepartamento');
+                        form.action = `/institucion/departamentos/${departamentoId}`;
+                        
+                        // Llenar campos
+                        document.getElementById('edit_departamento_id').value = departamentoId;
+                        document.getElementById('edit_nombre').value = data.departamento.nombre;
+                        document.getElementById('edit_codigo').value = data.departamento.codigo || '';
+                        document.getElementById('edit_descripcion').value = data.departamento.descripcion || '';
+                        document.getElementById('edit_jefe_departamento_id').value = data.departamento.jefe_departamento_id || '';
+                        
+                        // Mostrar modal
+                        modal.classList.remove('hidden');
+                        document.body.classList.add('overflow-hidden');
+                        
+                        // Animación de entrada
+                        setTimeout(() => {
+                            const modalContent = modal.querySelector('.relative');
+                            if (modalContent) {
+                                modalContent.classList.add('animate-fadeIn');
+                            }
+                        }, 10);
+                    } else {
+                        // Mostrar error
+                        alert('Error al cargar los datos del departamento');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al cargar los datos del departamento');
+                });
+        }
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        // Comprobar parámetros URL para abrir modal automáticamente
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('editModal') && urlParams.get('editModal') === 'true') {
+            const id = urlParams.get('id');
+            if (id) {
+                console.log("Detectado parámetro editModal=true con id=", id);
+                openEditModal(id);
+            }
+        }
+        
         // Búsqueda de departamentos
         const searchInput = document.getElementById('searchInput');
         const departamentosTable = document.getElementById('departamentosTable');
@@ -394,11 +631,8 @@
                     }
                 }, 10);
                 
-                // Scroll al inicio del modal y focus primer input
-                setTimeout(() => {
-                    const firstInput = modal.querySelector('input, select, textarea');
-                    if (firstInput) firstInput.focus();
-                }, 300);
+                // Limpiar formulario
+                document.getElementById('formNuevoDepartamento').reset();
             }
         };
         
@@ -412,79 +646,14 @@
                     modalContent.classList.add('animate-fadeOut');
                 }
                 
+                // Ocultar modal tras animación
                 setTimeout(() => {
                     modal.classList.add('hidden');
                     document.body.classList.remove('overflow-hidden');
-                    
                     if (modalContent) {
                         modalContent.classList.remove('animate-fadeOut');
                     }
-                    
-                    const form = document.getElementById('formNuevoDepartamento');
-                    if (form) {
-                        form.reset();
-                    }
-                }, 200);
-            }
-        };
-
-        // Cerrar modal al hacer clic fuera
-        const modalNuevoDepartamento = document.getElementById('modalNuevoDepartamento');
-        if (modalNuevoDepartamento) {
-            modalNuevoDepartamento.addEventListener('click', function(e) {
-                if (e.target === this) {
-                    closeModalDepartamento();
-                }
-            });
-        
-            // Cerrar con tecla Escape
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape' && !modalNuevoDepartamento.classList.contains('hidden')) {
-                    closeModalDepartamento();
-                }
-            });
-        }
-
-        // Funciones para el modal de edición
-        window.openEditModal = function(departamentoId) {
-            const modal = document.getElementById('modalEditarDepartamento');
-            if (modal) {
-                // Cargar datos del departamento
-                fetch(`/institucion/departamentos/${departamentoId}/get-data`)
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            // Configurar formulario
-                            const form = document.getElementById('formEditarDepartamento');
-                            form.action = `/institucion/departamentos/${departamentoId}`;
-                            
-                            // Llenar campos
-                            document.getElementById('edit_departamento_id').value = departamentoId;
-                            document.getElementById('edit_nombre').value = data.departamento.nombre;
-                            document.getElementById('edit_codigo').value = data.departamento.codigo || '';
-                            document.getElementById('edit_descripcion').value = data.departamento.descripcion || '';
-                            document.getElementById('edit_jefe_departamento_id').value = data.departamento.jefe_departamento_id || '';
-                            
-                            // Mostrar modal
-                            modal.classList.remove('hidden');
-                            document.body.classList.add('overflow-hidden');
-                            
-                            // Animación de entrada
-                            setTimeout(() => {
-                                const modalContent = modal.querySelector('.relative');
-                                if (modalContent) {
-                                    modalContent.classList.add('animate-fadeIn');
-                                }
-                            }, 10);
-                        } else {
-                            // Mostrar error
-                            alert('Error al cargar los datos del departamento');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('Error al cargar los datos del departamento');
-                    });
+                }, 300);
             }
         };
         
@@ -498,20 +667,14 @@
                     modalContent.classList.add('animate-fadeOut');
                 }
                 
+                // Ocultar modal tras animación
                 setTimeout(() => {
                     modal.classList.add('hidden');
                     document.body.classList.remove('overflow-hidden');
-                    
                     if (modalContent) {
                         modalContent.classList.remove('animate-fadeOut');
                     }
-                    
-                    // Limpiar formulario
-                    const form = document.getElementById('formEditarDepartamento');
-                    if (form) {
-                        form.reset();
-                    }
-                }, 200);
+                }, 300);
             }
         };
     });

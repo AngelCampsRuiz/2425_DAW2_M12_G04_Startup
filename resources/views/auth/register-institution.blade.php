@@ -1,5 +1,7 @@
 @extends('layouts.app')
 
+@section('title', 'Registro de Institución - PickJob')
+
 @section('content')
 <div class="min-h-screen flex items-center justify-center bg-gradient-to-r from-primary/20 to-primary p-4">
     <div class="w-full max-w-4xl bg-white rounded-xl shadow-xl p-8">
@@ -11,6 +13,27 @@
 
         <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Registro de Institución Educativa</h2>
         <p class="text-gray-600 text-center mb-6">Paso 2 de 2: Completa la información de tu institución</p>
+
+        <!-- Mensajes de error -->
+        @if ($errors->any())
+        <div class="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-red-800">Algunos campos tienen errores:</h3>
+                    <ul class="mt-1 text-xs text-red-700 list-disc list-inside">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
+        </div>
+        @endif
 
         <form method="POST" action="{{ route('institution.register') }}" id="institutionRegisterForm" class="space-y-6">
             @csrf
@@ -58,11 +81,12 @@
                         @php
                             // Asegurar que no haya duplicados en los niveles educativos
                             $nivelesIds = [];
+                            $oldNiveles = old('niveles_educativos', []);
                         @endphp
                         @foreach ($nivelesEducativos as $nivel)
                             @if (!in_array($nivel->id, $nivelesIds))
                                 @php $nivelesIds[] = $nivel->id; @endphp
-                                <option value="{{ $nivel->id }}">{{ $nivel->nombre_nivel }}</option>
+                                <option value="{{ $nivel->id }}" {{ in_array($nivel->id, $oldNiveles) ? 'selected' : '' }}>{{ $nivel->nombre_nivel }}</option>
                             @endif
                         @endforeach
                     </select>
@@ -99,13 +123,29 @@
                 <!-- Provincia -->
                 <div class="mb-4">
                     <label for="provincia" class="block text-gray-700 text-sm font-medium mb-2">Provincia</label>
-                    <input id="provincia" type="text" name="provincia" value="{{ old('provincia') }}"
-                        class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary @error('provincia') border-red-500 @enderror"
-                        placeholder="Ej: Barcelona">
+                    <select id="provincia" name="provincia" 
+                        class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary @error('provincia') border-red-500 @enderror">
+                        <option value="">Selecciona una provincia</option>
+                    </select>
+                    <input type="hidden" id="provincia_anterior" value="{{ old('provincia') }}">
                     @error('provincia')
                         <span class="text-red-500 text-xs">{{ $message }}</span>
                     @enderror
                     <span id="provincia-error" class="text-red-500 text-xs"></span>
+                </div>
+
+                <!-- Ciudad -->
+                <div class="mb-4">
+                    <label for="ciudad" class="block text-gray-700 text-sm font-medium mb-2">Ciudad</label>
+                    <select id="ciudad" name="ciudad" 
+                        class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary @error('ciudad') border-red-500 @enderror">
+                        <option value="">Primero selecciona una provincia</option>
+                    </select>
+                    <input type="hidden" id="ciudad_anterior" value="{{ old('ciudad') }}">
+                    @error('ciudad')
+                        <span class="text-red-500 text-xs">{{ $message }}</span>
+                    @enderror
+                    <span id="ciudad-error" class="text-red-500 text-xs"></span>
                 </div>
 
                 <!-- Código postal -->
@@ -273,6 +313,88 @@ $(document).ready(function() {
         validateNivelesEducativos();
         cargarCategoriasPorNivel();
     });
+
+    // Cargar provincias al inicio
+    window.loadProvincias();
+    
+    // Configurar evento para actualizar ciudades cuando cambia la provincia
+    const provinciaSelect = document.getElementById('provincia');
+    if (provinciaSelect) {
+        provinciaSelect.addEventListener('change', function() {
+            if (this.value) {
+                console.log('Provincia seleccionada:', this.value);
+                window.loadCiudades(this.value);
+                window.validateProvincia();
+                
+                // Reiniciar el selector de ciudad
+                const ciudadSelect = document.getElementById('ciudad');
+                ciudadSelect.innerHTML = '<option value="">Selecciona una ciudad</option>';
+            }
+        });
+    }
+    
+    // Configurar evento para validar ciudad cuando cambia
+    const ciudadSelect = document.getElementById('ciudad');
+    if (ciudadSelect) {
+        ciudadSelect.addEventListener('change', function() {
+            window.validateCiudad();
+        });
+        ciudadSelect.addEventListener('blur', function() {
+            window.validateCiudad();
+        });
+    }
+    
+    // Configurar validaciones onblur para todos los campos
+    const camposAValidar = [
+        { id: 'name', validacion: window.validateName },
+        { id: 'email', validacion: window.validateEmail },
+        { id: 'codigo_centro', validacion: window.validateCodigoCentro },
+        { id: 'direccion', validacion: window.validateDireccion },
+        { id: 'provincia', validacion: window.validateProvincia },
+        { id: 'ciudad', validacion: window.validateCiudad },
+        { id: 'codigo_postal', validacion: window.validateCodigoPostal },
+        { id: 'representante_legal', validacion: window.validateRepresentanteLegal },
+        { id: 'cargo_representante', validacion: window.validateCargoRepresentante },
+        { id: 'password', validacion: window.validatePassword },
+        { id: 'password_confirmation', validacion: window.validatePasswordConfirmation }
+    ];
+    
+    camposAValidar.forEach(campo => {
+        const elemento = document.getElementById(campo.id);
+        if (elemento) {
+            elemento.addEventListener('blur', campo.validacion);
+        }
+    });
+    
+    // Restaurar provincia y ciudad si existen valores anteriores
+    const provinciaAnterior = document.getElementById('provincia_anterior').value;
+    if (provinciaAnterior) {
+        // Esperar a que carguen las provincias y luego seleccionar
+        setTimeout(function() {
+            console.log('Restaurando provincia anterior:', provinciaAnterior);
+            const provinciaSelect = document.getElementById('provincia');
+            if (provinciaSelect) {
+                provinciaSelect.value = provinciaAnterior;
+                // Cargar las ciudades correspondientes
+                window.loadCiudades(provinciaAnterior, function() {
+                    // Callback después de cargar ciudades
+                    const ciudadAnterior = document.getElementById('ciudad_anterior').value;
+                    if (ciudadAnterior) {
+                        console.log('Restaurando ciudad anterior:', ciudadAnterior);
+                        const ciudadSelect = document.getElementById('ciudad');
+                        if (ciudadSelect) {
+                            ciudadSelect.value = ciudadAnterior;
+                        }
+                    }
+                });
+            }
+        }, 500);
+    }
+    
+    // Activar carga inicial de categorías si hay niveles seleccionados
+    if ($('#niveles_educativos').val() && $('#niveles_educativos').val().length > 0) {
+        cargarCategoriasPorNivel();
+    }
 });
 
 // Objeto global para almacenar el estado de validación de cada campo
@@ -552,6 +674,13 @@ function cargarCategoriasPorNivel() {
         }
     });
     
+    // Recuperar categorías de old() si existen
+    @php
+    $oldCategorias = session()->getOldInput('categorias', []);
+    @endphp
+    
+    const oldCategorias = @json($oldCategorias);
+    
     // Mostrar un estado de carga
     contenedorCategorias.innerHTML = '<p class="text-sm text-gray-500">Cargando categorías...</p>';
     
@@ -675,9 +804,19 @@ function cargarCategoriasPorNivel() {
                     checkbox.className = 'mr-2';
                     
                     // Comprobar si esta categoría estaba seleccionada anteriormente
-                    const checkboxName = `categorias[${nivel.id}][]`;
-                    if (seleccionesActuales[checkboxName] && seleccionesActuales[checkboxName].includes(categoria.id.toString())) {
+                    // Primero verificar en old() de Laravel
+                    const nivelIdStr = nivel.id.toString();
+                    if (oldCategorias && oldCategorias[nivelIdStr] && 
+                        oldCategorias[nivelIdStr].includes(categoria.id.toString())) {
                         checkbox.checked = true;
+                    }
+                    // Si no está en old(), verificar en las selecciones actuales de la sesión
+                    else {
+                        const checkboxName = `categorias[${nivel.id}][]`;
+                        if (seleccionesActuales[checkboxName] && 
+                            seleccionesActuales[checkboxName].includes(categoria.id.toString())) {
+                            checkbox.checked = true;
+                        }
                     }
                     
                     const label = document.createElement('label');
@@ -719,42 +858,113 @@ function cargarCategoriasPorNivel() {
     });
 }
 
-// Validación en tiempo real para campos normales
-document.querySelectorAll('input').forEach(field => {
-    field.addEventListener('input', function() {
-        const fieldId = this.id;
-        switch(fieldId) {
-            case 'name':
-                validateName();
-                break;
-            case 'email':
-                validateEmail();
-                break;
-            case 'codigo_centro':
-                validateCodigoCentro();
-                break;
-            case 'direccion':
-                validateDireccion();
-                break;
-            case 'provincia':
-                validateProvincia();
-                break;
-            case 'codigo_postal':
-                validateCodigoPostal();
-                break;
-            case 'representante_legal':
-                validateRepresentanteLegal();
-                break;
-            case 'cargo_representante':
-                validateCargoRepresentante();
-                break;
-            case 'password':
-                validatePassword();
-                validatePasswordConfirmation();
-                break;
-            case 'password_confirmation':
-                validatePasswordConfirmation();
-                break;
+// Cargar provincias y ciudades
+window.loadProvincias = function() {
+    fetch('/api/provincias')
+        .then(response => response.json())
+        .then(data => {
+            const select = document.getElementById('provincia');
+            select.innerHTML = '<option value="">Selecciona una provincia</option>';
+            
+            data.forEach(provincia => {
+                const option = document.createElement('option');
+                option.value = provincia.nombre;
+                option.textContent = provincia.nombre;
+                select.appendChild(option);
+            });
+            
+            // Restaurar provincia si hay un valor anterior
+            const provinciaAnterior = document.getElementById('provincia_anterior').value;
+            if (provinciaAnterior) {
+                select.value = provinciaAnterior;
+                // Cargar ciudades de esta provincia
+                window.loadCiudades(provinciaAnterior);
+            }
+        })
+        .catch(error => console.error('Error cargando provincias:', error));
+};
+
+window.loadCiudades = function(provincia, callback) {
+    console.log('Cargando ciudades para provincia:', provincia);
+    fetch(`/api/ciudades?provincia=${encodeURIComponent(provincia)}`)
+        .then(response => {
+            console.log('Respuesta status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Ciudades recibidas:', data);
+            const select = document.getElementById('ciudad');
+            select.innerHTML = '<option value="">Selecciona una ciudad</option>';
+            
+            data.forEach(ciudad => {
+                const option = document.createElement('option');
+                option.value = ciudad.nombre;
+                option.textContent = ciudad.nombre;
+                select.appendChild(option);
+            });
+            
+            // Restaurar ciudad si hay un valor anterior
+            const ciudadAnterior = document.getElementById('ciudad_anterior').value;
+            if (ciudadAnterior) {
+                select.value = ciudadAnterior;
+            }
+            
+            // Si hay un callback, ejecutarlo
+            if (typeof callback === 'function') {
+                callback();
+            }
+        })
+        .catch(error => console.error('Error cargando ciudades:', error));
+};
+
+// Validación de ciudad
+window.validateCiudad = function() {
+    const ciudadField = document.getElementById('ciudad');
+    if (!ciudadField) return true;
+    
+    const ciudadValue = ciudadField.value.trim();
+    if (!ciudadValue) {
+        window.updateFieldStatus(ciudadField, false, 'Debes seleccionar una ciudad');
+        return false;
+    }
+    
+    window.updateFieldStatus(ciudadField, true);
+    return true;
+};
+
+// Validación completa del formulario
+window.validateForm = function() {
+    const validations = [
+        window.validateName(),
+        window.validateEmail(),
+        window.validateCodigoCentro(),
+        window.validateNivelesEducativos(),
+        window.validateDireccion(),
+        window.validateProvincia(),
+        window.validateCiudad(),
+        window.validateCodigoPostal(),
+        window.validateRepresentanteLegal(),
+        window.validateCargoRepresentante(),
+        window.validatePassword(),
+        window.validatePasswordConfirmation()
+    ];
+    
+    return validations.every(Boolean);
+};
+
+// Cuando el DOM esté cargado
+document.addEventListener('DOMContentLoaded', function() {
+    // ... existing code ...
+    
+    // Marcar los campos con errores de servidor
+    const serverErrors = document.querySelectorAll('.text-red-500:not([id*="-error"])');
+    serverErrors.forEach(errorElement => {
+        const parentField = errorElement.closest('.mb-4');
+        if (parentField) {
+            const input = parentField.querySelector('input, select');
+            if (input) {
+                input.classList.add('border-red-500');
+            }
         }
     });
 });

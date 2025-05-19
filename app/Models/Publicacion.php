@@ -53,4 +53,16 @@ class Publicacion extends Model
     {
         return $this->hasMany(Solicitud::class, 'publicacion_id');
     }
+    
+    public function candidatosAceptados()
+    {
+        return $this->hasManyThrough(
+            User::class,
+            Solicitud::class,
+            'publicacion_id', // Foreign key on Solicitud table...
+            'id', // Foreign key on User table...
+            'id', // Local key on Publicacion table...
+            'estudiante_id' // Local key on Solicitud table...
+        )->where('solicitudes.estado', 'aceptada');
+    }
 }

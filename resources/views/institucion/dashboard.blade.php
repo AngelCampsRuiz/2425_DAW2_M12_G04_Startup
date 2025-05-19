@@ -159,6 +159,19 @@
                     <p class="text-sm text-gray-600 mt-1">Ver solicitudes pendientes</p>
                 </div>
             </a>
+            
+            <!-- Estudiantes Pendientes -->
+            <a href="{{ route('institucion.estudiantes.pendientes') }}" class="flex items-center p-5 rounded-xl shadow-sm hover:shadow-md border border-purple-100 hover:border-purple-300 transition-all duration-300 bg-gradient-to-br from-white to-purple-50 group">
+                <div class="bg-purple-100 group-hover:bg-purple-200 rounded-full p-3 mr-4 transition-colors duration-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-base text-gray-800">Estudiantes Pendientes</h3>
+                    <p class="text-sm text-gray-600 mt-1">Activar nuevos estudiantes</p>
+                </div>
+            </a>
         </div>
     </div>
 </div>
