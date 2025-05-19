@@ -779,4 +779,7 @@
     }
     });
 </script>
+
+<!-- Script de validaciones para publicaciones -->
+<script src="{{ asset('js/publicaciones-validaciones.js') }}"></script>
 @endsection 
