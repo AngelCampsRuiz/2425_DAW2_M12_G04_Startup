@@ -88,7 +88,20 @@ function initSearchBox() {
 
 async function searchLocation(query) {
     try {
-        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1&countrycodes=es&bounded=1&viewbox=-9.5,44.0,3.5,35.9`);
+        // Añadir parámetros específicos para mejorar la búsqueda en España
+        const params = new URLSearchParams({
+            format: 'json',
+            q: query,
+            limit: 5,
+            addressdetails: 1,
+            countrycodes: 'es',
+            bounded: 1,
+            viewbox: '-9.5,44.0,3.5,35.9', // Bounding box de España
+            featuretype: 'street,house', // Priorizar calles y números
+            'accept-language': 'es' // Forzar resultados en español
+        });
+
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?${params}`);
         const data = await response.json();
         
         const searchResults = document.getElementById('searchResults');
@@ -114,11 +127,25 @@ async function searchLocation(query) {
             const address = result.address;
             const direccionParts = [];
             
-            if (address.road) direccionParts.push(address.road);
-            if (address.house_number) direccionParts.push(address.house_number);
-            if (address.suburb) direccionParts.push(address.suburb);
+            // Mejorar la construcción de la dirección
+            if (address.road) {
+                let calle = address.road;
+                if (address.house_number) {
+                    calle += `, ${address.house_number}`;
+                }
+                direccionParts.push(calle);
+            }
+            
+            if (address.postcode) {
+                direccionParts.push(address.postcode);
+            }
+            
             if (address.city || address.town || address.village) {
                 direccionParts.push(address.city || address.town || address.village);
+            }
+            
+            if (address.state) {
+                direccionParts.push(address.state);
             }
             
             const direccionCompleta = direccionParts.join(', ');
@@ -146,7 +173,8 @@ async function searchLocation(query) {
                     lat: lat,
                     lng: lon,
                     direccion: direccionCompleta,
-                    ciudad: address.city || address.town || address.village || ''
+                    ciudad: address.city || address.town || address.village || '',
+                    codigoPostal: address.postcode || ''
                 };
                 
                 map.setView([lat, lon], 16);
