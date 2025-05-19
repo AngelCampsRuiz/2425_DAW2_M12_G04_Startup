@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('cv_pdf', 255);
             $table->string('numero_seguridad_social', 50);
             $table->foreign('id')->references('id')->on('user');
-            $table->foreignId('titulo_id')->constrained('titulos');
+            $table->foreignId('categoria_id')->constrained('categorias');
             $table->timestamps();
         });
     }
