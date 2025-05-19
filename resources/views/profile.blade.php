@@ -284,7 +284,7 @@
                                                 <svg class="w-5 h-5 text-purple-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                                 </svg>
-                                                <a href="{{ asset('public/cv_pdfs/' . $user->estudiante->cv_pdf) }}"
+                                                <a href="{{ url('cv/' . $user->estudiante->cv_pdf) }}"
                                                    class="text-purple-600 hover:text-purple-800"
                                                    target="_blank">
                                                     {{ __('messages.view_cv') }}
@@ -523,7 +523,7 @@
                                             </div>
                                             <h3 class="text-xl font-semibold text-gray-900 ml-4">Curriculum Vitae</h3>
                                         </div>
-                                        <a href="{{ asset('cv/' . $user->estudiante->cv_pdf) }}"
+                                        <a href="{{ url('cv/' . $user->estudiante->cv_pdf) }}"
                                            target="_blank"
                                            class="inline-flex items-center px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
                                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1215,7 +1215,7 @@
                                             <label class="block text-sm font-medium text-gray-700 mb-2">CV Actual</label>
                                             @if($user->estudiante && $user->estudiante->cv_pdf)
                                                 <div class="mt-2 mb-4">
-                                                    <a href="{{ asset('cv/' . $user->estudiante->cv_pdf) }}"
+                                                    <a href="{{ url('cv/' . $user->estudiante->cv_pdf) }}"
                                                        target="_blank"
                                                        class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-purple-50 to-indigo-50 text-purple-700 rounded-xl hover:from-purple-100 hover:to-indigo-100 transition-all duration-200">
                                                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1626,7 +1626,7 @@
                         if (user.estudiante && user.estudiante.cv_pdf) {
                             const cvLink = document.querySelector('a[href*="cv/"]');
                             if (cvLink) {
-                                cvLink.href = `/cv/${user.estudiante.cv_pdf}`;
+                                cvLink.href = `${window.location.origin}/cv/${user.estudiante.cv_pdf}`;
                             }
                         }
 
