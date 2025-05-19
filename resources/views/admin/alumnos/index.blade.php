@@ -376,65 +376,6 @@
                 });
             }
             
-            // Envío del formulario
-            const formAlumno = document.getElementById('form-alumno');
-            if (formAlumno) {
-                formAlumno.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    
-                    // Evitar envíos duplicados
-                    if (isSubmitting) return;
-                    isSubmitting = true;
-                    
-                    const formData = new FormData(this);
-                    const url = this.getAttribute('action');
-                    const method = document.getElementById('form_method').value;
-                    
-                    // Incluir método PUT para ediciones
-                    if (method === 'PUT') {
-                        formData.append('_method', 'PUT');
-                    }
-                    
-                    // Deshabilitar botones durante la petición
-                    document.getElementById('btn-guardar').disabled = true;
-                    
-                    fetch(url, {
-                        method: 'POST', // Siempre POST para enviar archivos
-                        body: formData,
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest'
-                        }
-                    })
-                    .then(response => {
-                        console.log("Respuesta del servidor:", response);
-                        if (!response.ok) {
-                            throw new Error(`Error del servidor: ${response.status}`);
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        console.log("Datos recibidos:", data);
-                        if (data.success) {
-                            document.getElementById('modal-alumno').classList.add('hidden');
-                            mostrarMensajeExito(data.message || 'Operación realizada correctamente');
-                            window.location.reload(); // Forzar recarga de la página
-                        } else if (data.errors) {
-                            mostrarErrores(data.errors);
-                        } else {
-                            alert(data.message || 'Ha ocurrido un error desconocido');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('Ha ocurrido un error al procesar la solicitud: ' + error.message);
-                    })
-                    .finally(() => {
-                        isSubmitting = false;
-                        document.getElementById('btn-guardar').disabled = false;
-                    });
-                });
-            }
-            
             // Modal confirmación
             const modalEliminarClose = document.getElementById('modal-eliminar-close');
             const btnCancelarEliminar = document.getElementById('btn-cancelar-eliminar');
@@ -494,7 +435,9 @@
         }
     });
     
-    function mostrarFormularioCrear() {
+    // Función para mostrar formulario de crear alumno
+    // Expuesta globalmente para que pueda ser utilizada desde el script de validación
+    window.mostrarFormularioCrear = function() {
         // Resetear el formulario
         const form = document.getElementById('form-alumno');
         if (form) {
@@ -549,9 +492,11 @@
                 modalAlumno.classList.remove('hidden');
             }
         }
-    }
+    };
     
-    function mostrarFormularioEditar(id) {
+    // Función para mostrar formulario de editar alumno
+    // Expuesta globalmente para que pueda ser utilizada desde el script de validación
+    window.mostrarFormularioEditar = function(id) {
         if (!id) {
             console.error('ID de alumno no válido');
             return;
@@ -668,10 +613,11 @@
                 alert('Error al obtener los datos del alumno: ' + error.message);
             });
         }
-    }
+    };
     
     // Funciones para activar/desactivar
-    function openActivateModal(id, isActive) {
+    // Expuesta globalmente para que pueda ser utilizada desde el script de validación
+    window.openActivateModal = function(id, isActive) {
         const alumnoIdInput = document.getElementById('alumno_id_activar');
         const isActiveInput = document.getElementById('is_active');
         const actionTitle = document.getElementById('action-title');
@@ -703,7 +649,7 @@
         
         modal.classList.remove('hidden');
         modal.classList.add('flex');
-    }
+    };
     
     function closeDeleteModal() {
         const modal = document.getElementById('modal-eliminar');
@@ -788,9 +734,8 @@
             
             if (data.success) {
                 mostrarMensajeExito(data.message || 'Estado actualizado correctamente');
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1000);
+                // Recargar solo la tabla en lugar de toda la página
+                window.refreshAlumnosTable();
             } else {
                 alert(data.message || 'Ha ocurrido un error al procesar la solicitud');
             }
@@ -809,7 +754,8 @@
     }
     
     // Función utilitaria para mostrar mensaje de éxito
-    function mostrarMensajeExito(mensaje) {
+    // Expuesta globalmente para que pueda ser utilizada desde el script de validación
+    window.mostrarMensajeExito = function(mensaje) {
         const messageElement = document.getElementById('success-message');
         const messageText = document.getElementById('success-message-text');
         
@@ -823,76 +769,7 @@
                 messageElement.style.display = 'none';
             }, 5000);
         }
-    }
-    
-    // Función para mostrar errores
-    function mostrarErrores(errores) {
-        const errorsDiv = document.getElementById('form-errors');
-        const errorsList = document.getElementById('error-list');
-        
-        if (!errorsDiv || !errorsList) return;
-        
-        errorsList.innerHTML = '';
-        
-        for (const key in errores) {
-            if (Object.hasOwnProperty.call(errores, key)) {
-                errores[key].forEach(error => {
-                    const li = document.createElement('li');
-                    li.textContent = error;
-                    errorsList.appendChild(li);
-                });
-                
-                // Resaltar campo con error
-                const campo = document.getElementById(key);
-                if (campo) {
-                    campo.classList.add('border-red-500');
-                }
-            }
-        }
-        
-        errorsDiv.classList.remove('hidden');
-    }
-    
-    // Función para actualizar la tabla
-    function refreshAlumnosTable() {
-        // Mostrar indicador de carga
-        const tablaContainer = document.getElementById('tabla-container');
-        if (tablaContainer) {
-            tablaContainer.innerHTML = '<div class="flex justify-center items-center p-8"><svg class="animate-spin h-10 w-10 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>';
-        }
-
-        fetch('/admin/alumnos/tabla?_=' + new Date().getTime(), {
-            method: 'GET',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'text/html'
-            }
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`Error en la respuesta del servidor: ${response.status}`);
-            }
-            return response.text();
-        })
-        .then(html => {
-            if (tablaContainer) {
-                tablaContainer.innerHTML = html;
-            } else {
-                console.error('No se encontró el contenedor de la tabla');
-            }
-        })
-        .catch(error => {
-            console.error('Error al actualizar la tabla:', error);
-            if (tablaContainer) {
-                tablaContainer.innerHTML = `
-                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-                        <strong class="font-bold">Error:</strong>
-                        <span class="block sm:inline">No se pudieron cargar los datos. Intente nuevamente.</span>
-                    </div>
-                `;
-            }
-        });
-    }
+    };
     
     // Función para aplicar filtros
     function aplicarFiltros() {
@@ -975,6 +852,99 @@
             }
         });
     }
+    
+    // Exponer función de actualizar tabla globalmente para que pueda ser utilizada desde el script de validación
+    window.refreshAlumnosTable = function() {
+        // Obtener los valores de los filtros actuales
+        const filtroNombre = document.getElementById('filtro_nombre')?.value || '';
+        const filtroEmail = document.getElementById('filtro_email')?.value || '';
+        const filtroDni = document.getElementById('filtro_dni')?.value || '';
+        const filtroCiudad = document.getElementById('filtro_ciudad')?.value || '';
+        const filtroEstado = document.getElementById('filtro_estado')?.value || '';
+        
+        // Construir parámetros de filtrado
+        const params = new URLSearchParams();
+        if (filtroNombre) params.append('nombre', filtroNombre);
+        if (filtroEmail) params.append('email', filtroEmail);
+        if (filtroDni) params.append('dni', filtroDni);
+        if (filtroCiudad) params.append('ciudad', filtroCiudad);
+        if (filtroEstado) params.append('estado', filtroEstado);
+        
+        // Añadir timestamp para evitar caché
+        params.append('_', new Date().getTime());
+        
+        // Mostrar indicador de carga
+        const tablaContainer = document.getElementById('tabla-container');
+        if (tablaContainer) {
+            tablaContainer.innerHTML = `
+                <div class="flex justify-center items-center p-8">
+                    <svg class="animate-spin h-10 w-10 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </div>
+            `;
+        }
+
+        // Hacer petición AJAX para obtener la tabla actualizada
+        fetch(`/admin/alumnos?${params.toString()}`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Error en la respuesta: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (tablaContainer && data.tabla) {
+                tablaContainer.innerHTML = data.tabla;
+                
+                // Volver a conectar eventos a los nuevos botones
+                document.querySelectorAll('.btn-editar').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const id = this.getAttribute('data-id');
+                        mostrarFormularioEditar(id);
+                    });
+                });
+                
+                document.querySelectorAll('.btn-activar').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const id = this.getAttribute('data-id');
+                        const isActive = this.getAttribute('data-active');
+                        openActivateModal(id, isActive);
+                    });
+                });
+                
+                document.querySelectorAll('.btn-crear').forEach(btn => {
+                    btn.addEventListener('click', mostrarFormularioCrear);
+                });
+            } else {
+                console.error('Error al cargar la tabla o datos no válidos');
+                tablaContainer.innerHTML = `
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                        <strong class="font-bold">Error:</strong>
+                        <span class="block sm:inline">No se pudieron cargar los datos correctamente.</span>
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error al actualizar la tabla:', error);
+            if (tablaContainer) {
+                tablaContainer.innerHTML = `
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                        <strong class="font-bold">Error:</strong>
+                        <span class="block sm:inline">No se pudieron cargar los datos. ${error.message}</span>
+                    </div>
+                `;
+            }
+        });
+    };
 </script>
 
 <style>
@@ -1001,4 +971,7 @@
     }
 }
 </style>
+
+<!-- Script de validaciones para alumnos -->
+<script src="{{ asset('js/alumnos-validaciones.js') }}"></script>
 @endpush 
