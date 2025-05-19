@@ -114,8 +114,8 @@
                                     </svg>
                                 </div>
                                 <div>
-                                    <h3 class="text-xl font-bold text-gray-900">{{ __('messages.profile_progress') }}</h3>
-                                    <p class="text-sm text-gray-500">{{ __('messages.complete_your_profile') }}</p>
+                                    <h3 class="text-xl font-bold text-gray-900">{{ __('progreso') }}</h3>
+                                    <p class="text-sm text-gray-500">{{ __('completa tu perfil') }}</p>
                                 </div>
                             </div>
                             <button id="toggleButton" class="text-gray-500 hover:text-purple-700 transition-colors">
@@ -175,7 +175,7 @@
                                         @elseif($porcentaje < 80)
                                             {{ __('messages.you_are_on_the_right_track') }}
                                         @else
-                                            {{ __('messages.almost_there') }}
+                                            {{ __('porcentaje del perfil completado') }}
                                         @endif
                                     </div>
                                 </div>
@@ -304,7 +304,7 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                                             </svg>
                                         </div>
-                                        <h2 class="text-2xl font-bold text-gray-900">{{ __('messages.student_experiences') }}</h2>
+                                        <h2 class="text-2xl font-bold text-gray-900">{{ __('Experiencias') }}</h2>
                                     </div>
                                     <div class="overflow-x-auto">
                                         <table class="min-w-full divide-y divide-gray-200">
@@ -314,7 +314,7 @@
                                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('messages.position') }}</th>
                                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('messages.start_date') }}</th>
                                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('messages.end_date') }}</th>
-                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('messages.description') }}</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Descripcion') }}</th>
                                                 </tr>
                                             </thead>
                                             <tbody class="bg-white divide-y divide-gray-200">
@@ -371,7 +371,7 @@
                                                 </div>
                                             </div>
                                             <div class="ml-4">
-                                                <p class="text-sm font-medium text-gray-500">{{ __('messages.city_profile') }}</p>
+                                                <p class="text-sm font-medium text-gray-500">{{ __('Ciudad') }}</p>
                                                 <p class="text-lg font-semibold text-gray-900" data-valor="ciudad">{{ $user->ciudad ?? 'No especificada' }}</p>
                                             </div>
                                         </div>
@@ -385,7 +385,7 @@
                                                 </div>
                                             </div>
                                             <div class="ml-4">
-                                                <p class="text-sm font-medium text-gray-500">{{ __('messages.phone') }}</p>
+                                                <p class="text-sm font-medium text-gray-500">{{ __('Telefono') }}</p>
                                                 <p class="text-lg font-semibold text-gray-900" data-valor="telefono">{{ $user->telefono ?? 'No especificado' }}</p>
                                             </div>
                                         </div>
@@ -430,7 +430,7 @@
                                                 </div>
                                             </div>
                                             <div class="ml-4">
-                                                <p class="text-sm font-medium text-gray-500">{{ __('messages.address_profile') }}</p>
+                                                <p class="text-sm font-medium text-gray-500">{{ __('DIreccion') }}</p>
                                                 <p class="text-lg font-semibold text-gray-900" data-valor="direccion">{{ $user->direccion ?? 'No especificada' }}</p>
                                             </div>
                                         </div>
