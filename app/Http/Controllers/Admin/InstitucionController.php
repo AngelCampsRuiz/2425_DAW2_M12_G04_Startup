@@ -153,7 +153,7 @@ class InstitucionController extends Controller
             if ($request->hasFile('imagen')) {
                 $imagen = $request->file('imagen');
                 $nombreImagen = time() . '_' . $imagen->getClientOriginalName();
-                $imagen->move(public_path('public/profile_images'), $nombreImagen);
+                $imagen->move(public_path('profile_images'), $nombreImagen);
                 $imagenPath = $nombreImagen;
             }
             
@@ -321,7 +321,7 @@ class InstitucionController extends Controller
                 // Guardar nueva imagen
                 $imagen = $request->file('imagen');
                 $nombreImagen = time() . '_' . $imagen->getClientOriginalName();
-                $imagen->move(public_path('public/profile_images'), $nombreImagen);
+                $imagen->move(public_path('profile_images'), $nombreImagen);
                 $imagenPath = $nombreImagen;
                 $userData['imagen'] = $imagenPath;
             } elseif ($request->has('eliminar_imagen_actual') && $user->imagen) {

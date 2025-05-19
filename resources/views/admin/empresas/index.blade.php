@@ -96,7 +96,7 @@
     <div id="tabla-container" class="bg-white rounded-lg shadow overflow-hidden">
         <!-- Header con título y botón de crear -->
         <div class="flex justify-between items-center px-6 py-4 border-b border-gray-200">
-            <div></div>
+            <h1 class="text-2xl font-semibold text-gray-800">Empresas</h1>
             <button id="btnCrearEmpresa" class="inline-flex items-center px-4 py-2 bg-purple-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-purple-700 active:bg-purple-900 focus:outline-none focus:border-purple-900 focus:ring ring-purple-300 disabled:opacity-25 transition ease-in-out duration-150">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -141,7 +141,80 @@
 
         <!-- Tabla para móvil (diseño en tarjetas) -->
         <div class="md:hidden p-4" id="tabla-mobile">
-            @include('admin.empresas.tabla')
+            @forelse ($empresas as $empresa)
+                <div class="bg-white rounded-lg shadow mb-4 p-4">
+                    <div class="flex justify-between items-center border-b pb-2 mb-2">
+                        <div class="flex items-center">
+                            @if($empresa->user->imagen)
+                                <div class="flex-shrink-0 h-10 w-10 mr-3">
+                                    <img class="h-10 w-10 rounded-full object-cover" 
+                                         src="{{ asset('profile_images/' . $empresa->user->imagen) }}" 
+                                         alt="Logo de {{ $empresa->user->nombre }}"
+                                         onerror="this.onerror=null; this.src='{{ asset('img/default-logo.png') }}';">
+                                </div>
+                            @else
+                                <div class="flex-shrink-0 h-10 w-10 bg-purple-100 rounded-full flex items-center justify-center mr-3">
+                                    <span class="text-purple-800 font-medium">{{ substr($empresa->user->nombre, 0, 2) }}</span>
+                                </div>
+                            @endif
+                            <div class="font-semibold text-lg">{{ $empresa->nombre_comercial ?? $empresa->user->nombre }}</div>
+                        </div>
+                        <div class="flex space-x-1">
+                            <button class="btn-editar text-indigo-600 hover:text-indigo-900 bg-indigo-100 p-2 rounded-full" data-id="{{ $empresa->id }}">
+                                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                            </button>
+                            <button class="btn-activar {{ $empresa->user->activo ? 'text-red-600 hover:text-red-900 bg-red-100' : 'text-green-600 hover:text-green-900 bg-green-100' }} p-2 rounded-full" 
+                                    data-id="{{ $empresa->id }}" 
+                                    data-active="{{ $empresa->user->activo ? '1' : '0' }}">
+                                @if($empresa->user->activo)
+                                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                @else
+                                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                @endif
+                            </button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 text-sm">
+                        <div>
+                            <span class="font-medium text-gray-500">Email:</span>
+                            <p class="text-gray-800">{{ $empresa->user->email }}</p>
+                        </div>
+                        <div>
+                            <span class="font-medium text-gray-500">CIF:</span>
+                            <p class="text-gray-800">{{ $empresa->cif }}</p>
+                        </div>
+                        <div>
+                            <span class="font-medium text-gray-500">Ciudad:</span>
+                            <p class="text-gray-800">{{ $empresa->user->ciudad ?: 'No especificado' }}</p>
+                        </div>
+                        <div>
+                            <span class="font-medium text-gray-500">Teléfono:</span>
+                            <p class="text-gray-800">{{ $empresa->user->telefono }}</p>
+                        </div>
+                        <div>
+                            <span class="font-medium text-gray-500">Estado:</span>
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $empresa->user->activo ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                {{ $empresa->user->activo ? 'Activa' : 'Inactiva' }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            @empty
+                <div class="text-center py-4 text-gray-500">
+                    No hay empresas para mostrar
+                </div>
+            @endforelse
+        </div>
+        
+        <!-- Paginación común para ambas vistas -->
+        <div class="px-6 py-4 border-t border-gray-200">
+            {{ $empresas->links() }}
         </div>
     </div>
 
@@ -322,7 +395,7 @@
             
             <p class="text-gray-600 mb-6" id="action-message">¿Estás seguro de que deseas desactivar esta empresa? Las empresas desactivadas no serán visibles para los usuarios.</p>
             
-            <form id="form-activar" onsubmit="handleActivar(event)">
+            <form id="form-activar" onsubmit="handleActivateSubmit()">
                 @csrf
                 @method('PUT')
                 <input type="hidden" name="empresa_id" id="empresa_id_activar">
@@ -355,11 +428,26 @@
 
 @push('scripts')
 <script>
-    // Variable global para control de envíos
-    let isSubmitting = false;
-    
+    /**
+     * Gestión de Empresas
+     * 
+     * Esta página utiliza patrones simples para evitar duplicación de contenido:
+     * 1. La tabla principal se carga inicialmente con la vista y se incluye el archivo tabla.blade.php
+     * 2. Las operaciones AJAX (crear, editar, activar/desactivar) recargan la página al completarse
+     * 3. Los filtros redirigen a la misma página con parámetros de URL para filtrar resultados
+     * 
+     * Scripts:
+     * - setupEventListeners: Configura eventos para botones estáticos y dinámicos
+     * - setupFilterListeners: Configura eventos para los filtros
+     * - mostrarFormularioCrear/Editar: Maneja la visualización del formulario
+     * - enviarFormulario: Procesa el envío del formulario mediante AJAX
+     * - handleActivateSubmit: Maneja la activación/desactivación de empresas
+     * - aplicarFiltros: Redirecciona con parámetros de filtro
+     */
+
     document.addEventListener('DOMContentLoaded', function() {
-        // Variables de control
+        // Variables globales
+        let isSubmitting = false;
         let timeoutId = null;
 
         // Inicializar event listeners
@@ -631,7 +719,7 @@
                     const imagenPreviewImg = document.getElementById('imagen-preview-img');
                     
                     if (empresa.user.imagen) {
-                        if (imagenPreviewImg) imagenPreviewImg.src = `/public/profile_images/${empresa.user.imagen}`;
+                        if (imagenPreviewImg) imagenPreviewImg.src = `/profile_images/${empresa.user.imagen}`;
                         if (imagenPreview) imagenPreview.classList.remove('hidden');
                     } else {
                         if (imagenPreview) imagenPreview.classList.add('hidden');
@@ -683,7 +771,10 @@
         
         // Deshabilitar botón de guardar
         const btnGuardar = document.getElementById('btn-guardar');
-        if (btnGuardar) btnGuardar.disabled = true;
+        if (btnGuardar) {
+            btnGuardar.disabled = true;
+            btnGuardar.innerHTML = '<svg class="animate-spin h-5 w-5 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
+        }
         
         fetch(url, {
             method: 'POST',
@@ -696,18 +787,8 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Cerrar modal y mostrar mensaje de éxito
-                const modalEmpresa = document.getElementById('modal-empresa');
-                if (modalEmpresa) {
-                    modalEmpresa.classList.add('hidden');
-                    modalEmpresa.classList.remove('flex');
-                    modalEmpresa.style.display = 'none';
-                }
-                
-                mostrarMensajeExito(data.message || 'Empresa guardada correctamente');
-                
-                // Actualizar tabla
-                refreshEmpresasTable();
+                // Si la operación fue exitosa, recargar la página
+                window.location.reload();
             } else if (data.errors) {
                 mostrarErrores(data.errors);
             } else {
@@ -720,7 +801,10 @@
         })
         .finally(() => {
             isSubmitting = false;
-            if (btnGuardar) btnGuardar.disabled = false;
+            if (btnGuardar) {
+                btnGuardar.disabled = false;
+                btnGuardar.innerHTML = 'Guardar';
+            }
         });
     }
     
@@ -777,6 +861,10 @@
             return;
         }
         
+        // Mostrar un indicador de carga
+        document.getElementById('action-button').disabled = true;
+        document.getElementById('action-button').innerHTML = '<svg class="animate-spin h-5 w-5 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
+        
         fetch(`/admin/empresas/${id}`, {
             method: 'POST',
             headers: {
@@ -794,8 +882,8 @@
             closeDeleteModal();
             
             if (data.success) {
-                mostrarMensajeExito(data.message || 'Operación realizada correctamente');
-                window.location.reload(); // Recargar la página para asegurar que se actualiza correctamente
+                // Recargar la página para mostrar los cambios
+                window.location.reload();
             } else {
                 alert(data.message || 'Ha ocurrido un error');
             }
@@ -849,41 +937,6 @@
     }
     
     function refreshEmpresasTable() {
-        fetch('/admin/empresas', {
-            method: 'GET',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            const tablaContainer = document.getElementById('tabla-empresas') || document.getElementById('tabla-container');
-            if (tablaContainer && data.tabla) {
-                tablaContainer.innerHTML = data.tabla;
-                
-                // Corrige las rutas de las imágenes
-                const imagenes = tablaContainer.querySelectorAll('img[src*="public/profile_images"]');
-                imagenes.forEach(img => {
-                    // Asegúrate de que la ruta comience con una barra
-                    if (!img.src.startsWith('/')) {
-                        img.src = '/' + img.src;
-                    }
-                });
-                
-                setupEventListeners(); // Volver a configurar los event listeners
-            } else {
-                console.error('No se encontró el contenedor de la tabla o datos en la respuesta');
-                window.location.reload(); // Si hay algún problema, recargar la página
-            }
-        })
-        .catch(error => {
-            console.error('Error al actualizar la tabla:', error);
-            window.location.reload(); // En caso de error, recargar la página
-        });
-    }
-
-    // Función para aplicar filtros
-    function aplicarFiltros() {
         // Mostrar un indicador de carga
         const tablaContainer = document.getElementById('tabla-container');
         if (tablaContainer) {
@@ -906,40 +959,30 @@
             }
         });
         
-        // Añadir parámetro para indicar que es una solicitud AJAX
-        params.append('ajax', '1');
+        // Redireccionar a la misma página con los parámetros de filtro
+        window.location.href = `/admin/empresas?${params.toString()}`;
+    }
+
+    // Función para aplicar filtros
+    function aplicarFiltros() {
+        const filtros = {
+            nombre: document.getElementById('filtro_nombre')?.value || '',
+            email: document.getElementById('filtro_email')?.value || '',
+            cif: document.getElementById('filtro_cif')?.value || '',
+            ciudad: document.getElementById('filtro_ciudad')?.value || '',
+            estado: document.getElementById('filtro_estado')?.value || ''
+        };
         
-        fetch(`/admin/empresas?${params.toString()}`, {
-            method: 'GET',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`Error del servidor: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (tablaContainer && data.tabla) {
-                // Usar los datos formateados de la respuesta
-                tablaContainer.innerHTML = data.tabla;
-            } else {
-                console.error('No se encontró el contenedor o datos de la tabla');
-            }
-        })
-        .catch(error => {
-            console.error('Error al aplicar filtros:', error);
-            if (tablaContainer) {
-                tablaContainer.innerHTML = `
-                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-                        <strong class="font-bold">Error:</strong>
-                        <span class="block sm:inline">No se pudieron cargar los datos. Intente nuevamente.</span>
-                    </div>
-                `;
+        // Construir los parámetros de la consulta
+        const params = new URLSearchParams();
+        Object.entries(filtros).forEach(([key, value]) => {
+            if (value) {
+                params.append(key, value);
             }
         });
+        
+        // Redireccionar a la misma página con los parámetros de filtro
+        window.location.href = `/admin/empresas?${params.toString()}`;
     }
 </script>
 

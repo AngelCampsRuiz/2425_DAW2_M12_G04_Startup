@@ -82,7 +82,7 @@ class ProfesorController extends Controller
             if ($request->hasFile('imagen')) {
                 $imagen = $request->file('imagen');
                 $nombreImagen = time() . '_' . $imagen->getClientOriginalName();
-                $imagen->move(public_path('public/profile_images'), $nombreImagen);
+                $imagen->move(public_path('profile_images'), $nombreImagen);
                 $imagenPath = $nombreImagen;
             }
 
@@ -228,7 +228,7 @@ class ProfesorController extends Controller
                 
                 $imagen = $request->file('imagen');
                 $nombreImagen = time() . '_' . $imagen->getClientOriginalName();
-                $imagen->move(public_path('public/profile_images'), $nombreImagen);
+                $imagen->move(public_path('profile_images'), $nombreImagen);
                 $user->imagen = $nombreImagen;
             } elseif ($request->has('eliminar_imagen_actual') && $request->eliminar_imagen_actual == '1') {
                 // Eliminar la imagen actual si se ha solicitado

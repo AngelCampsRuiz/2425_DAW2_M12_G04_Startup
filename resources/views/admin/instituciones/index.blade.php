@@ -754,7 +754,7 @@
                         
                         if (imagenContainer && imagenActual) {
                             if (data.institucion.user.imagen) {
-                                imagenActual.src = `{{ asset('public/profile_images') }}/${data.institucion.user.imagen}`;
+                                imagenActual.src = `{{ asset('profile_images') }}/${data.institucion.user.imagen}`;
                                 imagenContainer.classList.remove('hidden');
                 } else {
                                 imagenContainer.classList.add('hidden');

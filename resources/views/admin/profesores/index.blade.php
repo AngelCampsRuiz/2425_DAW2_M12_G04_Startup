@@ -565,7 +565,7 @@
                     
                     if (user.imagen) {
                         if (imagenPreviewImg) {
-                            imagenPreviewImg.src = `/public/profile_images/${user.imagen}`;
+                            imagenPreviewImg.src = `/profile_images/${user.imagen}`;
                         }
                         if (imagenPreview) {
                             imagenPreview.classList.remove('hidden');

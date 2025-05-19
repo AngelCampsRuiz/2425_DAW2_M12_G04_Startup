@@ -640,7 +640,7 @@
                     const imagenPreviewImg = document.getElementById('imagen-preview-img');
                     
                     if (estudiante.user?.imagen) {
-                        if (imagenPreviewImg) imagenPreviewImg.src = `/public/profile_images/${estudiante.user.imagen}`;
+                        if (imagenPreviewImg) imagenPreviewImg.src = `/profile_images/${estudiante.user.imagen}`;
                         if (imagenPreview) imagenPreview.classList.remove('hidden');
                     } else {
                         if (imagenPreview) imagenPreview.classList.add('hidden');
