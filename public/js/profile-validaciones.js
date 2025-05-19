@@ -88,18 +88,22 @@ function validarDNI(field) {
 function validarCIF(field) {
     if (!field) return true;
     
-    const valor = field.value.trim();
+    const valor = field.value.trim().toUpperCase();
     if (!valor) {
         showError(field, "El CIF es obligatorio");
         return false;
     }
     
-    const cifRegex = /^[A-HJNP-SUVW][0-9]{7}[0-9A-J]$/;
-    if (!cifRegex.test(valor.toUpperCase())) {
-        showError(field, "Formato de CIF no válido");
+    // Validación básica del formato CIF
+    // Letra válida + 7 dígitos + dígito o letra de control
+    const cifRegex = /^[ABCDEFGHJKLMNPQRSUVW]\d{7}[0-9A-J]$/;
+    
+    if (!cifRegex.test(valor)) {
+        showError(field, "El formato del CIF debe ser: letra + 7 números + dígito/letra");
         return false;
     }
-    
+
+    // Si pasa la validación básica, lo consideramos válido
     hideError(field);
     return true;
 }
@@ -149,22 +153,28 @@ function handleFormSubmit(e) {
     const form = e.target;
     const isEmpresa = document.querySelector('[data-role="empresa"]') !== null;
     
-    // Campos comunes
-    const nombreInput = form.querySelector('[name="nombre"]');
-    
     // Validar campos obligatorios
     let isValid = true;
     
     // Validar nombre
+    const nombreInput = form.querySelector('[name="nombre"]');
     if (!nombreInput || !nombreInput.value.trim()) {
         showError(nombreInput, 'El nombre es obligatorio');
         isValid = false;
     }
 
+    // Validar CIF si es empresa
+    if (isEmpresa) {
+        const cifInput = form.querySelector('[name="cif"]');
+        if (cifInput && !validarCIF(cifInput)) {
+            isValid = false;
+        }
+    }
+
     if (!isValid) {
         Swal.fire({
             title: 'Error de validación',
-            text: 'Por favor, completa todos los campos obligatorios',
+            text: 'Por favor, completa todos los campos obligatorios correctamente',
             icon: 'error',
             confirmButtonColor: '#7C3AED'
         });
@@ -212,25 +222,129 @@ function handleFormSubmit(e) {
     })
     .then(data => {
         if (data.success) {
-            // Actualizar campos de visibilidad
             const user = data.user;
-            const camposVisibles = {
-                'telefono': user.show_telefono,
-                'cif': user.empresa && user.empresa.show_cif,
-                'ciudad': user.show_ciudad,
-                'direccion': user.show_direccion,
-                'web': user.show_web
-            };
+            console.log('Datos recibidos del servidor:', user);
 
-            // Actualizar la visibilidad de cada campo
-            Object.entries(camposVisibles).forEach(([campo, visible]) => {
-                const elemento = document.querySelector(`[data-campo="${campo}"]`);
-                if (elemento) {
-                    elemento.style.display = visible ? 'flex' : 'none';
+            // Actualizar nombre
+            const nombreElements = document.querySelectorAll('h1.text-4xl.font-bold');
+            nombreElements.forEach(el => el.textContent = user.nombre);
+
+            // Actualizar email
+            const emailElements = document.querySelectorAll('.text-purple-600 span, .text-purple-600');
+            emailElements.forEach(el => {
+                if (el.textContent.includes('@')) {
+                    el.textContent = user.email;
                 }
             });
 
-            // Mostrar mensaje de éxito sin recargar
+            // Actualizar descripción
+            const descripcionElement = document.querySelector('.bg-purple-50.rounded-xl p-6.mb-8 p');
+            if (descripcionElement) {
+                if (user.descripcion) {
+                    descripcionElement.textContent = user.descripcion;
+                    descripcionElement.parentElement.style.display = 'block';
+                } else {
+                    descripcionElement.parentElement.style.display = 'none';
+                }
+            }
+
+            // Actualizar campos de visibilidad y valores
+            const camposInfo = {
+                'telefono': { visible: user.show_telefono, valor: user.telefono },
+                'ciudad': { visible: user.show_ciudad, valor: user.ciudad },
+                'direccion': { visible: user.show_direccion, valor: user.direccion },
+                'web': { visible: user.show_web, valor: user.sitio_web }
+            };
+
+            // Actualización específica del CIF
+            if (user.empresa) {
+                console.log('Actualizando CIF:', user.empresa.cif);
+                console.log('Visibilidad CIF:', user.empresa.show_cif);
+
+                // Actualizar todos los elementos que muestran el CIF
+                const cifContainers = document.querySelectorAll('[data-campo="cif"], [data-campo="empresa-cif"]');
+                console.log('Contenedores CIF encontrados:', cifContainers.length);
+                
+                cifContainers.forEach(elemento => {
+                    elemento.style.display = user.empresa.show_cif ? 'flex' : 'none';
+                    console.log('Actualizando visibilidad de contenedor CIF:', elemento, user.empresa.show_cif);
+                });
+
+                // Actualizar el valor del CIF en todos los lugares donde aparece
+                const cifValues = document.querySelectorAll('[data-valor="cif"], .font-medium.text-gray-900[data-valor="cif"], p.font-medium.text-gray-900');
+                console.log('Elementos de valor CIF encontrados:', cifValues.length);
+                
+                cifValues.forEach(elemento => {
+                    elemento.textContent = user.empresa.cif || 'No especificado';
+                    console.log('Actualizando valor de CIF en elemento:', elemento);
+                });
+
+                // Actualizar específicamente el texto del CIF en la sección de información
+                const cifInfoText = document.querySelector('.ml-4 p.font-medium.text-gray-900');
+                if (cifInfoText) {
+                    cifInfoText.textContent = user.empresa.cif || 'No especificado';
+                    console.log('Actualizando texto de info CIF:', cifInfoText);
+                }
+
+                // Actualizar el valor en el formulario
+                const cifInput = document.querySelector('input[name="cif"]');
+                if (cifInput) {
+                    cifInput.value = user.empresa.cif || '';
+                    console.log('Actualizando input CIF:', cifInput);
+                }
+
+                // Actualizar el checkbox de visibilidad
+                const cifCheckbox = document.querySelector('input[name="show_cif"]');
+                if (cifCheckbox) {
+                    cifCheckbox.checked = user.empresa.show_cif;
+                    console.log('Actualizando checkbox CIF:', cifCheckbox);
+                }
+
+                // Forzar actualización de elementos específicos de empresa
+                const empresaCifElements = document.querySelectorAll('.flex.items-start[data-campo="empresa-cif"] p.font-medium.text-gray-900');
+                empresaCifElements.forEach(element => {
+                    element.textContent = user.empresa.cif || 'No especificado';
+                    console.log('Actualizando elemento específico de empresa:', element);
+                });
+            }
+
+            // Actualizar el resto de campos
+            Object.entries(camposInfo).forEach(([campo, info]) => {
+                // Actualizar visibilidad
+                document.querySelectorAll(`[data-campo="${campo}"]`).forEach(elemento => {
+                    elemento.style.display = info.visible ? 'flex' : 'none';
+                });
+
+                // Actualizar valores
+                document.querySelectorAll(`[data-valor="${campo}"]`).forEach(elemento => {
+                    elemento.textContent = info.valor || 'No especificado';
+                });
+            });
+
+            // Actualizar imagen de perfil si se cambió
+            if (user.imagen) {
+                document.querySelectorAll('.rounded-full img').forEach(img => {
+                    img.src = `/profile_images/${user.imagen}`;
+                });
+            }
+
+            // Actualizar banner si se cambió
+            if (user.banner) {
+                const bannerElement = document.querySelector('.h-64 img');
+                if (bannerElement) {
+                    bannerElement.src = `/profile_banners/${user.banner}`;
+                }
+            }
+
+            // Actualizar CV si se cambió (solo para estudiantes)
+            if (user.estudiante && user.estudiante.cv_pdf) {
+                const cvLinks = document.querySelectorAll('a[href*="cv/"]');
+                cvLinks.forEach(link => {
+                    link.href = `/cv/${user.estudiante.cv_pdf}`;
+                });
+            }
+
+            // Mostrar mensaje de éxito
             Swal.fire({
                 title: '¡Éxito!',
                 text: 'Los cambios se han guardado correctamente',
@@ -238,10 +352,8 @@ function handleFormSubmit(e) {
                 confirmButtonColor: '#7C3AED'
             });
 
-            // Cerrar el modal si existe
-            if (typeof closeEditModal === 'function') {
-                closeEditModal();
-            }
+            // Cerrar el modal
+            closeEditModal();
         } else if (data.errors) {
             // Mostrar errores de validación
             Object.entries(data.errors).forEach(([field, messages]) => {
