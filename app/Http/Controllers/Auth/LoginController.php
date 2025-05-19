@@ -22,9 +22,17 @@ class LoginController extends Controller
         ]);
 
         if (Auth::attempt($credentials, $request->remember)) {
-            $request->session()->regenerate();
-
             $user = Auth::user();
+            
+            // Verificar si el usuario está activo
+            if (!$user->activo) {
+                Auth::logout();
+                return back()->withErrors([
+                    'email' => 'Tu cuenta no está activada. Por favor, contacta con tu institución para activar tu cuenta.',
+                ]);
+            }
+            
+            $request->session()->regenerate();
             
             // Comprobamos el nombre del rol en lugar del ID para mayor seguridad
             $roleName = $user->role ? $user->role->nombre_rol : null;
@@ -59,5 +67,33 @@ class LoginController extends Controller
         $request->session()->regenerateToken();
 
         return redirect('/');
+    }
+
+    protected function authenticated(Request $request, $user)
+    {
+        if ($user->rol === 'Estudiante') {
+            $estudiante = $user->estudiante;
+            if ($estudiante && $estudiante->estado === 'pendiente') {
+                return redirect()->route('estudiante.dashboard')
+                    ->with('warning', 'Tu cuenta está pendiente de activación. Por favor, contacta con tu institución.');
+            }
+        }
+
+        return redirect()->intended($this->redirectPath());
+    }
+
+    protected function redirectPath()
+    {
+        $user = auth()->user();
+        
+        if ($user->rol === 'Estudiante') {
+            return route('estudiante.dashboard');
+        } elseif ($user->rol === 'Institucion') {
+            return route('institucion.dashboard');
+        } elseif ($user->rol === 'Admin') {
+            return route('admin.dashboard');
+        }
+
+        return '/';
     }
 }

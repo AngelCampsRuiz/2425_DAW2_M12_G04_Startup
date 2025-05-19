@@ -61,4 +61,39 @@ class SolicitudController extends Controller
         return redirect()->route('estudiante.solicitudes.index')
             ->with('success', 'Solicitud cancelada correctamente');
     }
+
+    public function store(Request $request)
+    {
+        $estudiante = auth()->user()->estudiante;
+
+        if ($estudiante->estado !== 'activo') {
+            return redirect()->back()->with('error', 'Tu cuenta debe estar activa para realizar solicitudes.');
+        }
+
+        $request->validate([
+            'clase_id' => 'required|exists:clases,id',
+            'motivo' => 'required|string|max:500',
+        ]);
+
+        // Verificar si ya existe una solicitud pendiente para esta clase
+        $solicitudExistente = Solicitud::where('estudiante_id', $estudiante->id)
+            ->where('clase_id', $request->clase_id)
+            ->where('estado', 'pendiente')
+            ->first();
+
+        if ($solicitudExistente) {
+            return redirect()->back()->with('error', 'Ya tienes una solicitud pendiente para esta clase.');
+        }
+
+        // Crear la solicitud
+        Solicitud::create([
+            'estudiante_id' => $estudiante->id,
+            'clase_id' => $request->clase_id,
+            'motivo' => $request->motivo,
+            'estado' => 'pendiente',
+        ]);
+
+        return redirect()->route('estudiante.solicitudes.index')
+            ->with('success', 'Solicitud enviada correctamente.');
+    }
 } 

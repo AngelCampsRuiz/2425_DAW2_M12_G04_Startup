@@ -192,7 +192,8 @@ class RegisterController extends Controller
             'centro_educativo' => $nombreCentro,
             'cv_pdf' => $cvFileName,
             'numero_seguridad_social' => $request->numero_seguridad_social,
-            'titulo_id' => $request->titulo_id
+            'titulo_id' => $request->titulo_id,
+            'estado' => 'pendiente'
         ]);
         
         // Reactivar la comprobación de claves foráneas
@@ -202,8 +203,10 @@ class RegisterController extends Controller
         $request->session()->forget('registration_data');
 
         event(new Registered($user));
-        Auth::login($user);
-        return redirect()->route('student.dashboard');
+        // Auth::login($user); // Comentado para evitar el inicio de sesión automático
+        
+        return redirect()->route('login')
+            ->with('success', 'Registro completado correctamente. Tu cuenta debe ser activada por tu institución antes de poder acceder.');
     }
 
     // Registro de empresa (tercer paso)
@@ -472,5 +475,25 @@ class RegisterController extends Controller
         } else {
             return redirect()->route('register.empresa');
         }
+    }
+
+    protected function create(array $data)
+    {
+        $user = User::create([
+            'nombre' => $data['nombre'],
+            'email' => $data['email'],
+            'password' => Hash::make($data['password']),
+            'dni' => $data['dni'],
+            'rol' => 'Estudiante',
+        ]);
+
+        Estudiante::create([
+            'user_id' => $user->id,
+            'titulo_id' => $data['titulo_id'],
+            'estado' => 'pendiente',
+            'institucion_id' => $data['institucion_id']
+        ]);
+
+        return $user;
     }
 }

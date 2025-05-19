@@ -368,9 +368,26 @@
         Route::get('/blog', [App\Http\Controllers\ResourceController::class, 'blog'])->name('blog');
 
     // RUTAS PARA INSTITUCIONES
-    Route::prefix('institucion')->middleware(['auth', \App\Http\Middleware\CheckRole::class.':institucion'])->name('institucion.')->group(function () {
-        // Dashboard
-        Route::get('/dashboard', [App\Http\Controllers\InstitucionController::class, 'dashboard'])->name('dashboard');
+Route::prefix('institucion')->middleware(['auth', \App\Http\Middleware\CheckRole::class.':institucion'])->name('institucion.')->group(function () {
+    // Dashboard
+    Route::get('/dashboard', [App\Http\Controllers\InstitucionController::class, 'dashboard'])->name('dashboard');
+    
+    // RUTAS PARA ESTUDIANTES PENDIENTES
+    Route::prefix('estudiantes')->name('estudiantes.')->group(function() {
+        Route::post('/{id}/activar', [App\Http\Controllers\Institucion\EstudiantePendienteController::class, 'activar'])->name('activar');
+        Route::delete('/{id}', [App\Http\Controllers\Institucion\EstudiantePendienteController::class, 'eliminar'])->name('eliminar');
+        Route::put('/{id}/actualizar', [App\Http\Controllers\Institucion\EstudiantePendienteController::class, 'actualizar'])->name('actualizar');
+    });
+    
+    // RUTAS PARA SOLICITUDES
+    Route::prefix('solicitudes')->name('solicitudes.')->group(function() {
+        Route::get('/', [App\Http\Controllers\Institucion\SolicitudEstudianteController::class, 'index'])->name('index');
+        Route::get('/{id}', [App\Http\Controllers\Institucion\SolicitudEstudianteController::class, 'show'])->name('show');
+        Route::post('/{id}/aprobar', [App\Http\Controllers\Institucion\SolicitudEstudianteController::class, 'aprobar'])->name('aprobar');
+        Route::post('/{id}/rechazar', [App\Http\Controllers\Institucion\SolicitudEstudianteController::class, 'rechazar'])->name('rechazar');
+        Route::get('/{solicitud}/asignar-clase', [App\Http\Controllers\Institucion\SolicitudClaseController::class, 'asignar'])->name('asignar-clase');
+        Route::post('/{solicitud}/asignar-clase', [App\Http\Controllers\Institucion\SolicitudClaseController::class, 'store'])->name('asignar-clase.store');
+    });
 
         // Perfil
         Route::get('/perfil', [App\Http\Controllers\InstitucionController::class, 'perfil'])->name('perfil');
@@ -426,10 +443,16 @@
         // Asignación de clases a estudiantes tras aprobar solicitudes
         Route::get('/solicitudes/{solicitud}/asignar-clase', [App\Http\Controllers\Institucion\SolicitudClaseController::class, 'asignar'])->name('solicitudes.asignar-clase');
         Route::post('/solicitudes/{solicitud}/asignar-clase', [App\Http\Controllers\Institucion\SolicitudClaseController::class, 'store'])->name('solicitudes.asignar-clase.store');
+
+        // Estudiantes pendientes de activación
+        Route::get('/estudiantes/pendientes', [App\Http\Controllers\Institucion\EstudiantePendienteController::class, 'index'])->name('estudiantes.pendientes');
+        Route::post('/estudiantes/{id}/activar', [App\Http\Controllers\Institucion\EstudiantePendienteController::class, 'activar'])->name('estudiantes.activar');
+        Route::put('/estudiantes/{id}/actualizar', [App\Http\Controllers\Institucion\EstudiantePendienteController::class, 'actualizar'])->name('estudiantes.actualizar');
+        Route::delete('/estudiantes/{id}/eliminar', [App\Http\Controllers\Institucion\EstudiantePendienteController::class, 'eliminar'])->name('estudiantes.eliminar');
     });
 
-    // Rutas para estudiantes
-    Route::middleware(['auth', \App\Http\Middleware\CheckRole::class.':student'])->prefix('estudiante')->name('estudiante.')->group(function () {
+    // RUTAS PARA ESTUDIANTES
+    Route::prefix('estudiante')->middleware(['auth', 'role:Estudiante', 'estudiante.activo'])->name('estudiante.')->group(function () {
         // Solicitudes del estudiante
         Route::get('/solicitudes', [App\Http\Controllers\Estudiante\SolicitudController::class, 'index'])->name('solicitudes.index');
         Route::get('/solicitudes/{id}', [App\Http\Controllers\Estudiante\SolicitudController::class, 'show'])->name('solicitudes.show');
