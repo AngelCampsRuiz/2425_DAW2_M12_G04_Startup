@@ -22,6 +22,9 @@
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Subcategorías
                         </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Estado
+                        </th>
                         <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Acciones
                         </th>
@@ -38,10 +41,25 @@
                                     {{ $categoria->nombre_categoria }}
                                 </div>
                             </td>
+                            <td class="px-6 py-4">
+                                <div class="flex flex-wrap gap-1">
+                                    @foreach ($categoria->subcategorias as $subcategoria)
+                                        <span class="inline-block bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded">
+                                            {{ $subcategoria->nombre_subcategoria }}
+                                        </span>
+                                    @endforeach
+                                </div>
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $categoria->subcategorias_count > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
-                                    {{ $categoria->subcategorias_count }} subcategorías
-                                </span>
+                                @if($categoria->activo)
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                        Activa
+                                    </span>
+                                @else
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                        Inactiva
+                                    </span>
+                                @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                 <button onclick="openEditModal({{ $categoria->id }})" class="text-indigo-600 hover:text-indigo-900 mr-3">
@@ -49,10 +67,16 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                     </svg>
                                 </button>
-                                <button onclick="openDeleteModal({{ $categoria->id }})" class="text-red-600 hover:text-red-900">
-                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
+                                <button onclick="openDeleteModal({{ $categoria->id }})" class="{{ $categoria->activo ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900' }}">
+                                    @if($categoria->activo)
+                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    @else
+                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    @endif
                                 </button>
                             </td>
                         </tr>
@@ -73,9 +97,20 @@
         <div class="bg-white shadow rounded-lg p-4">
             <div class="flex items-center space-x-4">
                 <div class="flex-1 min-w-0">
-                    <p class="text-sm font-medium text-gray-900">
-                        {{ $categoria->nombre_categoria }}
-                    </p>
+                    <div class="flex items-center justify-between">
+                        <p class="text-sm font-medium text-gray-900">
+                            {{ $categoria->nombre_categoria }}
+                        </p>
+                        @if($categoria->activo)
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                Activa
+                            </span>
+                        @else
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                Inactiva
+                            </span>
+                        @endif
+                    </div>
                     <div class="mt-2 flex flex-wrap gap-1">
                         @foreach ($categoria->subcategorias as $subcategoria)
                             <span class="inline-block bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded">
@@ -90,10 +125,16 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                         </svg>
                     </button>
-                    <button onclick="openDeleteModal({{ $categoria->id }})" class="text-red-600 hover:text-red-900">
-                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                        </svg>
+                    <button onclick="openDeleteModal({{ $categoria->id }})" class="{{ $categoria->activo ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900' }}">
+                        @if($categoria->activo)
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        @else
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        @endif
                     </button>
                 </div>
             </div>

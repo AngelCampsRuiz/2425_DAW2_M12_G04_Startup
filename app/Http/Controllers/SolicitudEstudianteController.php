@@ -6,7 +6,7 @@ use App\Models\Clase;
 use App\Models\SolicitudEstudiante;
 use App\Models\SolicitudInstitucion;
 use App\Models\Estudiante;
-use App\Models\Titulo;
+use App\Models\Categoria;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -41,15 +41,15 @@ class SolicitudEstudianteController extends Controller
             ->paginate(10);
         
         // Obtener estudiantes pendientes de activación
-        $estudiantesPendientes = Estudiante::with(['user', 'titulo'])
+        $estudiantesPendientes = Estudiante::with(['user', 'categoria'])
             ->where('institucion_id', $institucion->id)
             ->whereHas('user', function($query) {
                 $query->where('activo', false);
             })
             ->get();
         
-        // Obtener todos los títulos para el modal de edición
-        $titulos = Titulo::all();
+        // Obtener todas las categorías para el modal de edición
+        $categorias = Categoria::all();
         
         // Calcular estadísticas para el dashboard
         $stats = [
@@ -62,7 +62,7 @@ class SolicitudEstudianteController extends Controller
                             ->where('estado', 'rechazada')->count(),
         ];
         
-        return view('institucion.solicitudes.index', compact('solicitudes', 'estudiantesPendientes', 'titulos', 'stats', 'filtro', 'busqueda'));
+        return view('institucion.solicitudes.index', compact('solicitudes', 'estudiantesPendientes', 'categorias', 'stats', 'filtro', 'busqueda'));
     }
 
     // Ver solicitud

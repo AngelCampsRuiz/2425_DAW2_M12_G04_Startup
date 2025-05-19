@@ -5,7 +5,8 @@ namespace App\Http\Controllers\Institucion;
 use App\Http\Controllers\Controller;
 use App\Models\SolicitudEstudiante;
 use App\Models\Estudiante;
-use App\Models\Titulo;
+use App\Models\Categoria;
+use App\Models\Clase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -81,15 +82,15 @@ class SolicitudEstudianteController extends Controller
         ];
         
         // Obtener estudiantes pendientes de activación
-        $estudiantesPendientes = Estudiante::with(['user', 'titulo'])
+        $estudiantesPendientes = Estudiante::with(['user', 'categoria'])
             ->where('institucion_id', $institucion->id)
             ->whereHas('user', function($query) {
                 $query->where('activo', false);
             })
             ->get();
 
-        // Obtener todos los títulos para el modal de edición
-        $titulos = Titulo::all();
+        // Obtener todas las categorías para el modal de edición
+        $categorias = Categoria::all();
         
         return view('institucion.solicitudes.index', [
             'solicitudes' => $solicitudes,
@@ -97,7 +98,7 @@ class SolicitudEstudianteController extends Controller
             'filtro' => $request->estado ?? 'todos',
             'busqueda' => $request->buscar ?? '',
             'estudiantesPendientes' => $estudiantesPendientes,
-            'titulos' => $titulos
+            'categorias' => $categorias
         ]);
     }
 

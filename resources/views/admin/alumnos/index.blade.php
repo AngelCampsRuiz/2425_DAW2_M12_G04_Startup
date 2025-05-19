@@ -110,153 +110,169 @@
     </div>
 
     <!-- Modal Crear/Editar Alumno -->
-    <div id="modal-alumno" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center hidden z-50">
-        <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-screen overflow-y-auto p-6">
-            <div class="flex justify-between items-center mb-6">
-                <h2 id="modal-titulo" class="text-xl font-semibold">Crear Nuevo Alumno</h2>
-                <button id="modal-close" class="text-gray-500 hover:text-gray-700 focus:outline-none">
-                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
+    <div id="modal-alumno" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-start justify-center p-4 z-50 hidden overflow-y-auto">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl my-8">
+            <div class="sticky top-0 bg-white px-6 py-4 border-b">
+                <div class="flex justify-between items-center">
+                    <h2 id="modal-titulo" class="text-xl font-semibold text-gray-800">Crear Nuevo Alumno</h2>
+                    <button id="modal-close" class="text-gray-500 hover:text-gray-700 focus:outline-none">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
             </div>
             
-            <!-- Mensajes de error del formulario -->
-            <div id="form-errors" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6 hidden" role="alert">
-                <strong class="font-bold">¡Hay errores en el formulario!</strong>
-                <ul id="error-list" class="mt-2 list-disc list-inside"></ul>
-            </div>
-            
-            <form id="form-alumno" method="POST" enctype="multipart/form-data">
-                @csrf
-                <input type="hidden" id="alumno_id" name="alumno_id" value="">
-                <input type="hidden" id="form_method" name="_method" value="POST">
+            <div class="p-6">
+                <!-- Mensajes de error del formulario -->
+                <div id="form-errors" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6 hidden" role="alert">
+                    <strong class="font-bold">¡Hay errores en el formulario!</strong>
+                    <ul id="error-list" class="mt-2 list-disc list-inside"></ul>
+                </div>
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label for="nombre" class="block text-sm font-medium text-gray-700 mb-1">Nombre <span class="text-red-500">*</span></label>
-                        <input type="text" name="nombre" id="nombre" 
-                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"
-                               required>
-                    </div>
+                <form id="form-alumno" method="POST" enctype="multipart/form-data" class="space-y-6">
+                    @csrf
+                    <input type="hidden" id="alumno_id" name="alumno_id" value="">
+                    <input type="hidden" id="form_method" name="_method" value="POST">
                     
-                    <div>
-                        <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email <span class="text-red-500">*</span></label>
-                        <input type="email" name="email" id="email" 
-                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"
-                               required>
-                    </div>
-                    
-                    <div>
-                        <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Contraseña <span class="password-required text-red-500">*</span></label>
-                        <input type="password" name="password" id="password" 
-                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"
-                               required>
-                        <p class="password-help text-xs text-gray-500 mt-1 hidden">Dejar en blanco para mantener la contraseña actual</p>
-                    </div>
-                    
-                    <div>
-                        <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-1">Confirmar Contraseña <span class="password-required text-red-500">*</span></label>
-                        <input type="password" name="password_confirmation" id="password_confirmation" 
-                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"
-                               required>
-                    </div>
-                    
-                    <div>
-                        <label for="dni" class="block text-sm font-medium text-gray-700 mb-1">DNI/NIE <span class="text-red-500">*</span></label>
-                        <input type="text" name="dni" id="dni" 
-                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"
-                               required>
-                    </div>
-                    
-                    <div>
-                        <label for="telefono" class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
-                        <input type="text" name="telefono" id="telefono" 
-                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50">
-                    </div>
-                    
-                    <div>
-                        <label for="ciudad" class="block text-sm font-medium text-gray-700 mb-1">Ciudad</label>
-                        <input type="text" name="ciudad" id="ciudad" 
-                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50">
-                    </div>
-                    
-                    <div>
-                        <label for="fecha_nacimiento" class="block text-sm font-medium text-gray-700 mb-1">Fecha de Nacimiento</label>
-                        <input type="date" name="fecha_nacimiento" id="fecha_nacimiento" 
-                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50">
-                    </div>
-                    
-                    <div>
-                        <label for="sitio_web" class="block text-sm font-medium text-gray-700 mb-1">Sitio Web</label>
-                        <input type="url" name="sitio_web" id="sitio_web" 
-                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"
-                               placeholder="https://...">
-                    </div>
-                    
-                    <div>
-                        <label for="imagen" class="block text-sm font-medium text-gray-700 mb-1">Fotografía</label>
-                        <input type="file" name="imagen" id="imagen" accept="image/*"
-                               class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50">
-                        <div id="imagen-preview" class="mt-2 hidden">
-                            <img id="imagen-preview-img" src="" alt="Vista previa" class="h-24 w-auto object-cover rounded">
-                            <button type="button" id="eliminar-imagen" class="text-xs text-red-600 mt-1">Eliminar imagen</button>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            <label for="nombre" class="block text-sm font-medium text-gray-700">Nombre <span class="text-red-500">*</span></label>
+                            <input type="text" name="nombre" id="nombre" 
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"
+                                   required>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <label for="email" class="block text-sm font-medium text-gray-700">Email <span class="text-red-500">*</span></label>
+                            <input type="email" name="email" id="email" 
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"
+                                   required>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <label for="password" class="block text-sm font-medium text-gray-700">Contraseña <span class="password-required text-red-500">*</span></label>
+                            <input type="password" name="password" id="password" 
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"
+                                   required>
+                            <p class="password-help text-xs text-gray-500 hidden">Dejar en blanco para mantener la contraseña actual</p>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <label for="password_confirmation" class="block text-sm font-medium text-gray-700">Confirmar Contraseña <span class="password-required text-red-500">*</span></label>
+                            <input type="password" name="password_confirmation" id="password_confirmation" 
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"
+                                   required>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <label for="dni" class="block text-sm font-medium text-gray-700">DNI/NIE <span class="text-red-500">*</span></label>
+                            <input type="text" name="dni" id="dni" 
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"
+                                   required>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <label for="telefono" class="block text-sm font-medium text-gray-700">Teléfono</label>
+                            <input type="text" name="telefono" id="telefono" 
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50">
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <label for="ciudad" class="block text-sm font-medium text-gray-700">Ciudad</label>
+                            <input type="text" name="ciudad" id="ciudad" 
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50">
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <label for="fecha_nacimiento" class="block text-sm font-medium text-gray-700">Fecha de Nacimiento</label>
+                            <input type="date" name="fecha_nacimiento" id="fecha_nacimiento" 
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50">
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <label for="sitio_web" class="block text-sm font-medium text-gray-700">Sitio Web</label>
+                            <input type="url" name="sitio_web" id="sitio_web" 
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"
+                                   placeholder="https://...">
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <label for="imagen" class="block text-sm font-medium text-gray-700">Fotografía</label>
+                            <input type="file" name="imagen" id="imagen" accept="image/*"
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50">
+                            <div id="imagen-preview" class="mt-2 hidden">
+                                <img id="imagen-preview-img" src="" alt="Vista previa" class="h-24 w-auto object-cover rounded">
+                                <button type="button" id="eliminar-imagen" class="text-xs text-red-600 mt-1">Eliminar imagen</button>
+                            </div>
                         </div>
                     </div>
                     
-                    <div id="activo-container" class="col-span-2 flex items-center hidden">
-                        <input type="checkbox" name="activo" id="activo" value="1"
-                               class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-300 focus:ring focus:ring-purple-200 focus:ring-opacity-50">
-                        <label for="activo" class="ml-2 text-sm font-medium text-gray-700">Cuenta Activa</label>
+                    <div id="activo-container" class="hidden">
+                        <div class="flex items-center">
+                            <input type="checkbox" name="activo" id="activo" value="1"
+                                   class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-300 focus:ring focus:ring-purple-200 focus:ring-opacity-50">
+                            <label for="activo" class="ml-2 text-sm font-medium text-gray-700">Cuenta Activa</label>
+                        </div>
                     </div>
-                </div>
-                
-                <div class="mt-6">
-                    <label for="descripcion" class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
-                    <textarea name="descripcion" id="descripcion" rows="4" 
-                              class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"></textarea>
-                </div>
-                
-                <div class="mt-6 flex justify-end">
-                    <button type="button" id="btn-cancelar" class="inline-flex items-center px-4 py-2 bg-gray-300 border border-transparent rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-400 active:bg-gray-500 focus:outline-none focus:border-gray-500 focus:ring ring-gray-300 disabled:opacity-25 transition ease-in-out duration-150 mr-3">
+                    
+                    <div class="space-y-2">
+                        <label for="descripcion" class="block text-sm font-medium text-gray-700">Descripción</label>
+                        <textarea name="descripcion" id="descripcion" rows="4" 
+                                  class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"></textarea>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="sticky bottom-0 bg-gray-50 px-6 py-4 border-t">
+                <div class="flex justify-end space-x-3">
+                    <button type="button" id="btn-cancelar" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors duration-150">
                         Cancelar
                     </button>
-                    <button type="submit" id="btn-guardar" class="inline-flex items-center px-4 py-2 bg-purple-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-purple-700 active:bg-purple-900 focus:outline-none focus:border-purple-900 focus:ring ring-purple-300 disabled:opacity-25 transition ease-in-out duration-150">
+                    <button type="submit" form="form-alumno" id="btn-guardar" class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors duration-150">
                         Guardar
                     </button>
                 </div>
-            </form>
+            </div>
         </div>
     </div>
 
-    <!-- Modal Confirmación Eliminar -->
-    <div id="modal-eliminar" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center hidden z-50">
-        <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-semibold">Confirmar Eliminación</h2>
-                <button id="modal-eliminar-close" class="text-gray-500 hover:text-gray-700 focus:outline-none">
-                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
-            
-            <p class="mb-6">¿Estás seguro de que deseas eliminar este alumno? Esta acción no se puede deshacer.</p>
-            
-            <form id="form-eliminar" method="POST">
-                @csrf
-                @method('DELETE')
-                <input type="hidden" id="eliminar_id" name="eliminar_id" value="">
-                
-                <div class="flex justify-end">
-                    <button type="button" id="btn-cancelar-eliminar" class="inline-flex items-center px-4 py-2 bg-gray-300 border border-transparent rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-400 active:bg-gray-500 focus:outline-none focus:border-gray-500 focus:ring ring-gray-300 disabled:opacity-25 transition ease-in-out duration-150 mr-3">
-                        Cancelar
-                    </button>
-                    <button type="submit" class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700 active:bg-red-800 focus:outline-none focus:border-red-800 focus:ring ring-red-300 disabled:opacity-25 transition ease-in-out duration-150">
-                        Eliminar
+    <!-- Modal Confirmación de Activación/Desactivación -->
+    <div id="modal-eliminar" class="hidden fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overflow-x-hidden bg-black bg-opacity-50">
+        <div class="relative p-4 w-full max-w-md">
+            <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+                <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                    <h3 id="action-title" class="text-xl font-semibold text-gray-900 dark:text-white">
+                        Confirmar Acción
+                    </h3>
+                    <button type="button" id="modal-eliminar-close" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white">
+                        <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                        </svg>
+                        <span class="sr-only">Cerrar</span>
                     </button>
                 </div>
-            </form>
+                <div class="p-4 md:p-5 text-center">
+                    <svg class="mx-auto mb-4 text-gray-400 w-12 h-12 dark:text-gray-200" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+                    </svg>
+                    <p id="action-message" class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
+                        ¿Estás seguro de que deseas realizar esta acción?
+                    </p>
+                    <form id="form-activar" method="POST" action="">
+                        @csrf
+                        @method('POST')
+                        <input type="hidden" id="alumno_id_activar" name="alumno_id" value="">
+                        <input type="hidden" id="is_active" name="is_active" value="">
+                        <button id="action-button" type="submit" class="text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center me-2">
+                            Confirmar
+                        </button>
+                        <button id="btn-cancelar-eliminar" type="button" class="text-gray-500 bg-white hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-200 rounded-lg border border-gray-200 text-sm font-medium px-5 py-2.5 hover:text-gray-900 focus:z-10 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-500 dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-gray-600">
+                            Cancelar
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -275,374 +291,695 @@
 
 @push('scripts')
 <script>
-    // Variable de control para evitar duplicación
+    // Variable global para control de envíos
     let isSubmitting = false;
     
     document.addEventListener('DOMContentLoaded', function() {
+        // Variables de control
+        let timeoutId = null;
+
+        // Inicializar event listeners
         setupEventListeners();
-    });
-    
-    function setupEventListeners() {
-        // Delegación de eventos para los botones dinámicos
-        document.addEventListener('click', function(e) {
-            // Botón Crear
-            if (e.target.closest('.btn-crear')) {
-                mostrarFormularioCrear();
-            }
-            
-            // Botones Editar
-            if (e.target.closest('.btn-editar')) {
-                const btn = e.target.closest('.btn-editar');
-                const id = btn.getAttribute('data-id');
-                mostrarFormularioEditar(id);
-            }
-            
-            // Botones Eliminar
-            if (e.target.closest('.btn-eliminar')) {
-                const btn = e.target.closest('.btn-eliminar');
-                const id = btn.getAttribute('data-id');
-                mostrarModalEliminar(id);
-            }
-        });
+        setupFilterListeners();
         
-        // Cerrar modales
-        document.getElementById('modal-close').addEventListener('click', function() {
-            document.getElementById('modal-alumno').classList.add('hidden');
-        });
-        
-        document.getElementById('btn-cancelar').addEventListener('click', function() {
-            document.getElementById('modal-alumno').classList.add('hidden');
-        });
-        
-        document.getElementById('modal-eliminar-close').addEventListener('click', function() {
-            document.getElementById('modal-eliminar').classList.add('hidden');
-        });
-        
-        document.getElementById('btn-cancelar-eliminar').addEventListener('click', function() {
-            document.getElementById('modal-eliminar').classList.add('hidden');
-        });
-        
-        // Manejo de la previsualización de la foto
-        document.getElementById('imagen').addEventListener('change', function(e) {
-            const file = this.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('imagen-preview-img').src = e.target.result;
-                    document.getElementById('imagen-preview').classList.remove('hidden');
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-        
-        // Eliminar foto
-        document.getElementById('eliminar-imagen').addEventListener('click', function() {
-            document.getElementById('imagen').value = '';
-            document.getElementById('imagen-preview').classList.add('hidden');
-            document.getElementById('imagen-preview-img').src = '';
-            // Agregar campo oculto para indicar que se debe eliminar la foto existente
-            const inputEliminarImagen = document.getElementById('eliminar_imagen_actual') || document.createElement('input');
-            inputEliminarImagen.type = 'hidden';
-            inputEliminarImagen.id = 'eliminar_imagen_actual';
-            inputEliminarImagen.name = 'eliminar_imagen_actual';
-            inputEliminarImagen.value = '1';
-            document.getElementById('form-alumno').appendChild(inputEliminarImagen);
-        });
-        
-        // Envío del formulario
-        document.getElementById('form-alumno').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // Evitar envíos duplicados
-            if (isSubmitting) return;
-            isSubmitting = true;
-            
-            const formData = new FormData(this);
-            const url = this.getAttribute('action');
-            const method = document.getElementById('form_method').value;
-            
-            // Incluir método PUT para ediciones
-            if (method === 'PUT') {
-                formData.append('_method', 'PUT');
-            }
-            
-            // Deshabilitar botones durante la petición
-            document.getElementById('btn-guardar').disabled = true;
-            
-            fetch(url, {
-                method: 'POST', // Siempre POST para enviar archivos
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
+        function setupEventListeners() {
+            // Botón crear alumno
+            document.addEventListener('click', function(e) {
+                // Botón crear alumno
+                if (e.target.closest('.btn-crear')) {
+                    mostrarFormularioCrear();
                 }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
+                
+                // Botón editar alumno
+                if (e.target.closest('.btn-editar')) {
+                    const button = e.target.closest('.btn-editar');
+                    const id = button.getAttribute('data-id');
+                    mostrarFormularioEditar(id);
+                }
+                
+                // Botón activar/desactivar
+                if (e.target.closest('.btn-activar')) {
+                    const button = e.target.closest('.btn-activar');
+                    const id = button.getAttribute('data-id');
+                    const isActive = button.getAttribute('data-active');
+                    
+                    openActivateModal(id, isActive);
+                }
+            });
+            
+            // Cerrar modales
+            const modalClose = document.getElementById('modal-close');
+            const btnCancelar = document.getElementById('btn-cancelar');
+            
+            if (modalClose) {
+                modalClose.addEventListener('click', function() {
                     document.getElementById('modal-alumno').classList.add('hidden');
-                    mostrarMensajeExito(data.message);
-                    actualizarTablaAlumnos();
-                } else if (data.errors) {
-                    mostrarErrores(data.errors);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            })
-            .finally(() => {
-                isSubmitting = false;
-                document.getElementById('btn-guardar').disabled = false;
-            });
-        });
+                });
+            }
+            
+            if (btnCancelar) {
+                btnCancelar.addEventListener('click', function() {
+                    document.getElementById('modal-alumno').classList.add('hidden');
+                });
+            }
+            
+            // Manejo de la previsualización de la foto
+            const inputImagen = document.getElementById('imagen');
+            if (inputImagen) {
+                inputImagen.addEventListener('change', function(e) {
+                    const file = this.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            document.getElementById('imagen-preview-img').src = e.target.result;
+                            document.getElementById('imagen-preview').classList.remove('hidden');
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+            
+            // Eliminar foto
+            const btnEliminarImagen = document.getElementById('eliminar-imagen');
+            if (btnEliminarImagen) {
+                btnEliminarImagen.addEventListener('click', function() {
+                    document.getElementById('imagen').value = '';
+                    document.getElementById('imagen-preview').classList.add('hidden');
+                    document.getElementById('imagen-preview-img').src = '';
+                    // Agregar campo oculto para indicar que se debe eliminar la foto existente
+                    const inputEliminarImagen = document.getElementById('eliminar_imagen_actual') || document.createElement('input');
+                    inputEliminarImagen.type = 'hidden';
+                    inputEliminarImagen.id = 'eliminar_imagen_actual';
+                    inputEliminarImagen.name = 'eliminar_imagen_actual';
+                    inputEliminarImagen.value = '1';
+                    document.getElementById('form-alumno').appendChild(inputEliminarImagen);
+                });
+            }
+            
+            // Envío del formulario
+            const formAlumno = document.getElementById('form-alumno');
+            if (formAlumno) {
+                formAlumno.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    // Evitar envíos duplicados
+                    if (isSubmitting) return;
+                    isSubmitting = true;
+                    
+                    const formData = new FormData(this);
+                    const url = this.getAttribute('action');
+                    const method = document.getElementById('form_method').value;
+                    
+                    // Incluir método PUT para ediciones
+                    if (method === 'PUT') {
+                        formData.append('_method', 'PUT');
+                    }
+                    
+                    // Deshabilitar botones durante la petición
+                    document.getElementById('btn-guardar').disabled = true;
+                    
+                    fetch(url, {
+                        method: 'POST', // Siempre POST para enviar archivos
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => {
+                        console.log("Respuesta del servidor:", response);
+                        if (!response.ok) {
+                            throw new Error(`Error del servidor: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log("Datos recibidos:", data);
+                        if (data.success) {
+                            document.getElementById('modal-alumno').classList.add('hidden');
+                            mostrarMensajeExito(data.message || 'Operación realizada correctamente');
+                            window.location.reload(); // Forzar recarga de la página
+                        } else if (data.errors) {
+                            mostrarErrores(data.errors);
+                        } else {
+                            alert(data.message || 'Ha ocurrido un error desconocido');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Ha ocurrido un error al procesar la solicitud: ' + error.message);
+                    })
+                    .finally(() => {
+                        isSubmitting = false;
+                        document.getElementById('btn-guardar').disabled = false;
+                    });
+                });
+            }
+            
+            // Modal confirmación
+            const modalEliminarClose = document.getElementById('modal-eliminar-close');
+            const btnCancelarEliminar = document.getElementById('btn-cancelar-eliminar');
+            const formActivar = document.getElementById('form-activar');
+            
+            if (modalEliminarClose) {
+                modalEliminarClose.addEventListener('click', closeDeleteModal);
+            }
+            
+            if (btnCancelarEliminar) {
+                btnCancelarEliminar.addEventListener('click', closeDeleteModal);
+            }
+            
+            if (formActivar) {
+                formActivar.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    handleActivateSubmit();
+                });
+            }
+        }
         
-        // Envío del formulario de eliminar
-        document.getElementById('form-eliminar').addEventListener('submit', function(e) {
-            e.preventDefault();
+        function setupFilterListeners() {
+            // Eventos para filtrado automático
+            const filtroNombre = document.getElementById('filtro_nombre');
+            const filtroEmail = document.getElementById('filtro_email');
+            const filtroDni = document.getElementById('filtro_dni');
+            const filtroEstado = document.getElementById('filtro_estado');
+            const filtroCiudad = document.getElementById('filtro_ciudad');
+            const resetFiltros = document.getElementById('reset-filtros');
             
-            // Evitar envíos duplicados
-            if (isSubmitting) return;
-            isSubmitting = true;
+            if (filtroNombre) filtroNombre.addEventListener('input', debounceFilter);
+            if (filtroEmail) filtroEmail.addEventListener('input', debounceFilter);
+            if (filtroDni) filtroDni.addEventListener('input', debounceFilter);
+            if (filtroEstado) filtroEstado.addEventListener('change', aplicarFiltros);
+            if (filtroCiudad) filtroCiudad.addEventListener('change', aplicarFiltros);
             
-            const url = this.getAttribute('action');
-            
-            fetch(url, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    document.getElementById('modal-eliminar').classList.add('hidden');
-                    mostrarMensajeExito(data.message);
-                    actualizarTablaAlumnos();
-                } else {
-                    alert(data.message || 'Error al eliminar el alumno');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            })
-            .finally(() => {
-                isSubmitting = false;
-            });
-        });
-    }
+            if (resetFiltros) {
+                resetFiltros.addEventListener('click', function() {
+                    if (filtroNombre) filtroNombre.value = '';
+                    if (filtroEmail) filtroEmail.value = '';
+                    if (filtroDni) filtroDni.value = '';
+                    if (filtroEstado) filtroEstado.value = '';
+                    if (filtroCiudad) filtroCiudad.value = '';
+                    aplicarFiltros();
+                });
+            }
+        }
+        
+        // Función para debounce en campos de texto
+        function debounceFilter() {
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
+            timeoutId = setTimeout(() => {
+                aplicarFiltros();
+            }, 300);
+        }
+    });
     
     function mostrarFormularioCrear() {
         // Resetear el formulario
-        document.getElementById('form-alumno').reset();
-        document.getElementById('form-errors').classList.add('hidden');
-        document.getElementById('alumno_id').value = '';
-        document.getElementById('form_method').value = 'POST';
-        
-        // Configurar la acción del formulario
-        document.getElementById('form-alumno').setAttribute('action', '{{ route("admin.alumnos.store") }}');
-        
-        // Configurar campo de contraseña como obligatorio
-        document.querySelector('.password-required').classList.remove('hidden');
-        document.querySelector('.password-help').classList.add('hidden');
-        document.getElementById('password').setAttribute('required', 'required');
-        document.getElementById('password_confirmation').setAttribute('required', 'required');
-        
-        // Resetear campo de foto
-        document.getElementById('imagen-preview').classList.add('hidden');
-        document.getElementById('imagen-preview-img').src = '';
-        
-        // Eliminar campo oculto de eliminar foto si existe
-        const eliminarImagenInput = document.getElementById('eliminar_imagen_actual');
-        if (eliminarImagenInput) {
-            eliminarImagenInput.remove();
+        const form = document.getElementById('form-alumno');
+        if (form) {
+            form.reset();
+            form.setAttribute('action', '/admin/alumnos');
+            
+            // Ocultar errores previos
+            const formErrors = document.getElementById('form-errors');
+            if (formErrors) {
+                formErrors.classList.add('hidden');
+                document.getElementById('error-list').innerHTML = '';
+            }
+            
+            // Configurar campos
+            document.getElementById('alumno_id').value = '';
+            document.getElementById('form_method').value = 'POST';
+            document.getElementById('modal-titulo').textContent = 'Crear Nuevo Alumno';
+            
+            // Configurar campos de contraseña como obligatorios
+            const passwordRequired = document.querySelector('.password-required');
+            const passwordHelp = document.querySelector('.password-help');
+            
+            if (passwordRequired) passwordRequired.classList.remove('hidden');
+            if (passwordHelp) passwordHelp.classList.add('hidden');
+            
+            const password = document.getElementById('password');
+            const passwordConfirmation = document.getElementById('password_confirmation');
+            
+            if (password) password.setAttribute('required', 'required');
+            if (passwordConfirmation) passwordConfirmation.setAttribute('required', 'required');
+            
+            // Ocultar campo de activo para nuevas cuentas
+            const activoContainer = document.getElementById('activo-container');
+            if (activoContainer) activoContainer.classList.add('hidden');
+            
+            // Resetear campo de foto
+            const imagenPreview = document.getElementById('imagen-preview');
+            const imagenPreviewImg = document.getElementById('imagen-preview-img');
+            
+            if (imagenPreview) imagenPreview.classList.add('hidden');
+            if (imagenPreviewImg) imagenPreviewImg.src = '';
+            
+            // Eliminar campo oculto de eliminar foto si existe
+            const eliminarImagenInput = document.getElementById('eliminar_imagen_actual');
+            if (eliminarImagenInput) {
+                eliminarImagenInput.remove();
+            }
+            
+            // Mostrar el modal
+            const modalAlumno = document.getElementById('modal-alumno');
+            if (modalAlumno) {
+                modalAlumno.classList.remove('hidden');
+            }
         }
-        
-        // Ocultar el checkbox de activo para nuevos alumnos
-        document.getElementById('activo-container').classList.add('hidden');
-        
-        // Cambiar el título del modal
-        document.getElementById('modal-titulo').textContent = 'Crear Nuevo Alumno';
-        
-        // Mostrar el modal
-        document.getElementById('modal-alumno').classList.remove('hidden');
     }
     
     function mostrarFormularioEditar(id) {
-        document.getElementById('modal-titulo').textContent = 'Editar Alumno';
-        document.getElementById('alumno_id').value = id;
-        document.getElementById('form_method').value = 'PUT';
-        document.getElementById('form-alumno').action = `/admin/alumnos/${id}`;
-        
-        // Configurar campo de contraseña como opcional
-        document.querySelector('.password-required').classList.add('hidden');
-        document.querySelector('.password-help').classList.remove('hidden');
-        document.getElementById('password').removeAttribute('required');
-        document.getElementById('password_confirmation').removeAttribute('required');
-        
-        // Mostrar el checkbox de activo para alumnos existentes
-        document.getElementById('activo-container').classList.remove('hidden');
-        
-        // Eliminar campo oculto de eliminar foto si existe
-        const eliminarImagenInput = document.getElementById('eliminar_imagen_actual');
-        if (eliminarImagenInput) {
-            eliminarImagenInput.remove();
+        if (!id) {
+            console.error('ID de alumno no válido');
+            return;
         }
         
-        fetch(`/admin/alumnos/${id}/edit`, {
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            const alumno = data.alumno;
-            
-            document.getElementById('nombre').value = alumno.nombre || '';
-            document.getElementById('email').value = alumno.email || '';
-            document.getElementById('password').value = ''; // No mostrar contraseña
-            document.getElementById('dni').value = alumno.dni || '';
-            document.getElementById('telefono').value = alumno.telefono || '';
-            document.getElementById('ciudad').value = alumno.ciudad || '';
-            document.getElementById('fecha_nacimiento').value = alumno.fecha_nacimiento ? alumno.fecha_nacimiento.split('T')[0] : '';
-            document.getElementById('sitio_web').value = alumno.sitio_web || '';
-            document.getElementById('descripcion').value = alumno.descripcion || '';
-            document.getElementById('activo').checked = alumno.activo ? true : false;
-            
-            // Cargar y mostrar foto si existe
-            if (alumno.imagen) {
-                document.getElementById('imagen-preview-img').src = `/profile_images/${alumno.imagen}`;
-                document.getElementById('imagen-preview').classList.remove('hidden');
-            } else {
-                document.getElementById('imagen-preview').classList.add('hidden');
-                document.getElementById('imagen-preview-img').src = '';
-            }
-            
-            document.getElementById('modal-alumno').classList.remove('hidden');
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Error al obtener los datos del alumno');
-        });
-    }
-    
-    function mostrarModalEliminar(id) {
         // Configurar el formulario
-        document.getElementById('eliminar_id').value = id;
-        document.getElementById('form-eliminar').setAttribute('action', `/admin/alumnos/${id}`);
-        
-        // Mostrar el modal
-        document.getElementById('modal-eliminar').classList.remove('hidden');
+        const form = document.getElementById('form-alumno');
+        if (form) {
+            form.reset();
+            form.setAttribute('action', `/admin/alumnos/${id}`);
+            
+            // Ocultar errores previos
+            const formErrors = document.getElementById('form-errors');
+            if (formErrors) {
+                formErrors.classList.add('hidden');
+                document.getElementById('error-list').innerHTML = '';
+            }
+            
+            // Configurar campos
+            document.getElementById('alumno_id').value = id;
+            document.getElementById('form_method').value = 'PUT';
+            document.getElementById('modal-titulo').textContent = 'Editar Alumno';
+            
+            // Configurar campos de contraseña como opcionales
+            const passwordRequired = document.querySelectorAll('.password-required');
+            const passwordHelp = document.querySelectorAll('.password-help');
+            
+            passwordRequired.forEach(el => el.classList.add('hidden'));
+            passwordHelp.forEach(el => el.classList.remove('hidden'));
+            
+            const password = document.getElementById('password');
+            const passwordConfirmation = document.getElementById('password_confirmation');
+            
+            if (password) password.removeAttribute('required');
+            if (passwordConfirmation) passwordConfirmation.removeAttribute('required');
+            
+            // Mostrar campo de activo para cuentas existentes
+            const activoContainer = document.getElementById('activo-container');
+            if (activoContainer) activoContainer.classList.remove('hidden');
+            
+            // Cargar datos del alumno
+            fetch(`/admin/alumnos/${id}/edit`, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Error en la respuesta: ${response.status} ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log("Datos recibidos:", data);
+                
+                if (data.estudiante) {
+                    const estudiante = data.estudiante;
+                    
+                    // Datos de usuario
+                    document.getElementById('nombre').value = estudiante.user?.nombre || '';
+                    document.getElementById('email').value = estudiante.user?.email || '';
+                    document.getElementById('password').value = '';
+                    document.getElementById('password_confirmation').value = '';
+                    document.getElementById('dni').value = estudiante.user?.dni || '';
+                    document.getElementById('telefono').value = estudiante.user?.telefono || '';
+                    document.getElementById('ciudad').value = estudiante.user?.ciudad || '';
+                    
+                    // Formatear fecha de nacimiento
+                    if (estudiante.user?.fecha_nacimiento) {
+                        const fechaNacimiento = document.getElementById('fecha_nacimiento');
+                        if (fechaNacimiento) {
+                            fechaNacimiento.value = estudiante.user.fecha_nacimiento.split('T')[0];
+                        }
+                    }
+                    
+                    document.getElementById('sitio_web').value = estudiante.user?.sitio_web || '';
+                    document.getElementById('descripcion').value = estudiante.user?.descripcion || '';
+                    
+                    const activo = document.getElementById('activo');
+                    if (activo) activo.checked = estudiante.user?.activo ? true : false;
+                    
+                    // Cargar imagen
+                    const imagenPreview = document.getElementById('imagen-preview');
+                    const imagenPreviewImg = document.getElementById('imagen-preview-img');
+                    
+                    if (estudiante.user?.imagen) {
+                        if (imagenPreviewImg) imagenPreviewImg.src = `/profile_images/${estudiante.user.imagen}`;
+                        if (imagenPreview) imagenPreview.classList.remove('hidden');
+                    } else {
+                        if (imagenPreview) imagenPreview.classList.add('hidden');
+                        if (imagenPreviewImg) imagenPreviewImg.src = '';
+                    }
+                    
+                    // Eliminar campo oculto de eliminar foto si existe
+                    const eliminarImagenInput = document.getElementById('eliminar_imagen_actual');
+                    if (eliminarImagenInput) {
+                        eliminarImagenInput.remove();
+                    }
+                    
+                    // Mostrar el modal
+                    const modalAlumno = document.getElementById('modal-alumno');
+                    if (modalAlumno) {
+                        modalAlumno.classList.remove('hidden');
+                    }
+                } else {
+                    console.error('No se recibieron datos del alumno');
+                    alert('Error al cargar los datos del alumno');
+                }
+            })
+            .catch(error => {
+                console.error('Error al obtener datos del alumno:', error);
+                alert('Error al obtener los datos del alumno: ' + error.message);
+            });
+        }
     }
     
-    function mostrarModalEliminarSQL(id) {
-        const modal = document.getElementById('eliminarSqlModal');
+    // Funciones para activar/desactivar
+    function openActivateModal(id, isActive) {
+        const alumnoIdInput = document.getElementById('alumno_id_activar');
+        const isActiveInput = document.getElementById('is_active');
+        const actionTitle = document.getElementById('action-title');
+        const actionMessage = document.getElementById('action-message');
+        const actionButton = document.getElementById('action-button');
+        const modal = document.getElementById('modal-eliminar');
+        
+        if (!alumnoIdInput || !isActiveInput || !actionTitle || !actionMessage || !actionButton || !modal) {
+            console.error('No se encontraron elementos necesarios para el modal');
+            return;
+        }
+        
+        alumnoIdInput.value = id;
+        isActiveInput.value = isActive;
+        
+        if (isActive === '1') {
+            actionTitle.textContent = 'Confirmar Desactivación';
+            actionMessage.textContent = '¿Estás seguro de que deseas desactivar este estudiante? Los estudiantes desactivados no serán visibles para los usuarios.';
+            actionButton.textContent = 'Desactivar';
+            actionButton.classList.remove('bg-green-600', 'hover:bg-green-700');
+            actionButton.classList.add('bg-red-600', 'hover:bg-red-700');
+        } else {
+            actionTitle.textContent = 'Confirmar Activación';
+            actionMessage.textContent = '¿Estás seguro de que deseas activar este estudiante? Los estudiantes activos serán visibles para los usuarios.';
+            actionButton.textContent = 'Activar';
+            actionButton.classList.remove('bg-red-600', 'hover:bg-red-700');
+            actionButton.classList.add('bg-green-600', 'hover:bg-green-700');
+        }
+        
         modal.classList.remove('hidden');
         modal.classList.add('flex');
-        
-        const btnConfirmar = modal.querySelector('.confirmar-eliminar-sql');
-        btnConfirmar.onclick = function() {
-            eliminarAlumnoSQL(id);
-        };
-        
-        const btnCerrar = modal.querySelector('.cerrar-modal');
-        btnCerrar.onclick = function() {
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        };
     }
     
-    function eliminarAlumnoSQL(id) {
-        if (isSubmitting) return;
-        isSubmitting = true;
+    function closeDeleteModal() {
+        const modal = document.getElementById('modal-eliminar');
+        if (modal) {
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+        }
+    }
+    
+    function handleActivateSubmit() {
+        const id = document.getElementById('alumno_id_activar').value;
+        const isActive = document.getElementById('is_active').value === '1';
         
-        fetch(`/admin/alumnos/eliminar-sql/${id}`, {
-            method: 'DELETE',
+        if (!id) {
+            console.error('ID de alumno no encontrado');
+            alert('Error: ID de alumno no válido');
+            return;
+        }
+        
+        // Mostrar indicador de carga
+        const actionButton = document.getElementById('action-button');
+        if (actionButton) {
+            actionButton.disabled = true;
+            actionButton.textContent = 'Procesando...';
+        }
+        
+        // Primero, vamos a obtener los datos actuales del alumno
+        fetch(`/admin/alumnos/${id}/edit`, {
+            method: 'GET',
             headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
                 'X-Requested-With': 'XMLHttpRequest',
-                'Content-Type': 'application/json'
+                'Accept': 'application/json'
             }
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Error al obtener datos: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
-            document.getElementById('eliminarSqlModal').classList.add('hidden');
-            document.getElementById('eliminarSqlModal').classList.remove('flex');
+            if (!data.estudiante || !data.estudiante.user) {
+                throw new Error('No se encontraron datos del estudiante');
+            }
+            
+            // Ahora enviar actualización con todos los campos necesarios
+            const userData = data.estudiante.user;
+            
+            return fetch(`/admin/alumnos/${id}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    _method: 'PUT',
+                    nombre: userData.nombre,
+                    email: userData.email,
+                    dni: userData.dni,
+                    telefono: userData.telefono || '',
+                    ciudad: userData.ciudad || '',
+                    fecha_nacimiento: userData.fecha_nacimiento || '',
+                    sitio_web: userData.sitio_web || '',
+                    descripcion: userData.descripcion || '',
+                    activo: isActive ? 0 : 1 // Invertir el estado actual
+                })
+            });
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => {
+                    console.error("Error en la respuesta:", data);
+                    throw new Error('Error en la petición: ' + response.status);
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log("Respuesta de activación:", data);
+            closeDeleteModal();
             
             if (data.success) {
-                mostrarMensajeExito(data.message);
-                actualizarTablaAlumnos();
+                mostrarMensajeExito(data.message || 'Estado actualizado correctamente');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
             } else {
-                alert(data.message || 'Error al eliminar el alumno mediante SQL');
+                alert(data.message || 'Ha ocurrido un error al procesar la solicitud');
             }
         })
         .catch(error => {
-            console.error('Error:', error);
-            alert('Error al procesar la solicitud');
+            console.error('Error al activar/desactivar alumno:', error);
+            alert('Error: ' + error.message);
+            closeDeleteModal();
         })
         .finally(() => {
-            isSubmitting = false;
+            if (actionButton) {
+                actionButton.disabled = false;
+                actionButton.textContent = isActive ? 'Desactivar' : 'Activar';
+            }
         });
     }
     
+    // Función utilitaria para mostrar mensaje de éxito
     function mostrarMensajeExito(mensaje) {
         const messageElement = document.getElementById('success-message');
         const messageText = document.getElementById('success-message-text');
         
-        messageText.textContent = mensaje;
-        messageElement.style.display = 'block';
-        
-        setTimeout(function() {
-            messageElement.style.display = 'none';
-        }, 5000);
+        if (messageElement && messageText) {
+            messageText.textContent = mensaje;
+            messageElement.style.display = 'block';
+            
+            window.scrollTo(0, 0);
+            
+            setTimeout(function() {
+                messageElement.style.display = 'none';
+            }, 5000);
+        }
     }
     
+    // Función para mostrar errores
     function mostrarErrores(errores) {
         const errorsDiv = document.getElementById('form-errors');
         const errorsList = document.getElementById('error-list');
         
+        if (!errorsDiv || !errorsList) return;
+        
         errorsList.innerHTML = '';
         
         for (const key in errores) {
-            errores[key].forEach(error => {
-                const li = document.createElement('li');
-                li.textContent = error;
-                errorsList.appendChild(li);
-            });
-            
-            // Resaltar campo con error
-            const campo = document.getElementById(key);
-            if (campo) {
-                campo.classList.add('border-red-500');
+            if (Object.hasOwnProperty.call(errores, key)) {
+                errores[key].forEach(error => {
+                    const li = document.createElement('li');
+                    li.textContent = error;
+                    errorsList.appendChild(li);
+                });
+                
+                // Resaltar campo con error
+                const campo = document.getElementById(key);
+                if (campo) {
+                    campo.classList.add('border-red-500');
+                }
             }
         }
         
         errorsDiv.classList.remove('hidden');
     }
     
-    function actualizarTablaAlumnos(url = '{{ route("admin.alumnos.index") }}') {
-        fetch(url, {
+    // Función para actualizar la tabla
+    function refreshAlumnosTable() {
+        // Mostrar indicador de carga
+        const tablaContainer = document.getElementById('tabla-container');
+        if (tablaContainer) {
+            tablaContainer.innerHTML = '<div class="flex justify-center items-center p-8"><svg class="animate-spin h-10 w-10 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>';
+        }
+
+        fetch('/admin/alumnos/tabla?_=' + new Date().getTime(), {
+            method: 'GET',
             headers: {
-                'X-Requested-With': 'XMLHttpRequest'
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'text/html'
             }
         })
-        .then(response => response.json())
-        .then(data => {
-            if (data.tabla) {
-                document.getElementById('tabla-container').innerHTML = data.tabla;
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Error en la respuesta del servidor: ${response.status}`);
+            }
+            return response.text();
+        })
+        .then(html => {
+            if (tablaContainer) {
+                tablaContainer.innerHTML = html;
             } else {
-                console.error('No se recibió contenido HTML para la tabla');
+                console.error('No se encontró el contenedor de la tabla');
             }
         })
         .catch(error => {
             console.error('Error al actualizar la tabla:', error);
+            if (tablaContainer) {
+                tablaContainer.innerHTML = `
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                        <strong class="font-bold">Error:</strong>
+                        <span class="block sm:inline">No se pudieron cargar los datos. Intente nuevamente.</span>
+                    </div>
+                `;
+            }
+        });
+    }
+    
+    // Función para aplicar filtros
+    function aplicarFiltros() {
+        // Mostrar indicador de carga
+        const tablaContainer = document.getElementById('tabla-container');
+        if (tablaContainer) {
+            tablaContainer.innerHTML = '<div class="flex justify-center items-center p-8"><svg class="animate-spin h-10 w-10 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>';
+        }
+
+        const filtros = {
+            nombre: document.getElementById('filtro_nombre')?.value || '',
+            email: document.getElementById('filtro_email')?.value || '',
+            dni: document.getElementById('filtro_dni')?.value || '',
+            ciudad: document.getElementById('filtro_ciudad')?.value || '',
+            estado: document.getElementById('filtro_estado')?.value || ''
+        };
+        
+        const params = new URLSearchParams();
+        Object.entries(filtros).forEach(([key, value]) => {
+            if (value) {
+                params.append(key, value);
+            }
+        });
+        
+        fetch(`/admin/alumnos?${params.toString()}&_=${new Date().getTime()}`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Error en la respuesta: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log("Datos recibidos:", data);
+            if (tablaContainer && data.tabla) {
+                tablaContainer.innerHTML = data.tabla;
+                
+                // Volver a conectar eventos a los nuevos botones
+                document.querySelectorAll('.btn-editar').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const id = this.getAttribute('data-id');
+                        mostrarFormularioEditar(id);
+                    });
+                });
+                
+                document.querySelectorAll('.btn-activar').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const id = this.getAttribute('data-id');
+                        const isActive = this.getAttribute('data-active');
+                        openActivateModal(id, isActive);
+                    });
+                });
+                
+                document.querySelectorAll('.btn-crear').forEach(btn => {
+                    btn.addEventListener('click', mostrarFormularioCrear);
+                });
+            } else {
+                console.error('Error al cargar la tabla o datos no válidos');
+                tablaContainer.innerHTML = `
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                        <strong class="font-bold">Error:</strong>
+                        <span class="block sm:inline">No se pudieron cargar los datos correctamente.</span>
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error al aplicar filtros:', error);
+            if (tablaContainer) {
+                tablaContainer.innerHTML = `
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                        <strong class="font-bold">Error:</strong>
+                        <span class="block sm:inline">No se pudieron cargar los datos. Intente nuevamente.</span>
+                    </div>
+                `;
+            }
         });
     }
 </script>
 
 <style>
 /* Asegurar que los botones de acción siempre estén visibles */
-.btn-editar, .btn-eliminar {
+.btn-editar, .btn-activar {
     display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -658,76 +995,10 @@
 /* Estilos para las tarjetas en móvil */
 @media (max-width: 768px) {
     .md\:hidden .btn-editar,
-    .md\:hidden .btn-eliminar {
+    .md\:hidden .btn-activar {
         width: 40px !important;
         height: 40px !important;
     }
 }
 </style>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        let timeoutId = null;
-
-        // Eventos para filtrado automático
-        document.getElementById('filtro_nombre').addEventListener('input', debounceFilter);
-        document.getElementById('filtro_email').addEventListener('input', debounceFilter);
-        document.getElementById('filtro_dni').addEventListener('input', debounceFilter);
-        document.getElementById('filtro_ciudad').addEventListener('change', aplicarFiltros);
-        document.getElementById('filtro_estado').addEventListener('change', aplicarFiltros);
-        
-        // Resetear filtros
-        document.getElementById('reset-filtros').addEventListener('click', function() {
-            document.getElementById('filtro_nombre').value = '';
-            document.getElementById('filtro_email').value = '';
-            document.getElementById('filtro_dni').value = '';
-            document.getElementById('filtro_ciudad').value = '';
-            document.getElementById('filtro_estado').value = '';
-            aplicarFiltros();
-        });
-
-        // Función para debounce en campos de texto
-        function debounceFilter() {
-            if (timeoutId) {
-                clearTimeout(timeoutId);
-            }
-            timeoutId = setTimeout(() => {
-                aplicarFiltros();
-            }, 300);
-        }
-
-        function aplicarFiltros() {
-            const filtros = {
-                nombre: document.getElementById('filtro_nombre').value,
-                email: document.getElementById('filtro_email').value,
-                dni: document.getElementById('filtro_dni').value,
-                ciudad: document.getElementById('filtro_ciudad').value,
-                estado: document.getElementById('filtro_estado').value
-            };
-            
-            const params = new URLSearchParams();
-            Object.entries(filtros).forEach(([key, value]) => {
-                if (value) {
-                    params.append(key, value);
-                }
-            });
-            
-            fetch(`/admin/alumnos?${params.toString()}`, {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.tabla) {
-                    document.getElementById('tabla-container').innerHTML = data.tabla;
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-        }
-    });
-</script>
 @endpush 
