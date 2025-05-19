@@ -371,4 +371,7 @@
             });
         }
     </script>
+
+    <!-- Script de validaciones para categorías -->
+    <script src="{{ asset('js/categorias-validaciones.js') }}"></script>
 @endsection 
