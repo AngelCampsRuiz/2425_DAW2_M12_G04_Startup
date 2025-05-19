@@ -275,7 +275,7 @@ class EmpresaController extends Controller
             if ($request->hasFile('imagen')) {
                 // Eliminar imagen anterior si existe
                 if ($user->imagen) {
-                    $imagenPath = public_path('public/profile_images/' . $user->imagen);
+                    $imagenPath = public_path('profile_images/' . $user->imagen);
                     if (file_exists($imagenPath)) {
                         unlink($imagenPath);
                     }
@@ -289,7 +289,7 @@ class EmpresaController extends Controller
                 $userData['imagen'] = $imagenPath;
             } elseif ($request->has('eliminar_imagen_actual') && $user->imagen) {
                 // Si se solicita eliminar la imagen actual
-                $imagenPath = public_path('public/profile_images/' . $user->imagen);
+                $imagenPath = public_path('profile_images/' . $user->imagen);
                 if (file_exists($imagenPath)) {
                     unlink($imagenPath);
                 }
@@ -401,7 +401,7 @@ class EmpresaController extends Controller
 
             // Eliminar la imagen si existe
             if ($empresa && $empresa->user && $empresa->user->imagen) {
-                $imagenPath = public_path('public/profile_images/' . $empresa->user->imagen);
+                $imagenPath = public_path('profile_images/' . $empresa->user->imagen);
                 if (file_exists($imagenPath)) {
                     unlink($imagenPath);
                 }

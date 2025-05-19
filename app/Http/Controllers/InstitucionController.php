@@ -9,9 +9,13 @@ use App\Models\Estudiante;
 use App\Models\Institucion;
 use App\Models\SolicitudEstudiante;
 use App\Models\User;
+use App\Models\NivelEducativo;
+use App\Models\Categoria;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class InstitucionController extends Controller
 {
@@ -105,5 +109,51 @@ class InstitucionController extends Controller
         ]);
 
         return redirect()->route('institucion.perfil')->with('success', 'Contraseña actualizada correctamente');
+    }
+    
+    /**
+     * Obtiene las categorías (cursos) para un nivel educativo específico.
+     * 
+     * @param int $nivel_id ID del nivel educativo
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getCategoriasPorNivel($nivel_id)
+    {
+        try {
+            $institucion = Auth::user()->institucion;
+            
+            // Obtener las categorías asociadas a la institución y al nivel educativo específico
+            $categorias = DB::table('institucion_categoria as ic')
+                ->join('categorias as c', 'ic.categoria_id', '=', 'c.id')
+                ->where('ic.institucion_id', $institucion->id)
+                ->where('ic.nivel_educativo_id', $nivel_id)
+                ->where('ic.activo', true)
+                ->select('c.id', 'c.nombre_categoria', 'ic.nombre_personalizado')
+                ->get()
+                ->map(function($categoria) {
+                    return [
+                        'id' => $categoria->id,
+                        'nombre_categoria' => $categoria->nombre_personalizado ?: $categoria->nombre_categoria
+                    ];
+                });
+            
+            // Registrar para depuración
+            Log::info('Categorías obtenidas para nivel ' . $nivel_id, [
+                'institucion_id' => $institucion->id,
+                'categorias' => $categorias,
+                'count' => $categorias->count()
+            ]);
+            
+            return response()->json($categorias);
+            
+        } catch (\Exception $e) {
+            Log::error('Error al obtener categorías por nivel', [
+                'nivel_id' => $nivel_id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json(['error' => 'Error al cargar las categorías: ' . $e->getMessage()], 500);
+        }
     }
 } 

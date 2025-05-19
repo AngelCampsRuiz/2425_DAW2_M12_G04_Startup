@@ -113,7 +113,7 @@ class ProfesorController extends Controller
             
             // Si se subió una imagen, eliminarla
             if (isset($imagenPath)) {
-                $imagenPath = public_path('public/profile_images/' . $imagenPath);
+                $imagenPath = public_path('profile_images/' . $imagenPath);
                 if (file_exists($imagenPath)) {
                     unlink($imagenPath);
                 }
@@ -220,7 +220,7 @@ class ProfesorController extends Controller
             if ($request->hasFile('imagen')) {
                 // Eliminar imagen anterior si existe
                 if ($user->imagen) {
-                    $imagenPath = public_path('public/profile_images/' . $user->imagen);
+                    $imagenPath = public_path('profile_images/' . $user->imagen);
                     if (file_exists($imagenPath)) {
                         unlink($imagenPath);
                     }
@@ -233,7 +233,7 @@ class ProfesorController extends Controller
             } elseif ($request->has('eliminar_imagen_actual') && $request->eliminar_imagen_actual == '1') {
                 // Eliminar la imagen actual si se ha solicitado
                 if ($user->imagen) {
-                    $imagenPath = public_path('public/profile_images/' . $user->imagen);
+                    $imagenPath = public_path('profile_images/' . $user->imagen);
                     if (file_exists($imagenPath)) {
                         unlink($imagenPath);
                     }
@@ -307,7 +307,7 @@ class ProfesorController extends Controller
             
             // Eliminar imagen si existe
             if ($profesor->imagen) {
-                $imagenPath = public_path('public/profile_images/' . $profesor->imagen);
+                $imagenPath = public_path('profile_images/' . $profesor->imagen);
                 if (file_exists($imagenPath)) {
                     unlink($imagenPath);
                 }

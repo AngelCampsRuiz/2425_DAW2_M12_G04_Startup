@@ -23,7 +23,9 @@ class Clase extends Model
         'descripcion',
         'capacidad',
         'horario',
-        'activa'
+        'activa',
+        'nivel_educativo_id',
+        'categoria_id'
     ];
 
     protected $casts = [

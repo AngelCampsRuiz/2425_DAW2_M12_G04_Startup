@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Clase;
 use App\Models\SolicitudEstudiante;
+use App\Models\SolicitudInstitucion;
+use App\Models\Estudiante;
+use App\Models\Titulo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -13,38 +16,53 @@ class SolicitudEstudianteController extends Controller
     public function index(Request $request)
     {
         $institucion = Auth::user()->institucion;
-
-        // Aplicar filtros si existen
-        $query = $institucion->solicitudesEstudiantes()->with(['estudiante.user', 'clase']);
-
-        // Filtrar por estado si se proporciona
-        $filtro = $request->estado ?? 'todos';
+        $busqueda = $request->input('buscar', '');
+        $filtro = $request->input('estado', 'todos');
+        
+        // Obtener solicitudes de estudiantes
+        $query = SolicitudInstitucion::with(['estudiante.user'])
+            ->where('institucion_id', $institucion->id);
+        
+        // Aplicar filtro por estado
         if ($filtro !== 'todos') {
             $query->where('estado', $filtro);
         }
-
-        // Búsqueda por nombre o email
-        $busqueda = $request->buscar ?? '';
+        
+        // Aplicar filtro por búsqueda
         if (!empty($busqueda)) {
             $query->whereHas('estudiante.user', function($q) use ($busqueda) {
-                $q->where('nombre', 'like', '%' . $busqueda . '%')
-                  ->orWhere('email', 'like', '%' . $busqueda . '%');
+                $q->where('nombre', 'like', "%{$busqueda}%")
+                  ->orWhere('email', 'like', "%{$busqueda}%");
             });
         }
-
-        $solicitudes = $query->orderBy('estado')
+        
+        $solicitudes = $query->orderBy('estado', 'asc')
             ->orderBy('created_at', 'desc')
+            ->paginate(10);
+        
+        // Obtener estudiantes pendientes de activación
+        $estudiantesPendientes = Estudiante::with(['user', 'titulo'])
+            ->where('institucion_id', $institucion->id)
+            ->whereHas('user', function($query) {
+                $query->where('activo', false);
+            })
             ->get();
-
-        // Estadísticas para el resumen
+        
+        // Obtener todos los títulos para el modal de edición
+        $titulos = Titulo::all();
+        
+        // Calcular estadísticas para el dashboard
         $stats = [
-            'total' => $institucion->solicitudesEstudiantes()->count(),
-            'pendientes' => $institucion->solicitudesEstudiantes()->where('estado', 'pendiente')->count(),
-            'aprobadas' => $institucion->solicitudesEstudiantes()->where('estado', 'aprobada')->count(),
-            'rechazadas' => $institucion->solicitudesEstudiantes()->where('estado', 'rechazada')->count(),
+            'total' => $solicitudes->total(),
+            'pendientes' => SolicitudInstitucion::where('institucion_id', $institucion->id)
+                            ->where('estado', 'pendiente')->count(),
+            'aprobadas' => SolicitudInstitucion::where('institucion_id', $institucion->id)
+                            ->where('estado', 'aprobada')->count(),
+            'rechazadas' => SolicitudInstitucion::where('institucion_id', $institucion->id)
+                            ->where('estado', 'rechazada')->count(),
         ];
-
-        return view('institucion.solicitudes.index', compact('solicitudes', 'stats', 'filtro', 'busqueda'));
+        
+        return view('institucion.solicitudes.index', compact('solicitudes', 'estudiantesPendientes', 'titulos', 'stats', 'filtro', 'busqueda'));
     }
 
     // Ver solicitud
