@@ -792,7 +792,7 @@
                 const fechaFinValue = fechaFin.value;
                 const horasTotalesMinValue = horasTotalesMin.value;
                 const horasTotalesMaxValue = horasTotalesMax.value;
-                const favoritosValue = favoritosCheckbox && favoritosCheckbox.checked ? 'on' : 'off';
+                const favoritosValue = 'off';
 
                 const params = new URLSearchParams();
                 if (searchTerm) params.append('search', searchTerm);
