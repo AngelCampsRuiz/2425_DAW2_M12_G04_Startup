@@ -366,7 +366,12 @@
                 <div class="mt-6">
                     <label for="descripcion" class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
                     <textarea name="descripcion" id="descripcion" rows="4" 
-                              class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"></textarea>
+                              class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50"
+                              maxlength="500"></textarea>
+                    <p class="text-xs text-gray-500 mt-1 flex justify-between">
+                        <span>La descripción debe tener entre 10 y 500 caracteres</span>
+                        <span id="descripcion-contador">500 caracteres restantes</span>
+                    </p>
                 </div>
                 
                 <div class="mt-6 flex justify-end">

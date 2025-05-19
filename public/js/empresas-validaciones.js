@@ -151,9 +151,9 @@ document.addEventListener('DOMContentLoaded', function() {
         'descripcion': {
             validar: (valor) => {
                 if (valor === '') return true; // No es obligatorio
-                return valor.trim().length >= 10;
+                return valor.trim().length >= 10 && valor.trim().length <= 500;
             },
-            mensaje: 'La descripción debe tener al menos 10 caracteres.'
+            mensaje: 'La descripción debe tener entre 10 y 500 caracteres.'
         },
         'imagen': {
             validar: (valor, elemento) => {
@@ -226,10 +226,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (id === 'descripcion') {
                     campo.addEventListener('input', function() {
                         validarCampo(this);
+                        actualizarContadorCaracteres(this);
                     });
                 }
             }
         });
+        
+        // Inicializar contador de caracteres para descripción
+        const descripcion = document.getElementById('descripcion');
+        if (descripcion) {
+            actualizarContadorCaracteres(descripcion);
+        }
         
         // Campos numéricos
         const camposNumericos = ['latitud', 'longitud'];
@@ -276,6 +283,27 @@ document.addEventListener('DOMContentLoaded', function() {
             passwordConfirmation.addEventListener('blur', function() {
                 validarCampo(this);
             });
+        }
+    }
+    
+    // Función para actualizar el contador de caracteres
+    function actualizarContadorCaracteres(elemento) {
+        if (elemento.id !== 'descripcion') return;
+        
+        const contador = document.getElementById('descripcion-contador');
+        if (!contador) return;
+        
+        const maxLength = elemento.getAttribute('maxlength') || 500;
+        const caracteresRestantes = maxLength - elemento.value.length;
+        contador.textContent = `${caracteresRestantes} caracteres restantes`;
+        
+        // Cambiar color según cantidad de caracteres restantes
+        if (caracteresRestantes < 50) {
+            contador.classList.remove('text-gray-500');
+            contador.classList.add('text-orange-500');
+        } else {
+            contador.classList.remove('text-orange-500');
+            contador.classList.add('text-gray-500');
         }
     }
     
