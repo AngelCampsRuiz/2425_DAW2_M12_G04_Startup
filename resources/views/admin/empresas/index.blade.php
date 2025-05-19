@@ -986,6 +986,9 @@
     }
 </script>
 
+<!-- Script de validaciones para empresas -->
+<script src="{{ asset('js/empresas-validaciones.js') }}"></script>
+
 <style>
 /* Asegurar que los botones de acción siempre estén visibles */
 .btn-editar, .btn-eliminar {
