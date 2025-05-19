@@ -144,12 +144,51 @@ class ProfileController extends Controller
             
             $user->update($updateData);
 
+            // Calcular el progreso del perfil
+            $total_campos = 0;
+            $campos_completados = 0;
+
+            // Campos obligatorios
+            $campos_obligatorios = ['nombre', 'email'];
+            $total_campos += count($campos_obligatorios);
+            foreach($campos_obligatorios as $campo) {
+                if(!empty($user->$campo)) {
+                    $campos_completados++;
+                }
+            }
+
+            // Campos opcionales
+            $campos_opcionales = [
+                'descripcion' => 'Descripción personal',
+                'telefono' => 'Teléfono',
+                'ciudad' => 'Ciudad',
+                'dni' => 'DNI',
+                'imagen' => 'Foto de perfil'
+            ];
+            $total_campos += count($campos_opcionales);
+            foreach($campos_opcionales as $campo => $nombre) {
+                if(!empty($user->$campo)) {
+                    $campos_completados++;
+                }
+            }
+
+            // Si es estudiante, añadir CV
+            if($user->role_id == 3) {
+                $total_campos++;
+                if(!empty($user->estudiante->cv_pdf)) {
+                    $campos_completados++;
+                }
+            }
+
+            $porcentaje = round(($campos_completados / $total_campos) * 100);
+
             DB::commit();
 
             return response()->json([
                 'success' => true,
                 'message' => 'Perfil actualizado correctamente',
-                'user' => $user->fresh()->load('empresa')
+                'user' => $user->fresh()->load('empresa'),
+                'porcentaje' => $porcentaje
             ]);
 
         } catch (\Exception $e) {
