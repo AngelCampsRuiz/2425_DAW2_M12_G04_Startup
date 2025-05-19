@@ -18,7 +18,8 @@ class Empresa extends Model
         'latitud',
         'longitud',
         'provincia',
-        'show_cif'
+        'show_cif',
+        'activo'
     ];
     
     // Indicar que la clave primaria no es autoincremental

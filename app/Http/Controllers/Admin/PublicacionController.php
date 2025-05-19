@@ -31,12 +31,17 @@ class PublicacionController extends Controller
             });
         }
 
-        if ($request->filled('categoria')) {
-            $query->where('categoria_id', $request->categoria);
+        if ($request->filled('categoria_id')) {
+            $query->where('categoria_id', $request->categoria_id);
         }
 
-        if ($request->filled('subcategoria')) {
-            $query->where('subcategoria_id', $request->subcategoria);
+        if ($request->filled('subcategoria_id')) {
+            $query->where('subcategoria_id', $request->subcategoria_id);
+        }
+        
+        // Filtrar por estado activo/inactivo
+        if ($request->filled('activa')) {
+            $query->where('activa', $request->activa);
         }
 
         $publicaciones = $query->orderBy('id', 'asc')->paginate(10);
@@ -144,12 +149,47 @@ class PublicacionController extends Controller
     }
 
     /**
-     * Actualiza una publicación
+     * Actualiza una publicación existente
      */
     public function update(Request $request, $id)
     {
         $publicacion = Publication::findOrFail($id);
         
+        // Si la solicitud solo contiene el campo 'activa', es una operación de activar/desactivar
+        if ($request->has('activa') && count($request->except(['_method', '_token'])) <= 1) {
+            try {
+                $publicacion->update([
+                    'activa' => $request->activa
+                ]);
+                
+                $mensaje = $request->activa ? 'Oferta activada exitosamente' : 'Oferta desactivada exitosamente';
+                
+                if ($request->ajax() || $request->wantsJson()) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => $mensaje
+                    ]);
+                }
+                
+                return redirect()->route('admin.publicaciones.index')
+                    ->with('success', $mensaje);
+            } catch (\Exception $e) {
+                \Log::error('Error al cambiar estado de la publicación: ' . $e->getMessage());
+                
+                if ($request->ajax() || $request->wantsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Error al actualizar el estado de la oferta: ' . $e->getMessage()
+                    ], 500);
+                }
+                
+                return redirect()->back()
+                    ->with('error', 'Error al actualizar el estado de la oferta: ' . $e->getMessage())
+                    ->withInput();
+            }
+        }
+
+        // Validación para actualización normal
         $validated = $request->validate([
             'titulo' => 'required|max:100',
             'descripcion' => 'required',
@@ -172,27 +212,28 @@ class PublicacionController extends Controller
             
             DB::commit();
             
-            if ($request->ajax()) {
+            if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'Publicación actualizada correctamente'
+                    'message' => 'Oferta actualizada correctamente'
                 ]);
             }
             
             return redirect()->route('admin.publicaciones.index')
-                ->with('success', 'Publicación actualizada correctamente');
+                ->with('success', 'Oferta actualizada correctamente');
         } catch (\Exception $e) {
             DB::rollBack();
+            \Log::error('Error al actualizar publicación: ' . $e->getMessage());
             
-            if ($request->ajax()) {
+            if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Error al actualizar la publicación: ' . $e->getMessage()
+                    'message' => 'Error al actualizar la oferta: ' . $e->getMessage()
                 ], 500);
             }
             
             return redirect()->back()
-                ->with('error', 'Error al actualizar la publicación: ' . $e->getMessage())
+                ->with('error', 'Error al actualizar la oferta: ' . $e->getMessage())
                 ->withInput();
         }
     }
@@ -207,32 +248,32 @@ class PublicacionController extends Controller
         try {
             DB::beginTransaction();
             
-            // Eliminar la publicación directamente sin intentar desvincular subcategorías
-            $publicacion->delete();
+            // Desactivar la publicación en lugar de eliminarla
+            $publicacion->update(['activa' => false]);
             
             DB::commit();
             
             if (request()->ajax()) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'Publicación eliminada correctamente'
+                    'message' => 'Oferta desactivada correctamente'
                 ]);
             }
             
             return redirect()->route('admin.publicaciones.index')
-                ->with('success', 'Publicación eliminada correctamente');
+                ->with('success', 'Oferta desactivada correctamente');
         } catch (\Exception $e) {
             DB::rollBack();
             
             if (request()->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Error al eliminar la publicación: ' . $e->getMessage()
+                    'message' => 'Error al desactivar la oferta: ' . $e->getMessage()
                 ], 500);
             }
             
             return redirect()->route('admin.publicaciones.index')
-                ->with('error', 'Error al eliminar la publicación: ' . $e->getMessage());
+                ->with('error', 'Error al desactivar la oferta: ' . $e->getMessage());
         }
     }
     

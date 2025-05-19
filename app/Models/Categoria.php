@@ -24,6 +24,7 @@ class Categoria extends Model
     protected $fillable = [
         'nombre_categoria',
         'nivel_educativo_id',
+        'activo',
     ];
 
     /**

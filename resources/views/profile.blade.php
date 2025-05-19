@@ -406,7 +406,7 @@
                                         @endphp
 
                                         <div class="flex items-start" 
-                                             data-campo="cif" 
+                                             data-campo="empresa-cif" 
                                              style="display: {{ $showCif ? 'flex' : 'none' }}">
                                             <div class="flex-shrink-0">
                                                 <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -415,7 +415,7 @@
                                             </div>
                                             <div class="ml-4">
                                                 <p class="text-sm text-gray-500">CIF</p>
-                                                <p class="font-medium text-gray-900">{{ $user->empresa ? $user->empresa->cif : 'No especificado' }}</p>
+                                                <p class="font-medium text-gray-900" data-valor="cif">{{ $user->empresa ? $user->empresa->cif : 'No especificado' }}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -629,7 +629,7 @@
                                             </div>
                                             <div class="ml-4">
                                                 <p class="text-sm text-gray-500">CIF</p>
-                                                <p class="font-medium text-gray-900">{{ $user->empresa->cif ?? 'No especificado' }}</p>
+                                                <p class="font-medium text-gray-900" data-valor="cif">{{ $user->empresa ? $user->empresa->cif : 'No especificado' }}</p>
                                             </div>
                                         </div>
                                         <div class="flex items-start">
@@ -1311,6 +1311,10 @@
             function closeEditModal() {
                 document.getElementById('editModal').classList.add('hidden');
                 document.body.style.overflow = 'auto';
+                // Limpiar el mapa cuando se cierra el modal
+                if (typeof cleanupMap === 'function') {
+                    cleanupMap();
+                }
             }
 
             // Cerrar modal al hacer clic fuera
@@ -1765,6 +1769,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     {{-- Cargar los scripts en orden --}}
+    <script src="{{ asset('js/mapa.js') }}?v={{ time() }}"></script>
     <script src="{{ asset('js/profile-validaciones.js') }}?v={{ time() }}"></script>
     <script src="{{ asset('js/profile.js') }}?v={{ time() }}"></script>
 @endpush

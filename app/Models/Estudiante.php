@@ -24,7 +24,8 @@ class Estudiante extends Model
         'numero_seguridad_social',
         'categoria_id',
         'conocimientos_previos',
-        'intereses'
+        'intereses',
+        'activo'
     ];
 
     // Indicar que la clave primaria no es autoincremental
