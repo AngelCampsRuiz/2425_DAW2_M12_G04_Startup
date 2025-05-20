@@ -195,11 +195,11 @@
 
                         <div class="flex items-start">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                             </svg>
                             <div>
-                                <p class="text-xs text-gray-500">Año académico</p>
-                                <p class="text-sm font-medium text-gray-700">{{ $clase->anyo_academico ?? 'No definido' }}</p>
+                                <p class="text-xs text-gray-500">Nivel educativo</p>
+                                <p class="text-sm font-medium text-gray-700">{{ $clase->categoria->nivelEducativo->nombre_nivel ?? 'No definido' }}</p>
                             </div>
                         </div>
 

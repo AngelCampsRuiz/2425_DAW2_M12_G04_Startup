@@ -512,6 +512,10 @@ Route::prefix('docente')->middleware(['auth', \App\Http\Middleware\CheckRole::cl
     Route::post('/solicitudes/{id}/aprobar', [App\Http\Controllers\DocenteController::class, 'aprobarSolicitud'])->name('solicitudes.aprobar');
     Route::post('/solicitudes/{id}/rechazar', [App\Http\Controllers\DocenteController::class, 'rechazarSolicitud'])->name('solicitudes.rechazar');
 
+    // Gestión de estudiantes en clases
+    Route::put('/estudiante/{estudianteId}/calificar/{claseId}', [App\Http\Controllers\DocenteController::class, 'calificarEstudiante'])->name('estudiante.calificar');
+    Route::put('/estudiante/{estudianteId}/estado/{claseId}', [App\Http\Controllers\DocenteController::class, 'cambiarEstadoEstudiante'])->name('estudiante.cambiar-estado');
+
     // Convenios
     Route::get('/convenios', [App\Http\Controllers\Docente\ConvenioController::class, 'index'])->name('convenios.index');
     Route::get('/convenios/{convenio}', [App\Http\Controllers\Docente\ConvenioController::class, 'show'])->name('convenios.show');

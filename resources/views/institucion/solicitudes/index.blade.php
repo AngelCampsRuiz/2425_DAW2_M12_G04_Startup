@@ -426,8 +426,8 @@
     {{-- SECCIÓN DE ESTUDIANTES PENDIENTES DE ACTIVACIÓN --}}
     <div class="bg-white rounded-xl shadow-sm overflow-hidden d-none" style="display: none;">
         <!-- Esta sección se ha reemplazado por la tabla principal mejorada -->
-    </div>
-
+            </div>
+            
     <!-- Modal de rechazo de solicitud -->
     <div id="modalRechazarSolicitud" class="fixed inset-0 bg-black bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
         <div class="relative top-20 mx-auto p-5 border w-full max-w-lg shadow-lg rounded-md bg-white">
@@ -457,7 +457,7 @@
             </div>
         </div>
     </div>
-
+    
     <style>
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-10px); }
