@@ -4,6 +4,12 @@ let searchTimeout = null;
 let selectedLocation = null;
 
 function initMap() {
+    // Verificar si el usuario es una empresa
+    const empresaElement = document.querySelector('[data-role="empresa"]');
+    if (!empresaElement) {
+        return;
+    }
+
     if (map) {
         map.invalidateSize();
         return;
