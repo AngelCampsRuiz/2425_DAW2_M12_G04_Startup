@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\BaseController;
 use App\Models\Publication;
 use App\Models\Categoria;
 use App\Models\Subcategoria;
@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB; // Importar DB para SQL directo
 use Illuminate\Support\Facades\Log; // Importar Log para registros
 
-class PublicacionController extends Controller
+class PublicacionController extends BaseController
 {
     /**
      * Muestra el listado de publicaciones
@@ -97,6 +97,9 @@ class PublicacionController extends Controller
             $publication = Publication::create($validated);
             Log::info('Publicación creada:', $publication->toArray());
             
+            // Registrar la actividad
+            $this->logCreation($publication, 'Se ha creado una nueva oferta: ' . $publication->titulo);
+            
             DB::commit();
             
             if ($request->ajax()) {
@@ -164,6 +167,9 @@ class PublicacionController extends Controller
                 
                 $mensaje = $request->activa ? 'Oferta activada exitosamente' : 'Oferta desactivada exitosamente';
                 
+                // Registrar la actividad de cambio de estado
+                $this->logUpdate($publicacion, 'Se ha ' . ($request->activa ? 'activado' : 'desactivado') . ' la oferta: ' . $publicacion->titulo);
+                
                 if ($request->ajax() || $request->wantsJson()) {
                     return response()->json([
                         'success' => true,
@@ -207,8 +213,14 @@ class PublicacionController extends Controller
         try {
             DB::beginTransaction();
             
+            // Guardar título antes de actualizar para el registro
+            $tituloAnterior = $publicacion->titulo;
+            
             // Actualizar la publicación
             $publicacion->update($validated);
+            
+            // Registrar la actividad
+            $this->logUpdate($publicacion, 'Se ha actualizado la oferta: ' . $publicacion->titulo);
             
             DB::commit();
             
@@ -244,12 +256,16 @@ class PublicacionController extends Controller
     public function destroy($id)
     {
         $publicacion = Publication::findOrFail($id);
+        $tituloPublicacion = $publicacion->titulo; // Guardar título antes de cambiar estado
         
         try {
             DB::beginTransaction();
             
             // Desactivar la publicación en lugar de eliminarla
             $publicacion->update(['activa' => false]);
+            
+            // Registrar la actividad
+            $this->logDeletion($publicacion, 'Se ha desactivado la oferta: ' . $tituloPublicacion);
             
             DB::commit();
             
@@ -312,6 +328,10 @@ class PublicacionController extends Controller
     public function destroySQL($id)
     {
         try {
+            // Obtener información de la publicación antes de eliminarla
+            $publicacion = Publication::find($id);
+            $tituloPublicacion = $publicacion ? $publicacion->titulo : 'ID: ' . $id;
+            
             // Registrar la solicitud para debug
             Log::info('Intento de eliminación SQL para publicación ID: ' . $id);
             
@@ -321,6 +341,11 @@ class PublicacionController extends Controller
             // Comprobar si se eliminó algún registro
             if ($affected > 0) {
                 Log::info('Publicación eliminada correctamente mediante SQL directo. ID: ' . $id);
+                
+                // Registrar la actividad (usando un objeto genérico ya que la publicación ya no existe)
+                if ($publicacion) {
+                    $this->logDeletion($publicacion, 'Se ha eliminado la oferta: ' . $tituloPublicacion);
+                }
                 
                 if (request()->ajax()) {
                     return response()->json([

@@ -45,13 +45,49 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="emoji-item">😢</div>
         </div>
     `;
-    document.querySelector('.relative').appendChild(emojiPicker);
+    
+    // Verificar que exista el contenedor antes de añadir el selector de emojis
+    const relativeContainer = document.querySelector('.relative');
+    if (relativeContainer) {
+        relativeContainer.appendChild(emojiPicker);
+        
+        // Toggle del selector de emojis
+        if (emojiButton) {
+            emojiButton.addEventListener('click', function() {
+                emojiPicker.classList.toggle('show');
+            });
+        }
+        
+        // Cerrar el selector de emojis al hacer clic fuera
+        document.addEventListener('click', function(e) {
+            if (emojiButton && !emojiButton.contains(e.target) && !emojiPicker.contains(e.target)) {
+                emojiPicker.classList.remove('show');
+            }
+        });
+        
+        // Insertar emoji seleccionado
+        document.querySelectorAll('.emoji-item').forEach(item => {
+            item.addEventListener('click', function() {
+                messageInput.value += this.textContent;
+                messageInput.focus();
+                // Disparar evento input para activar autoexpand
+                messageInput.dispatchEvent(new Event('input'));
+                emojiPicker.classList.remove('show');
+            });
+        });
+    } else {
+        console.warn('No se encontró el contenedor para el selector de emojis');
+    }
     
     // Hacer scroll al último mensaje con animación
-    smoothScrollToBottom();
+    if (chatMessages) {
+        smoothScrollToBottom();
+    }
     
     // Inicializar textarea autoexpandible
-    initAutoExpandTextarea();
+    if (messageInput) {
+        initAutoExpandTextarea();
+    }
     
     // Función para desplazamiento suave
     function smoothScrollToBottom() {
@@ -176,29 +212,6 @@ document.addEventListener('DOMContentLoaded', function() {
         imagePreviewContainer.classList.add('hidden');
     }
     
-    // Toggle del selector de emojis
-    emojiButton.addEventListener('click', function() {
-        emojiPicker.classList.toggle('show');
-    });
-    
-    // Cerrar el selector de emojis al hacer clic fuera
-    document.addEventListener('click', function(e) {
-        if (!emojiButton.contains(e.target) && !emojiPicker.contains(e.target)) {
-            emojiPicker.classList.remove('show');
-        }
-    });
-    
-    // Insertar emoji seleccionado
-    document.querySelectorAll('.emoji-item').forEach(item => {
-        item.addEventListener('click', function() {
-            messageInput.value += this.textContent;
-            messageInput.focus();
-            // Disparar evento input para activar autoexpand
-            messageInput.dispatchEvent(new Event('input'));
-            emojiPicker.classList.remove('show');
-        });
-    });
-    
     // Actualizar los indicadores de lectura
     function updateReadStatus(messages) {
         messages.forEach(message => {
@@ -303,26 +316,44 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Función para actualizar los mensajes con animaciones
     function updateMessages() {
+        if (!window.routeGetMessages) {
+            console.error('Error: No se encontró la URL para obtener mensajes');
+            return;
+        }
+        
+        console.log('Solicitando mensajes de:', window.routeGetMessages);
+        
         fetch(window.routeGetMessages)
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    console.error('Error en la respuesta del servidor:', response.status, response.statusText);
+                    throw new Error('El servidor respondió con un error: ' + response.status);
+                }
+                return response.json();
+            })
             .then(data => {
-                if (!data.error && data.mensajes.length > 0) {
+                console.log('Mensajes recibidos:', data);
+                
+                if (!data.error && data.mensajes && data.mensajes.length > 0) {
                     // Actualizar el estado de lectura de los mensajes existentes
                     updateReadStatus(data.mensajes);
                     
                     const newMessages = data.mensajes.filter(mensaje => mensaje.id > lastMessageId);
+                    console.log('Nuevos mensajes:', newMessages.length);
                     
                     if (newMessages.length > 0) {
                         const wasAtBottom = isAtBottom();
                         
                         newMessages.forEach(mensaje => {
-                            chatMessages.insertAdjacentHTML('beforeend', createMessageHtml(mensaje));
+                            if (chatMessages) {
+                                chatMessages.insertAdjacentHTML('beforeend', createMessageHtml(mensaje));
+                            }
                         });
                         
                         lastMessageId = newMessages[newMessages.length - 1].id;
                         
                         // Solo hacer scroll si ya estaba en el fondo
-                        if (wasAtBottom) {
+                        if (wasAtBottom && chatMessages) {
                             smoothScrollToBottom();
                         } else {
                             // Mostrar indicador de nuevos mensajes
@@ -334,6 +365,8 @@ document.addEventListener('DOMContentLoaded', function() {
                             }
                         }
                     }
+                } else if (data.error) {
+                    console.error('Error al obtener mensajes:', data.error);
                 }
             })
             .catch(error => {
@@ -402,77 +435,119 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Enviar mensaje con animaciones
-    messageForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const content = messageInput.value.trim();
-        const hasFile = fileInput.files.length > 0;
-        
-        if (!content && !hasFile) return;
-        
-        // Desactivar botones durante el envío
-        const submitButton = this.querySelector('button[type="submit"]');
-        submitButton.disabled = true;
-        submitButton.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i><span>Enviando...</span>';
-        
-        // Crear FormData para enviar el contenido y archivo
-        const formData = new FormData();
-        if (content) {
-            formData.append('contenido', content);
-        }
-        
-        if (hasFile) {
-            formData.append('archivo', fileInput.files[0]);
-        }
-        
-        // Enviar mensaje al servidor
-        fetch(window.routeSendMessage, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': window.csrfToken
-            },
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (!data.error) {
-                // Limpiar inputs
-                messageInput.value = '';
-                messageInput.style.height = 'auto';
-                clearFileInput();
-                
-                // Añadir mensaje a la vista con animación
-                chatMessages.insertAdjacentHTML('beforeend', createMessageHtml(data.mensaje));
-                lastMessageId = data.mensaje.id;
-                
-                // Desplazamiento suave al último mensaje
-                smoothScrollToBottom();
-                
-                // Mostrar pequeña animación de "enviado"
-                showSentAnimation();
-                
-                // Ocultar contador de caracteres
-                document.querySelector('.message-length').classList.add('hidden');
-            } else {
-                // Mostrar error si hay alguno
-                showErrorNotification(data.error);
+    if (messageForm) {
+        messageForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const content = messageInput ? messageInput.value.trim() : '';
+            const hasFile = fileInput && fileInput.files.length > 0;
+            
+            if (!content && !hasFile) return;
+            
+            // Desactivar botones durante el envío
+            const submitButton = this.querySelector('button[type="submit"]');
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i><span>Enviando...</span>';
             }
             
-            // Reactivar botón
-            submitButton.disabled = false;
-            submitButton.innerHTML = '<i class="fas fa-paper-plane mr-2"></i><span>Enviar</span>';
-        })
-        .catch(error => {
-            console.error('Error al enviar mensaje:', error);
+            // Verificar si tenemos la URL y el token CSRF
+            if (!window.routeSendMessage || !window.csrfToken) {
+                console.error('Error: No se encontró la URL para enviar mensajes o el token CSRF');
+                showErrorNotification('Error: Configuración incompleta para enviar mensajes');
+                
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = '<i class="fas fa-paper-plane mr-2"></i><span>Enviar</span>';
+                }
+                return;
+            }
             
-            // Mostrar error genérico
-            showErrorNotification('Error al enviar el mensaje. Inténtalo de nuevo.');
+            // Crear FormData para enviar el contenido y archivo
+            const formData = new FormData();
+            if (content) {
+                formData.append('contenido', content);
+            }
             
-            // Reactivar botón
-            submitButton.disabled = false;
-            submitButton.innerHTML = '<i class="fas fa-paper-plane mr-2"></i><span>Enviar</span>';
+            if (hasFile) {
+                formData.append('archivo', fileInput.files[0]);
+            }
+            
+            console.log('Enviando mensaje a:', window.routeSendMessage);
+            
+            // Enviar mensaje al servidor
+            fetch(window.routeSendMessage, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': window.csrfToken
+                },
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    console.error('Error en la respuesta del servidor:', response.status, response.statusText);
+                    throw new Error('El servidor respondió con un error: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Respuesta del servidor:', data);
+                
+                if (!data.error) {
+                    // Limpiar inputs
+                    if (messageInput) {
+                        messageInput.value = '';
+                        messageInput.style.height = 'auto';
+                    }
+                    clearFileInput();
+                    
+                    // Añadir mensaje a la vista con animación
+                    if (chatMessages && data.mensaje) {
+                        chatMessages.insertAdjacentHTML('beforeend', createMessageHtml(data.mensaje));
+                        lastMessageId = data.mensaje.id;
+                        
+                        // Desplazamiento suave al último mensaje
+                        smoothScrollToBottom();
+                        
+                        // Mostrar pequeña animación de "enviado"
+                        showSentAnimation();
+                    } else {
+                        console.error('Error: No se pudo añadir el mensaje a la vista', data);
+                    }
+                    
+                    // Ocultar contador de caracteres
+                    const lengthIndicator = document.querySelector('.message-length');
+                    if (lengthIndicator) {
+                        lengthIndicator.classList.add('hidden');
+                    }
+                } else {
+                    // Mostrar error si hay alguno
+                    console.error('Error devuelto por el servidor:', data.error);
+                    showErrorNotification(data.error);
+                }
+                
+                // Reactivar botón
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = '<i class="fas fa-paper-plane mr-2"></i><span>Enviar</span>';
+                }
+            })
+            .catch(error => {
+                console.error('Error al enviar mensaje:', error);
+                
+                // Mostrar error genérico
+                showErrorNotification('Error al enviar el mensaje. Inténtalo de nuevo.');
+                
+                // Reactivar botón
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = '<i class="fas fa-paper-plane mr-2"></i><span>Enviar</span>';
+                }
+            });
         });
-    });
+    } else {
+        console.error('No se encontró el formulario de mensajes');
+    }
     
     // Animación de mensaje enviado
     function showSentAnimation() {
@@ -562,27 +637,37 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('Conectando a servidor Socket.io:', socketServerUrl);
     
     // Conexión con socket.io para señalización con mejor manejo de errores
-    const socket = io(socketServerUrl, {
-        reconnectionAttempts: 8,
-        timeout: 15000,
-        transports: ['websocket', 'polling'],
-        autoConnect: true,
-        reconnection: true,
-        reconnectionDelay: 1000,
-        forceNew: true
-    });
+    let socket;
+    try {
+        socket = io(socketServerUrl, {
+            reconnectionAttempts: 8,
+            timeout: 15000,
+            transports: ['websocket', 'polling'],
+            autoConnect: true,
+            reconnection: true,
+            reconnectionDelay: 1000,
+            forceNew: true
+        });
 
-    // Manejo de eventos de conexión
-    socket.on('connect_error', (error) => {
-        console.warn('Error de conexión socket.io:', error.message);
-        updateConnectionStatus('error');
-    });
-    
-    socket.on('connect', () => {
-        console.log('Conectado al servidor de señalización');
-        updateConnectionStatus('connected');
-        socket.emit('register', { userId: window.authId });
-    });
+        // Manejo de eventos de conexión
+        socket.on('connect_error', (error) => {
+            console.warn('Error de conexión socket.io:', error.message);
+            updateConnectionStatus('error');
+        });
+        
+        socket.on('connect', () => {
+            console.log('Conectado al servidor de señalización');
+            updateConnectionStatus('connected');
+            if (window.authId) {
+                socket.emit('register', { userId: window.authId });
+            } else {
+                console.warn('No se encontró el ID de usuario para registrar en el socket');
+            }
+        });
+    } catch (e) {
+        console.error('Error al inicializar socket.io:', e);
+        socket = null;
+    }
     
     // Funcionalidad básica de videollamada
     if (videoCallBtn) {
@@ -613,10 +698,29 @@ document.addEventListener('DOMContentLoaded', function() {
         rejectCall.addEventListener('click', rejectIncomingCall);
     }
     
+    if (toggleChat) {
+        toggleChat.addEventListener('click', function() {
+            // Implementación para mostrar/ocultar chat
+        });
+    }
+    
     // Eventos de socket para videollamadas
     socket.on('incoming-call', (data) => {
         if (data.chatId === window.chatId) {
             showIncomingCall();
+        }
+    });
+    
+    socket.on('call-accepted', (data) => {
+        if (data.chatId === window.chatId) {
+            console.log('Llamada aceptada por el otro usuario');
+            if (callStatus) {
+                callStatus.textContent = 'Conectado';
+            }
+            if (remoteVideoLoading) {
+                // Mantenemos el indicador de carga hasta que veamos el video remoto
+                // Se ocultará cuando se reciba el track de video en el evento user-published
+            }
         }
     });
     
@@ -656,14 +760,149 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Funciones básicas para videollamada
+    // Configurar manualmente el contenedor de video remoto para Agora
+    function setupRemoteVideoContainer() {
+        // Asegurarse de que el contenedor esté vacío para evitar duplicados
+        if (remoteVideoContainer) {
+            remoteVideoContainer.innerHTML = '';
+            // Agregar un div con ID específico que Agora pueda usar
+            remoteVideoContainer.style.position = 'relative';
+            remoteVideoContainer.style.width = '100%';
+            remoteVideoContainer.style.height = '100%';
+            remoteVideoContainer.style.overflow = 'hidden';
+            remoteVideoContainer.style.backgroundColor = '#000';
+        }
+    }
+    
+    // Inicializar elementos de la interfaz de llamada
+    function initCallInterface() {
+        // Configurar contenedor de video remoto para Agora
+        setupRemoteVideoContainer();
+        
+        // Mostrar indicador de carga en remoto
+        if (remoteVideoLoading) {
+            remoteVideoLoading.classList.remove('hidden');
+        }
+        
+        // Mostrar interfaz de videollamada
+        if (videoContainer) {
+            videoContainer.style.display = 'flex';
+        }
+    }
+    
+    // Modificar startCall para usar las nuevas funciones
     async function startCall() {
         if (!isCallActive) {
-            socket.emit('call-user', {
-                to: window.otherUserId,
-                from: window.authId,
-                chatId: window.chatId
-            });
+            console.log('Botón de videollamada presionado');
+            
+            // Inicializar interfaz
+            initCallInterface();
+            
+            try {
+                // Verificar si el navegador soporta getUserMedia
+                if (!AgoraRTC.checkSystemRequirements()) {
+                    throw new Error('Su navegador no cumple con los requisitos para videollamadas. Intente usar un navegador más moderno o acceder por HTTPS.');
+                }
+                
+                // Inicializar cliente Agora si es necesario
+                if (!rtcClient && typeof AgoraRTC !== 'undefined') {
+                    rtcClient = AgoraRTC.createClient({
+                        mode: 'rtc',
+                        codec: 'vp8'
+                    });
+                    
+                    // Configurar evento para manejar usuario remoto
+                    rtcClient.on('user-published', async (user, mediaType) => {
+                        // Suscribirse al usuario remoto
+                        await rtcClient.subscribe(user, mediaType);
+                        console.log('Suscrito a usuario remoto');
+                        
+                        // Manejar stream de video remoto
+                        if (mediaType === 'video') {
+                            remoteUsers[user.uid] = user;
+                            
+                            // Verificar si el elemento remoteVideoContainer existe
+                            if (remoteVideoContainer) {
+                                // Reproducir video remoto
+                                user.videoTrack.play(remoteVideoContainer);
+                                console.log('Video remoto reproducido correctamente');
+                                
+                                // Ocultar indicador de carga
+                                if (remoteVideoLoading) {
+                                    remoteVideoLoading.classList.add('hidden');
+                                }
+                            } else {
+                                console.error('Contenedor de video remoto no encontrado');
+                            }
+                        }
+                        
+                        // Manejar stream de audio remoto
+                        if (mediaType === 'audio') {
+                            user.audioTrack.play();
+                        }
+                    });
+                    
+                    // Manejar desconexión de usuario remoto
+                    rtcClient.on('user-unpublished', (user, mediaType) => {
+                        if (mediaType === 'video') {
+                            delete remoteUsers[user.uid];
+                        }
+                    });
+                }
+                
+                // Solicitar permisos de cámara y micrófono
+                try {
+                    // Si aún no tenemos tracks locales, crearlos
+                    if (!localTracks.videoTrack || !localTracks.audioTrack) {
+                        const [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
+                        localTracks.audioTrack = audioTrack;
+                        localTracks.videoTrack = videoTrack;
+                        
+                        // Mostrar video local
+                        if (localVideoContainer) {
+                            videoTrack.play(localVideoContainer);
+                        }
+                    }
+                    
+                    // Unirse al canal
+                    const uid = await rtcClient.join(APP_ID, CHANNEL_NAME, TOKEN, window.authId);
+                    console.log('Unido al canal con UID:', uid);
+                    
+                    // Publicar tracks locales
+                    await rtcClient.publish([localTracks.audioTrack, localTracks.videoTrack]);
+                    console.log('Tracks locales publicados');
+                    
+                    isCallActive = true;
+                    
+                    // Emitir evento para notificar al otro usuario
+                    if (socket) {
+                        socket.emit('call-user', {
+                            to: window.otherUserId,
+                            from: window.authId,
+                            chatId: window.chatId
+                        });
+                    } else {
+                        console.error('Error: Socket.io no está disponible para señalización');
+                        showErrorNotification('No se pudo iniciar la llamada: error de conexión');
+                    }
+                    
+                    if (callStatus) {
+                        callStatus.textContent = 'Llamando...';
+                    }
+                } catch (error) {
+                    console.error('Error al acceder a la cámara o micrófono:', error);
+                    showErrorNotification('No se pudo acceder a la cámara o micrófono. Por favor, verifica los permisos.');
+                    if (callStatus) {
+                        callStatus.textContent = 'Error al iniciar la cámara';
+                    }
+                }
+            } catch (error) {
+                console.error('Error al iniciar la videollamada:', error);
+                showErrorNotification('Error al iniciar la videollamada: ' + error.message);
+                if (callStatus) {
+                    callStatus.textContent = 'Error al iniciar la llamada';
+                }
+            }
         }
     }
     
@@ -673,9 +912,105 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    function acceptIncomingCall() {
+    // También actualizar aceptarIncomingCall para usar setup
+    async function acceptIncomingCall() {
         if (incomingCall) {
             incomingCall.classList.add('hidden');
+        }
+        
+        // Inicializar interfaz
+        initCallInterface();
+        
+        try {
+            // Inicializar cliente Agora si es necesario
+            if (!rtcClient && typeof AgoraRTC !== 'undefined') {
+                rtcClient = AgoraRTC.createClient({
+                    mode: 'rtc',
+                    codec: 'vp8'
+                });
+                
+                // Configurar evento para manejar usuario remoto
+                rtcClient.on('user-published', async (user, mediaType) => {
+                    // Suscribirse al usuario remoto
+                    await rtcClient.subscribe(user, mediaType);
+                    console.log('Suscrito a usuario remoto');
+                    
+                    // Manejar stream de video remoto
+                    if (mediaType === 'video') {
+                        remoteUsers[user.uid] = user;
+                        
+                        // Verificar si el elemento remoteVideoContainer existe
+                        if (remoteVideoContainer) {
+                            // Reproducir video remoto
+                            user.videoTrack.play(remoteVideoContainer);
+                            console.log('Video remoto reproducido correctamente');
+                            
+                            // Ocultar indicador de carga
+                            if (remoteVideoLoading) {
+                                remoteVideoLoading.classList.add('hidden');
+                            }
+                        } else {
+                            console.error('Contenedor de video remoto no encontrado');
+                        }
+                    }
+                    
+                    // Manejar stream de audio remoto
+                    if (mediaType === 'audio') {
+                        user.audioTrack.play();
+                    }
+                });
+                
+                // Manejar desconexión de usuario remoto
+                rtcClient.on('user-unpublished', (user, mediaType) => {
+                    if (mediaType === 'video') {
+                        delete remoteUsers[user.uid];
+                    }
+                });
+            }
+            
+            // Si aún no tenemos tracks locales, crearlos
+            if (!localTracks.videoTrack || !localTracks.audioTrack) {
+                const [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
+                localTracks.audioTrack = audioTrack;
+                localTracks.videoTrack = videoTrack;
+                
+                // Mostrar video local
+                if (localVideoContainer) {
+                    videoTrack.play(localVideoContainer);
+                }
+            }
+            
+            // Unirse al canal
+            const uid = await rtcClient.join(APP_ID, CHANNEL_NAME, TOKEN, window.authId);
+            console.log('Unido al canal con UID:', uid);
+            
+            // Publicar tracks locales
+            await rtcClient.publish([localTracks.audioTrack, localTracks.videoTrack]);
+            console.log('Tracks locales publicados');
+            
+            isCallActive = true;
+            
+            // Responder a la llamada por socket
+            if (socket) {
+                socket.emit('accept-call', {
+                    to: window.otherUserId,
+                    from: window.authId,
+                    chatId: window.chatId
+                });
+            } else {
+                console.error('Error: Socket.io no está disponible para señalización');
+                showErrorNotification('No se pudo aceptar la llamada: error de conexión');
+            }
+            
+            if (callStatus) {
+                callStatus.textContent = 'Conectado';
+            }
+            
+        } catch (error) {
+            console.error('Error al aceptar la llamada:', error);
+            if (callStatus) {
+                callStatus.textContent = 'Error al conectar';
+            }
         }
     }
     
@@ -683,27 +1018,82 @@ document.addEventListener('DOMContentLoaded', function() {
         if (incomingCall) {
             incomingCall.classList.add('hidden');
         }
-        socket.emit('reject-call', {
-            to: window.otherUserId,
-            from: window.authId,
-            chatId: window.chatId
-        });
+        
+        if (socket) {
+            socket.emit('reject-call', {
+                to: window.otherUserId,
+                from: window.authId,
+                chatId: window.chatId
+            });
+        } else {
+            console.error('Error: Socket.io no está disponible para señalización');
+        }
     }
     
     function toggleMicrophone() {
-        // Implementación simplificada
+        if (localTracks.audioTrack) {
+            const enabled = !localTracks.audioTrack.muted;
+            localTracks.audioTrack.setMuted(enabled);
+            
+            // Actualizar UI
+            if (toggleAudio) {
+                toggleAudio.innerHTML = enabled ? 
+                    '<i class="fas fa-microphone-slash"></i>' : 
+                    '<i class="fas fa-microphone"></i>';
+            }
+        }
     }
     
     function toggleCamera() {
-        // Implementación simplificada
+        if (localTracks.videoTrack) {
+            const enabled = !localTracks.videoTrack.muted;
+            localTracks.videoTrack.setMuted(enabled);
+            
+            // Actualizar UI
+            if (toggleVideo) {
+                toggleVideo.innerHTML = enabled ? 
+                    '<i class="fas fa-video-slash"></i>' : 
+                    '<i class="fas fa-video"></i>';
+            }
+        }
     }
     
-    function endActiveCall() {
-        socket.emit('end-call', {
-            to: window.otherUserId,
-            from: window.authId,
-            chatId: window.chatId
-        });
+    async function endActiveCall() {
+        // Notificar al otro usuario
+        if (socket) {
+            socket.emit('end-call', {
+                to: window.otherUserId,
+                from: window.authId,
+                chatId: window.chatId
+            });
+        }
+        
+        // Limpiar recursos
+        if (rtcClient) {
+            await rtcClient.leave();
+        }
+        
+        // Detener y liberar tracks locales
+        if (localTracks.audioTrack) {
+            localTracks.audioTrack.stop();
+            localTracks.audioTrack.close();
+        }
+        
+        if (localTracks.videoTrack) {
+            localTracks.videoTrack.stop();
+            localTracks.videoTrack.close();
+        }
+        
+        // Reiniciar variables
+        localTracks.audioTrack = null;
+        localTracks.videoTrack = null;
+        remoteUsers = {};
+        isCallActive = false;
+        
+        // Ocultar interfaz de videollamada
+        if (videoContainer) {
+            videoContainer.classList.add('hidden');
+        }
     }
     
     function toggleMinimize() {

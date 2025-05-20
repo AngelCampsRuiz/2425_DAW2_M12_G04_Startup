@@ -30,10 +30,7 @@ class DocenteController extends Controller
     // Formulario crear docente
     public function create()
     {
-        $institucion = Auth::user()->institucion;
-        $departamentos = $institucion->departamentos;
-        
-        return view('institucion.docentes.create', compact('departamentos'));
+        return redirect()->route('institucion.dashboard')->with('open_modal', 'docente');
     }
 
     // Guardar docente
@@ -174,21 +171,53 @@ class DocenteController extends Controller
             'departamento_id' => 'nullable|exists:departamentos,id',
             'especialidad' => 'required|string|max:255',
             'cargo' => 'required|string|max:100',
+            'fecha_nacimiento' => 'nullable|date',
+            'ciudad' => 'nullable|string|max:100',
+            'direccion' => 'nullable|string|max:255',
+            'sitio_web' => 'nullable|url|max:255',
+            'descripcion' => 'nullable|string|max:1000',
         ]);
 
-        // Actualizar usuario
-        $user->update([
+        // Actualizar usuario con los datos básicos
+        $userData = [
             'nombre' => $request->nombre,
             'email' => $request->email,
             'dni' => $request->dni,
             'telefono' => $request->telefono,
-        ]);
+        ];
+        
+        // Añadir campos adicionales si están presentes
+        if ($request->has('fecha_nacimiento')) {
+            $userData['fecha_nacimiento'] = $request->fecha_nacimiento;
+        }
+        if ($request->has('ciudad')) {
+            $userData['ciudad'] = $request->ciudad;
+        }
+        if ($request->has('direccion')) {
+            $userData['direccion'] = $request->direccion;
+        }
+        if ($request->has('sitio_web')) {
+            $userData['sitio_web'] = $request->sitio_web;
+        }
+        if ($request->has('descripcion')) {
+            $userData['descripcion'] = $request->descripcion;
+        }
+        
+        // Opciones de visibilidad
+        $userData['show_telefono'] = $request->has('show_telefono');
+        $userData['show_dni'] = $request->has('show_dni');
+        $userData['show_ciudad'] = $request->has('show_ciudad');
+        $userData['show_direccion'] = $request->has('show_direccion');
+        $userData['show_web'] = $request->has('show_web');
+        
+        $user->update($userData);
 
         // Actualizar docente
         $docente->update([
             'departamento_id' => $request->departamento_id,
             'especialidad' => $request->especialidad,
             'cargo' => $request->cargo,
+            'activo' => $request->has('activo'),
         ]);
 
         return redirect()->route('institucion.docentes.index')
@@ -263,18 +292,36 @@ class DocenteController extends Controller
     public function dashboard()
     {
         $user = Auth::user();
-        $totalAlumnos = Estudiante::whereHas('clases', function($query) use ($user) {
-            $query->where('docente_id', $user->id);
+        
+        // Obtener las clases del docente
+        $clasesDocente = Clase::where('docente_id', $user->id)->withCount('estudiantes')->get();
+        $clasesIds = $clasesDocente->pluck('id')->toArray();
+        
+        // Obtener las categorías (ciclos) que imparte el docente a través de sus clases
+        $categoriasDocente = $clasesDocente->pluck('categoria_id')->filter()->unique()->toArray();
+        
+        // Obtener total de alumnos en las clases del docente
+        $totalAlumnos = Estudiante::whereHas('clases', function($query) use ($clasesIds) {
+            $query->whereIn('clases.id', $clasesIds);
         })->count();
 
-        $totalClases = Clase::where('docente_id', $user->id)->count();
+        // Obtener total de clases del docente
+        $totalClases = $clasesDocente->count();
 
-        $solicitudesPendientes = SolicitudEstudiante::whereHas('clase', function($query) use ($user) {
-            $query->where('docente_id', $user->id);
+        // Obtener solicitudes pendientes (ahora incluyendo por categoría)
+        $solicitudesPendientes = SolicitudEstudiante::where(function($q) use ($user, $categoriasDocente) {
+            // Solicitudes para clases del docente
+            $q->whereHas('clase', function($query) use ($user) {
+                $query->where('docente_id', $user->id);
+            });
+            
+            // O solicitudes de estudiantes que han seleccionado una categoría que imparte el docente
+            if (!empty($categoriasDocente)) {
+                $q->orWhereHas('estudiante', function($query) use ($categoriasDocente) {
+                    $query->whereIn('categoria_id', $categoriasDocente);
+                });
+            }
         })->where('estado', 'pendiente')->count();
-
-        // Obtener las clases del docente
-        $clasesIds = Clase::where('docente_id', $user->id)->pluck('id');
         
         // Obtener los IDs de estudiantes que pertenecen a esas clases
         $estudiantesIds = Estudiante::whereHas('clases', function($query) use ($clasesIds) {
@@ -289,9 +336,8 @@ class DocenteController extends Controller
             ->limit(5)
             ->get();
 
-        $clases = Clase::where('docente_id', $user->id)
-            ->withCount('estudiantes')
-            ->get();
+        // Asignar $clasesDocente a $clases para usar en la vista
+        $clases = $clasesDocente;
 
         return view('docentes.dashboard', compact(
             'totalAlumnos', 
@@ -343,8 +389,26 @@ class DocenteController extends Controller
     public function solicitudes(Request $request)
     {
         $user = Auth::user();
-        $query = SolicitudEstudiante::whereHas('clase', function($query) use ($user) {
-            $query->where('docente_id', $user->id);
+        
+        // Obtener las clases del docente
+        $clasesDocente = Clase::where('docente_id', $user->id)->get();
+        
+        // Obtener las categorías (ciclos) que imparte el docente a través de sus clases
+        $categoriasDocente = $clasesDocente->pluck('categoria_id')->filter()->unique()->toArray();
+        
+        // Consulta base para las solicitudes
+        $query = SolicitudEstudiante::where(function($q) use ($user, $categoriasDocente) {
+            // Incluir solicitudes donde el docente es tutor de la clase asignada
+            $q->whereHas('clase', function($query) use ($user) {
+                $query->where('docente_id', $user->id);
+            });
+            
+            // O incluir solicitudes donde el estudiante ha seleccionado una categoría que imparte el docente
+            if (!empty($categoriasDocente)) {
+                $q->orWhereHas('estudiante', function($query) use ($categoriasDocente) {
+                    $query->whereIn('categoria_id', $categoriasDocente);
+                });
+            }
         });
 
         // Filtrar por estado si se proporciona
@@ -364,17 +428,45 @@ class DocenteController extends Controller
 
         // Estadísticas para el resumen
         $stats = [
-            'total' => SolicitudEstudiante::whereHas('clase', function($q) use ($user) {
-                $q->where('docente_id', $user->id);
+            'total' => SolicitudEstudiante::where(function($q) use ($user, $categoriasDocente) {
+                $q->whereHas('clase', function($subQ) use ($user) {
+                    $subQ->where('docente_id', $user->id);
+                });
+                if (!empty($categoriasDocente)) {
+                    $q->orWhereHas('estudiante', function($subQ) use ($categoriasDocente) {
+                        $subQ->whereIn('categoria_id', $categoriasDocente);
+                    });
+                }
             })->count(),
-            'pendientes' => SolicitudEstudiante::whereHas('clase', function($q) use ($user) {
-                $q->where('docente_id', $user->id);
+            'pendientes' => SolicitudEstudiante::where(function($q) use ($user, $categoriasDocente) {
+                $q->whereHas('clase', function($subQ) use ($user) {
+                    $subQ->where('docente_id', $user->id);
+                });
+                if (!empty($categoriasDocente)) {
+                    $q->orWhereHas('estudiante', function($subQ) use ($categoriasDocente) {
+                        $subQ->whereIn('categoria_id', $categoriasDocente);
+                    });
+                }
             })->where('estado', 'pendiente')->count(),
-            'aprobadas' => SolicitudEstudiante::whereHas('clase', function($q) use ($user) {
-                $q->where('docente_id', $user->id);
+            'aprobadas' => SolicitudEstudiante::where(function($q) use ($user, $categoriasDocente) {
+                $q->whereHas('clase', function($subQ) use ($user) {
+                    $subQ->where('docente_id', $user->id);
+                });
+                if (!empty($categoriasDocente)) {
+                    $q->orWhereHas('estudiante', function($subQ) use ($categoriasDocente) {
+                        $subQ->whereIn('categoria_id', $categoriasDocente);
+                    });
+                }
             })->where('estado', 'aprobada')->count(),
-            'rechazadas' => SolicitudEstudiante::whereHas('clase', function($q) use ($user) {
-                $q->where('docente_id', $user->id);
+            'rechazadas' => SolicitudEstudiante::where(function($q) use ($user, $categoriasDocente) {
+                $q->whereHas('clase', function($subQ) use ($user) {
+                    $subQ->where('docente_id', $user->id);
+                });
+                if (!empty($categoriasDocente)) {
+                    $q->orWhereHas('estudiante', function($subQ) use ($categoriasDocente) {
+                        $subQ->whereIn('categoria_id', $categoriasDocente);
+                    });
+                }
             })->where('estado', 'rechazada')->count(),
         ];
 
@@ -412,5 +504,63 @@ class DocenteController extends Controller
 
         return redirect()->route('docente.solicitudes.index')
             ->with('success', 'Solicitud rechazada correctamente');
+    }
+
+    /**
+     * Calificar a un estudiante en una clase específica
+     */
+    public function calificarEstudiante(Request $request, $estudianteId, $claseId)
+    {
+        // Validar que sea el docente de la clase
+        $user = Auth::user();
+        $clase = Clase::where('id', $claseId)
+            ->where('docente_id', $user->id)
+            ->firstOrFail();
+            
+        $estudiante = Estudiante::findOrFail($estudianteId);
+        
+        // Validar entrada
+        $validated = $request->validate([
+            'calificacion' => 'nullable|numeric|min:0|max:10',
+            'comentarios' => 'nullable|string|max:1000',
+        ]);
+        
+        // Actualizar la calificación en la tabla pivote
+        $estudiante->clases()->updateExistingPivot($claseId, [
+            'calificacion' => $validated['calificacion'],
+            'comentarios' => $validated['comentarios'],
+            'updated_at' => now(),
+        ]);
+        
+        return redirect()->route('docente.clases.alumnos', $claseId)
+            ->with('success', "Calificación actualizada para {$estudiante->user->nombre}");
+    }
+    
+    /**
+     * Cambiar el estado de un estudiante en una clase específica
+     */
+    public function cambiarEstadoEstudiante(Request $request, $estudianteId, $claseId)
+    {
+        // Validar que sea el docente de la clase
+        $user = Auth::user();
+        $clase = Clase::where('id', $claseId)
+            ->where('docente_id', $user->id)
+            ->firstOrFail();
+            
+        $estudiante = Estudiante::findOrFail($estudianteId);
+        
+        // Validar entrada
+        $validated = $request->validate([
+            'estado' => 'required|string|in:activo,inactivo,completado,pendiente',
+        ]);
+        
+        // Actualizar el estado en la tabla pivote
+        $estudiante->clases()->updateExistingPivot($claseId, [
+            'estado' => $validated['estado'],
+            'updated_at' => now(),
+        ]);
+        
+        return redirect()->route('docente.clases.alumnos', $claseId)
+            ->with('success', "Estado actualizado para {$estudiante->user->nombre}");
     }
 } 

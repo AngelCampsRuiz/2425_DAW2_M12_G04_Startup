@@ -45,7 +45,13 @@ class Clase extends Model
 
     public function docente()
     {
-        return $this->belongsTo(Docente::class);
+        // Relación con el docente, sin caché y con modelo por defecto
+        return $this->belongsTo(Docente::class)->withDefault();
+    }
+
+    public function categoria()
+    {
+        return $this->belongsTo(Categoria::class);
     }
 
     /**

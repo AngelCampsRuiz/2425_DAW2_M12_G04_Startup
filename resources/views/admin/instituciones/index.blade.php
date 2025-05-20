@@ -736,6 +736,7 @@
                     if (data.institucion && data.institucion.user) {
                         // Datos de usuario
                         setValueIfExists('nombre', data.institucion.user.nombre);
+                        setValueIfExists('email', data.institucion.user.email);
                         setValueIfExists('dni', data.institucion.user.dni);
                         setValueIfExists('ciudad', data.institucion.user.ciudad);
                         setValueIfExists('telefono', data.institucion.user.telefono);

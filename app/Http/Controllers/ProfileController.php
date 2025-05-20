@@ -61,18 +61,32 @@ class ProfileController extends Controller
                 'telefono' => 'nullable|string|max:20',
                 'ciudad' => 'nullable|string|max:255',
                 'sitio_web' => 'nullable|url|max:255',
-                'imagen' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-                'banner' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:4096',
+                'imagen' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+                'banner' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
+                'cv_pdf' => 'nullable|mimes:pdf|max:5120',
             ];
 
-            // Añadir reglas específicas según el rol
-            if ($user->role_id == 2) {
-                $rules['cif'] = 'required|string|max:9'; // Para empresas
-            } else {
-                $rules['dni'] = 'required|string|max:9'; // Para otros roles
+            $messages = [
+                'imagen.image' => 'El archivo debe ser una imagen válida (jpeg, png, jpg, gif, webp).',
+                'imagen.mimes' => 'El formato de imagen debe ser: jpeg, png, jpg, gif o webp.',
+                'imagen.max' => 'La imagen no debe pesar más de 2MB.',
+                'banner.image' => 'El archivo debe ser una imagen válida (jpeg, png, jpg, gif, webp).',
+                'banner.mimes' => 'El formato de banner debe ser: jpeg, png, jpg, gif o webp.',
+                'banner.max' => 'El banner no debe pesar más de 4MB.',
+                'cv_pdf.mimes' => 'El archivo debe ser un PDF.',
+                'cv_pdf.max' => 'El CV no debe pesar más de 5MB.',
+            ];
+
+            $validator = Validator::make($request->all(), $rules, $messages);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => $validator->errors()
+                ], 422);
             }
 
-            $validatedData = $request->validate($rules);
+            $validatedData = $validator->validated();
 
             // Manejar la subida de la imagen de perfil
             if ($request->hasFile('imagen')) {
@@ -104,6 +118,32 @@ class ProfileController extends Controller
                 }
 
                 $validatedData['banner'] = $bannerName;
+            }
+
+            // Manejar la subida del CV para estudiantes
+            if ($user->role_id == 3 && $request->hasFile('cv_pdf')) {
+                $cvName = time() . '_' . $request->file('cv_pdf')->getClientOriginalName();
+                
+                // Asegurarse de que la carpeta cv existe
+                if (!file_exists(public_path('cv'))) {
+                    mkdir(public_path('cv'), 0777, true);
+                }
+                
+                // Mover el CV a la carpeta public/cv
+                $request->file('cv_pdf')->move(public_path('cv'), $cvName);
+
+                // Eliminar el CV anterior si existe
+                if ($user->estudiante && $user->estudiante->cv_pdf) {
+                    $oldCvPath = public_path('cv/' . $user->estudiante->cv_pdf);
+                    if (file_exists($oldCvPath)) {
+                        unlink($oldCvPath);
+                    }
+                }
+
+                // Actualizar el nombre del CV en la base de datos
+                $user->estudiante()->update([
+                    'cv_pdf' => $cvName
+                ]);
             }
 
             // Actualizar datos básicos del usuario
@@ -144,12 +184,51 @@ class ProfileController extends Controller
             
             $user->update($updateData);
 
+            // Calcular el progreso del perfil
+            $total_campos = 0;
+            $campos_completados = 0;
+
+            // Campos obligatorios
+            $campos_obligatorios = ['nombre', 'email'];
+            $total_campos += count($campos_obligatorios);
+            foreach($campos_obligatorios as $campo) {
+                if(!empty($user->$campo)) {
+                    $campos_completados++;
+                }
+            }
+
+            // Campos opcionales
+            $campos_opcionales = [
+                'descripcion' => 'Descripción personal',
+                'telefono' => 'Teléfono',
+                'ciudad' => 'Ciudad',
+                'dni' => 'DNI',
+                'imagen' => 'Foto de perfil'
+            ];
+            $total_campos += count($campos_opcionales);
+            foreach($campos_opcionales as $campo => $nombre) {
+                if(!empty($user->$campo)) {
+                    $campos_completados++;
+                }
+            }
+
+            // Si es estudiante, añadir CV
+            if($user->role_id == 3) {
+                $total_campos++;
+                if(!empty($user->estudiante->cv_pdf)) {
+                    $campos_completados++;
+                }
+            }
+
+            $porcentaje = round(($campos_completados / $total_campos) * 100);
+
             DB::commit();
 
             return response()->json([
                 'success' => true,
                 'message' => 'Perfil actualizado correctamente',
-                'user' => $user->fresh()->load('empresa')
+                'user' => $user->fresh()->load('empresa'),
+                'porcentaje' => $porcentaje
             ]);
 
         } catch (\Exception $e) {

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\BaseController;
 use App\Models\Institucion;
 use App\Models\User;
 use App\Models\Rol;
@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Validator;
 
-class InstitucionController extends Controller
+class InstitucionController extends BaseController
 {
     /**
      * Muestra el listado de instituciones
@@ -198,6 +198,9 @@ class InstitucionController extends Controller
                 }
             }
             
+            // Registrar actividad
+            $this->logCreation($institucion, 'Se ha creado una nueva institución: ' . $user->nombre);
+            
             DB::commit();
             
             if ($request->ajax() || $request->wantsJson()) {
@@ -371,6 +374,9 @@ class InstitucionController extends Controller
                 DB::table('institucion_nivel_educativo')->where('institucion_id', $institucion->id)->delete();
             }
             
+            // Registrar actividad
+            $this->logUpdate($institucion, 'Se ha actualizado la institución: ' . $user->nombre);
+            
             DB::commit();
             
             if ($request->ajax() || $request->wantsJson()) {
@@ -407,106 +413,113 @@ class InstitucionController extends Controller
      */
     public function destroy($id)
     {
-        DB::beginTransaction();
-        
         try {
-            $institucion = Institucion::findOrFail($id);
-            $userId = $institucion->user_id;
+            DB::beginTransaction();
             
-            // Eliminar relaciones de niveles educativos
-            DB::table('institucion_nivel_educativo')->where('institucion_id', $id)->delete();
+            $institucion = Institucion::with('user')->findOrFail($id);
             
-            // Eliminar relaciones de categorías
-            DB::table('institucion_categoria')->where('institucion_id', $id)->delete();
+            // Guardar el nombre para el registro
+            $nombreInstitucion = $institucion->user->nombre;
             
-            // Eliminar la institución
-            $institucion->delete();
+            // Desactivar en lugar de eliminar
+            $institucion->user()->update(['activo' => false]);
             
-            // Eliminar el usuario asociado
-            User::destroy($userId);
+            // Registrar actividad
+            $this->logDeletion($institucion, 'Se ha desactivado la institución: ' . $nombreInstitucion);
             
             DB::commit();
             
             if (request()->ajax() || request()->wantsJson()) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'Institución eliminada correctamente'
+                    'message' => 'Institución desactivada correctamente'
                 ]);
             }
             
             return redirect()->route('admin.instituciones.index')
-                ->with('success', 'Institución eliminada correctamente');
+                ->with('success', 'Institución desactivada correctamente');
                 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error al eliminar institución: ' . $e->getMessage());
             
             if (request()->ajax() || request()->wantsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Error al eliminar la institución: ' . $e->getMessage()
+                    'message' => 'Error al desactivar la institución: ' . $e->getMessage()
                 ], 500);
             }
             
             return redirect()->route('admin.instituciones.index')
-                ->with('error', 'Error al eliminar la institución: ' . $e->getMessage());
+                ->with('error', 'Error al desactivar la institución: ' . $e->getMessage());
         }
     }
 
     /**
-     * Elimina una institución (SQL directo)
+     * Cambia el estado (activo/inactivo) de una institución
      */
-    public function destroySQL($id)
+    public function toggleEstado($id)
     {
-        DB::beginTransaction();
-        
         try {
+            DB::beginTransaction();
+            
             $institucion = Institucion::findOrFail($id);
-            $userId = $institucion->user_id;
+            $user = $institucion->user;
             
-            // Eliminar institución con SQL
-            DB::statement('DELETE FROM instituciones WHERE id = ?', [$id]);
+            // Cambiar estado del usuario asociado
+            $estadoAnterior = $user->activo;
+            $nuevoEstado = !$estadoAnterior;
             
-            // Eliminar usuario con SQL
-            DB::statement('DELETE FROM user WHERE id = ?', [$userId]);
+            $user->activo = $nuevoEstado;
+            $user->save();
+            
+            // Registrar actividad
+            $estadoTexto = $nuevoEstado ? 'activado' : 'desactivado';
+            $this->logUpdate($institucion, 'Se ha ' . $estadoTexto . ' la institución: ' . $user->nombre);
             
             DB::commit();
             
-            if (request()->ajax()) {
+            if (request()->ajax() || request()->wantsJson()) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'Institución eliminada correctamente'
+                    'message' => 'Estado de la institución actualizado correctamente',
+                    'estado' => $user->activo
                 ]);
             }
             
             return redirect()->route('admin.instituciones.index')
-                ->with('success', 'Institución eliminada correctamente');
+                ->with('success', 'Estado de la institución actualizado correctamente');
                 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error al eliminar institución con SQL: ' . $e->getMessage());
+            \Log::error('Error al cambiar estado de la institución: ' . $e->getMessage());
             
-            if (request()->ajax()) {
+            if (request()->ajax() || request()->wantsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Error al eliminar la institución: ' . $e->getMessage()
+                    'message' => 'Error al cambiar estado de la institución: ' . $e->getMessage()
                 ], 500);
             }
             
             return redirect()->route('admin.instituciones.index')
-                ->with('error', 'Error al eliminar la institución: ' . $e->getMessage());
+                ->with('error', 'Error al cambiar estado de la institución: ' . $e->getMessage());
         }
     }
 
     /**
      * Cambia el estado de verificación de una institución
      */
-    public function cambiarVerificacion($id)
+    public function toggleVerificacion($id)
     {
         try {
             $institucion = Institucion::findOrFail($id);
-            $institucion->verificada = !$institucion->verificada;
+            
+            $estadoAnterior = $institucion->verificada;
+            $institucion->verificada = !$estadoAnterior;
             $institucion->save();
+            
+            // Registrar actividad
+            $estadoTexto = $institucion->verificada ? 'verificado' : 'desverificado';
+            $this->logUpdate($institucion, 'Se ha ' . $estadoTexto . ' la institución: ' . $institucion->user->nombre);
             
             if (request()->ajax() || request()->wantsJson()) {
                 return response()->json([
@@ -731,50 +744,6 @@ class InstitucionController extends Controller
                 'success' => false,
                 'message' => 'Error al cambiar estado de la categoría: ' . $e->getMessage()
             ], 500);
-        }
-    }
-
-    /**
-     * Cambiar estado de activo de una institución
-     */
-    public function cambiarEstado($id)
-    {
-        try {
-            DB::beginTransaction();
-            
-            $institucion = Institucion::findOrFail($id);
-            $user = $institucion->user;
-            
-            // Cambiar estado del usuario asociado
-            $user->activo = !$user->activo;
-            $user->save();
-            
-            DB::commit();
-            
-            if (request()->ajax() || request()->wantsJson()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Estado de la institución actualizado correctamente',
-                    'estado' => $user->activo
-                ]);
-            }
-            
-            return redirect()->route('admin.instituciones.index')
-                ->with('success', 'Estado de la institución actualizado correctamente');
-                
-        } catch (\Exception $e) {
-            DB::rollBack();
-            \Log::error('Error al cambiar estado de la institución: ' . $e->getMessage());
-            
-            if (request()->ajax() || request()->wantsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Error al cambiar estado de la institución: ' . $e->getMessage()
-                ], 500);
-            }
-            
-            return redirect()->route('admin.instituciones.index')
-                ->with('error', 'Error al cambiar estado de la institución: ' . $e->getMessage());
         }
     }
 } 

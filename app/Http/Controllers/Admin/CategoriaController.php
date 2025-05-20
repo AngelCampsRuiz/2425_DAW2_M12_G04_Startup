@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\BaseController;
 use App\Models\Categoria;
 use App\Models\Publication;
 use App\Models\NivelEducativo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class CategoriaController extends Controller
+class CategoriaController extends BaseController
 {
     /**
      * Display a listing of the resource.
@@ -69,6 +69,9 @@ class CategoriaController extends Controller
                 'nombre_categoria' => $request->nombre_categoria,
                 'nivel_educativo_id' => 1 // Establecer nivel educativo por defecto a 1
             ]);
+            
+            // Registrar la actividad
+            $this->logCreation($categoria, 'Se ha creado una nueva categoría: ' . $categoria->nombre_categoria);
             
             DB::commit();
 
@@ -131,6 +134,9 @@ class CategoriaController extends Controller
             ]);
 
             $mensaje = $request->activo ? 'Categoría activada exitosamente' : 'Categoría desactivada exitosamente';
+            
+            // Registrar la actividad de cambio de estado
+            $this->logUpdate($categoria, 'Se ha ' . ($request->activo ? 'activado' : 'desactivado') . ' la categoría: ' . $categoria->nombre_categoria);
 
             if ($request->ajax()) {
                 return response()->json([
@@ -147,11 +153,17 @@ class CategoriaController extends Controller
         $request->validate([
             'nombre_categoria' => 'required|string|max:255|unique:categorias,nombre_categoria,' . $categoria->id
         ]);
+        
+        // Guardar el nombre anterior para el registro
+        $nombreAnterior = $categoria->nombre_categoria;
 
         $categoria->update([
             'nombre_categoria' => $request->nombre_categoria,
             'nivel_educativo_id' => $categoria->nivel_educativo_id // Mantener el nivel educativo existente
         ]);
+        
+        // Registrar la actividad
+        $this->logUpdate($categoria, 'Se ha actualizado la categoría: ' . $categoria->nombre_categoria);
 
         if ($request->ajax()) {
             return response()->json([
@@ -170,8 +182,14 @@ class CategoriaController extends Controller
     public function destroy(Categoria $categoria)
     {
         try {
+            // Guardar el nombre antes de desactivar para el registro
+            $nombreCategoria = $categoria->nombre_categoria;
+            
             // Desactivar la categoría en lugar de eliminarla
             $categoria->update(['activo' => false]);
+            
+            // Registrar la actividad
+            $this->logDeletion($categoria, 'Se ha desactivado la categoría: ' . $nombreCategoria);
             
             // También podríamos desactivar todas sus subcategorías
             $categoria->subcategorias()->update(['activo' => false]);

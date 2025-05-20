@@ -458,125 +458,131 @@
         // Inicializar event listeners
         setupEventListeners();
         setupFilterListeners();
-        
+    });
+    
+    // Función global para configurar los event listeners
     function setupEventListeners() {
-            // Botón crear empresa
-            const btnCrearEmpresa = document.getElementById('btnCrearEmpresa');
-            if (btnCrearEmpresa) {
-                btnCrearEmpresa.addEventListener('click', function() {
-                    console.log('Botón crear empresa clickeado');
-                    mostrarFormularioCrear();
-                });
-            } else {
-                console.error('No se encontró el botón de crear empresa');
-            }
-            
-            // Delegación de eventos para botones dinámicos
+        // Botón crear empresa
+        const btnCrearEmpresa = document.getElementById('btnCrearEmpresa');
+        if (btnCrearEmpresa) {
+            btnCrearEmpresa.addEventListener('click', function() {
+                console.log('Botón crear empresa clickeado');
+                mostrarFormularioCrear();
+            });
+        } else {
+            console.error('No se encontró el botón de crear empresa');
+        }
+        
+        // Delegación de eventos para botones dinámicos
         document.addEventListener('click', function(e) {
-                // Botón editar empresa
+            // Botón editar empresa
             if (e.target.closest('.btn-editar')) {
-                    const button = e.target.closest('.btn-editar');
-                    const id = button.getAttribute('data-id');
+                const button = e.target.closest('.btn-editar');
+                const id = button.getAttribute('data-id');
                 mostrarFormularioEditar(id);
             }
-            
-                // Botón activar/desactivar
-                if (e.target.closest('.btn-activar')) {
-                    const button = e.target.closest('.btn-activar');
-                    const id = button.getAttribute('data-id');
-                    const isActive = button.getAttribute('data-active');
-                    
-                    openActivateModal(id, isActive);
-                }
+        
+            // Botón activar/desactivar
+            if (e.target.closest('.btn-activar')) {
+                const button = e.target.closest('.btn-activar');
+                const id = button.getAttribute('data-id');
+                const isActive = button.getAttribute('data-active');
+                
+                openActivateModal(id, isActive);
+            }
+        });
+        
+        // Cerrar modales
+        const modalClose = document.getElementById('modal-close');
+        const btnCancelar = document.getElementById('btn-cancelar');
+        
+        if (modalClose) {
+            modalClose.addEventListener('click', function() {
+                document.getElementById('modal-empresa').style.display = 'none';
+                document.getElementById('modal-empresa').classList.add('hidden');
+                document.getElementById('modal-empresa').classList.remove('flex');
             });
-            
-            // Cerrar modales
-            const modalClose = document.getElementById('modal-close');
-            const btnCancelar = document.getElementById('btn-cancelar');
-            
-            if (modalClose) {
-                modalClose.addEventListener('click', function() {
-                    document.getElementById('modal-empresa').style.display = 'none';
-                    document.getElementById('modal-empresa').classList.add('hidden');
-                    document.getElementById('modal-empresa').classList.remove('flex');
-                });
-            }
-            
-            if (btnCancelar) {
-                btnCancelar.addEventListener('click', function() {
-                    document.getElementById('modal-empresa').style.display = 'none';
-                    document.getElementById('modal-empresa').classList.add('hidden');
-                    document.getElementById('modal-empresa').classList.remove('flex');
-                });
-            }
-            
-            // Formulario
-            const formEmpresa = document.getElementById('form-empresa');
-            if (formEmpresa) {
-                formEmpresa.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    enviarFormulario(this);
-                });
-            }
-            
-            // Modal confirmación
-            const modalEliminarClose = document.getElementById('modal-eliminar-close');
-            const btnCancelarEliminar = document.getElementById('btn-cancelar-eliminar');
-            const formActivar = document.getElementById('form-activar');
-            
-            if (modalEliminarClose) {
-                modalEliminarClose.addEventListener('click', closeDeleteModal);
-            }
-            
-            if (btnCancelarEliminar) {
-                btnCancelarEliminar.addEventListener('click', closeDeleteModal);
-            }
-            
-            if (formActivar) {
-                formActivar.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    handleActivateSubmit();
-                });
-            }
         }
         
-        function setupFilterListeners() {
-            // Eventos para filtrado automático
-            const filtroNombre = document.getElementById('filtro_nombre');
-            const filtroEmail = document.getElementById('filtro_email');
-            const filtroCif = document.getElementById('filtro_cif');
-            const filtroEstado = document.getElementById('filtro_estado');
-            const filtroCiudad = document.getElementById('filtro_ciudad');
-            const resetFiltros = document.getElementById('reset-filtros');
-            
-            if (filtroNombre) filtroNombre.addEventListener('input', debounceFilter);
-            if (filtroEmail) filtroEmail.addEventListener('input', debounceFilter);
-            if (filtroCif) filtroCif.addEventListener('input', debounceFilter);
-            if (filtroEstado) filtroEstado.addEventListener('change', aplicarFiltros);
-            if (filtroCiudad) filtroCiudad.addEventListener('change', aplicarFiltros);
-            
-            if (resetFiltros) {
-                resetFiltros.addEventListener('click', function() {
-                    if (filtroNombre) filtroNombre.value = '';
-                    if (filtroEmail) filtroEmail.value = '';
-                    if (filtroCif) filtroCif.value = '';
-                    if (filtroEstado) filtroEstado.value = '';
-                    if (filtroCiudad) filtroCiudad.value = '';
-                    aplicarFiltros();
-                });
-            }
+        if (btnCancelar) {
+            btnCancelar.addEventListener('click', function() {
+                document.getElementById('modal-empresa').style.display = 'none';
+                document.getElementById('modal-empresa').classList.add('hidden');
+                document.getElementById('modal-empresa').classList.remove('flex');
+            });
         }
         
-        // Función para debounce en campos de texto
-        function debounceFilter() {
-            if (timeoutId) {
-                clearTimeout(timeoutId);
-            }
-            timeoutId = setTimeout(() => {
+        // Formulario
+        const formEmpresa = document.getElementById('form-empresa');
+        if (formEmpresa) {
+            formEmpresa.addEventListener('submit', function(e) {
+                e.preventDefault();
+                enviarFormulario(this);
+            });
+        }
+        
+        // Modal confirmación
+        const modalEliminarClose = document.getElementById('modal-eliminar-close');
+        const btnCancelarEliminar = document.getElementById('btn-cancelar-eliminar');
+        const formActivar = document.getElementById('form-activar');
+        
+        if (modalEliminarClose) {
+            modalEliminarClose.addEventListener('click', closeDeleteModal);
+        }
+        
+        if (btnCancelarEliminar) {
+            btnCancelarEliminar.addEventListener('click', closeDeleteModal);
+        }
+        
+        if (formActivar) {
+            formActivar.addEventListener('submit', function(e) {
+                e.preventDefault();
+                handleActivateSubmit();
+            });
+        }
+    }
+    
+    // Función global para configurar los listeners de filtros
+    function setupFilterListeners() {
+        // Eventos para filtrado automático
+        const filtroNombre = document.getElementById('filtro_nombre');
+        const filtroEmail = document.getElementById('filtro_email');
+        const filtroCif = document.getElementById('filtro_cif');
+        const filtroEstado = document.getElementById('filtro_estado');
+        const filtroCiudad = document.getElementById('filtro_ciudad');
+        const resetFiltros = document.getElementById('reset-filtros');
+        
+        if (filtroNombre) filtroNombre.addEventListener('input', debounceFilter);
+        if (filtroEmail) filtroEmail.addEventListener('input', debounceFilter);
+        if (filtroCif) filtroCif.addEventListener('input', debounceFilter);
+        if (filtroEstado) filtroEstado.addEventListener('change', aplicarFiltros);
+        if (filtroCiudad) filtroCiudad.addEventListener('change', aplicarFiltros);
+        
+        if (resetFiltros) {
+            resetFiltros.addEventListener('click', function() {
+                if (filtroNombre) filtroNombre.value = '';
+                if (filtroEmail) filtroEmail.value = '';
+                if (filtroCif) filtroCif.value = '';
+                if (filtroEstado) filtroEstado.value = '';
+                if (filtroCiudad) filtroCiudad.value = '';
                 aplicarFiltros();
-            }, 300);
+            });
         }
-    });
+    }
+    
+    // Variables globales
+    let isSubmitting = false;
+    let timeoutId = null;
+    
+    // Función para debounce en campos de texto
+    function debounceFilter() {
+        if (timeoutId) {
+            clearTimeout(timeoutId);
+        }
+        timeoutId = setTimeout(() => {
+            aplicarFiltros();
+        }, 300);
+    }
     
     // Funciones para crear/editar empresas
     function mostrarFormularioCrear() {
@@ -792,8 +798,16 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Si la operación fue exitosa, recargar la página
-                window.location.reload();
+                // Cerrar el modal
+                document.getElementById('modal-empresa').style.display = 'none';
+                document.getElementById('modal-empresa').classList.add('hidden');
+                document.getElementById('modal-empresa').classList.remove('flex');
+                
+                // Mostrar mensaje de éxito
+                mostrarMensajeExito(method === 'PUT' ? 'Empresa actualizada correctamente' : 'Empresa creada correctamente');
+                
+                // Actualizar la tabla en lugar de recargar la página
+                refreshEmpresasTable();
             } else if (data.errors) {
                 mostrarErrores(data.errors);
             } else {
@@ -887,8 +901,11 @@
             closeDeleteModal();
             
             if (data.success) {
-                // Recargar la página para mostrar los cambios
-                window.location.reload();
+                // Mostrar mensaje de éxito
+                mostrarMensajeExito(isActive ? 'Empresa desactivada correctamente' : 'Empresa activada correctamente');
+                
+                // Actualizar la tabla con AJAX en lugar de recargar la página
+                refreshEmpresasTable();
             } else {
                 alert(data.message || 'Ha ocurrido un error');
             }
@@ -896,6 +913,13 @@
         .catch(error => {
             console.error('Error al activar/desactivar empresa:', error);
             alert('Ha ocurrido un error al procesar la solicitud');
+            
+            // Restaurar el botón
+            const actionButton = document.getElementById('action-button');
+            if (actionButton) {
+                actionButton.disabled = false;
+                actionButton.innerHTML = isActive ? 'Desactivar' : 'Activar';
+            }
         });
     }
     
@@ -908,11 +932,29 @@
             messageText.textContent = mensaje;
             messageElement.style.display = 'block';
             
-            window.scrollTo(0, 0);
+            // Asegurarse de que el mensaje sea visible
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
         
+            // Ocultar el mensaje después de 5 segundos
             setTimeout(function() {
-                messageElement.style.display = 'none';
+                // Utilizar una animación de fade out
+                messageElement.style.opacity = '1';
+                
+                const fadeEffect = setInterval(function() {
+                    if (parseFloat(messageElement.style.opacity) > 0) {
+                        messageElement.style.opacity = (parseFloat(messageElement.style.opacity) - 0.1).toString();
+                    } else {
+                        clearInterval(fadeEffect);
+                        messageElement.style.display = 'none';
+                        messageElement.style.opacity = '1'; // Restaurar para el próximo uso
+                    }
+                }, 40);
             }, 5000);
+        } else {
+            console.error('No se encontraron los elementos para mostrar el mensaje de éxito');
         }
     }
     
@@ -947,7 +989,12 @@
         if (tablaContainer) {
             tablaContainer.innerHTML = '<div class="flex justify-center items-center p-8"><svg class="animate-spin h-10 w-10 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>';
         }
+        
+        // Cargar la tabla con AJAX
+        loadEmpresasAjax();
+    }
 
+    function loadEmpresasAjax() {
         const filtros = {
             nombre: document.getElementById('filtro_nombre')?.value || '',
             email: document.getElementById('filtro_email')?.value || '',
@@ -964,30 +1011,72 @@
             }
         });
         
-        // Redireccionar a la misma página con los parámetros de filtro
-        window.location.href = `/admin/empresas?${params.toString()}`;
+        // Actualizar la URL sin recargar la página
+        const newUrl = window.location.pathname + '?' + params.toString();
+        window.history.pushState({ path: newUrl }, '', newUrl);
+        
+        // Realizar la petición AJAX
+        fetch(`/admin/empresas?${params.toString()}`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error en la respuesta del servidor: ' + response.status);
+            }
+            return response.json();
+        })
+        .then(data => {
+            const tablaContainer = document.getElementById('tabla-container');
+            if (!tablaContainer) {
+                console.error('No se encontró el contenedor de la tabla');
+                return;
+            }
+            
+            if (data.tabla) {
+                // Reemplazar todo el contenido HTML del contenedor
+                tablaContainer.innerHTML = data.tabla;
+                
+                // Volver a aplicar los event listeners a los nuevos elementos
+                setupEventListeners();
+            } else {
+                console.error('La respuesta no contiene datos de tabla');
+                tablaContainer.innerHTML = '<div class="p-4 text-center text-amber-600">No se encontraron resultados para la búsqueda.</div>';
+            }
+        })
+        .catch(error => {
+            console.error('Error al cargar datos:', error);
+            const tablaContainer = document.getElementById('tabla-container');
+            if (tablaContainer) {
+                tablaContainer.innerHTML = `
+                    <div class="flex justify-between items-center px-6 py-4 border-b border-gray-200">
+                        <h1 class="text-2xl font-semibold text-gray-800">Empresas</h1>
+                        <button id="btnCrearEmpresa" class="inline-flex items-center px-4 py-2 bg-purple-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-purple-700 active:bg-purple-900 focus:outline-none focus:border-purple-900 focus:ring ring-purple-300 disabled:opacity-25 transition ease-in-out duration-150">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                            Crear Empresa
+                        </button>
+                    </div>
+                    <div class="p-8 text-center">
+                        <div class="text-red-600 mb-4">Error al cargar los datos. Por favor, inténtalo de nuevo.</div>
+                        <button onclick="aplicarFiltros()" class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700">Reintentar</button>
+                    </div>
+                `;
+                
+                // Añadir evento al botón de crear empresa
+                const btnCrearEmpresa = document.getElementById('btnCrearEmpresa');
+                if (btnCrearEmpresa) {
+                    btnCrearEmpresa.addEventListener('click', mostrarFormularioCrear);
+                }
+            }
+        });
     }
 
     // Función para aplicar filtros
     function aplicarFiltros() {
-        const filtros = {
-            nombre: document.getElementById('filtro_nombre')?.value || '',
-            email: document.getElementById('filtro_email')?.value || '',
-            cif: document.getElementById('filtro_cif')?.value || '',
-            ciudad: document.getElementById('filtro_ciudad')?.value || '',
-            estado: document.getElementById('filtro_estado')?.value || ''
-        };
-        
-        // Construir los parámetros de la consulta
-        const params = new URLSearchParams();
-        Object.entries(filtros).forEach(([key, value]) => {
-            if (value) {
-                params.append(key, value);
-            }
-        });
-        
-        // Redireccionar a la misma página con los parámetros de filtro
-        window.location.href = `/admin/empresas?${params.toString()}`;
+        refreshEmpresasTable();
     }
 </script>
 

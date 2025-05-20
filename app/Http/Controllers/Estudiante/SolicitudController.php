@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Estudiante;
 
 use App\Http\Controllers\Controller;
-use App\Models\Solicitud;
+use App\Models\SolicitudEstudiante;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -26,9 +26,9 @@ class SolicitudController extends Controller
         $estudiante = Auth::user()->estudiante;
         
         // Buscar la solicitud y verificar que pertenezca al estudiante
-        $solicitud = Solicitud::where('id', $id)
+        $solicitud = SolicitudEstudiante::where('id', $id)
             ->where('estudiante_id', $estudiante->id)
-            ->with(['publicacion.empresa.user'])
+            ->with(['institucion.user', 'clase'])
             ->firstOrFail();
         
         return view('estudiante.solicitudes.show', compact('solicitud'));
@@ -42,7 +42,7 @@ class SolicitudController extends Controller
         $estudiante = Auth::user()->estudiante;
         
         // Buscar la solicitud y verificar que pertenezca al estudiante
-        $solicitud = Solicitud::where('id', $id)
+        $solicitud = SolicitudEstudiante::where('id', $id)
             ->where('estudiante_id', $estudiante->id)
             ->firstOrFail();
         
@@ -52,11 +52,11 @@ class SolicitudController extends Controller
                 ->with('error', 'Solo puedes cancelar solicitudes pendientes');
         }
         
-        // Actualizar estado a cancelada (usando 'rechazada')
-        $solicitud->update([
-            'estado' => 'rechazada',
-            'respuesta_empresa' => 'Cancelada por el estudiante'
-        ]);
+        // Actualizar estado a cancelada
+        $solicitud->estado = 'cancelada';
+        $solicitud->respuesta = 'Cancelada por el estudiante';
+        $solicitud->fecha_respuesta = now();
+        $solicitud->save();
         
         return redirect()->route('estudiante.solicitudes.index')
             ->with('success', 'Solicitud cancelada correctamente');
@@ -71,29 +71,29 @@ class SolicitudController extends Controller
         }
 
         $request->validate([
-            'clase_id' => 'required|exists:clases,id',
-            'motivo' => 'required|string|max:500',
+            'institucion_id' => 'required|exists:instituciones,id',
+            'mensaje' => 'required|string|max:500',
         ]);
 
-        // Verificar si ya existe una solicitud pendiente para esta clase
-        $solicitudExistente = Solicitud::where('estudiante_id', $estudiante->id)
-            ->where('clase_id', $request->clase_id)
+        // Verificar si ya existe una solicitud pendiente para esta institución
+        $solicitudExistente = SolicitudEstudiante::where('estudiante_id', $estudiante->id)
+            ->where('institucion_id', $request->institucion_id)
             ->where('estado', 'pendiente')
             ->first();
 
         if ($solicitudExistente) {
-            return redirect()->back()->with('error', 'Ya tienes una solicitud pendiente para esta clase.');
+            return redirect()->back()->with('error', 'Ya tienes una solicitud pendiente para esta institución.');
         }
 
         // Crear la solicitud
-        Solicitud::create([
+        SolicitudEstudiante::create([
             'estudiante_id' => $estudiante->id,
-            'clase_id' => $request->clase_id,
-            'motivo' => $request->motivo,
+            'institucion_id' => $request->institucion_id,
+            'mensaje' => $request->mensaje,
             'estado' => 'pendiente',
         ]);
 
         return redirect()->route('estudiante.solicitudes.index')
-            ->with('success', 'Solicitud enviada correctamente.');
+            ->with('success', 'Solicitud enviada correctamente a la institución.');
     }
 } 

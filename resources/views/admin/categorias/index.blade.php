@@ -313,15 +313,21 @@
             const method = document.getElementById('method').value;
             const id = document.getElementById('categoria_id').value;
 
+            // Añadir el método PUT si es una actualización
+            if (method === 'PUT') {
+                formData.append('_method', 'PUT');
+            }
+
             const url = method === 'PUT' 
                 ? `/admin/categorias/${id}`
                 : '/admin/categorias';
 
             fetch(url, {
-                method: method === 'PUT' ? 'POST' : 'POST',
+                method: 'POST', // Siempre usar POST con FormData, el método real se especifica en _method
                 body: formData,
                 headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
                 }
             })
             .then(response => response.json())
@@ -330,6 +336,9 @@
                     closeModal();
                     refreshTable();
                     showSuccessMessage(data.message);
+                } else if (data.errors) {
+                    // Mostrar errores de validación
+                    alert(Object.values(data.errors).flat().join('\n'));
                 }
             })
             .catch(error => {

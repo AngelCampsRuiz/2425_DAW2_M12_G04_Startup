@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\BaseController;
 use App\Models\Subcategoria;
 use App\Models\Categoria;
 use App\Models\Publication;
@@ -10,7 +10,7 @@ use App\Models\Publicacion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class SubcategoriaController extends Controller
+class SubcategoriaController extends BaseController
 {
     /**
      * Display a listing of the resource.
@@ -78,18 +78,41 @@ class SubcategoriaController extends Controller
             'categoria_id' => 'required|exists:categorias,id'
         ]);
 
-        $subcategoria = Subcategoria::create($validated);
+        try {
+            DB::beginTransaction();
+            
+            $subcategoria = Subcategoria::create($validated);
+            
+            // Registrar la actividad
+            $this->logCreation($subcategoria, 'Se ha creado una nueva subcategoría: ' . $subcategoria->nombre_subcategoria);
+            
+            DB::commit();
 
-        if ($request->ajax()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Subcategoría creada exitosamente',
-                'subcategoria' => $subcategoria
-            ]);
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Subcategoría creada exitosamente',
+                    'subcategoria' => $subcategoria
+                ]);
+            }
+
+            return redirect()->route('admin.subcategorias.index')
+                ->with('success', 'Subcategoría creada exitosamente');
+                
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error al crear la subcategoría: ' . $e->getMessage()
+                ], 500);
+            }
+            
+            return redirect()->back()
+                ->with('error', 'Error al crear la subcategoría: ' . $e->getMessage())
+                ->withInput();
         }
-
-        return redirect()->route('admin.subcategorias.index')
-            ->with('success', 'Subcategoría creada exitosamente');
     }
 
     /**
@@ -123,21 +146,34 @@ class SubcategoriaController extends Controller
     {
         // Si la solicitud solo contiene el campo 'activo', es una operación de activar/desactivar
         if ($request->has('activo') && count($request->all()) <= 3) {
-            $subcategoria->update([
-                'activo' => $request->activo
-            ]);
-
-            $mensaje = $request->activo ? 'Subcategoría activada exitosamente' : 'Subcategoría desactivada exitosamente';
-
-            if ($request->ajax()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => $mensaje
+            try {
+                DB::beginTransaction();
+                
+                $subcategoria->update([
+                    'activo' => $request->activo
                 ]);
-            }
+                
+                // Registrar la actividad de cambio de estado
+                $this->logUpdate($subcategoria, 'Se ha ' . ($request->activo ? 'activado' : 'desactivado') . ' la subcategoría: ' . $subcategoria->nombre_subcategoria);
+                
+                DB::commit();
 
-            return redirect()->route('admin.subcategorias.index')
-                ->with('success', $mensaje);
+                $mensaje = $request->activo ? 'Subcategoría activada exitosamente' : 'Subcategoría desactivada exitosamente';
+
+                if ($request->ajax()) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => $mensaje
+                    ]);
+                }
+
+                return redirect()->route('admin.subcategorias.index')
+                    ->with('success', $mensaje);
+                    
+            } catch (\Exception $e) {
+                DB::rollBack();
+                // Manejar error
+            }
         }
 
         // Si no, es una actualización normal
@@ -147,10 +183,20 @@ class SubcategoriaController extends Controller
         ]);
 
         try {
+            DB::beginTransaction();
+            
+            // Guardar nombre anterior para el registro
+            $nombreAnterior = $subcategoria->nombre_subcategoria;
+            
             $subcategoria->update([
                 'nombre_subcategoria' => $request->nombre_subcategoria,
                 'categoria_id' => $request->categoria_id
             ]);
+            
+            // Registrar la actividad
+            $this->logUpdate($subcategoria, 'Se ha actualizado la subcategoría: ' . $subcategoria->nombre_subcategoria);
+            
+            DB::commit();
 
             if ($request->ajax()) {
                 return response()->json([
@@ -163,6 +209,8 @@ class SubcategoriaController extends Controller
                 ->with('success', 'Subcategoría actualizada exitosamente');
                 
         } catch (\Exception $e) {
+            DB::rollBack();
+            
             if ($request->ajax()) {
                 return response()->json([
                     'success' => false,
@@ -182,8 +230,18 @@ class SubcategoriaController extends Controller
     public function destroy(Subcategoria $subcategoria)
     {
         try {
+            DB::beginTransaction();
+            
+            // Guardar el nombre antes de desactivar para el registro
+            $nombreSubcategoria = $subcategoria->nombre_subcategoria;
+            
             // Desactivar la subcategoría en lugar de eliminarla
             $subcategoria->update(['activo' => false]);
+            
+            // Registrar la actividad
+            $this->logDeletion($subcategoria, 'Se ha desactivado la subcategoría: ' . $nombreSubcategoria);
+            
+            DB::commit();
             
             if (request()->ajax()) {
                 return response()->json([
@@ -196,6 +254,8 @@ class SubcategoriaController extends Controller
                 ->with('success', 'Subcategoría desactivada exitosamente');
                 
         } catch (\Exception $e) {
+            DB::rollBack();
+            
             // Registrar el error para depuración
             \Log::error('Error al desactivar subcategoría: ' . $e->getMessage());
             

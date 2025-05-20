@@ -3,6 +3,8 @@
     use Illuminate\Support\Facades\Route;
     use Illuminate\Support\Facades\DB;
     use Illuminate\Support\Facades\Log;
+    use Illuminate\Support\Facades\Http;
+    use Illuminate\Support\Facades\Artisan;
         // CONTROLADORES
             // CONTROLADOR HOME
                 use App\Http\Controllers\HomeController;
@@ -48,6 +50,7 @@
                 use App\Http\Controllers\ReminderController;
             // CONTROLADOR ESTUDIANTE (EMPRESA)
                 use App\Http\Controllers\Empresa\EstudianteController;
+                use Illuminate\Http\Response;
 
     // RUTAS DE LA APLICACIÓN
         // RUTA PRINCIPAL HOME
@@ -231,6 +234,7 @@
         // RUTAS PROTEGIDAS PARA ESTUDIANTES
                 Route::middleware(['auth', \App\Http\Middleware\CheckRole::class.':student'])->group(function () {
                     Route::get('/student/dashboard', [StudentDashboardController::class, 'index'])->name('student.dashboard');
+                    Route::get('/estudiante/solicitudes', [App\Http\Controllers\Estudiante\SolicitudController::class, 'index'])->name('estudiante.solicitudes.index');
                 });
 
         // RUTAS PROTEGIDAS PARA EMPRESAS
@@ -321,12 +325,10 @@
 
                 // RUTAS PARA GESTIONAR LAS INSTITUCIONES
                     // RUTA CAMBIAR VERIFICACIÓN
-                        Route::post('instituciones/cambiar-verificacion/{id}', [App\Http\Controllers\Admin\InstitucionController::class, 'cambiarVerificacion'])->name('instituciones.cambiar-verificacion');
-                        Route::post('instituciones/{id}/verificar', [App\Http\Controllers\Admin\InstitucionController::class, 'cambiarVerificacion'])->name('instituciones.verificar');
+                        Route::post('instituciones/cambiar-verificacion/{id}', [App\Http\Controllers\Admin\InstitucionController::class, 'toggleVerificacion'])->name('instituciones.cambiar-verificacion');
+                        Route::post('instituciones/{id}/verificar', [App\Http\Controllers\Admin\InstitucionController::class, 'toggleVerificacion'])->name('instituciones.verificar');
                     // RUTA CAMBIAR ESTADO
-                        Route::post('instituciones/{id}/cambiar-estado', [App\Http\Controllers\Admin\InstitucionController::class, 'cambiarEstado'])->name('instituciones.cambiar-estado');
-                    // RUTA ELIMINAR SQL
-                        Route::delete('instituciones/eliminar-sql/{institucion}', [App\Http\Controllers\Admin\InstitucionController::class, 'destroySQL'])->name('instituciones.destroySQL');
+                        Route::post('instituciones/{id}/cambiar-estado', [App\Http\Controllers\Admin\InstitucionController::class, 'toggleEstado'])->name('instituciones.cambiar-estado');
                     // RUTA OBTENER CATEGORÍAS
                         Route::get('instituciones/{id}/categorias', [App\Http\Controllers\Admin\InstitucionController::class, 'getCategorias'])->name('instituciones.categorias');
                     // RUTA ACTUALIZAR CATEGORÍAS
@@ -439,22 +441,33 @@ Route::prefix('institucion')->middleware(['auth', \App\Http\Middleware\CheckRole
         Route::post('/clases/{id}/asignar-estudiantes', [App\Http\Controllers\ClaseController::class, 'guardarAsignacionEstudiantes'])->name('clases.guardar-asignacion-estudiantes');
         Route::get('/clases/{id}/getData', [App\Http\Controllers\ClaseController::class, 'getData'])->name('clases.getData');
 
-        // Solicitudes de estudiantes
-        Route::get('/solicitudes', [App\Http\Controllers\SolicitudEstudianteController::class, 'index'])->name('solicitudes.index');
-        Route::get('/solicitudes/{id}', [App\Http\Controllers\SolicitudEstudianteController::class, 'show'])->name('solicitudes.show');
-        Route::post('/solicitudes/{id}/aprobar', [App\Http\Controllers\SolicitudEstudianteController::class, 'aprobar'])->name('solicitudes.aprobar');
-        Route::post('/solicitudes/{id}/rechazar', [App\Http\Controllers\SolicitudEstudianteController::class, 'rechazar'])->name('solicitudes.rechazar');
-
-        // Asignación de clases a estudiantes tras aprobar solicitudes
-        Route::get('/solicitudes/{solicitud}/asignar-clase', [App\Http\Controllers\Institucion\SolicitudClaseController::class, 'asignar'])->name('solicitudes.asignar-clase');
-        Route::post('/solicitudes/{solicitud}/asignar-clase', [App\Http\Controllers\Institucion\SolicitudClaseController::class, 'store'])->name('solicitudes.asignar-clase.store');
-
-        // Estudiantes pendientes de activación
-        Route::get('/estudiantes/pendientes', [App\Http\Controllers\Institucion\EstudiantePendienteController::class, 'index'])->name('estudiantes.pendientes');
-        Route::post('/estudiantes/{id}/activar', [App\Http\Controllers\Institucion\EstudiantePendienteController::class, 'activar'])->name('estudiantes.activar');
-        Route::put('/estudiantes/{id}/actualizar', [App\Http\Controllers\Institucion\EstudiantePendienteController::class, 'actualizar'])->name('estudiantes.actualizar');
-        Route::delete('/estudiantes/{id}/eliminar', [App\Http\Controllers\Institucion\EstudiantePendienteController::class, 'eliminar'])->name('estudiantes.eliminar');
-    });
+        // Estudiantes
+        Route::prefix('estudiantes')->name('estudiantes.')->group(function () {
+            Route::get('/', [App\Http\Controllers\Institucion\EstudianteController::class, 'index'])->name('index');
+            Route::get('/pendientes', [App\Http\Controllers\Institucion\EstudianteController::class, 'pendientes'])->name('pendientes');
+            Route::get('/{id}', [App\Http\Controllers\Institucion\EstudianteController::class, 'show'])->name('show');
+            Route::get('/{id}/edit', [App\Http\Controllers\Institucion\EstudianteController::class, 'edit'])->name('edit');
+            Route::put('/{id}', [App\Http\Controllers\Institucion\EstudianteController::class, 'update'])->name('update');
+            Route::post('/{id}/asignar-clase', [App\Http\Controllers\Institucion\EstudianteController::class, 'asignarClase'])->name('asignar-clase');
+            Route::delete('/{id}/eliminar-clase/{claseId}', [App\Http\Controllers\Institucion\EstudianteController::class, 'eliminarClase'])->name('eliminar-clase');
+        });
+        
+        // Clases
+        Route::prefix('clases')->name('clases.')->group(function () {
+            Route::get('/', [App\Http\Controllers\Institucion\ClaseController::class, 'index'])->name('index');
+            Route::get('/create', [App\Http\Controllers\Institucion\ClaseController::class, 'create'])->name('create');
+            Route::post('/', [App\Http\Controllers\Institucion\ClaseController::class, 'store'])->name('store');
+            Route::get('/{id}', [App\Http\Controllers\Institucion\ClaseController::class, 'show'])->name('show');
+            Route::get('/{id}/edit', [App\Http\Controllers\Institucion\ClaseController::class, 'edit'])->name('edit');
+            Route::put('/{id}', [App\Http\Controllers\Institucion\ClaseController::class, 'update'])->name('update');
+            Route::delete('/{id}', [App\Http\Controllers\Institucion\ClaseController::class, 'destroy'])->name('destroy');
+            
+            // Asignación de estudiantes
+            Route::get('/{id}/asignar-estudiantes', [App\Http\Controllers\Institucion\ClaseController::class, 'asignarEstudiantes'])->name('asignar-estudiantes');
+            Route::post('/{id}/guardar-estudiantes', [App\Http\Controllers\Institucion\ClaseController::class, 'guardarEstudiantes'])->name('guardar-estudiantes');
+            Route::delete('/{id}/eliminar-estudiante/{estudianteId}', [App\Http\Controllers\Institucion\ClaseController::class, 'eliminarEstudiante'])->name('eliminar-estudiante');
+            Route::get('/{id}/get-data', [App\Http\Controllers\Institucion\ClaseController::class, 'getData'])->name('get-data');
+        });
 
     // RUTAS PARA ESTUDIANTES
     Route::prefix('estudiante')->middleware(['auth', 'role:Estudiante', 'estudiante.activo'])->name('estudiante.')->group(function () {
@@ -497,6 +510,26 @@ Route::prefix('institucion')->middleware(['auth', \App\Http\Middleware\CheckRole
         Route::get('/convenios/{convenio}/download', [App\Http\Controllers\Docente\ConvenioController::class, 'download'])->name('convenios.download');
     });
 
+    Route::get('/run-migrations-safe', function () {
+    // Verifica la clave proporcionada
+    if (request('key') !== env('DEPLOY_KEY')) {
+        abort(403, 'Acceso no autorizado');
+    }
+
+    try {
+        // Llama a las migraciones si la clave es correcta
+        $result = Artisan::call('migrate:fresh --seed --force');
+        $output = Artisan::output();
+
+        return response()->json(['message' => 'Migraciones ejecutadas correctamente', 'output' => $output]);
+    } catch (\Exception $e) {
+        return response()->json(['error' => 'Error al ejecutar migraciones: ' . $e->getMessage()], 500);
+    }
+});
+
+    // Ruta para actualizar estudiantes desde modal
+    Route::put('/estudiantes/update-modal', [App\Http\Controllers\Institucion\EstudianteController::class, 'updateModal']);
+    
     // Rutas de chat
     Route::middleware(['auth'])->prefix('chat')->name('chat.')->group(function () {
         Route::get('/', [App\Http\Controllers\ChatController::class, 'index'])->name('index');
@@ -504,9 +537,43 @@ Route::prefix('institucion')->middleware(['auth', \App\Http\Middleware\CheckRole
         Route::post('/send', [App\Http\Controllers\ChatController::class, 'send'])->name('send');
     });
 
-    // Rutas para puntuaciones del juego 404
-    Route::post('/game-scores', [App\Http\Controllers\GameScoreController::class, 'store']);
-    Route::get('/game-scores/top', [App\Http\Controllers\GameScoreController::class, 'getTopScores']);
-    Route::get('/page-not-found', [App\Http\Controllers\ErrorController::class, 'notFound'])->name('game.error-page');
-    Route::get('/save-score', [App\Http\Controllers\GameScoreController::class, 'saveScore'])->name('game.save-score');
-    Route::get('/ranking', [App\Http\Controllers\GameScoreController::class, 'showRanking'])->name('game.ranking');
+});
+
+// RUTAS PARA DOCENTES
+Route::prefix('docente')->middleware(['auth', \App\Http\Middleware\CheckRole::class.':docente'])->name('docente.')->group(function () {
+    // Dashboard
+    Route::get('/dashboard', [App\Http\Controllers\DocenteController::class, 'dashboard'])->name('dashboard');
+
+    // Alumnos
+    Route::get('/alumnos', [App\Http\Controllers\DocenteController::class, 'alumnos'])->name('alumnos.index');
+    Route::get('/alumnos/{id}', [App\Http\Controllers\DocenteController::class, 'showAlumno'])->name('alumnos.show');
+
+    // Clases
+    Route::get('/clases', [App\Http\Controllers\DocenteController::class, 'clases'])->name('clases.index');
+    Route::get('/clases/{id}', [App\Http\Controllers\DocenteController::class, 'showClase'])->name('clases.show');
+    Route::get('/clases/{id}/alumnos', [App\Http\Controllers\DocenteController::class, 'clasesAlumnos'])->name('clases.alumnos');
+
+    // Solicitudes
+    Route::get('/solicitudes', [App\Http\Controllers\DocenteController::class, 'solicitudes'])->name('solicitudes.index');
+    Route::get('/solicitudes/{id}', [App\Http\Controllers\DocenteController::class, 'showSolicitud'])->name('solicitudes.show');
+    Route::post('/solicitudes/{id}/aprobar', [App\Http\Controllers\DocenteController::class, 'aprobarSolicitud'])->name('solicitudes.aprobar');
+    Route::post('/solicitudes/{id}/rechazar', [App\Http\Controllers\DocenteController::class, 'rechazarSolicitud'])->name('solicitudes.rechazar');
+
+    // Gestión de estudiantes en clases
+    Route::put('/estudiante/{estudianteId}/calificar/{claseId}', [App\Http\Controllers\DocenteController::class, 'calificarEstudiante'])->name('estudiante.calificar');
+    Route::put('/estudiante/{estudianteId}/estado/{claseId}', [App\Http\Controllers\DocenteController::class, 'cambiarEstadoEstudiante'])->name('estudiante.cambiar-estado');
+
+    // Convenios
+    Route::get('/convenios', [App\Http\Controllers\Docente\ConvenioController::class, 'index'])->name('convenios.index');
+    Route::get('/convenios/{convenio}', [App\Http\Controllers\Docente\ConvenioController::class, 'show'])->name('convenios.show');
+    Route::post('/convenios/{convenio}/aprobar', [App\Http\Controllers\Docente\ConvenioController::class, 'aprobar'])->name('convenios.aprobar');
+    Route::post('/convenios/{convenio}/rechazar', [App\Http\Controllers\Docente\ConvenioController::class, 'rechazar'])->name('convenios.rechazar');
+    Route::get('/convenios/{convenio}/download', [App\Http\Controllers\Docente\ConvenioController::class, 'download'])->name('convenios.download');
+});
+
+// Rutas para puntuaciones del juego 404
+Route::post('/game-scores', [App\Http\Controllers\GameScoreController::class, 'store']);
+Route::get('/game-scores/top', [App\Http\Controllers\GameScoreController::class, 'getTopScores']);
+Route::get('/page-not-found', [App\Http\Controllers\ErrorController::class, 'notFound'])->name('game.error-page');
+Route::get('/save-score', [App\Http\Controllers\GameScoreController::class, 'saveScore'])->name('game.save-score');
+Route::get('/ranking', [App\Http\Controllers\GameScoreController::class, 'showRanking'])->name('game.ranking');

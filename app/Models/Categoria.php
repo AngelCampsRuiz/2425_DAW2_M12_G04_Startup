@@ -52,6 +52,14 @@ class Categoria extends Model
     }
 
     /**
+     * Obtiene las clases asociadas a esta categoría.
+     */
+    public function clases()
+    {
+        return $this->hasMany(Clase::class);
+    }
+
+    /**
      * Obtiene los niveles educativos relacionados con esta categoría.
      */
     public function nivelesEducativos()

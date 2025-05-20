@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Institucion;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\SolicitudInstitucion;
+use App\Models\SolicitudEstudiante;
 use App\Models\Clase;
 use App\Models\EstudianteClase;
 use App\Models\Departamento;
@@ -19,7 +19,7 @@ class SolicitudClaseController extends Controller
     /**
      * Muestra el formulario para asignar un estudiante a una clase
      */
-    public function asignar(SolicitudInstitucion $solicitud)
+    public function asignar(SolicitudEstudiante $solicitud)
     {
         // Verificar que la solicitud pertenece a la institución del usuario autenticado
         if ($solicitud->institucion_id !== Auth::user()->institucion->id) {
@@ -62,7 +62,7 @@ class SolicitudClaseController extends Controller
     /**
      * Procesa la asignación del estudiante a la clase seleccionada
      */
-    public function store(Request $request, SolicitudInstitucion $solicitud)
+    public function store(Request $request, SolicitudEstudiante $solicitud)
     {
         // Validar que la solicitud pertenece a la institución
         if ($solicitud->institucion_id !== Auth::user()->institucion->id) {
@@ -95,7 +95,7 @@ class SolicitudClaseController extends Controller
         try {
             DB::beginTransaction();
             
-            // Usar el método asignarClase del modelo SolicitudInstitucion
+            // Usar el método asignarClase del modelo SolicitudEstudiante
             $solicitud->asignarClase($validated['clase_id']);
             
             DB::commit();
@@ -113,14 +113,14 @@ class SolicitudClaseController extends Controller
     {
         $institucion = auth()->user()->institucion;
         
-        // Obtener solicitudes de clases
-        $solicitudes = SolicitudInstitucion::with(['estudiante.user', 'clase'])
+        // Obtener solicitudes de clases usando el modelo correcto
+        $solicitudes = SolicitudEstudiante::with(['estudiante.user', 'clase'])
             ->where('institucion_id', $institucion->id)
             ->orderBy('created_at', 'desc')
             ->get();
 
         // Obtener estudiantes pendientes de activación
-        $estudiantesPendientes = Estudiante::with(['user', 'titulo'])
+        $estudiantesPendientes = Estudiante::with(['user', 'categoria'])
             ->where('institucion_id', $institucion->id)
             ->whereHas('user', function($query) {
                 $query->where('activo', false);
