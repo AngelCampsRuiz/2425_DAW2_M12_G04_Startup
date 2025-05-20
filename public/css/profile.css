@@ -128,6 +128,68 @@ body {
     display: none;
 }
 
+/* Estilos para la barra de progreso */
+#progressSection {
+    transition: opacity 0.5s ease-out;
+    opacity: 1;
+}
+
+#progressBar {
+    transition: width 0.5s ease-out;
+}
+
+#progressContent {
+    transition: max-height 0.5s ease-out, opacity 0.5s ease-out;
+}
+
+#progressContent.collapsed {
+    max-height: 0;
+    opacity: 0;
+}
+
+#toggleIcon {
+    transition: transform 0.3s ease-out;
+}
+
+#toggleIcon.rotated {
+    transform: rotate(180deg);
+}
+
+/* Animaciones para los mensajes de progreso */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#progressMessage {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* Estilos para los campos pendientes */
+.campo-pendiente {
+    transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
+}
+
+.campo-pendiente:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos para los iconos de estado */
+.estado-icono {
+    transition: transform 0.3s ease-out;
+}
+
+.campo-pendiente:hover .estado-icono {
+    transform: scale(1.1);
+}
+
 /* Estilos para las valoraciones */
 .valoraciones-section {
     margin-top: 2rem;

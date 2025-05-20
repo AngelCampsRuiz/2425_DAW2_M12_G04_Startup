@@ -88,13 +88,19 @@
                 </div>
                 <div>
                     <span class="text-gray-600 text-sm block">Docente Responsable:</span>
-                    <span class="font-medium">
+                    <span class="font-medium" id="docente-info">
                         @if($clase->docente)
                             <a href="{{ route('institucion.docentes.show', $clase->docente->id) }}" class="text-primary hover:underline">
                                 {{ $clase->docente->user->nombre }}
                             </a>
+                            @if(config('app.debug'))
+                            <small class="text-xs text-gray-500 mt-1 block">ID: {{ $clase->docente_id }} | Última actualización: {{ now()->format('H:i:s') }}</small>
+                            @endif
                         @else
                             <span class="text-gray-400">No asignado</span>
+                            @if(config('app.debug'))
+                            <small class="text-xs text-gray-500 mt-1 block">docente_id es NULL | Última actualización: {{ now()->format('H:i:s') }}</small>
+                            @endif
                         @endif
                     </span>
                 </div>
@@ -237,6 +243,12 @@
 <script>
 // Script para confirmar eliminación
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('---- INICIO DE DEPURACIÓN DE CLASE ----');
+    console.log('Clase ID actual:', {{ $clase->id }});
+    console.log('Docente ID actual:', '{{ $clase->docente_id }}');
+    console.log('Docente nombre actual:', '{{ $clase->docente ? $clase->docente->user->nombre : "No asignado" }}');
+    console.log('QueryString:', window.location.search);
+    
     const deleteForms = document.querySelectorAll('.delete-form');
     
     deleteForms.forEach(form => {
@@ -255,12 +267,289 @@ document.addEventListener('DOMContentLoaded', function() {
         const id = urlParams.get('id') || {{ $clase->id }};
         openModalEdit(id);
     }
+    
+    // Configurar cerrar modal con Escape
+    document.addEventListener('keydown', function(e) {
+        const modal = document.getElementById('editClaseModal');
+        if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+            cerrarModalEdit();
+        }
+    });
+    
+    // Cerrar modal al hacer clic en el fondo
+    const modal = document.getElementById('editClaseModal');
+    modal.addEventListener('click', function(e) {
+        if (e.target === this) {
+            cerrarModalEdit();
+        }
+    });
+    
+    // Configurar botones de cierre
+    const closeButtons = document.querySelectorAll('.close-modal');
+    closeButtons.forEach(button => {
+        button.addEventListener('click', cerrarModalEdit);
+    });
+    
+    // Añadir listener al select de nivel educativo para actualizar categorías
+    const nivelSelect = document.getElementById('edit_nivel_educativo_id');
+    if (nivelSelect) {
+        nivelSelect.addEventListener('change', actualizarCategoriasPorNivel);
+    }
+
+    // Obtener la información actualizada del docente
+    console.log('Iniciando petición AJAX para obtener datos actualizados...');
+    fetch('/institucion/clases/{{ $clase->id }}/get-data')
+        .then(response => {
+            console.log('Respuesta recibida:', response.status);
+            if (!response.ok) {
+                throw new Error('Error en la respuesta: ' + response.status);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Datos recibidos:', data);
+            if (data.clase && data.clase.docente_id) {
+                console.log('Nuevo docente_id en la respuesta:', data.clase.docente_id);
+                
+                // Buscar el docente en la lista de docentes
+                const docente = data.docentes.find(d => d.id == data.clase.docente_id);
+                console.log('Docente encontrado:', docente);
+                
+                if (docente && docente.user) {
+                    // Actualizar la información en la página
+                    document.getElementById('docente-info').innerHTML = `
+                        <a href="/institucion/docentes/${docente.id}" class="text-primary hover:underline">
+                            ${docente.user.nombre}
+                        </a>
+                        @if(config('app.debug'))
+                        <small class="text-xs text-gray-500 mt-1 block">ID: ${data.clase.docente_id} | Última actualización: ${new Date().toLocaleTimeString()}</small>
+                        @endif
+                    `;
+                    console.log('Docente actualizado a:', docente.user.nombre);
+                    
+                    // Verificar si el docente mostrado es diferente del docente actual
+                    if (data.clase.docente_id != {{ $clase->docente_id }}) {
+                        console.log('ALERTA: El ID del docente ha cambiado en la base de datos pero no se refleja en la vista.');
+                        console.log('ID en BD:', data.clase.docente_id);
+                        console.log('ID en Vista:', {{ $clase->docente_id }});
+                    }
+                } else {
+                    console.error('Error: Docente encontrado pero sin datos de usuario:', docente);
+                }
+            } else {
+                console.log('No se encontró docente_id en los datos o es nulo.');
+            }
+        })
+        .catch(error => {
+            console.error('Error al obtener datos de la clase:', error);
+        });
 });
 
+// Variable global para almacenar las categorías por nivel
+let categoriasPorNivel = {};
+
+// Función para actualizar las categorías según el nivel educativo seleccionado
+function actualizarCategoriasPorNivel() {
+    console.log('Actualizando categorías por nivel...');
+    const nivelId = document.getElementById('edit_nivel_educativo_id').value;
+    const categoriaSelect = document.getElementById('edit_categoria_id');
+    
+    console.log('Nivel seleccionado:', nivelId);
+    console.log('Categorías disponibles:', categoriasPorNivel);
+    
+    // Limpiar opciones actuales
+    categoriaSelect.innerHTML = '<option value="">Seleccionar categoría</option>';
+    
+    // Si no hay nivel seleccionado, salir
+    if (!nivelId || !categoriasPorNivel[nivelId]) {
+        console.log('No hay categorías para el nivel seleccionado');
+        return;
+    }
+    
+    // Añadir las categorías del nivel seleccionado
+    categoriasPorNivel[nivelId].forEach(categoria => {
+        const option = document.createElement('option');
+        option.value = categoria.id;
+        option.textContent = categoria.nombre_personalizado || categoria.nombre_categoria;
+        categoriaSelect.appendChild(option);
+    });
+    
+    console.log('Categorías actualizadas para el nivel:', nivelId);
+}
+
 // Función para abrir el modal de edición
-function openModalEdit(id) {
-    // Redirigir a la página principal con parámetros para abrir el modal
-    window.location.href = "{{ route('institucion.clases.index') }}?editModal=true&id=" + id;
+function openModalEdit(claseId) {
+    console.log('Abriendo modal de edición para clase ID:', claseId);
+    
+    // Obtener los datos de la clase mediante AJAX
+    fetch(`/institucion/clases/${claseId}/get-data`)
+        .then(response => {
+            console.log('Respuesta de get-data:', response.status);
+            if (!response.ok) {
+                throw new Error('Error al obtener datos: ' + response.status);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Datos recibidos para el modal:', data);
+            
+            // Guardar las categorías por nivel en la variable global
+            categoriasPorNivel = data.categoriasPorNivel;
+            
+            // Configurar la acción del formulario
+            const formulario = document.getElementById('editClaseForm');
+            formulario.action = `/institucion/clases/${claseId}`;
+            console.log('Formulario configurado:', formulario.action);
+            
+            // Limpiar todos los event listeners anteriores del formulario
+            const nuevoFormulario = formulario.cloneNode(true);
+            formulario.parentNode.replaceChild(nuevoFormulario, formulario);
+            
+            // Rellenar los campos del formulario
+            document.getElementById('edit_nombre').value = data.clase.nombre;
+            document.getElementById('edit_codigo').value = data.clase.codigo;
+            document.getElementById('edit_grupo').value = data.clase.grupo || '';
+            document.getElementById('edit_capacidad').value = data.clase.capacidad || '';
+            document.getElementById('edit_descripcion').value = data.clase.descripcion || '';
+            document.getElementById('edit_activa').checked = data.clase.activa;
+            
+            // Poblar los selects con opciones
+            const nivelSelect = document.getElementById('edit_nivel_educativo_id');
+            nivelSelect.innerHTML = '<option value="">Seleccionar nivel</option>';
+            data.nivelesEducativos.forEach(nivel => {
+                const option = document.createElement('option');
+                option.value = nivel.id;
+                option.textContent = nivel.nombre_nivel;
+                option.selected = nivel.id === data.clase.nivel_educativo_id;
+                nivelSelect.appendChild(option);
+            });
+            
+            // Poblar el select de categorías basado en el nivel seleccionado inicialmente
+            const categoriaSelect = document.getElementById('edit_categoria_id');
+            categoriaSelect.innerHTML = '<option value="">Seleccionar categoría</option>';
+            
+            if (data.clase.nivel_educativo_id && data.categoriasPorNivel[data.clase.nivel_educativo_id]) {
+                data.categoriasPorNivel[data.clase.nivel_educativo_id].forEach(categoria => {
+                    const option = document.createElement('option');
+                    option.value = categoria.id;
+                    option.textContent = categoria.nombre_personalizado || categoria.nombre_categoria;
+                    option.selected = categoria.id === data.clase.categoria_id;
+                    categoriaSelect.appendChild(option);
+                });
+            }
+            
+            const departamentoSelect = document.getElementById('edit_departamento_id');
+            departamentoSelect.innerHTML = '<option value="">Seleccionar departamento</option>';
+            data.departamentos.forEach(departamento => {
+                const option = document.createElement('option');
+                option.value = departamento.id;
+                option.textContent = departamento.nombre;
+                option.selected = departamento.id === data.clase.departamento_id;
+                departamentoSelect.appendChild(option);
+            });
+            
+            const docenteSelect = document.getElementById('edit_docente_id');
+            docenteSelect.innerHTML = '<option value="">Seleccionar docente</option>';
+            
+            console.log('Docentes disponibles:', data.docentes);
+            console.log('Docente actual ID:', data.clase.docente_id);
+            
+            // Forzar la limpieza del select de docentes
+            while (docenteSelect.firstChild) {
+                docenteSelect.removeChild(docenteSelect.firstChild);
+            }
+            
+            // Añadir la opción por defecto
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.textContent = 'Seleccionar docente';
+            docenteSelect.appendChild(defaultOption);
+            
+            // Añadir cada docente como opción
+            data.docentes.forEach(docente => {
+                const option = document.createElement('option');
+                option.value = docente.id;
+                option.textContent = docente.user.nombre;
+                
+                // Verificar si este docente es el seleccionado actualmente
+                const esSeleccionado = docente.id == data.clase.docente_id;
+                option.selected = esSeleccionado;
+                
+                console.log(`Docente ${docente.id} (${docente.user.nombre}) - Seleccionado: ${esSeleccionado}`);
+                
+                docenteSelect.appendChild(option);
+            });
+            
+            // Disparar evento change para forzar actualización
+            const changeEvent = new Event('change');
+            docenteSelect.dispatchEvent(changeEvent);
+            
+            // Mostrar el modal con animación
+            const modal = document.getElementById('editClaseModal');
+            modal.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+            
+            // Animar la entrada del modal
+            setTimeout(() => {
+                const modalContent = modal.querySelector('.relative');
+                if (modalContent) {
+                    modalContent.classList.add('animate-fadeIn');
+                }
+                
+                // Focus al primer campo
+                const firstInput = modal.querySelector('input, select');
+                if (firstInput) firstInput.focus();
+            }, 10);
+        })
+        .catch(error => {
+            console.error('Error al obtener datos de la clase:', error);
+            alert('Ocurrió un error al cargar los datos de la clase.');
+        });
+}
+
+// Función para cerrar el modal
+function cerrarModalEdit() {
+    console.log('Cerrando modal de edición');
+    const modal = document.getElementById('editClaseModal');
+    
+    // Animar la salida
+    const modalContent = modal.querySelector('.relative');
+    if (modalContent) {
+        modalContent.classList.remove('animate-fadeIn');
+        modalContent.classList.add('animate-fadeOut');
+    }
+    
+    // Ocultar el modal después de la animación
+    setTimeout(() => {
+        modal.classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+        
+        if (modalContent) {
+            modalContent.classList.remove('animate-fadeOut');
+        }
+    }, 200);
 }
 </script>
+
+<style>
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(-20px); }
+}
+
+.animate-fadeIn {
+    animation: fadeIn 0.3s ease-out forwards;
+}
+
+.animate-fadeOut {
+    animation: fadeOut 0.2s ease-in forwards;
+}
+</style>
+
+@include('components.edit-clase-modal')
 @endsection 

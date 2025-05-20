@@ -52,17 +52,28 @@ class ChatController extends Controller
         try {
             // Verificar que el usuario tiene acceso al chat
             $user = Auth::user();
-            $solicitud = $chat->solicitud;
-
             $hasAccess = false;
 
-            // Si es empresa
-            if ($user->empresa && $user->empresa->id == $chat->empresa_id) {
+            // Si es empresa en chat empresa-estudiante
+            if ($user->empresa && $chat->tipo == 'empresa_estudiante' && $user->empresa->id == $chat->empresa_id) {
                 $hasAccess = true;
             }
 
-            // Si es estudiante
-            if ($user->estudiante && $user->estudiante->id == $solicitud->estudiante_id) {
+            // Si es estudiante en chat empresa-estudiante
+            if ($user->estudiante && $chat->tipo == 'empresa_estudiante' && $chat->solicitud && $chat->solicitud->estudiante_id == $user->estudiante->id) {
+                $hasAccess = true;
+            }
+            
+            // Si es docente en chat docente-estudiante
+            if ($user->role_id == 4 && $chat->tipo == 'docente_estudiante') {
+                $docente = \App\Models\Docente::where('user_id', $user->id)->first();
+                if ($docente && $chat->docente_id == $docente->id) {
+                    $hasAccess = true;
+                }
+            }
+            
+            // Si es estudiante en chat docente-estudiante
+            if ($user->estudiante && $chat->tipo == 'docente_estudiante' && $chat->estudiante_id == $user->estudiante->id) {
                 $hasAccess = true;
             }
 
@@ -113,13 +124,25 @@ class ChatController extends Controller
             // Crear el mensaje
             $mensaje = Mensaje::create($mensajeData);
 
-            // Determinar destinatario según el usuario autenticado
-            if (auth()->user()->empresa) {
-                // Si el que envía es empresa, destinatario es el estudiante
-                $destinatario = $chat->solicitud->estudiante->user ?? null;
-            } else {
-                // Si el que envía es estudiante, destinatario es la empresa
-                $destinatario = $chat->solicitud->publicacion->empresa->user ?? null;
+            // Determinar destinatario según el usuario autenticado y tipo de chat
+            $destinatario = null;
+            
+            if ($chat->tipo == 'empresa_estudiante') {
+                if (auth()->user()->empresa) {
+                    // Si el que envía es empresa, destinatario es el estudiante
+                    $destinatario = $chat->solicitud->estudiante->user ?? null;
+                } else {
+                    // Si el que envía es estudiante, destinatario es la empresa
+                    $destinatario = $chat->solicitud->publicacion->empresa->user ?? null;
+                }
+            } else if ($chat->tipo == 'docente_estudiante') {
+                if (auth()->user()->role_id == 4) {
+                    // Si el que envía es docente, destinatario es el estudiante
+                    $destinatario = $chat->estudiante->user ?? null;
+                } else {
+                    // Si el que envía es estudiante, destinatario es el docente
+                    $destinatario = $chat->docente->user ?? null;
+                }
             }
 
             if ($destinatario) {
@@ -207,17 +230,37 @@ class ChatController extends Controller
     {
         // Verificar que el usuario tiene acceso al chat
         $user = Auth::user();
-        $solicitud = $chat->solicitud;
         $hasAccess = false;
 
-        // Si es empresa
-        if ($user->empresa && $user->empresa->id == $chat->empresa_id) {
+        // Si es empresa y es una conversación empresa-estudiante
+        if ($user->empresa && $chat->tipo == 'empresa_estudiante' && $user->empresa->id == $chat->empresa_id) {
             $hasAccess = true;
+            $solicitud = $chat->solicitud;
+            $otherUser = $solicitud->estudiante->user;
         }
-
-        // Si es estudiante
-        if ($user->estudiante && $user->estudiante->id == $solicitud->estudiante_id) {
+        
+        // Si es estudiante en una conversación empresa-estudiante
+        if ($user->estudiante && $chat->tipo == 'empresa_estudiante' && $chat->solicitud && $chat->solicitud->estudiante_id == $user->estudiante->id) {
             $hasAccess = true;
+            $solicitud = $chat->solicitud;
+            $otherUser = $solicitud->publicacion->empresa->user;
+        }
+        
+        // Si es docente en una conversación docente-estudiante
+        if ($user->role_id == 4 && $chat->tipo == 'docente_estudiante') {
+            $docente = \App\Models\Docente::where('user_id', $user->id)->first();
+            if ($docente && $chat->docente_id == $docente->id) {
+                $hasAccess = true;
+                $solicitud = null; // No hay solicitud en los chats docente-estudiante
+                $otherUser = $chat->estudiante->user;
+            }
+        }
+        
+        // Si es estudiante en una conversación docente-estudiante
+        if ($user->estudiante && $chat->tipo == 'docente_estudiante' && $chat->estudiante_id == $user->estudiante->id) {
+            $hasAccess = true;
+            $solicitud = null; // No hay solicitud en los chats docente-estudiante
+            $otherUser = $chat->docente->user;
         }
 
         if (!$hasAccess) {
@@ -242,14 +285,6 @@ class ChatController extends Controller
                 }
                 return $mensaje;
             });
-
-        // Determinar el otro usuario del chat
-        $otherUser = null;
-        if ($user->empresa) {
-            $otherUser = $solicitud->estudiante->user;
-        } else {
-            $otherUser = $solicitud->publicacion->empresa->user;
-        }
 
         return view('chat.show', compact('chat', 'mensajes', 'otherUser', 'solicitud'));
     }
@@ -474,3 +509,4 @@ class ChatController extends Controller
             ->with('info', 'Lista de conversaciones actualizada');
     }
 }
+

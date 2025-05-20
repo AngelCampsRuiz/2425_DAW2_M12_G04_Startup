@@ -15,6 +15,32 @@
     </div>
 </div>
 
+<!-- Alerta de contraseña reseteada -->
+@if(session('success') && strpos(session('success'), 'Contraseña reseteada') !== false)
+    <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-800 p-4 mb-6 rounded-md" role="alert">
+        <div class="flex items-start">
+            <svg class="h-5 w-5 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+            </svg>
+            <div class="w-full">
+                <p class="font-bold mb-1">¡Contraseña reseteada!</p>
+                <p class="mb-1"><span class="font-semibold">Email:</span> {{ $docente->user->email }}</p>
+                <div class="flex items-center mb-1">
+                    <span class="font-semibold mr-2">Nueva contraseña:</span>
+                    <code id="passwordText" class="bg-blue-50 px-2 py-1 rounded">{{ str_replace("Contraseña reseteada correctamente. Nueva contraseña temporal: ", "", session("success")) }}</code>
+                    <button type="button" onclick="copyPassword()" class="ml-2 text-xs bg-blue-200 hover:bg-blue-300 text-blue-800 px-2 py-1 rounded">
+                        <i class="fas fa-copy mr-1"></i> Copiar
+                    </button>
+                    <span id="copyMessage" class="ml-2 text-xs text-green-600 hidden">
+                        <i class="fas fa-check"></i> Copiado
+                    </span>
+                </div>
+                <p class="text-xs mt-2 text-blue-700">Guarde esta contraseña. Por seguridad, no se mostrará nuevamente.</p>
+            </div>
+        </div>
+    </div>
+@endif
+
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
     <!-- Información Básica -->
     <div class="bg-white rounded-lg shadow overflow-hidden">
@@ -510,6 +536,26 @@
                     form.reset();
                 }
             }, 200);
+        }
+    }
+
+    // Función para copiar la contraseña al portapapeles
+    function copyPassword() {
+        const passwordText = document.getElementById('passwordText');
+        const copyMessage = document.getElementById('copyMessage');
+        
+        if (passwordText) {
+            const range = document.createRange();
+            range.selectNode(passwordText);
+            window.getSelection().removeAllRanges();
+            window.getSelection().addRange(range);
+            document.execCommand('copy');
+            window.getSelection().removeAllRanges();
+            
+            copyMessage.classList.remove('hidden');
+            setTimeout(() => {
+                copyMessage.classList.add('hidden');
+            }, 2000);
         }
     }
 </script>

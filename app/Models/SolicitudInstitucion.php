@@ -5,7 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class SolicitudInstitucion extends Model
+/**
+ * La clase SolicitudInstitucion es ahora un alias de SolicitudEstudiante
+ * para mantener compatibilidad con código existente.
+ * 
+ * @deprecated Use SolicitudEstudiante instead
+ */
+class SolicitudInstitucion extends SolicitudEstudiante
 {
     use HasFactory;
 

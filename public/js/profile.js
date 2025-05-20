@@ -103,6 +103,12 @@ async function updateLocationFields(lat, lng) {
 }
 
 function initializeViewMap() {
+    // Verificar si el usuario es una empresa
+    const empresaElement = document.querySelector('[data-role="empresa"]');
+    if (!empresaElement) {
+        return;
+    }
+
     const viewMapContainer = document.getElementById('viewLocationMap');
     if (!viewMapContainer) return;
 
