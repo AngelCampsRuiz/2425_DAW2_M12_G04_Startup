@@ -1,8 +1,21 @@
-@extends('layouts.app')
+@php
+$layout = 'layouts.app';
+
+if (auth()->user()->role_id == 4) {
+    $layout = 'layouts.docente';
+} elseif (auth()->user()->role_id == 2) {
+    $layout = 'layouts.empresa-sidebar';
+} elseif (auth()->user()->role_id == 5) {
+    $layout = 'layouts.institucion';
+}
+@endphp
+
+@extends($layout)
 
 @section('content')
 <div class="min-h-screen bg-gradient-to-br from-gray-50 to-purple-50">
     {{-- MIGAS DE PAN --}}
+    @if(auth()->user()->role_id != 4 && auth()->user()->role_id != 5 && auth()->user()->role_id != 2)
     <div class="bg-white shadow-sm sticky top-0 z-10">
         <div class="container mx-auto px-4 py-3">
             <div class="flex items-center text-sm">
@@ -34,6 +47,7 @@
             </div>
         </div>
     </div>
+    @endif
 
     <div class="container mx-auto px-4 py-8">
         <!-- Mensajes de notificación -->
@@ -158,24 +172,40 @@
             @endphp
 
             @if($chats->isEmpty())
-            @if(auth()->user()->role_id == 4 && isset($estudiantes))
+            @if(auth()->user()->role_id == 4 && isset($estudiantes) && $estudiantes->isNotEmpty())
             <!-- Lista de estudiantes para docentes -->
             <div class="mb-8 bg-white rounded-xl shadow-md overflow-hidden transform transition-all duration-300 hover:shadow-lg border border-purple-100">
+                <div class="bg-gray-50 px-5 py-4 border-b">
+                    <div class="flex items-center text-gray-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                        <span class="font-medium">Mis Estudiantes</span>
+                    </div>
+                </div>
                 <div class="p-6">
-                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Mis Estudiantes</h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         @foreach($estudiantes as $estudiante)
-                            <div class="bg-purple-50 rounded-lg p-4 hover:bg-purple-100 transition-colors duration-200">
+                            <div class="bg-purple-50 rounded-lg p-4 hover:bg-purple-100 transition-colors duration-200 shadow-sm hover:shadow transform hover:-translate-y-1">
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center space-x-3">
                                         <div class="w-10 h-10 rounded-full bg-purple-200 flex items-center justify-center">
-                                            <span class="text-purple-700 font-semibold">
-                                                {{ strtoupper(substr($estudiante->user->nombre, 0, 2)) }}
-                                            </span>
+                                            @if($estudiante->user->imagen)
+                                                <img src="{{ asset('profile_images/' . $estudiante->user->imagen) }}" 
+                                                    alt="{{ $estudiante->user->nombre }}"
+                                                    class="w-10 h-10 rounded-full object-cover">
+                                            @else
+                                                <span class="text-purple-700 font-semibold">
+                                                    {{ strtoupper(substr($estudiante->user->nombre, 0, 2)) }}
+                                                </span>
+                                            @endif
                                         </div>
                                         <div>
                                             <h3 class="font-medium text-gray-800">{{ $estudiante->user->nombre }}</h3>
                                             <p class="text-sm text-gray-600">
+                                                {{ $estudiante->user->email }}
+                                            </p>
+                                            <p class="text-xs text-gray-500 mt-1">
                                                 {{ $estudiante->clases->pluck('nombre')->implode(', ') }}
                                             </p>
                                         </div>
@@ -220,7 +250,12 @@
                             </a>
                             <p class="mt-3 text-sm text-gray-500">Es posible que tengas mensajes nuevos que no estén apareciendo</p>
                         @elseif(auth()->user()->role_id == 4)
-                            Cuando inicies una conversación con estudiantes, aparecerán aquí.
+                            <a href="{{ route('docente.alumnos.index') }}" class="inline-flex items-center px-5 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg shadow-md hover:from-purple-700 hover:to-indigo-700 transition-all duration-200">
+                                <i class="fas fa-users mr-2"></i>
+                                Ver mis estudiantes
+                            </a>
+                            
+                            <p class="mt-3 text-sm text-gray-500">Puedes iniciar conversaciones con los estudiantes asignados a tus clases</p>
                         @endif
                     </div>
                 </div>
@@ -250,7 +285,7 @@
                                 <!-- Avatar -->
                                 <div class="flex-shrink-0">
                                     <div class="w-16 h-16 rounded-full bg-gradient-to-br from-purple-100 to-indigo-100 flex items-center justify-center overflow-hidden ring-4 ring-white shadow-md transition-transform duration-300 hover:scale-105">
-                                        @if(auth()->user()->empresa)
+                                        @if(auth()->user()->empresa && $chat->tipo == 'empresa_estudiante')
                                             @if($chat->solicitud->estudiante->user->imagen)
                                                 <img src="{{ asset('profile_images/' . $chat->solicitud->estudiante->user->imagen) }}" 
                                                      alt="Foto de perfil" 
@@ -260,7 +295,7 @@
                                                     {{ strtoupper(substr($chat->solicitud->estudiante->user->nombre, 0, 2)) }}
                                                 </span>
                                             @endif
-                                        @else
+                                        @elseif(auth()->user()->estudiante && $chat->tipo == 'empresa_estudiante')
                                             @if($chat->solicitud->publicacion->empresa->user->imagen)
                                                 <img src="{{ asset('profile_images/' . $chat->solicitud->publicacion->empresa->user->imagen) }}" 
                                                      alt="Foto de perfil" 
@@ -268,6 +303,26 @@
                                             @else
                                                 <span class="text-2xl font-bold text-purple-600">
                                                     {{ strtoupper(substr($chat->solicitud->publicacion->empresa->user->nombre, 0, 2)) }}
+                                                </span>
+                                            @endif
+                                        @elseif(auth()->user()->role_id == 4 && $chat->tipo == 'docente_estudiante')
+                                            @if($chat->estudiante->user->imagen)
+                                                <img src="{{ asset('profile_images/' . $chat->estudiante->user->imagen) }}" 
+                                                     alt="Foto de perfil" 
+                                                     class="w-full h-full object-cover">
+                                            @else
+                                                <span class="text-2xl font-bold text-purple-600">
+                                                    {{ strtoupper(substr($chat->estudiante->user->nombre, 0, 2)) }}
+                                                </span>
+                                            @endif
+                                        @elseif(auth()->user()->estudiante && $chat->tipo == 'docente_estudiante')
+                                            @if($chat->docente->user->imagen)
+                                                <img src="{{ asset('profile_images/' . $chat->docente->user->imagen) }}" 
+                                                     alt="Foto de perfil" 
+                                                     class="w-full h-full object-cover">
+                                            @else
+                                                <span class="text-2xl font-bold text-purple-600">
+                                                    {{ strtoupper(substr($chat->docente->user->nombre, 0, 2)) }}
                                                 </span>
                                             @endif
                                         @endif
@@ -278,12 +333,16 @@
                                 <div class="flex-1 min-w-0">
                                     <div class="flex items-center justify-between mb-1">
                                         <h3 class="text-lg font-semibold text-gray-900 flex items-center">
-                                            @if(auth()->user()->empresa)
+                                            @if(auth()->user()->empresa && $chat->tipo == 'empresa_estudiante')
                                                 {{ $chat->solicitud->estudiante->user->nombre }}
-                                            @else
+                                            @elseif(auth()->user()->estudiante && $chat->tipo == 'empresa_estudiante')
                                                 {{ $chat->solicitud->publicacion->empresa->user->nombre }}
+                                            @elseif(auth()->user()->role_id == 4 && $chat->tipo == 'docente_estudiante')
+                                                {{ $chat->estudiante->user->nombre }}
+                                            @elseif(auth()->user()->estudiante && $chat->tipo == 'docente_estudiante')
+                                                {{ $chat->docente->user->nombre }}
                                             @endif
-                                            @if($chat->mensajes->count() > 0 && $chat->mensajes->last()->created_at->diffInDays() < 1)
+                                            @if($chat->mensajes->count() > 0 && $chat->mensajes->first()->created_at->diffInDays() < 1)
                                                 <span class="ml-2 inline-flex items-center justify-center px-2 py-1 text-xs font-medium leading-none text-green-800 bg-green-100 rounded-full animate-pulse">
                                                     Reciente
                                                 </span>
@@ -296,6 +355,7 @@
                                     </div>
                                     
                                     <div class="mt-1 flex items-center">
+                                        @if($chat->tipo == 'empresa_estudiante')
                                         <span class="inline-flex items-center justify-center px-2 py-1 mr-2 text-xs font-medium bg-purple-100 text-purple-800 rounded-lg">
                                             <i class="fas fa-briefcase mr-1 text-purple-600"></i>
                                             Oferta
@@ -303,6 +363,15 @@
                                         <p class="text-gray-600 truncate">
                                             {{ $chat->solicitud->publicacion->titulo }}
                                         </p>
+                                        @elseif($chat->tipo == 'docente_estudiante')
+                                        <span class="inline-flex items-center justify-center px-2 py-1 mr-2 text-xs font-medium bg-blue-100 text-blue-800 rounded-lg">
+                                            <i class="fas fa-graduation-cap mr-1 text-blue-600"></i>
+                                            Estudiante
+                                        </span>
+                                        <p class="text-gray-600 truncate">
+                                            Chat académico
+                                        </p>
+                                        @endif
                                     </div>
                                     
                                     <div class="mt-2 flex items-center justify-between">
