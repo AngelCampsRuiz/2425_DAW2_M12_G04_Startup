@@ -261,95 +261,39 @@
 
                         {{-- Grid de Información --}}
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            {{-- Información Académica --}}
+                            {{-- Experiencias (Ahora primero) --}}
                             <div class="bg-white rounded-xl shadow-lg p-6 transform transition-all duration-300 hover:shadow-xl">
                                 <div class="flex items-center mb-6">
                                     <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mr-4">
                                         <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                                         </svg>
                                     </div>
-                                    <h2 class="text-2xl font-bold text-gray-900">{{ __('messages.academic_information') }}</h2>
+                                    <h2 class="text-2xl font-bold text-gray-900">{{ __('Experiencias') }}</h2>
                                 </div>
                                 <div class="space-y-4">
-                                    @if($user->estudiante)
-                                        <div class="flex items-center">
-                                            <svg class="w-5 h-5 text-purple-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                            </svg>
-                                            <span class="text-gray-700">{{ __('messages.cycle') }}: {{ $user->estudiante->ciclo }}</span>
-                                        </div>
-                                        @if($user->estudiante->cv_pdf)
-                                            <div class="flex items-center">
-                                                <svg class="w-5 h-5 text-purple-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                                </svg>
-                                                <a href="{{ url('cv/' . $user->estudiante->cv_pdf) }}"
-                                                   class="text-purple-600 hover:text-purple-800"
-                                                   target="_blank">
-                                                    {{ __('messages.view_cv') }}
-                                                </a>
+                                    @if($user->experiencias->count() > 0)
+                                        @foreach($user->experiencias as $experiencia)
+                                            <div class="bg-gradient-to-br from-white to-purple-50 rounded-xl p-4 border border-purple-100">
+                                                <h4 class="font-semibold text-gray-900">{{ $experiencia->puesto }}</h4>
+                                                <p class="text-sm text-purple-600">{{ $experiencia->empresa_nombre }}</p>
+                                                <p class="text-sm text-gray-500">
+                                                    {{ \Carbon\Carbon::parse($experiencia->fecha_inicio)->format('M Y') }} - 
+                                                    {{ $experiencia->fecha_fin ? \Carbon\Carbon::parse($experiencia->fecha_fin)->format('M Y') : 'Actual' }}
+                                                </p>
+                                                @if($experiencia->descripcion)
+                                                    <p class="text-sm text-gray-600 mt-2">{{ $experiencia->descripcion }}</p>
+                                                @endif
                                             </div>
-                                        @endif
+                                        @endforeach
+                                    @else
+                                        <p class="text-gray-500">No hay experiencias registradas</p>
                                     @endif
                                 </div>
                             </div>
 
-                            @if($empresa && isset($experiencias) && $experiencias->count() > 0)
-                                {{-- Experiencias de Estudiantes --}}
-                                <div class="bg-white rounded-xl shadow-lg p-6 transform transition-all duration-300 hover:shadow-xl">
-                                    <div class="flex items-center mb-6">
-                                        <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mr-4">
-                                            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                                            </svg>
-                                        </div>
-                                        <h2 class="text-2xl font-bold text-gray-900">{{ __('Experiencias') }}</h2>
-                                    </div>
-                                    <div class="overflow-x-auto">
-                                        <table class="min-w-full divide-y divide-gray-200">
-                                            <thead class="bg-gray-50">
-                                                <tr>
-                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('messages.student') }}</th>
-                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('messages.position') }}</th>
-                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('messages.start_date') }}</th>
-                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('messages.end_date') }}</th>
-                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Descripcion') }}</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody class="bg-white divide-y divide-gray-200">
-                                                @foreach($experiencias as $experiencia)
-                                                    <tr class="hover:bg-gray-50">
-                                                        <td class="px-6 py-4 whitespace-nowrap">
-                                                            <div class="flex items-center">
-                                                                <div class="text-sm font-medium text-gray-900">
-                                                                    {{ $experiencia->alumno->user->name }}
-                                                                </div>
-                                                            </div>
-                                                        </td>
-                                                        <td class="px-6 py-4 whitespace-nowrap">
-                                                            <div class="text-sm text-gray-900">{{ $experiencia->puesto }}</div>
-                                                        </td>
-                                                        <td class="px-6 py-4 whitespace-nowrap">
-                                                            <div class="text-sm text-gray-900">{{ $experiencia->fecha_inicio->format('d/m/Y') }}</div>
-                                                        </td>
-                                                        <td class="px-6 py-4 whitespace-nowrap">
-                                                            <div class="text-sm text-gray-900">
-                                                                {{ $experiencia->fecha_fin ? $experiencia->fecha_fin->format('d/m/Y') : 'Actual' }}
-                                                            </div>
-                                                        </td>
-                                                        <td class="px-6 py-4">
-                                                            <div class="text-sm text-gray-900">{{ $experiencia->descripcion }}</div>
-                                                        </td>
-                                                    </tr>
-                                                @endforeach
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            @endif
-
-                            {{-- Información Personal --}}
+                            
+                              {{-- Información Personal --}}
                             <div class="bg-white rounded-xl shadow-lg p-6 transform transition-all duration-300 hover:shadow-xl">
                                 <div class="flex items-center mb-6">
                                     <div class="bg-gradient-to-br from-purple-100 to-indigo-100 p-3 rounded-xl shadow-sm">
@@ -454,62 +398,65 @@
                                     </div>
                                 </div>
                             </div>
+                           
 
-                            {{-- Experiencias --}}
-                            <div class="bg-white rounded-xl shadow-lg p-6 transform transition-all duration-300 hover:shadow-xl md:col-span-2">
-                                <div class="flex items-center mb-6">
-                                    <div class="bg-gradient-to-br from-purple-100 to-indigo-100 p-3 rounded-xl shadow-sm">
-                                        <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                                        </svg>
-                                    </div>
-                                    <h3 class="text-xl font-bold text-gray-900 ml-4">Experiencias</h3>
-                                </div>
-                                @if($user->experiencias->count() > 0)
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        @foreach($user->experiencias as $experiencia)
-                                            <div class="bg-gradient-to-br from-white to-purple-50 rounded-xl p-6 transform transition-all duration-300 hover:shadow-md border border-purple-100">
-                                                <div class="flex justify-between items-start mb-4">
-                                                    <div>
-                                                        <h4 class="text-lg font-bold text-gray-900">{{ $experiencia->puesto }}</h4>
-                                                        <p class="text-sm text-purple-600 font-medium">{{ $experiencia->empresa_nombre }}</p>
-                                                    </div>
-                                                    <span class="text-sm text-gray-500 bg-white px-3 py-1 rounded-full shadow-sm">
-                                                        {{ \Carbon\Carbon::parse($experiencia->fecha_inicio)->format('M Y') }} -
-                                                        {{ $experiencia->fecha_fin ? \Carbon\Carbon::parse($experiencia->fecha_fin)->format('M Y') : 'Actual' }}
-                                                    </span>
-                                                </div>
-                                                <div class="space-y-3">
-                                                    <p class="text-gray-700">{{ $experiencia->especializacion }}</p>
-                                                    @if($experiencia->descripcion)
-                                                        <div class="bg-white rounded-lg p-4 shadow-sm">
-                                                            <p class="text-sm text-gray-600">{{ $experiencia->descripcion }}</p>
-                                                        </div>
-                                                    @endif
-                                                </div>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                @else
-                                    <div class="text-center py-12">
-                                        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-purple-100 to-indigo-100 mb-4">
-                                            <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            @if($empresa && isset($experiencias) && $experiencias->count() > 0)
+                                {{-- Experiencias de Estudiantes --}}
+                                <div class="bg-white rounded-xl shadow-lg p-6 transform transition-all duration-300 hover:shadow-xl">
+                                    <div class="flex items-center mb-6">
+                                        <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mr-4">
+                                            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                                             </svg>
                                         </div>
-                                        <h3 class="text-lg font-medium text-gray-900 mb-2">No hay experiencias</h3>
-                                        <p class="text-gray-500 max-w-md mx-auto">Aún no has añadido ninguna experiencia laboral. Añade tus experiencias para mejorar tu perfil.</p>
-                                        @if(auth()->id() == $user->id)
-                                            <button onclick="openEditModal()" class="mt-6 inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors duration-200">
-                                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                                                </svg>
-                                                Añadir Experiencia
-                                            </button>
-                                        @endif
+                                        <h2 class="text-2xl font-bold text-gray-900">{{ __('Experiencias') }}</h2>
                                     </div>
-                                @endif
-                            </div>
+                                    <div class="overflow-x-auto">
+                                        <table class="min-w-full divide-y divide-gray-200">
+                                            <thead class="bg-gray-50">
+                                                <tr>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('messages.student') }}</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('messages.position') }}</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('messages.start_date') }}</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('messages.end_date') }}</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('Descripcion') }}</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody class="bg-white divide-y divide-gray-200">
+                                                @foreach($experiencias as $experiencia)
+                                                    <tr class="hover:bg-gray-50">
+                                                        <td class="px-6 py-4 whitespace-nowrap">
+                                                            <div class="flex items-center">
+                                                                <div class="text-sm font-medium text-gray-900">
+                                                                    {{ $experiencia->alumno->user->name }}
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td class="px-6 py-4 whitespace-nowrap">
+                                                            <div class="text-sm text-gray-900">{{ $experiencia->puesto }}</div>
+                                                        </td>
+                                                        <td class="px-6 py-4 whitespace-nowrap">
+                                                            <div class="text-sm text-gray-900">{{ $experiencia->fecha_inicio->format('d/m/Y') }}</div>
+                                                        </td>
+                                                        <td class="px-6 py-4 whitespace-nowrap">
+                                                            <div class="text-sm text-gray-900">
+                                                                {{ $experiencia->fecha_fin ? $experiencia->fecha_fin->format('d/m/Y') : 'Actual' }}
+                                                            </div>
+                                                        </td>
+                                                        <td class="px-6 py-4">
+                                                            <div class="text-sm text-gray-900">{{ $experiencia->descripcion }}</div>
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            @endif
+
+                           
+
+                            
 
                             {{-- CV --}}
                             @if($user->estudiante && $user->estudiante->cv_pdf)
