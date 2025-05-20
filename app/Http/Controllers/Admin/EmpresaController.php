@@ -88,6 +88,7 @@ class EmpresaController extends Controller
             'latitud' => 'nullable|numeric',
             'longitud' => 'nullable|numeric',
             'provincia' => 'required|string|max:255',
+            'descripcion' => 'nullable|string|max:500',
         ]);
 
         // Iniciar transacción
@@ -245,6 +246,7 @@ class EmpresaController extends Controller
             'latitud' => 'nullable|numeric',
             'longitud' => 'nullable|numeric',
             'provincia' => 'required|string|max:255',
+            'descripcion' => 'nullable|string|max:500',
         ];
 
         if ($request->filled('password')) {

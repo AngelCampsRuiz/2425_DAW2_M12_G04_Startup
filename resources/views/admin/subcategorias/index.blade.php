@@ -630,4 +630,7 @@ window.openDeleteModal = function(id) {
     verificarEstadoSubcategoria(id);
 };
 </script>
+
+<!-- Script de validaciones para subcategorías -->
+<script src="{{ asset('js/subcategorias-validaciones.js') }}"></script>
 @endsection 
