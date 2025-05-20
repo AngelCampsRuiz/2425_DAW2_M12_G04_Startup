@@ -23,6 +23,9 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 // Ruta para obtener categorías por niveles educativos
 Route::post('/categorias-por-niveles', [CategoriaController::class, 'getCategoriasPorNiveles']); 
 
+// Ruta para obtener categorías por nivel educativo e institución
+Route::get('/categorias/{nivel_id}/{institucion_id?}', [CategoriaController::class, 'getCategoriasPorNivel'])->name('api.categorias_por_nivel');
+
 // Rutas para ubicaciones geográficas
 Route::get('/provincias', [LocationController::class, 'getProvincias'])->name('api.provincias');
 Route::get('/ciudades', [LocationController::class, 'getCiudades'])->name('api.ciudades');

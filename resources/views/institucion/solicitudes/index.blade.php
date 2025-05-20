@@ -388,13 +388,13 @@
                                         </div>
                                     </td>
                                     <td class="px-5 py-4 whitespace-nowrap">
-                                        @if($estudiante->titulo)
+                                        @if($estudiante->categoria)
                                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                                                {{ $estudiante->titulo->nombre_titulo }}
+                                                {{ $estudiante->categoria->nombre_categoria }}
                                             </span>
                                         @else
                                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                                                Sin título
+                                                Sin categoría
                                             </span>
                                         @endif
                                     </td>
@@ -467,15 +467,15 @@
                     @method('PUT')
                     
                     <div class="mb-5">
-                        <label class="block text-gray-700 text-sm font-medium mb-2" for="titulo_id">
-                            Título académico
+                        <label class="block text-gray-700 text-sm font-medium mb-2" for="categoria_id">
+                            Categoría académica
                         </label>
                         <div class="relative">
-                            <select name="titulo_id" id="titulo_id" class="block w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-primary focus:border-primary appearance-none">
-                                @if(isset($titulos))
-                                    <option value="">Seleccionar título...</option>
-                                    @foreach($titulos as $titulo)
-                                        <option value="{{ $titulo->id }}">{{ $titulo->nombre_titulo }}</option>
+                            <select name="categoria_id" id="categoria_id" class="block w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-primary focus:border-primary appearance-none">
+                                @if(isset($categorias))
+                                    <option value="">Seleccionar categoría...</option>
+                                    @foreach($categorias as $categoria)
+                                        <option value="{{ $categoria->id }}">{{ $categoria->nombre_categoria }}</option>
                                     @endforeach
                                 @endif
                             </select>
@@ -485,7 +485,7 @@
                                 </svg>
                             </div>
                         </div>
-                        <p class="mt-1 text-xs text-gray-500">Este título aparecerá en el perfil del estudiante.</p>
+                        <p class="mt-1 text-xs text-gray-500">Esta categoría aparecerá en el perfil del estudiante.</p>
                     </div>
                     
                     <div class="flex justify-end space-x-3 mt-8">

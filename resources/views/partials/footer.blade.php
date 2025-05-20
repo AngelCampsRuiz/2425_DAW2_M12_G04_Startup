@@ -167,7 +167,7 @@
 
                 <!-- Idiomas -->
                 <div class="mt-8 bg-white/80 rounded-lg p-4 shadow-sm backdrop-blur-sm">
-                    <h4 class="font-semibold text-primary text-sm mb-2">{{ __('footer.select_language') }}</h4>
+                    <h4 class="font-semibold text-primary text-sm mb-2">Selecciona tu idioma</h4>
                         
                         <select name="locale" class="w-full p-2 border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-primary text-sm">
                             <option >Español</option>

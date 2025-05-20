@@ -262,7 +262,7 @@ class CompanyDashboardController extends Controller
             ->findOrFail($publicationId);
 
         $solicitudes = Solicitud::where('publicacion_id', $publicationId)
-            ->with(['estudiante.user', 'estudiante.titulo', 'chat'])
+            ->with(['estudiante.user', 'chat'])
             ->orderBy('created_at', 'desc')
             ->get();
 

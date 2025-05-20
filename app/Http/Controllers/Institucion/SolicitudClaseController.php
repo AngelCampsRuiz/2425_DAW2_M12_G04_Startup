@@ -12,7 +12,7 @@ use App\Models\Docente;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Estudiante;
-use App\Models\Titulo;
+use App\Models\Categoria;
 
 class SolicitudClaseController extends Controller
 {
@@ -53,7 +53,10 @@ class SolicitudClaseController extends Controller
             ->orderBy('nombre')
             ->get();
 
-        return view('institucion.solicitudes.asignar-clase', compact('solicitud', 'clases', 'departamentos', 'docentes'));
+        // Obtener todas las categorías para filtrar
+        $categorias = Categoria::all();
+
+        return view('institucion.solicitudes.asignar-clase', compact('solicitud', 'clases', 'departamentos', 'docentes', 'categorias'));
     }
 
     /**
@@ -124,8 +127,8 @@ class SolicitudClaseController extends Controller
             })
             ->get();
 
-        // Obtener todos los títulos para el modal de edición
-        $titulos = Titulo::all();
+        // Obtener todas las categorías para filtrar
+        $categorias = Categoria::all();
 
         // Calcular estadísticas
         $stats = [
@@ -135,6 +138,6 @@ class SolicitudClaseController extends Controller
             'rechazadas' => $solicitudes->where('estado', 'rechazada')->count(),
         ];
 
-        return view('institucion.solicitudes.index', compact('solicitudes', 'estudiantesPendientes', 'titulos', 'stats'));
+        return view('institucion.solicitudes.index', compact('solicitudes', 'estudiantesPendientes', 'categorias', 'stats'));
     }
 } 

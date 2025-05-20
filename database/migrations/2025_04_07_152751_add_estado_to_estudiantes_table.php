@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('estudiantes', function (Blueprint $table) {
-            $table->enum('estado', ['pendiente', 'activo', 'inactivo'])->default('pendiente')->after('titulo_id');
+            $table->enum('estado', ['pendiente', 'activo', 'inactivo'])->default('pendiente')->after('categoria_id');
         });
     }
 

@@ -6,9 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Estudiante;
 use App\Models\Empresa;
-use App\Models\Titulo;
 use App\Models\Rol;
 use App\Models\Institucion;
+use App\Models\Categoria;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -42,8 +42,9 @@ class RegisterController extends Controller
                 ->withErrors(['error' => 'Esta página es solo para estudiantes']);
         }
 
-        $titulos = Titulo::all();
-        return view('auth.register-student', compact('titulos'));
+        // Obtener todas las categorías para mostrarlas en el formulario
+        $categorias = Categoria::all();
+        return view('auth.register-student', compact('categorias'));
     }
 
     // Vista de registro de empresa
@@ -108,7 +109,7 @@ class RegisterController extends Controller
         ]);
 
         Log::info('Datos recibidos en registerStudent', [
-            'titulo_id' => $request->titulo_id,
+            'categoria_id' => $request->categoria_id,
             'data' => $data
         ]);
 
@@ -122,7 +123,7 @@ class RegisterController extends Controller
             'ciudad' => 'required|string|max:100',
             'centro_estudios' => 'required|exists:instituciones,id',
             'nivel_educativo_id' => 'required|exists:niveles_educativos,id',
-            'titulo_id' => 'required',
+            'categoria_id' => 'required|exists:categorias,id',
             'cv_pdf' => 'required|file|mimes:pdf|max:5120', // 5MB máximo
             'numero_seguridad_social' => ['required', 'string', 'max:50', 'regex:/^SS[0-9]{8}$/']
         ], [
@@ -131,7 +132,8 @@ class RegisterController extends Controller
             'centro_estudios.exists' => 'El centro educativo seleccionado no existe',
             'nivel_educativo_id.required' => 'Debes seleccionar un nivel educativo',
             'nivel_educativo_id.exists' => 'El nivel educativo seleccionado no existe',
-            'titulo_id.required' => 'Debes seleccionar un título',
+            'categoria_id.required' => 'Debes seleccionar una categoría',
+            'categoria_id.exists' => 'La categoría seleccionada no existe',
             'numero_seguridad_social.regex' => 'El número de seguridad social debe tener el formato SS seguido de 8 dígitos',
             'cv_pdf.mimes' => 'El archivo debe ser un PDF',
             'cv_pdf.max' => 'El archivo no puede ser mayor a 5MB',
@@ -192,7 +194,7 @@ class RegisterController extends Controller
             'centro_educativo' => $nombreCentro,
             'cv_pdf' => $cvFileName,
             'numero_seguridad_social' => $request->numero_seguridad_social,
-            'titulo_id' => $request->titulo_id,
+            'categoria_id' => $request->categoria_id,
             'estado' => 'pendiente'
         ]);
         
@@ -489,7 +491,7 @@ class RegisterController extends Controller
 
         Estudiante::create([
             'user_id' => $user->id,
-            'titulo_id' => $data['titulo_id'],
+            'categoria_id' => $data['categoria_id'],
             'estado' => 'pendiente',
             'institucion_id' => $data['institucion_id']
         ]);

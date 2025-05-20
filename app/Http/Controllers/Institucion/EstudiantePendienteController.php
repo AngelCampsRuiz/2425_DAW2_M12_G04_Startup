@@ -4,10 +4,11 @@ namespace App\Http\Controllers\Institucion;
 
 use App\Http\Controllers\Controller;
 use App\Models\Estudiante;
-use App\Models\Titulo;
+use App\Models\Categoria;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class EstudiantePendienteController extends Controller
 {
@@ -16,13 +17,16 @@ class EstudiantePendienteController extends Controller
      */
     public function index()
     {
-        $estudiantesPendientes = Estudiante::with(['user', 'titulo'])
+        $institucion = Auth::user()->institucion;
+        
+        $estudiantes = Estudiante::with(['user', 'categoria'])
+            ->where('institucion_id', $institucion->id)
             ->where('estado', 'pendiente')
             ->get();
-
-        $titulos = Titulo::all();
-
-        return view('institucion.estudiantes.pendientes', compact('estudiantesPendientes', 'titulos'));
+            
+        $categorias = Categoria::all();
+        
+        return view('institucion.estudiantes.pendientes', compact('estudiantes', 'categorias'));
     }
     
     /**
@@ -64,7 +68,7 @@ class EstudiantePendienteController extends Controller
             DB::beginTransaction();
 
             $estudiante = Estudiante::findOrFail($id);
-            $estudiante->titulo_id = $request->titulo_id;
+            $estudiante->categoria_id = $request->categoria_id;
             $estudiante->save();
 
             DB::commit();

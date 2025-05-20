@@ -27,7 +27,7 @@
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estudiante</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Título</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Categoría</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
                         </tr>
@@ -46,7 +46,7 @@
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-gray-900">{{ $estudiante->titulo->nombre_titulo }}</div>
+                                    <div class="text-sm text-gray-900">{{ $estudiante->categoria ? $estudiante->categoria->nombre_categoria : 'Sin categoría' }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm text-gray-900">{{ $estudiante->user->email }}</div>
@@ -80,12 +80,12 @@
                     @csrf
                     @method('PUT')
                     <div class="mb-4">
-                        <label class="block text-gray-700 text-sm font-bold mb-2" for="titulo_id">
-                            Título
+                        <label class="block text-gray-700 text-sm font-bold mb-2" for="categoria_id">
+                            Categoría
                         </label>
-                        <select name="titulo_id" id="titulo_id" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                            @foreach($titulos as $titulo)
-                                <option value="{{ $titulo->id }}">{{ $titulo->nombre_titulo }}</option>
+                        <select name="categoria_id" id="categoria_id" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                            @foreach($categorias as $categoria)
+                                <option value="{{ $categoria->id }}">{{ $categoria->nombre_categoria }}</option>
                             @endforeach
                         </select>
                     </div>
