@@ -123,7 +123,7 @@
                     {{-- IMAGEN DE LA EMPRESA --}}
                     <div class="w-full md:w-1/3 p-6 border-r border-gray-100 flex flex-col items-center justify-center bg-gradient-to-b from-gray-50 to-white">
                         <div class="w-48 h-48 rounded-lg overflow-hidden border-4 border-white shadow-lg mb-5 flex items-center justify-center group" style="aspect-ratio: 1/1;">
-                            <img src="{{ asset('public/profile_images/' . ($publication->empresa->user->imagen ?? 'company-default.png')) }}"
+                            <img src="{{ asset('profile_images/' . ($publication->empresa->user->imagen ?? 'company-default.png')) }}"
                                 alt="{{ $publication->empresa->nombre }}"
                                 class="max-w-[85%] max-h-[85%] object-contain group-hover:scale-105 transition-transform duration-300">
                         </div>
@@ -560,7 +560,7 @@
                 <div class="p-4">
                     <div class="flex items-center mb-3">
                         <div class="w-10 h-10 rounded-full overflow-hidden mr-3 flex-shrink-0 border border-gray-200">
-                            <img src="{{ asset('public/profile_images/' . ($related->empresa->user->imagen ?? 'company-default.png')) }}"
+                            <img src="{{ asset('profile_images/' . ($related->empresa->user->imagen ?? 'company-default.png')) }}"
                                 alt="{{ $related->empresa->nombre }}"
                                 class="w-full h-full object-contain">
                         </div>

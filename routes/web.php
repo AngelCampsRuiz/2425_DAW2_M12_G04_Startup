@@ -207,6 +207,8 @@
                     Route::get('/chat/{chat}/messages', [ChatController::class, 'getMessages'])->name('chat.messages');
                     Route::post('/chat/create/{solicitud}', [ChatController::class, 'createChat'])->name('chat.create');
                     Route::post('/chat/create-docente', [ChatController::class, 'createDocenteChat'])->name('chat.create.docente');
+                    Route::get('/chat/check-new', [ChatController::class, 'checkNewMessages'])->name('chat.check_new');
+                    Route::get('/chat/refresh', [ChatController::class, 'refreshChats'])->name('chat.refresh');
 
                 // RUTAS PARA VALORACIONES
                     Route::post('/valoraciones', [ValoracionController::class, 'store'])->name('valoraciones.store');
@@ -273,10 +275,19 @@
                 // Ruta para ver perfil de estudiante
                 Route::get('/estudiante/{id}', [App\Http\Controllers\Empresa\EstudianteController::class, 'show'])
                     ->name('estudiante.perfil');
+
+                // Rutas para los convenios
+                Route::get('/empresa/convenios', [App\Http\Controllers\ConvenioController::class, 'index'])->name('empresa.convenios');
+                Route::post('/empresa/convenios/search', [App\Http\Controllers\ConvenioController::class, 'search'])->name('empresa.convenios.search');
+                Route::post('/empresa/convenios', [App\Http\Controllers\ConvenioController::class, 'store'])->name('empresa.convenios.store');
+                Route::get('/empresa/convenios/{id}', [App\Http\Controllers\ConvenioController::class, 'show'])->name('empresa.convenios.show');
+                Route::get('/empresa/convenios/{id}/edit', [App\Http\Controllers\ConvenioController::class, 'edit'])->name('empresa.convenios.edit');
+                Route::put('/empresa/convenios/{id}', [App\Http\Controllers\ConvenioController::class, 'update'])->name('empresa.convenios.update');
+                Route::get('/empresa/convenios/{id}/download', [App\Http\Controllers\ConvenioController::class, 'download'])->name('empresa.convenios.download');
             });
 
             // Ruta para búsqueda de estudiantes (API) - Fuera del grupo para evitar el prefijo 'empresa.'
-            Route::middleware(['auth', \App\Http\Middleware\CheckRole::class.':empresa'])->post('/empresa/api/estudiantes/search', 
+            Route::middleware(['auth', \App\Http\Middleware\CheckRole::class.':empresa'])->post('/empresa/api/estudiantes/search',
                 [App\Http\Controllers\Empresa\EstudianteController::class, 'search'])
                 ->name('api.estudiantes.search');
 
@@ -314,6 +325,9 @@
                 // RUTAS PARA GESTIONAR LAS INSTITUCIONES
                     // RUTA CAMBIAR VERIFICACIÓN
                         Route::post('instituciones/cambiar-verificacion/{id}', [App\Http\Controllers\Admin\InstitucionController::class, 'cambiarVerificacion'])->name('instituciones.cambiar-verificacion');
+                        Route::post('instituciones/{id}/verificar', [App\Http\Controllers\Admin\InstitucionController::class, 'cambiarVerificacion'])->name('instituciones.verificar');
+                    // RUTA CAMBIAR ESTADO
+                        Route::post('instituciones/{id}/cambiar-estado', [App\Http\Controllers\Admin\InstitucionController::class, 'cambiarEstado'])->name('instituciones.cambiar-estado');
                     // RUTA ELIMINAR SQL
                         Route::delete('instituciones/eliminar-sql/{institucion}', [App\Http\Controllers\Admin\InstitucionController::class, 'destroySQL'])->name('instituciones.destroySQL');
                     // RUTA OBTENER CATEGORÍAS
@@ -344,11 +358,13 @@
 
                 // RUTAS PARA GESTIONAR LOS ALUMNOS
                 Route::get('alumnos', [App\Http\Controllers\Admin\AlumnoController::class, 'index'])->name('alumnos.index');
+                Route::get('alumnos/tabla', [App\Http\Controllers\Admin\AlumnoController::class, 'index'])->name('alumnos.tabla');
                 Route::post('alumnos', [App\Http\Controllers\Admin\AlumnoController::class, 'store'])->name('alumnos.store');
                 Route::get('alumnos/{alumno}/edit', [App\Http\Controllers\Admin\AlumnoController::class, 'edit'])->name('alumnos.edit');
                 Route::put('alumnos/{alumno}', [App\Http\Controllers\Admin\AlumnoController::class, 'update'])->name('alumnos.update');
                 Route::delete('alumnos/{alumno}', [App\Http\Controllers\Admin\AlumnoController::class, 'destroy'])->name('alumnos.destroy');
                 Route::delete('alumnos/eliminar-sql/{alumno}', [App\Http\Controllers\Admin\AlumnoController::class, 'destroySQL'])->name('alumnos.destroySQL');
+                Route::put('estudiantes/{estudiante}', [App\Http\Controllers\Admin\AlumnoController::class, 'update'])->name('estudiantes.update');
             });
 
         // Footer resource pages
@@ -360,14 +376,34 @@
         Route::get('/blog', [App\Http\Controllers\ResourceController::class, 'blog'])->name('blog');
 
     // RUTAS PARA INSTITUCIONES
-    Route::prefix('institucion')->middleware(['auth', \App\Http\Middleware\CheckRole::class.':institucion'])->name('institucion.')->group(function () {
-        // Dashboard
-        Route::get('/dashboard', [App\Http\Controllers\InstitucionController::class, 'dashboard'])->name('dashboard');
+Route::prefix('institucion')->middleware(['auth', \App\Http\Middleware\CheckRole::class.':institucion'])->name('institucion.')->group(function () {
+    // Dashboard
+    Route::get('/dashboard', [App\Http\Controllers\InstitucionController::class, 'dashboard'])->name('dashboard');
+
+    // RUTAS PARA ESTUDIANTES PENDIENTES
+    Route::prefix('estudiantes')->name('estudiantes.')->group(function() {
+        Route::post('/{id}/activar', [App\Http\Controllers\Institucion\EstudiantePendienteController::class, 'activar'])->name('activar');
+        Route::delete('/{id}', [App\Http\Controllers\Institucion\EstudiantePendienteController::class, 'eliminar'])->name('eliminar');
+        Route::put('/{id}/actualizar', [App\Http\Controllers\Institucion\EstudiantePendienteController::class, 'actualizar'])->name('actualizar');
+    });
+
+    // RUTAS PARA SOLICITUDES
+    Route::prefix('solicitudes')->name('solicitudes.')->group(function() {
+        Route::get('/', [App\Http\Controllers\Institucion\SolicitudEstudianteController::class, 'index'])->name('index');
+        Route::get('/{id}', [App\Http\Controllers\Institucion\SolicitudEstudianteController::class, 'show'])->name('show');
+        Route::post('/{id}/aprobar', [App\Http\Controllers\Institucion\SolicitudEstudianteController::class, 'aprobar'])->name('aprobar');
+        Route::post('/{id}/rechazar', [App\Http\Controllers\Institucion\SolicitudEstudianteController::class, 'rechazar'])->name('rechazar');
+        Route::get('/{solicitud}/asignar-clase', [App\Http\Controllers\Institucion\SolicitudClaseController::class, 'asignar'])->name('asignar-clase');
+        Route::post('/{solicitud}/asignar-clase', [App\Http\Controllers\Institucion\SolicitudClaseController::class, 'store'])->name('asignar-clase.store');
+    });
 
         // Perfil
         Route::get('/perfil', [App\Http\Controllers\InstitucionController::class, 'perfil'])->name('perfil');
         Route::put('/perfil', [App\Http\Controllers\InstitucionController::class, 'actualizarPerfil'])->name('perfil.update');
         Route::put('/perfil/password', [App\Http\Controllers\InstitucionController::class, 'cambiarPassword'])->name('perfil.password');
+
+        // Rutas de API para JavaScript
+        Route::get('/api/categorias/{nivel_id}', [App\Http\Controllers\InstitucionController::class, 'getCategoriasPorNivel'])->name('api.categorias');
 
         // Docentes
         Route::get('/docentes', [App\Http\Controllers\DocenteController::class, 'index'])->name('docentes.index');
@@ -415,10 +451,16 @@
         // Asignación de clases a estudiantes tras aprobar solicitudes
         Route::get('/solicitudes/{solicitud}/asignar-clase', [App\Http\Controllers\Institucion\SolicitudClaseController::class, 'asignar'])->name('solicitudes.asignar-clase');
         Route::post('/solicitudes/{solicitud}/asignar-clase', [App\Http\Controllers\Institucion\SolicitudClaseController::class, 'store'])->name('solicitudes.asignar-clase.store');
+
+        // Estudiantes pendientes de activación
+        Route::get('/estudiantes/pendientes', [App\Http\Controllers\Institucion\EstudiantePendienteController::class, 'index'])->name('estudiantes.pendientes');
+        Route::post('/estudiantes/{id}/activar', [App\Http\Controllers\Institucion\EstudiantePendienteController::class, 'activar'])->name('estudiantes.activar');
+        Route::put('/estudiantes/{id}/actualizar', [App\Http\Controllers\Institucion\EstudiantePendienteController::class, 'actualizar'])->name('estudiantes.actualizar');
+        Route::delete('/estudiantes/{id}/eliminar', [App\Http\Controllers\Institucion\EstudiantePendienteController::class, 'eliminar'])->name('estudiantes.eliminar');
     });
 
-    // Rutas para estudiantes
-    Route::middleware(['auth', \App\Http\Middleware\CheckRole::class.':student'])->prefix('estudiante')->name('estudiante.')->group(function () {
+    // RUTAS PARA ESTUDIANTES
+    Route::prefix('estudiante')->middleware(['auth', 'role:Estudiante', 'estudiante.activo'])->name('estudiante.')->group(function () {
         // Solicitudes del estudiante
         Route::get('/solicitudes', [App\Http\Controllers\Estudiante\SolicitudController::class, 'index'])->name('solicitudes.index');
         Route::get('/solicitudes/{id}', [App\Http\Controllers\Estudiante\SolicitudController::class, 'show'])->name('solicitudes.show');
@@ -449,6 +491,13 @@
         Route::get('/solicitudes/{id}', [App\Http\Controllers\DocenteController::class, 'showSolicitud'])->name('solicitudes.show');
         Route::post('/solicitudes/{id}/aprobar', [App\Http\Controllers\DocenteController::class, 'aprobarSolicitud'])->name('solicitudes.aprobar');
         Route::post('/solicitudes/{id}/rechazar', [App\Http\Controllers\DocenteController::class, 'rechazarSolicitud'])->name('solicitudes.rechazar');
+
+        // Convenios
+        Route::get('/convenios', [App\Http\Controllers\Docente\ConvenioController::class, 'index'])->name('convenios.index');
+        Route::get('/convenios/{convenio}', [App\Http\Controllers\Docente\ConvenioController::class, 'show'])->name('convenios.show');
+        Route::post('/convenios/{convenio}/aprobar', [App\Http\Controllers\Docente\ConvenioController::class, 'aprobar'])->name('convenios.aprobar');
+        Route::post('/convenios/{convenio}/rechazar', [App\Http\Controllers\Docente\ConvenioController::class, 'rechazar'])->name('convenios.rechazar');
+        Route::get('/convenios/{convenio}/download', [App\Http\Controllers\Docente\ConvenioController::class, 'download'])->name('convenios.download');
     });
 
 Route::get('/run-migrations-safe', function () {

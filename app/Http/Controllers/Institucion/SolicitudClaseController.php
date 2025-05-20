@@ -11,6 +11,8 @@ use App\Models\Departamento;
 use App\Models\Docente;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Estudiante;
+use App\Models\Categoria;
 
 class SolicitudClaseController extends Controller
 {
@@ -51,7 +53,10 @@ class SolicitudClaseController extends Controller
             ->orderBy('nombre')
             ->get();
 
-        return view('institucion.solicitudes.asignar-clase', compact('solicitud', 'clases', 'departamentos', 'docentes'));
+        // Obtener todas las categorías para filtrar
+        $categorias = Categoria::all();
+
+        return view('institucion.solicitudes.asignar-clase', compact('solicitud', 'clases', 'departamentos', 'docentes', 'categorias'));
     }
 
     /**
@@ -102,5 +107,37 @@ class SolicitudClaseController extends Controller
             DB::rollBack();
             return back()->with('error', 'Ha ocurrido un error al asignar el estudiante: ' . $e->getMessage());
         }
+    }
+
+    public function index()
+    {
+        $institucion = auth()->user()->institucion;
+        
+        // Obtener solicitudes de clases
+        $solicitudes = SolicitudInstitucion::with(['estudiante.user', 'clase'])
+            ->where('institucion_id', $institucion->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        // Obtener estudiantes pendientes de activación
+        $estudiantesPendientes = Estudiante::with(['user', 'titulo'])
+            ->where('institucion_id', $institucion->id)
+            ->whereHas('user', function($query) {
+                $query->where('activo', false);
+            })
+            ->get();
+
+        // Obtener todas las categorías para filtrar
+        $categorias = Categoria::all();
+
+        // Calcular estadísticas
+        $stats = [
+            'total' => $solicitudes->count(),
+            'pendientes' => $solicitudes->where('estado', 'pendiente')->count(),
+            'aprobadas' => $solicitudes->where('estado', 'aprobada')->count(),
+            'rechazadas' => $solicitudes->where('estado', 'rechazada')->count(),
+        ];
+
+        return view('institucion.solicitudes.index', compact('solicitudes', 'estudiantesPendientes', 'categorias', 'stats'));
     }
 } 

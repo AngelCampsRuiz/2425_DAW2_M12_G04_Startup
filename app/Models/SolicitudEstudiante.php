@@ -64,6 +64,7 @@ class SolicitudEstudiante extends Model
         // Actualizar estudiante con la institución
         $estudiante = $this->estudiante;
         $estudiante->institucion_id = $this->institucion_id;
+        $estudiante->estado = 'activo'; // Asegurar que el estudiante esté activo
 
         if ($this->clase_id) {
             $estudiante->clase_id = $this->clase_id;
@@ -74,6 +75,12 @@ class SolicitudEstudiante extends Model
         }
 
         $estudiante->save();
+        
+        // Activar el usuario asociado
+        if ($estudiante->user) {
+            $estudiante->user->activo = true;
+            $estudiante->user->save();
+        }
 
         return $this;
     }

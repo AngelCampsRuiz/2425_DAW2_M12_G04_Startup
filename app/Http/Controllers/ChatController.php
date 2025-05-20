@@ -257,26 +257,77 @@ class ChatController extends Controller
     /**
      * Listar todos los chats del usuario
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
-        // Asegurarnos de que el rol está cargado
-        $user->load('role');
         $chats = collect();
+        $tienesNuevosMensajes = false;
 
         // Si es empresa
         if ($user->role_id == 2) {
             $chats = Chat::where('empresa_id', $user->empresa->id)
                 ->where('tipo', 'empresa_estudiante')
-                ->with(['solicitud.estudiante.user', 'solicitud.publicacion'])
+                ->with(['solicitud.estudiante.user', 'solicitud.publicacion', 'mensajes' => function($query) {
+                    $query->orderBy('created_at', 'desc');
+                }])
                 ->get();
+                
+            // Verificar si hay mensajes sin leer
+            foreach ($chats as $chat) {
+                if ($chat->mensajes->isNotEmpty()) {
+                    $ultimoMensaje = $chat->mensajes->first(); // Ya ordenados desc
+                    if ($ultimoMensaje->user_id !== $user->id && 
+                        ($ultimoMensaje->read_at === null || $ultimoMensaje->leido === false)) {
+                        $tienesNuevosMensajes = true;
+                        break;
+                    }
+                }
+            }
         }
 
         // Si es estudiante
         if ($user->role_id == 3) {
-            $chats = Chat::where('estudiante_id', $user->estudiante->id)
-                ->with(['solicitud.publicacion.empresa.user', 'solicitud.publicacion', 'docente.user'])
-                ->get();
+            // Incluir consulta para obtener chats incluso si no los ha visto antes
+            $query = Chat::whereHas('solicitud', function($query) use ($user) {
+                $query->where('estudiante_id', $user->estudiante->id);
+            });
+            
+            // Si solicitó refrescar, forzar la búsqueda de chats no vistos antes
+            if ($request->has('refresh')) {
+                // Asegurarse de que todas las solicitudes aceptadas tienen un chat
+                $solicitudesAceptadas = Solicitud::where('estudiante_id', $user->estudiante->id)
+                    ->where('estado', 'aceptada')
+                    ->get();
+                    
+                foreach ($solicitudesAceptadas as $solicitud) {
+                    $chatExistente = Chat::where('solicitud_id', $solicitud->id)->first();
+                    if (!$chatExistente) {
+                        // Crear el chat automáticamente
+                        Chat::create([
+                            'empresa_id' => $solicitud->publicacion->empresa_id,
+                            'solicitud_id' => $solicitud->id,
+                            'tipo' => 'empresa_estudiante'
+                        ]);
+                    }
+                }
+            }
+            
+            $chats = $query->with(['solicitud.publicacion.empresa.user', 'solicitud.publicacion', 'mensajes' => function($query) {
+                $query->orderBy('created_at', 'desc');
+            }])
+            ->get();
+            
+            // Verificar si hay mensajes sin leer
+            foreach ($chats as $chat) {
+                if ($chat->mensajes->isNotEmpty()) {
+                    $ultimoMensaje = $chat->mensajes->first(); // Ya ordenados desc
+                    if ($ultimoMensaje->user_id !== $user->id && 
+                        ($ultimoMensaje->read_at === null || $ultimoMensaje->leido === false)) {
+                        $tienesNuevosMensajes = true;
+                        break;
+                    }
+                }
+            }
         }
 
         // Si es docente
@@ -293,14 +344,28 @@ class ChatController extends Controller
                 // Obtener los chats existentes
                 $chats = Chat::where('docente_id', $docente->id)
                     ->where('tipo', 'docente_estudiante')
-                    ->with(['estudiante.user'])
+                    ->with(['estudiante.user', 'mensajes' => function($query) {
+                        $query->orderBy('created_at', 'desc');
+                    }])
                     ->get();
+                    
+                // Verificar si hay mensajes sin leer
+                foreach ($chats as $chat) {
+                    if ($chat->mensajes->isNotEmpty()) {
+                        $ultimoMensaje = $chat->mensajes->first(); // Ya ordenados desc
+                        if ($ultimoMensaje->user_id !== $user->id && 
+                            ($ultimoMensaje->read_at === null || $ultimoMensaje->leido === false)) {
+                            $tienesNuevosMensajes = true;
+                            break;
+                        }
+                    }
+                }
 
-                return view('chat.index', compact('chats', 'estudiantes'));
+                return view('chat.index', compact('chats', 'estudiantes', 'tienesNuevosMensajes'));
             }
         }
 
-        return view('chat.index', compact('chats'));
+        return view('chat.index', compact('chats', 'tienesNuevosMensajes'));
     }
 
     public function createDocenteChat(Request $request)
@@ -347,5 +412,65 @@ class ChatController extends Controller
 
         return redirect()->route('chat.show', $chat->id)
             ->with('success', 'Chat creado correctamente');
+    }
+
+    /**
+     * Verificar si hay mensajes nuevos para el usuario autenticado
+     */
+    public function checkNewMessages()
+    {
+        $user = Auth::user();
+        $hasNewChats = false;
+        
+        if ($user->role_id == 2) { // Empresa
+            $hasNewChats = Chat::where('empresa_id', $user->empresa->id)
+                ->whereHas('mensajes', function($query) use ($user) {
+                    $query->where('user_id', '!=', $user->id)
+                          ->where(function($q) {
+                              $q->whereNull('read_at')
+                                ->orWhere('leido', false);
+                          });
+                })
+                ->exists();
+        } elseif ($user->role_id == 3) { // Estudiante
+            $hasNewChats = Chat::whereHas('solicitud', function($query) use ($user) {
+                $query->where('estudiante_id', $user->estudiante->id);
+            })
+            ->whereHas('mensajes', function($query) use ($user) {
+                $query->where('user_id', '!=', $user->id)
+                      ->where(function($q) {
+                          $q->whereNull('read_at')
+                            ->orWhere('leido', false);
+                      });
+            })
+            ->exists();
+        } elseif ($user->role_id == 4) { // Docente
+            $docente = \App\Models\Docente::where('user_id', $user->id)->first();
+            if ($docente) {
+                $hasNewChats = Chat::where('docente_id', $docente->id)
+                    ->whereHas('mensajes', function($query) use ($user) {
+                        $query->where('user_id', '!=', $user->id)
+                              ->where(function($q) {
+                                  $q->whereNull('read_at')
+                                    ->orWhere('leido', false);
+                              });
+                    })
+                    ->exists();
+            }
+        }
+        
+        return response()->json([
+            'has_new_chats' => $hasNewChats
+        ]);
+    }
+    
+    /**
+     * Refrescar la vista de chats (útil para cuando el estudiante no ve los chats nuevos)
+     */
+    public function refreshChats()
+    {
+        // Simplemente redirigimos a la vista de chats con un indicador para forzar la consulta
+        return redirect()->route('chat.index', ['refresh' => true])
+            ->with('info', 'Lista de conversaciones actualizada');
     }
 }

@@ -36,6 +36,55 @@
     </div>
 
     <div class="container mx-auto px-4 py-8">
+        <!-- Mensajes de notificación -->
+        @if(session('success'))
+        <div class="mb-4 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-md shadow-md" id="alert-success">
+            <div class="flex items-center">
+                <div class="py-1"><svg class="w-6 h-6 mr-4 text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg></div>
+                <span>{{ session('success') }}</span>
+                <button type="button" class="ml-auto" onclick="document.getElementById('alert-success').remove()">
+                    <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        @endif
+
+        @if(session('info'))
+        <div class="mb-4 bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 rounded-md shadow-md" id="alert-info">
+            <div class="flex items-center">
+                <div class="py-1"><svg class="w-6 h-6 mr-4 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg></div>
+                <span>{{ session('info') }}</span>
+                <button type="button" class="ml-auto" onclick="document.getElementById('alert-info').remove()">
+                    <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        @endif
+
+        @if(isset($tienesNuevosMensajes) && $tienesNuevosMensajes)
+        <div class="mb-4 bg-purple-100 border-l-4 border-purple-500 text-purple-700 p-4 rounded-md shadow-md" id="alert-new-messages">
+            <div class="flex items-center">
+                <div class="py-1"><svg class="w-6 h-6 mr-4 text-purple-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg></div>
+                <span>¡Tienes mensajes nuevos sin leer!</span>
+                <button type="button" class="ml-auto" onclick="document.getElementById('alert-new-messages').remove()">
+                    <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        @endif
+
         <!-- Encabezado -->
         <div class="mb-8 bg-white rounded-xl shadow-md p-6 transform transition-all duration-300 hover:shadow-lg border border-purple-100">
             <div class="flex flex-col md:flex-row justify-between md:items-center gap-4">
@@ -91,43 +140,60 @@
 
         <!-- Lista de chats -->
         <div class="bg-white rounded-xl shadow-md overflow-hidden transform transition-all duration-300 hover:shadow-lg border border-purple-100">
+            @php
+                // Verificar si hay chats sin leer
+                $tienesNuevosMensajes = false;
+                if(isset($chats) && $chats->isNotEmpty()) {
+                    foreach($chats as $chat) {
+                        if($chat->mensajes && $chat->mensajes->isNotEmpty()) {
+                            $ultimoMensaje = $chat->mensajes->last();
+                            if($ultimoMensaje->user_id !== auth()->id() && 
+                               ($ultimoMensaje->read_at === null || $ultimoMensaje->leido === false)) {
+                                $tienesNuevosMensajes = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            @endphp
+
             @if($chats->isEmpty())
             @if(auth()->user()->role_id == 4 && isset($estudiantes))
-        <!-- Lista de estudiantes para docentes -->
-        <div class="mb-8 bg-white rounded-xl shadow-md overflow-hidden transform transition-all duration-300 hover:shadow-lg border border-purple-100">
-            <div class="p-6">
-                <h2 class="text-xl font-semibold text-gray-800 mb-4">Mis Estudiantes</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    @foreach($estudiantes as $estudiante)
-                        <div class="bg-purple-50 rounded-lg p-4 hover:bg-purple-100 transition-colors duration-200">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center space-x-3">
-                                    <div class="w-10 h-10 rounded-full bg-purple-200 flex items-center justify-center">
-                                        <span class="text-purple-700 font-semibold">
-                                            {{ strtoupper(substr($estudiante->user->nombre, 0, 2)) }}
-                                        </span>
+            <!-- Lista de estudiantes para docentes -->
+            <div class="mb-8 bg-white rounded-xl shadow-md overflow-hidden transform transition-all duration-300 hover:shadow-lg border border-purple-100">
+                <div class="p-6">
+                    <h2 class="text-xl font-semibold text-gray-800 mb-4">Mis Estudiantes</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        @foreach($estudiantes as $estudiante)
+                            <div class="bg-purple-50 rounded-lg p-4 hover:bg-purple-100 transition-colors duration-200">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-10 h-10 rounded-full bg-purple-200 flex items-center justify-center">
+                                            <span class="text-purple-700 font-semibold">
+                                                {{ strtoupper(substr($estudiante->user->nombre, 0, 2)) }}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-medium text-gray-800">{{ $estudiante->user->nombre }}</h3>
+                                            <p class="text-sm text-gray-600">
+                                                {{ $estudiante->clases->pluck('nombre')->implode(', ') }}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <h3 class="font-medium text-gray-800">{{ $estudiante->user->nombre }}</h3>
-                                        <p class="text-sm text-gray-600">
-                                            {{ $estudiante->clases->pluck('nombre')->implode(', ') }}
-                                        </p>
-                                    </div>
+                                    <form action="{{ route('chat.create.docente') }}" method="POST">
+                                        @csrf
+                                        <input type="hidden" name="estudiante_id" value="{{ $estudiante->id }}">
+                                        <button type="submit" class="p-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors duration-200">
+                                            <i class="fas fa-comment"></i>
+                                        </button>
+                                    </form>
                                 </div>
-                                <form action="{{ route('chat.create.docente') }}" method="POST">
-                                    @csrf
-                                    <input type="hidden" name="estudiante_id" value="{{ $estudiante->id }}">
-                                    <button type="submit" class="p-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors duration-200">
-                                        <i class="fas fa-comment"></i>
-                                    </button>
-                                </form>
                             </div>
-                        </div>
-                    @endforeach
+                        @endforeach
+                    </div>
                 </div>
             </div>
-        </div>
-        @endif
+            @endif
                 <div class="p-12 text-center">
                     <div class="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br from-purple-100 to-indigo-100 mb-6 transform transition-transform duration-300 hover:scale-105 shadow-md">
                         <i class="fas fa-comments text-4xl text-purple-600"></i>
@@ -146,7 +212,14 @@
                                 <i class="fas fa-search mr-2"></i>
                                 Buscar ofertas
                             </a>
-			@elseif(auth()->user()->role_id == 4)
+                        
+                            <!-- Revisar si hay chats sin leer -->
+                            <a href="{{ route('chat.refresh') }}" class="mt-4 inline-flex items-center px-5 py-3 bg-white border border-purple-300 text-purple-700 rounded-lg shadow-sm hover:bg-purple-50 transition-all duration-200">
+                                <i class="fas fa-sync-alt mr-2"></i>
+                                Revisar mensajes nuevos
+                            </a>
+                            <p class="mt-3 text-sm text-gray-500">Es posible que tengas mensajes nuevos que no estén apareciendo</p>
+                        @elseif(auth()->user()->role_id == 4)
                             Cuando inicies una conversación con estudiantes, aparecerán aquí.
                         @endif
                     </div>
@@ -154,15 +227,32 @@
             @else
                 <div id="chat-list" class="divide-y divide-gray-200">
                     @foreach($chats as $chat)
+                        @php
+                            $tienesMensajesNoLeidos = false;
+                            if($chat->mensajes->isNotEmpty()) {
+                                $ultimoMensaje = $chat->mensajes->last();
+                                $tienesMensajesNoLeidos = $ultimoMensaje->sender_id !== auth()->id() && 
+                                              ($ultimoMensaje->read_at === null);
+                            }
+                        @endphp
+                        
                         <a href="{{ route('chat.show', $chat->id) }}" 
-                           class="chat-item block p-6 hover:bg-purple-50 transition-all duration-300 transform hover:scale-[1.01] relative">
+                           class="chat-item block p-6 hover:bg-purple-50 transition-all duration-300 transform hover:scale-[1.01] relative
+                           {{ $tienesMensajesNoLeidos ? 'bg-purple-50 border-l-4 border-purple-600' : '' }}">
+                            
+                            @if($tienesMensajesNoLeidos)
+                            <div class="absolute top-2 right-2 inline-flex items-center justify-center px-2 py-1 text-xs font-medium text-red-800 bg-red-100 rounded-full animate-pulse">
+                                <i class="fas fa-envelope mr-1"></i> Nuevo mensaje
+                            </div>
+                            @endif
+                            
                             <div class="flex items-start space-x-4">
                                 <!-- Avatar -->
                                 <div class="flex-shrink-0">
                                     <div class="w-16 h-16 rounded-full bg-gradient-to-br from-purple-100 to-indigo-100 flex items-center justify-center overflow-hidden ring-4 ring-white shadow-md transition-transform duration-300 hover:scale-105">
                                         @if(auth()->user()->empresa)
                                             @if($chat->solicitud->estudiante->user->imagen)
-                                                <img src="{{ asset('public/profile_images/' . $chat->solicitud->estudiante->user->imagen) }}" 
+                                                <img src="{{ asset('profile_images/' . $chat->solicitud->estudiante->user->imagen) }}" 
                                                      alt="Foto de perfil" 
                                                      class="w-full h-full object-cover">
                                             @else
@@ -172,7 +262,7 @@
                                             @endif
                                         @else
                                             @if($chat->solicitud->publicacion->empresa->user->imagen)
-                                                <img src="{{ asset('public/profile_images/' . $chat->solicitud->publicacion->empresa->user->imagen) }}" 
+                                                <img src="{{ asset('profile_images/' . $chat->solicitud->publicacion->empresa->user->imagen) }}" 
                                                      alt="Foto de perfil" 
                                                      class="w-full h-full object-cover">
                                             @else
@@ -220,19 +310,17 @@
                                             <i class="fas fa-comment-alt mr-1.5 text-purple-600"></i>
                                             <span class="font-medium">{{ $chat->mensajes->count() }}</span> 
                                             <span class="ml-1">{{ $chat->mensajes->count() === 1 ? 'mensaje' : 'mensajes' }}</span>
+                                            
+                                            @if($tienesMensajesNoLeidos)
+                                                <span class="ml-2 text-red-600 font-medium">
+                                                    • No leído
+                                                </span>
+                                            @endif
                                         </div>
                                         
                                         <div class="flex space-x-2">
-                                            @if($chat->mensajes->isNotEmpty())
-                                                @php
-                                                    $ultimoMensaje = $chat->mensajes->last();
-                                                    $esNuevo = $ultimoMensaje->sender_id !== auth()->id() && 
-                                                              ($ultimoMensaje->read_at === null);
-                                                @endphp
-                                                
-                                                @if($esNuevo)
-                                                    <span class="inline-flex items-center justify-center w-3 h-3 bg-red-500 rounded-full"></span>
-                                                @endif
+                                            @if($tienesMensajesNoLeidos)
+                                                <span class="inline-flex items-center justify-center w-3 h-3 bg-red-500 rounded-full animate-pulse"></span>
                                             @endif
                                             <span class="inline-flex items-center justify-center w-6 h-6 bg-purple-100 text-purple-800 rounded-full hover:bg-purple-200 transition-colors">
                                                 <i class="fas fa-chevron-right text-xs"></i>
@@ -252,5 +340,40 @@
 <!-- Añadir Font Awesome -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <link rel="stylesheet" href="{{ asset('css/chat.css') }}">
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Establecer la URL para verificar mensajes nuevos
+    document.body.setAttribute('data-check-new-url', '{{ route("chat.check_new") }}');
+    
+    // Verificar mensajes nuevos cada 60 segundos (opcional)
+    @if(auth()->user()->role_id == 3)
+    setInterval(function() {
+        fetch('{{ route("chat.check_new") }}')
+            .then(response => response.json())
+            .then(data => {
+                if (data.has_new_chats) {
+                    // Mostrar notificación al usuario
+                    const notification = document.createElement('div');
+                    notification.className = 'fixed bottom-4 right-4 bg-purple-600 text-white px-4 py-3 rounded-lg shadow-lg z-50';
+                    notification.innerHTML = `
+                        <div class="flex items-center">
+                            <i class="fas fa-bell mr-2"></i>
+                            <span>Tienes nuevos mensajes. <a href="{{ route("chat.index") }}" class="underline">Ver ahora</a></span>
+                        </div>
+                    `;
+                    document.body.appendChild(notification);
+                    
+                    // Eliminar la notificación después de 10 segundos
+                    setTimeout(() => {
+                        notification.remove();
+                    }, 10000);
+                }
+            });
+    }, 60000);
+    @endif
+});
+</script>
+
 <script src="{{ asset('js/chat.js') }}"></script>
 @endsection 

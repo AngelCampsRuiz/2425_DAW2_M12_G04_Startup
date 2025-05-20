@@ -1,5 +1,5 @@
 @extends('layouts.app')
-
+<meta name="csrf-token" content="{{ csrf_token() }}">
 @section('content')
 <div class="min-h-screen bg-gray-50">
     <div class="container mx-auto px-4 py-8">
@@ -12,33 +12,35 @@
 
         <!-- Encabezado mejorado -->
         <div class="mb-8 bg-white rounded-lg shadow-md p-6">
-            <div class="flex justify-between items-center">
+            <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
                 <div>
-                    <h1 class="text-3xl font-bold text-gray-800">{{ $publication->titulo }}</h1>
-                    <div class="flex items-center mt-2 space-x-4">
-                        <span class="text-gray-600">
+                    <h1 class="text-2xl sm:text-3xl font-bold text-gray-800 break-words">{{ $publication->titulo }}</h1>
+                    <div class="flex flex-col sm:flex-row sm:items-center mt-2 space-y-1 sm:space-y-0 sm:space-x-4">
+                        <span class="text-gray-600 flex items-center">
                             <i class="fas fa-calendar-alt mr-2"></i>
                             Publicado: {{ $publication->fecha_publicacion ? date('d/m/Y', strtotime($publication->fecha_publicacion)) : 'Fecha no disponible' }}
                         </span>
-                        <span class="text-gray-600">
+                        <span class="text-gray-600 flex items-center">
                             <i class="fas fa-clock mr-2"></i>
                             Horario: {{ ucfirst($publication->horario) }}
                         </span>
-                        <span class="text-gray-600">
+                        <span class="text-gray-600 flex items-center">
                             <i class="fas fa-user-graduate mr-2"></i>
                             {{ $solicitudes->count() }} solicitudes
                         </span>
                     </div>
                 </div>
-                <a href="{{ route('empresa.dashboard') }}" class="flex items-center text-gray-600 hover:text-gray-900">
-                    <i class="fas fa-arrow-left mr-2"></i>
-                    Volver al dashboard
-                </a>
+                <div class="flex justify-end md:justify-end">
+                    <a href="{{ route('empresa.dashboard') }}" class="flex items-center text-gray-600 hover:text-gray-900 mt-4 md:mt-0">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Volver al dashboard
+                    </a>
+                </div>
             </div>
         </div>
 
         <!-- Filtros y estadísticas -->
-        <div class="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="bg-white rounded-lg shadow-md p-4">
                 <div class="text-sm font-medium text-gray-500">Total Solicitudes</div>
                 <div class="mt-1 text-2xl font-semibold text-gray-900">{{ $solicitudes->count() }}</div>
@@ -78,83 +80,77 @@
                     <div class="divide-y divide-gray-200">
                         @foreach($solicitudes as $solicitud)
                             <div class="p-6 hover:bg-gray-50 transition-colors duration-200">
-                                <div class="flex items-start space-x-6">
-                                    <!-- Avatar y datos básicos -->
-                                    <div class="flex-shrink-0">
+                                <div class="flex flex-col sm:flex-row sm:items-start sm:space-x-6 gap-3">
+                                    <!-- Avatar y estado arriba en móvil -->
+                                    <div class="flex flex-row items-center gap-3 sm:flex-col sm:items-start">
                                         <div class="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center">
                                             <span class="text-xl font-bold text-purple-700">
                                                 {{ strtoupper(substr(optional(optional($solicitud->estudiante)->user)->nombre ?? '--', 0, 2)) }}
                                             </span>
                                         </div>
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium
+                                            @if($solicitud->estado === 'pendiente') bg-yellow-100 text-yellow-800
+                                            @elseif($solicitud->estado === 'aceptada') bg-green-100 text-green-800
+                                            @else bg-red-100 text-red-800 @endif
+                                            sm:mt-3 sm:text-sm">
+                                            <span class="w-2 h-2 mr-2 rounded-full
+                                                @if($solicitud->estado === 'pendiente') bg-yellow-400
+                                                @elseif($solicitud->estado === 'aceptada') bg-green-400
+                                                @else bg-red-400 @endif">
+                                            </span>
+                                            {{ ucfirst($solicitud->estado) }}
+                                        </span>
                                     </div>
 
                                     <!-- Información principal -->
-                                    <div class="flex-1 min-w-0">
-                                        <div class="flex items-center justify-between">
-                                            <div class="flex items-center space-x-4">
+                                    <div class="flex-1 min-w-0 flex flex-col gap-2">
+                                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                                            <div>
                                                 <a href="{{ route('profile.show', optional(optional($solicitud->estudiante)->user)->id ?? '#') }}"
-                                                   class="group flex items-center space-x-3 hover:text-purple-600 transition-colors duration-200">
-                                                    <h3 class="text-lg font-semibold text-gray-900 group-hover:text-purple-600">
+                                                   class="group flex items-center space-x-2 hover:text-purple-600 transition-colors duration-200">
+                                                    <h3 class="text-base sm:text-lg font-semibold text-gray-900 group-hover:text-purple-600">
                                                         {{ optional(optional($solicitud->estudiante)->user)->nombre ?? 'Sin nombre' }}
                                                     </h3>
-                                                    <i class="fas fa-external-link-alt text-sm opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                                                    <i class="fas fa-external-link-alt text-xs opacity-0 group-hover:opacity-100 transition-opacity"></i>
                                                 </a>
-                                                @if($solicitud->estudiante->cv_pdf)
-                                                    <a href="{{ asset('cv/' . $solicitud->estudiante->cv_pdf) }}"
-                                                       target="_blank"
-                                                       class="inline-flex items-center px-3 py-1 rounded-md text-sm font-medium bg-purple-50 text-purple-700 hover:bg-purple-100 transition-colors duration-200">
-                                                        <i class="fas fa-file-pdf mr-2"></i>
-                                                        Ver CV
-                                                    </a>
-                                                @endif
                                             </div>
-                                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
-                                                @if($solicitud->estado === 'pendiente') bg-yellow-100 text-yellow-800
-                                                @elseif($solicitud->estado === 'aceptada') bg-green-100 text-green-800
-                                                @else bg-red-100 text-red-800 @endif">
-                                                <span class="w-2 h-2 mr-2 rounded-full
-                                                    @if($solicitud->estado === 'pendiente') bg-yellow-400
-                                                    @elseif($solicitud->estado === 'aceptada') bg-green-400
-                                                    @else bg-red-400 @endif">
-                                                </span>
-                                                {{ ucfirst($solicitud->estado) }}
-                                            </span>
+                                            @if($solicitud->estudiante->cv_pdf)
+                                                <a href="{{ asset('cv/' . $solicitud->estudiante->cv_pdf) }}"
+                                                   target="_blank"
+                                                   class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-purple-50 text-purple-700 hover:bg-purple-100 transition-colors duration-200">
+                                                    <i class="fas fa-file-pdf mr-1"></i>
+                                                    <span class="hidden md:block">Ver CV</span>
+                                                </a>
+                                            @endif
                                         </div>
-
-                                        <div class="mt-1 flex flex-col sm:flex-row sm:flex-wrap sm:space-x-6">
-                                            <div class="mt-2 flex items-center text-sm text-gray-500">
+                                        <div class="flex flex-col sm:flex-row sm:flex-wrap sm:space-x-6">
+                                            <div class="flex items-center text-xs sm:text-sm text-gray-500 mt-1">
                                                 <i class="fas fa-school mr-1.5 text-gray-400"></i>
                                                 {{ $solicitud->estudiante->centro_educativo }}
                                             </div>
-                                            <div class="mt-2 flex items-center text-sm text-gray-500">
+                                            <div class="flex items-center text-xs sm:text-sm text-gray-500 mt-1">
                                                 <i class="fas fa-calendar mr-1.5 text-gray-400"></i>
                                                 Solicitado: {{ date('d/m/Y H:i', strtotime($solicitud->created_at)) }}
                                             </div>
-                                            @if($solicitud->estudiante->titulo)
-                                                <div class="mt-2 flex items-center text-sm text-gray-500">
-                                                    <i class="fas fa-graduation-cap mr-1.5 text-gray-400"></i>
-                                                    Cursando: {{ $solicitud->estudiante->titulo->name_titulo }}
-                                                </div>
-                                            @endif
                                         </div>
 
                                         @if($solicitud->mensaje)
-                                            <div class="mt-4 bg-gray-50 rounded-lg p-4">
-                                                <h4 class="text-sm font-medium text-gray-900 mb-2">
+                                            <div class="mt-3 bg-gray-50 rounded-lg p-3">
+                                                <h4 class="text-xs sm:text-sm font-medium text-gray-900 mb-1 flex items-center">
                                                     <i class="fas fa-comment-alt mr-2 text-gray-400"></i>
                                                     Mensaje del estudiante
                                                 </h4>
-                                                <p class="text-gray-600">{{ $solicitud->mensaje }}</p>
+                                                <p class="text-gray-600 text-xs sm:text-sm">{{ $solicitud->mensaje }}</p>
                                             </div>
                                         @endif
 
                                         @if($solicitud->respuesta_empresa)
-                                            <div class="mt-4 bg-purple-50 rounded-lg p-4">
-                                                <h4 class="text-sm font-medium text-purple-900 mb-2">
+                                            <div class="mt-3 bg-purple-50 rounded-lg p-3">
+                                                <h4 class="text-xs sm:text-sm font-medium text-purple-900 mb-1 flex items-center">
                                                     <i class="fas fa-reply mr-2 text-purple-400"></i>
                                                     Tu respuesta
                                                 </h4>
-                                                <p class="text-purple-600">{{ $solicitud->respuesta_empresa }}</p>
+                                                <p class="text-purple-600 text-xs sm:text-sm">{{ $solicitud->respuesta_empresa }}</p>
                                             </div>
                                         @endif
 
@@ -226,6 +222,10 @@
 
 <!-- Añadir Font Awesome -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<!-- Sweet Alert -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-material-ui@5/material-ui.min.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <!-- Script de animaciones -->
 <script src="{{ asset('js/applications-animations.js') }}"></script>

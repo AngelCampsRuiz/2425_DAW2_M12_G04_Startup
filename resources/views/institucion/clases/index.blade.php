@@ -209,6 +209,27 @@
             <form id="formNuevaClase" action="{{ route('institucion.clases.store') }}" method="POST" class="p-6">
                 @csrf
                 
+                <!-- Mensajes de error -->
+                @if ($errors->any())
+                <div class="mb-4 bg-red-50 border-l-4 border-red-500 p-4 rounded">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-red-800">Se encontraron los siguientes errores:</h3>
+                            <ul class="mt-1 text-xs text-red-700 list-disc list-inside">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                @endif
+                
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <!-- Información básica de la clase -->
@@ -221,21 +242,23 @@
                                 <div>
                                     <label for="nombre" class="block text-sm font-medium text-gray-700 mb-1">Nombre de la Clase *</label>
                                     <input type="text" name="nombre" id="nombre" required 
-                                        class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                        class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                        value="{{ old('nombre') }}">
                                     <p class="mt-1 text-xs text-gray-500">Ej: Matemáticas Avanzadas</p>
                                 </div>
 
                                 <div>
                                     <label for="codigo" class="block text-sm font-medium text-gray-700 mb-1">Código de la Clase *</label>
                                     <input type="text" name="codigo" id="codigo" required 
-                                        class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                        class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                        value="{{ old('codigo') }}">
                                     <p class="mt-1 text-xs text-gray-500">Ej: MAT-101 o MATE2023</p>
                                 </div>
 
                                 <div>
                                     <label for="descripcion" class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
                                     <textarea name="descripcion" id="descripcion" rows="3" 
-                                        class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"></textarea>
+                                        class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">{{ old('descripcion') }}</textarea>
                                     <p class="mt-1 text-xs text-gray-500">Descripción breve de la clase y sus objetivos</p>
                                 </div>
                             </div>
@@ -363,6 +386,22 @@
                 @csrf
                 @method('PUT')
                 <input type="hidden" id="clase_id" name="clase_id">
+                
+                <!-- Mensajes de error -->
+                <div id="errores-edicion-clase" class="mb-4 bg-red-50 border-l-4 border-red-500 p-4 rounded hidden">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-red-800">Se encontraron los siguientes errores:</h3>
+                            <ul class="mt-1 text-xs text-red-700 list-disc list-inside" id="lista-errores-edicion-clase">
+                            </ul>
+                        </div>
+                    </div>
+                </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
@@ -498,6 +537,183 @@
 
 @push('scripts')
 <script>
+    // Mostrar modal automáticamente si hay errores
+    @if ($errors->any())
+        document.addEventListener('DOMContentLoaded', function() {
+            openModalClase();
+        });
+    @endif
+    
+    // Objeto global para almacenar el estado de validación de cada campo
+    window.validationErrors = {};
+
+    // Función centralizada para actualizar el estado visual de los campos
+    window.updateFieldStatus = function(input, isValid, errorMessage = '') {
+        if (!input) return;
+        
+        const fieldId = input.id;
+        let errorElement = document.getElementById(fieldId + '-error');
+        
+        // Si no existe el elemento de error, lo creamos
+        if (!errorElement) {
+            errorElement = document.createElement('span');
+            errorElement.id = fieldId + '-error';
+            errorElement.className = 'text-red-500 text-xs mt-1';
+            input.parentNode.appendChild(errorElement);
+        }
+        
+        if (!isValid) {
+            window.validationErrors[fieldId] = errorMessage;
+            input.classList.add('border-red-500');
+            errorElement.textContent = errorMessage;
+        } else {
+            delete window.validationErrors[fieldId];
+            input.classList.remove('border-red-500');
+            errorElement.textContent = '';
+        }
+    };
+
+    // Validaciones para los formularios de clases
+    const validateNombre = function(prefix = '') {
+        const field = document.getElementById((prefix ? prefix + '_' : '') + 'nombre');
+        if (!field) return true;
+        
+        const value = field.value.trim();
+        if (!value) {
+            window.updateFieldStatus(field, false, 'El nombre de la clase es obligatorio');
+            return false;
+        } else if (value.length < 3) {
+            window.updateFieldStatus(field, false, 'El nombre debe tener al menos 3 caracteres');
+            return false;
+        }
+        
+        window.updateFieldStatus(field, true);
+        return true;
+    };
+
+    const validateCodigo = function(prefix = '') {
+        const field = document.getElementById((prefix ? prefix + '_' : '') + 'codigo');
+        if (!field) return true;
+        
+        const value = field.value.trim();
+        if (!value) {
+            window.updateFieldStatus(field, false, 'El código de la clase es obligatorio');
+            return false;
+        } else if (value.length < 2) {
+            window.updateFieldStatus(field, false, 'El código debe tener al menos 2 caracteres');
+            return false;
+        }
+        
+        window.updateFieldStatus(field, true);
+        return true;
+    };
+
+    const validateNivelEducativo = function(prefix = '') {
+        const field = document.getElementById((prefix ? prefix + '_' : '') + 'nivel_educativo_id');
+        if (!field) return true;
+        
+        const value = field.value.trim();
+        if (!value) {
+            window.updateFieldStatus(field, false, 'El nivel educativo es obligatorio');
+            return false;
+        }
+        
+        window.updateFieldStatus(field, true);
+        return true;
+    };
+
+    const validateCategoria = function(prefix = '') {
+        const field = document.getElementById((prefix ? prefix + '_' : '') + 'categoria_id');
+        if (!field) return true;
+        
+        const value = field.value.trim();
+        if (!value) {
+            window.updateFieldStatus(field, false, 'El curso/ciclo es obligatorio');
+            return false;
+        }
+        
+        window.updateFieldStatus(field, true);
+        return true;
+    };
+
+    const validateDescripcion = function(prefix = '') {
+        const field = document.getElementById((prefix ? prefix + '_' : '') + 'descripcion');
+        if (!field) return true;
+        
+        // La descripción es opcional, pero si tiene texto, debería tener más de 10 caracteres
+        const value = field.value.trim();
+        if (value && value.length < 10) {
+            window.updateFieldStatus(field, false, 'La descripción debe tener al menos 10 caracteres');
+            return false;
+        }
+        
+        window.updateFieldStatus(field, true);
+        return true;
+    };
+
+    // Configurar validaciones para los formularios
+    document.addEventListener('DOMContentLoaded', function() {
+        // Validaciones para el formulario de creación
+        const createForm = document.getElementById('formNuevaClase');
+        if (createForm) {
+            const fieldsToValidate = [
+                { id: 'nombre', validate: validateNombre },
+                { id: 'codigo', validate: validateCodigo },
+                { id: 'descripcion', validate: validateDescripcion },
+                { id: 'nivel_educativo_id', validate: validateNivelEducativo },
+                { id: 'categoria_id', validate: validateCategoria }
+            ];
+            
+            // Añadir validaciones onblur
+            fieldsToValidate.forEach(field => {
+                const element = document.getElementById(field.id);
+                if (element) {
+                    element.addEventListener('blur', () => field.validate());
+                }
+            });
+            
+            // Validar formulario al enviar
+            createForm.addEventListener('submit', function(event) {
+                const isValid = fieldsToValidate.map(field => field.validate()).every(Boolean);
+                
+                if (!isValid) {
+                    event.preventDefault();
+                    alert('Por favor, corrija los errores en el formulario antes de continuar.');
+                }
+            });
+        }
+        
+        // Validaciones para el formulario de edición
+        const editForm = document.getElementById('formEditarClase');
+        if (editForm) {
+            const fieldsToValidate = [
+                { id: 'edit_nombre', validate: () => validateNombre('edit') },
+                { id: 'edit_codigo', validate: () => validateCodigo('edit') },
+                { id: 'edit_descripcion', validate: () => validateDescripcion('edit') },
+                { id: 'edit_nivel_educativo_id', validate: () => validateNivelEducativo('edit') },
+                { id: 'edit_categoria_id', validate: () => validateCategoria('edit') }
+            ];
+            
+            // Añadir validaciones onblur
+            fieldsToValidate.forEach(field => {
+                const element = document.getElementById(field.id);
+                if (element) {
+                    element.addEventListener('blur', () => field.validate());
+                }
+            });
+            
+            // Validar formulario al enviar
+            editForm.addEventListener('submit', function(event) {
+                const isValid = fieldsToValidate.map(field => field.validate()).every(Boolean);
+                
+                if (!isValid) {
+                    event.preventDefault();
+                    alert('Por favor, corrija los errores en el formulario antes de continuar.');
+                }
+            });
+        }
+    });
+
     // Categorías organizadas por nivel educativo
     const categoriasPorNivel = {
         @foreach($nivelesEducativos as $nivel)
@@ -517,93 +733,140 @@
         const nivelId = document.getElementById('nivel_educativo_id').value;
         const categoriaSelect = document.getElementById('categoria_id');
         
-        // Limpiar select
-        categoriaSelect.innerHTML = '<option value="">-- Seleccionar Curso --</option>';
-        
-        // Si no hay nivel seleccionado, salir
-        if (!nivelId) return;
-        
-        // Añadir las categorías del nivel seleccionado
-        const categorias = categoriasPorNivel[nivelId] || [];
-        categorias.forEach(categoria => {
-            const option = document.createElement('option');
-            option.value = categoria.id;
-            option.textContent = categoria.nombre;
-            categoriaSelect.appendChild(option);
-        });
+        if (nivelId) {
+            // Mostrar un indicador de carga
+            categoriaSelect.innerHTML = '<option value="">Cargando...</option>';
+            
+            // Hacer la petición al servidor
+            fetch(`/institucion/api/categorias/${nivelId}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Limpiar y volver a llenar el selector
+                    categoriaSelect.innerHTML = '<option value="">-- Seleccionar Curso --</option>';
+                    
+                    // Añadir las opciones
+                    data.forEach(categoria => {
+                        const option = document.createElement('option');
+                        option.value = categoria.id;
+                        option.textContent = categoria.nombre_categoria;
+                        categoriaSelect.appendChild(option);
+                    });
+                    
+                    // Si no hay categorías
+                    if (data.length === 0) {
+                        categoriaSelect.innerHTML = '<option value="">No hay cursos disponibles para este nivel</option>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error cargando categorías:', error);
+                    categoriaSelect.innerHTML = '<option value="">Error al cargar los cursos</option>';
+                });
+        } else {
+            // Si no hay nivel seleccionado, limpiar las categorías
+            categoriaSelect.innerHTML = '<option value="">-- Seleccionar Curso --</option>';
+        }
     }
     
-    // Función para actualizar las categorías en el modal de edición
+    // Función similar para el formulario de edición
     function actualizarCategoriasEdit() {
         const nivelId = document.getElementById('edit_nivel_educativo_id').value;
         const categoriaSelect = document.getElementById('edit_categoria_id');
+        const categoriaActual = categoriaSelect.dataset.valor || '';
         
-        // Limpiar select
-        categoriaSelect.innerHTML = '<option value="">-- Seleccionar Curso --</option>';
-        
-        // Si no hay nivel seleccionado, salir
-        if (!nivelId) return;
-        
-        // Añadir las categorías del nivel seleccionado
-        const categorias = categoriasPorNivel[nivelId] || [];
-        categorias.forEach(categoria => {
-            const option = document.createElement('option');
-            option.value = categoria.id;
-            option.textContent = categoria.nombre;
-            categoriaSelect.appendChild(option);
-        });
+        if (nivelId) {
+            // Mostrar un indicador de carga
+            categoriaSelect.innerHTML = '<option value="">Cargando...</option>';
+            
+            // Hacer la petición al servidor
+            fetch(`/institucion/api/categorias/${nivelId}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Limpiar y volver a llenar el selector
+                    categoriaSelect.innerHTML = '<option value="">-- Seleccionar Curso --</option>';
+                    
+                    // Añadir las opciones
+                    data.forEach(categoria => {
+                        const option = document.createElement('option');
+                        option.value = categoria.id;
+                        option.textContent = categoria.nombre_categoria;
+                        
+                        // Seleccionar la categoría actual si coincide
+                        if (categoria.id == categoriaActual) {
+                            option.selected = true;
+                        }
+                        
+                        categoriaSelect.appendChild(option);
+                    });
+                    
+                    // Si no hay categorías
+                    if (data.length === 0) {
+                        categoriaSelect.innerHTML = '<option value="">No hay cursos disponibles para este nivel</option>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error cargando categorías:', error);
+                    categoriaSelect.innerHTML = '<option value="">Error al cargar los cursos</option>';
+                });
+        } else {
+            // Si no hay nivel seleccionado, limpiar las categorías
+            categoriaSelect.innerHTML = '<option value="">-- Seleccionar Curso --</option>';
+        }
     }
 
-    // Función para abrir el modal de edición y cargar los datos
+    // Función para abrir el modal de edición
     function openEditarModal(claseId) {
-        // Obtener los datos de la clase mediante AJAX
-        fetch(`/institucion/clases/${claseId}/getData`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const clase = data.clase;
-                    
-                    // Establecer la acción del formulario
-                    document.getElementById('formEditarClase').action = `/institucion/clases/${claseId}`;
-                    
-                    // Cargar los datos en el formulario
-                    document.getElementById('clase_id').value = clase.id;
-                    document.getElementById('edit_nombre').value = clase.nombre;
-                    document.getElementById('edit_codigo').value = clase.codigo;
-                    document.getElementById('edit_descripcion').value = clase.descripcion || '';
-                    document.getElementById('edit_departamento_id').value = clase.departamento_id || '';
-                    document.getElementById('edit_docente_id').value = clase.docente_id || '';
-                    document.getElementById('edit_nivel_educativo_id').value = clase.nivel_educativo_id || '';
-                    document.getElementById('edit_grupo').value = clase.grupo || '';
-                    
-                    // Actualizar las categorías según el nivel seleccionado
-                    actualizarCategoriasEdit();
-                    
-                    // Establecer la categoría seleccionada después de cargar las opciones
-                    setTimeout(() => {
-                        document.getElementById('edit_categoria_id').value = clase.categoria_id || '';
-                    }, 100);
-                    
-                    // Mostrar el modal
-                    const modal = document.getElementById('modalEditarClase');
-                    modal.classList.remove('hidden');
-                    document.body.classList.add('overflow-hidden');
-                    
-                    // Animación de entrada
-                    setTimeout(() => {
-                        const modalContent = modal.querySelector('.relative');
-                        if (modalContent) {
-                            modalContent.classList.add('animate-fadeIn');
-                        }
-                    }, 10);
-                }
-            })
-            .catch(error => {
-                console.error('Error al cargar los datos de la clase:', error);
-            });
+        const modal = document.getElementById('modalEditarClase');
+        if (modal) {
+            // Cargar datos de la clase
+            fetch(`/institucion/clases/${claseId}/getData`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Configurar formulario
+                        const form = document.getElementById('formEditarClase');
+                        form.action = `/institucion/clases/${claseId}`;
+                        
+                        // Llenar campos
+                        document.getElementById('clase_id').value = claseId;
+                        document.getElementById('edit_nombre').value = data.clase.nombre;
+                        document.getElementById('edit_codigo').value = data.clase.codigo || '';
+                        document.getElementById('edit_descripcion').value = data.clase.descripcion || '';
+                        document.getElementById('edit_departamento_id').value = data.clase.departamento_id || '';
+                        document.getElementById('edit_docente_id').value = data.clase.docente_id || '';
+                        document.getElementById('edit_nivel_educativo_id').value = data.clase.nivel_educativo_id || '';
+                        
+                        // Almacenar el valor actual de categoría para restaurarlo después de cargar las opciones
+                        const categoriaSelect = document.getElementById('edit_categoria_id');
+                        categoriaSelect.dataset.valor = data.clase.categoria_id;
+                        
+                        // Cargar las categorías según el nivel
+                        actualizarCategoriasEdit();
+                        
+                        document.getElementById('edit_grupo').value = data.clase.grupo || '';
+                        
+                        // Mostrar modal
+                        modal.classList.remove('hidden');
+                        document.body.classList.add('overflow-hidden');
+                        
+                        // Animación de entrada
+                        setTimeout(() => {
+                            const modalContent = modal.querySelector('.relative');
+                            if (modalContent) {
+                                modalContent.classList.add('animate-fadeIn');
+                            }
+                        }, 10);
+                    } else {
+                        // Mostrar error
+                        alert('Error al cargar los datos de la clase');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al cargar los datos de la clase');
+                });
+        }
     }
     
-    // Función para cerrar el modal de edición
     function closeEditarModal() {
         const modal = document.getElementById('modalEditarClase');
         if (modal) {
@@ -614,17 +877,56 @@
                 modalContent.classList.add('animate-fadeOut');
             }
             
+            // Ocultar modal tras animación
             setTimeout(() => {
                 modal.classList.add('hidden');
                 document.body.classList.remove('overflow-hidden');
-                
                 if (modalContent) {
                     modalContent.classList.remove('animate-fadeOut');
                 }
-                
-                // Restablecer el formulario
-                document.getElementById('formEditarClase').reset();
-            }, 200);
+            }, 300);
+        }
+    }
+    
+    function openModalClase() {
+        const modal = document.getElementById('modalNuevaClase');
+        if (modal) {
+            modal.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+            
+            // Animación de entrada
+            setTimeout(() => {
+                const modalContent = modal.querySelector('.relative');
+                if (modalContent) {
+                    modalContent.classList.add('animate-fadeIn');
+                }
+            }, 10);
+            
+            // Limpiar formulario
+            document.getElementById('formNuevaClase').reset();
+            // Resetear el selector de categoría
+            document.getElementById('categoria_id').innerHTML = '<option value="">-- Seleccionar Curso --</option>';
+        }
+    }
+    
+    function closeModalClase() {
+        const modal = document.getElementById('modalNuevaClase');
+        if (modal) {
+            // Animación de salida
+            const modalContent = modal.querySelector('.relative');
+            if (modalContent) {
+                modalContent.classList.remove('animate-fadeIn');
+                modalContent.classList.add('animate-fadeOut');
+            }
+            
+            // Ocultar modal tras animación
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+                if (modalContent) {
+                    modalContent.classList.remove('animate-fadeOut');
+                }
+            }, 300);
         }
     }
 
@@ -658,72 +960,6 @@
                     fila.style.display = '';
                 } else {
                     fila.style.display = 'none';
-                }
-            });
-        }
-
-        // Funciones para el modal de clase
-        window.openModalClase = function() {
-            const modal = document.getElementById('modalNuevaClase');
-            if (modal) {
-                modal.classList.remove('hidden');
-                document.body.classList.add('overflow-hidden');
-                
-                // Animación de entrada
-                setTimeout(() => {
-                    const modalContent = modal.querySelector('.relative');
-                    if (modalContent) {
-                        modalContent.classList.add('animate-fadeIn');
-                    }
-                }, 10);
-                
-                // Scroll al inicio del modal y focus primer input
-                setTimeout(() => {
-                    const firstInput = modal.querySelector('input, select, textarea');
-                    if (firstInput) firstInput.focus();
-                }, 300);
-            }
-        };
-        
-        window.closeModalClase = function() {
-            const modal = document.getElementById('modalNuevaClase');
-            if (modal) {
-                // Animación de salida
-                const modalContent = modal.querySelector('.relative');
-                if (modalContent) {
-                    modalContent.classList.remove('animate-fadeIn');
-                    modalContent.classList.add('animate-fadeOut');
-                }
-                
-                setTimeout(() => {
-                    modal.classList.add('hidden');
-                    document.body.classList.remove('overflow-hidden');
-                    
-                    if (modalContent) {
-                        modalContent.classList.remove('animate-fadeOut');
-                    }
-                    
-                    const form = document.getElementById('formNuevaClase');
-                    if (form) {
-                        form.reset();
-                    }
-                }, 200);
-            }
-        };
-
-        // Configuración modal de clase
-        const modalNuevaClase = document.getElementById('modalNuevaClase');
-        if (modalNuevaClase) {
-            modalNuevaClase.addEventListener('click', function(e) {
-                if (e.target === this) {
-                    closeModalClase();
-                }
-            });
-
-            // Cerrar con tecla Escape
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape' && !modalNuevaClase.classList.contains('hidden')) {
-                    closeModalClase();
                 }
             });
         }

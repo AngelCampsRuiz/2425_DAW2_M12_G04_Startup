@@ -126,7 +126,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="flex items-center">
                             <div class="flex-shrink-0 h-16 w-16">
                                 <img class="h-16 w-16 rounded-full object-cover" 
-                                    src="${window.location.origin}/public/profile_images/${solicitud.institucion?.imagen || 'default.png'}" 
+                                    src="${window.location.origin}/profile_images/${solicitud.institucion?.imagen || 'default.png'}" 
                                     alt="${solicitud.institucion?.nombre || 'Institución'}">
                             </div>
                             <div class="ml-4">

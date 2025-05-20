@@ -6,7 +6,7 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\User;
 use App\Models\Estudiante;
-use App\Models\Titulo;
+use App\Models\Categoria;
 
 class EstudianteSeeder extends Seeder
 {
@@ -25,16 +25,16 @@ class EstudianteSeeder extends Seeder
             'IES La Magdalena', 'IES La Laboral', 'IES La Vaguada',
             'IES La Dehesa', 'IES La Albuera'
         ];
-        $titulos = Titulo::all();
+        $categorias = Categoria::all();
 
         foreach ($estudianteUsers as $user) {
-            $titulo = $titulos->random();
+            $categoria = $categorias->random();
             Estudiante::create([
                 'id' => $user->id,
                 'centro_educativo' => $centros[array_rand($centros)],
                 'cv_pdf' => 'cv_' . $user->id . '.pdf',
                 'numero_seguridad_social' => 'SS' . str_pad(rand(1, 99999999), 8, '0', STR_PAD_LEFT),
-                'titulo_id' => $titulo->id,
+                'categoria_id' => $categoria->id,
             ]);
         }
     }

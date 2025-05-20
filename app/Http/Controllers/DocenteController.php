@@ -13,6 +13,7 @@ use Illuminate\Support\Str;
 use App\Models\Clase;
 use App\Models\Estudiante;
 use App\Models\SolicitudEstudiante;
+use Illuminate\Support\Facades\DB;
 
 class DocenteController extends Controller
 {
@@ -38,52 +39,95 @@ class DocenteController extends Controller
     // Guardar docente
     public function store(Request $request)
     {
-        $institucion = Auth::user()->institucion;
-        
         $request->validate([
             'nombre' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:user,email',
-            'dni' => 'required|string|max:20|unique:user,dni',
-            'telefono' => 'required|string|max:20|unique:user,telefono',
-            'departamento_id' => 'nullable|exists:departamentos,id',
+            'email' => 'required|email|unique:user,email',
+            'dni' => 'required|string|max:15|unique:user,dni',
+            'telefono' => 'required|string|max:15|unique:user,telefono',
             'especialidad' => 'required|string|max:255',
             'cargo' => 'required|string|max:100',
+        ], [
+            'nombre.required' => 'El nombre del docente es obligatorio',
+            'email.required' => 'El correo electrónico es obligatorio',
+            'email.email' => 'El correo electrónico debe tener un formato válido',
+            'email.unique' => 'Este correo electrónico ya está registrado en el sistema',
+            'dni.required' => 'El DNI/NIE es obligatorio',
+            'dni.unique' => 'Este DNI/NIE ya está registrado en el sistema',
+            'telefono.required' => 'El teléfono es obligatorio',
+            'telefono.unique' => 'Este teléfono ya está registrado en el sistema',
+            'especialidad.required' => 'La especialidad es obligatoria',
+            'cargo.required' => 'El cargo es obligatorio',
         ]);
 
-        // Generar contraseña aleatoria
+        // Generar una contraseña aleatoria segura
         $password = Str::random(10);
 
-        // Crear usuario
-        $user = User::create([
-            'nombre' => $request->nombre,
-            'email' => $request->email,
-            'password' => Hash::make($password),
-            'role_id' => Rol::where('nombre_rol', 'docente')->first()->id,
-            'fecha_nacimiento' => $request->fecha_nacimiento ?? now()->subYears(30),
-            'ciudad' => $institucion->provincia,
-            'dni' => $request->dni,
-            'activo' => true,
-            'telefono' => $request->telefono,
-            'descripcion' => 'Docente de ' . $institucion->user->nombre,
-        ]);
-
-        // Crear docente
-        $docente = Docente::create([
-            'user_id' => $user->id,
-            'institucion_id' => $institucion->id,
-            'departamento_id' => $request->departamento_id,
-            'especialidad' => $request->especialidad,
-            'cargo' => $request->cargo,
-            'activo' => true,
-        ]);
-
-        // Enviar email con contraseña temporal
-        // TODO: implementar envío de email
-
-        return redirect()->route('institucion.docentes.index')
-            ->with('success', 'Docente creado correctamente. Se ha enviado un email con las credenciales de acceso.')
-            ->with('password', $password)
-            ->with('email', $user->email);
+        try {
+            DB::beginTransaction();
+            
+            // Crear el usuario
+            $user = new User();
+            $user->nombre = $request->nombre;
+            $user->email = $request->email;
+            $user->dni = $request->dni;
+            $user->telefono = $request->telefono;
+            $user->password = Hash::make($password);
+            $user->role_id = Rol::where('nombre_rol', 'Docente')->first()->id;
+            $user->activo = true;
+            $user->save();
+            
+            // Crear el docente
+            $docente = new Docente();
+            $docente->id = $user->id;
+            $docente->user_id = $user->id;
+            $docente->institucion_id = Auth::user()->institucion->id;
+            $docente->departamento_id = $request->departamento_id ?: null;
+            $docente->departamento = empty($request->departamento_id) ? $request->departamento : null;
+            $docente->especialidad = $request->especialidad;
+            $docente->cargo = $request->cargo;
+            $docente->activo = true;
+            $docente->save();
+            
+            DB::commit();
+            
+            // Guardar credenciales para mostrarlas
+            // Ideal: enviar un correo electrónico con las credenciales
+            session(['email' => $user->email, 'password' => $password]);
+            
+            return redirect()->route('institucion.docentes.index')
+                ->with('success', 'Docente creado correctamente. Las credenciales se han generado automáticamente.');
+                
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            // Capturar errores de base de datos específicos
+            if ($e instanceof \Illuminate\Database\QueryException) {
+                $errorCode = $e->errorInfo[1];
+                
+                // Errores comunes de MySQL
+                if ($errorCode == 1062) { // Duplicate entry
+                    $errorMessage = $e->errorInfo[2];
+                    if (stripos($errorMessage, 'email')) {
+                        return redirect()->back()
+                            ->withInput()
+                            ->withErrors(['email' => 'Este correo electrónico ya está registrado en el sistema']);
+                    } elseif (stripos($errorMessage, 'dni')) {
+                        return redirect()->back()
+                            ->withInput()
+                            ->withErrors(['dni' => 'Este DNI/NIE ya está registrado en el sistema']);
+                    } elseif (stripos($errorMessage, 'telefono')) {
+                        return redirect()->back()
+                            ->withInput()
+                            ->withErrors(['telefono' => 'Este teléfono ya está registrado en el sistema']);
+                    }
+                }
+            }
+            
+            // Error genérico
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['error' => 'Error al crear el docente: ' . $e->getMessage()]);
+        }
     }
 
     // Ver docente
@@ -229,11 +273,33 @@ class DocenteController extends Controller
             $query->where('docente_id', $user->id);
         })->where('estado', 'pendiente')->count();
 
+        // Obtener las clases del docente
+        $clasesIds = Clase::where('docente_id', $user->id)->pluck('id');
+        
+        // Obtener los IDs de estudiantes que pertenecen a esas clases
+        $estudiantesIds = Estudiante::whereHas('clases', function($query) use ($clasesIds) {
+            $query->whereIn('clases.id', $clasesIds);
+        })->pluck('id');
+        
+        // Obtener los convenios pendientes relacionados con los estudiantes del docente
+        $conveniosPendientes = \App\Models\Convenio::whereIn('estudiante_id', $estudiantesIds)
+            ->where('estado', 'pendiente')
+            ->with(['estudiante', 'empresa', 'oferta'])
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get();
+
         $clases = Clase::where('docente_id', $user->id)
             ->withCount('estudiantes')
             ->get();
 
-        return view('docentes.dashboard', compact('totalAlumnos', 'totalClases', 'solicitudesPendientes', 'clases'));
+        return view('docentes.dashboard', compact(
+            'totalAlumnos', 
+            'totalClases', 
+            'solicitudesPendientes', 
+            'clases',
+            'conveniosPendientes'
+        ));
     }
 
     public function alumnos()

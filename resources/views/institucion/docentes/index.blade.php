@@ -151,6 +151,27 @@
 
             <form id="formNuevoDocente" action="{{ route('institucion.docentes.store') }}" method="POST" class="p-6">
             @csrf
+                <!-- Mensajes de error -->
+                @if ($errors->any())
+                <div class="mb-4 bg-red-50 border-l-4 border-red-500 p-4 rounded">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-red-800">Se encontraron los siguientes errores:</h3>
+                            <ul class="mt-1 text-xs text-red-700 list-disc list-inside">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                @endif
+                
                 <!-- Información Personal -->
                 <div class="mb-6">
                     <h4 class="text-md font-medium text-gray-800 mb-3 flex items-center">
@@ -161,26 +182,30 @@
                         <div>
                             <label for="nombre" class="block text-sm font-medium text-gray-700 mb-1">Nombre Completo *</label>
                             <input type="text" name="nombre" id="nombre" required 
-                                   class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-sm transition-all">
+                                   class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-sm transition-all"
+                                   value="{{ old('nombre') }}">
                         </div>
 
                         <div>
                             <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
                             <input type="email" name="email" id="email" required 
-                                   class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-sm transition-all">
+                                   class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-sm transition-all"
+                                   value="{{ old('email') }}">
                         </div>
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label for="dni" class="block text-sm font-medium text-gray-700 mb-1">DNI/NIF/NIE *</label>
                                 <input type="text" name="dni" id="dni" required 
-                                       class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-sm transition-all">
+                                       class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-sm transition-all"
+                                       value="{{ old('dni') }}">
                             </div>
                             
                             <div>
                                 <label for="telefono" class="block text-sm font-medium text-gray-700 mb-1">Teléfono *</label>
                                 <input type="text" name="telefono" id="telefono" required 
-                                       class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-sm transition-all">
+                                       class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-sm transition-all"
+                                       value="{{ old('telefono') }}">
                             </div>
                         </div>
                     </div>
@@ -279,6 +304,22 @@
                 @csrf
                 @method('PUT')
                 <input type="hidden" id="edit_docente_id" name="docente_id">
+                
+                <!-- Mensajes de error -->
+                <div id="errores-edicion" class="mb-4 bg-red-50 border-l-4 border-red-500 p-4 rounded hidden">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-red-800">Se encontraron los siguientes errores:</h3>
+                            <ul class="mt-1 text-xs text-red-700 list-disc list-inside" id="lista-errores-edicion">
+                            </ul>
+                        </div>
+                    </div>
+                </div>
                 
                 <!-- Información Personal -->
                 <div class="mb-6">
@@ -401,6 +442,210 @@
         console.log('%c Contraseña: ' + '{{ session('password') }}', 'color: #E91E63; font-size: 14px; font-weight: bold;');
         console.log('%c Guarde estas credenciales ya que no se mostrarán nuevamente. ', 'background: #FFC107; color: #333; font-size: 12px; padding: 3px;');
     @endif
+    
+    // Mostrar modal automáticamente si hay errores
+    @if ($errors->any())
+        document.addEventListener('DOMContentLoaded', function() {
+            openModalDocente();
+        });
+    @endif
+    
+    // Objeto global para almacenar el estado de validación de cada campo
+    window.validationErrors = {};
+
+    // Función centralizada para actualizar el estado visual de los campos
+    window.updateFieldStatus = function(input, isValid, errorMessage = '') {
+        if (!input) return;
+        
+        const fieldId = input.id;
+        let errorElement = document.getElementById(fieldId + '-error');
+        
+        // Si no existe el elemento de error, lo creamos
+        if (!errorElement) {
+            errorElement = document.createElement('span');
+            errorElement.id = fieldId + '-error';
+            errorElement.className = 'text-red-500 text-xs';
+            input.parentNode.appendChild(errorElement);
+        }
+        
+        if (!isValid) {
+            window.validationErrors[fieldId] = errorMessage;
+            input.classList.add('border-red-500');
+            errorElement.textContent = errorMessage;
+        } else {
+            delete window.validationErrors[fieldId];
+            input.classList.remove('border-red-500');
+            errorElement.textContent = '';
+        }
+    };
+
+    // Validaciones para el formulario de creación de docentes
+    const validateNombre = function(prefix = '') {
+        const field = document.getElementById((prefix ? prefix + '_' : '') + 'nombre');
+        if (!field) return true;
+        
+        const value = field.value.trim();
+        if (!value) {
+            window.updateFieldStatus(field, false, 'El nombre es obligatorio');
+            return false;
+        } else if (value.length < 3) {
+            window.updateFieldStatus(field, false, 'El nombre debe tener al menos 3 caracteres');
+            return false;
+        }
+        
+        window.updateFieldStatus(field, true);
+        return true;
+    };
+
+    const validateEmail = function(prefix = '') {
+        const field = document.getElementById((prefix ? prefix + '_' : '') + 'email');
+        if (!field) return true;
+        
+        const value = field.value.trim();
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        
+        if (!value) {
+            window.updateFieldStatus(field, false, 'El email es obligatorio');
+            return false;
+        } else if (!emailRegex.test(value)) {
+            window.updateFieldStatus(field, false, 'El formato del email no es válido');
+            return false;
+        }
+        
+        window.updateFieldStatus(field, true);
+        return true;
+    };
+
+    const validateDNI = function(prefix = '') {
+        const field = document.getElementById((prefix ? prefix + '_' : '') + 'dni');
+        if (!field) return true;
+        
+        const value = field.value.trim();
+        const dniRegex = /^[0-9]{8}[TRWAGMYFPDXBNJZSQVHLCKE]$|^[XYZ][0-9]{7}[TRWAGMYFPDXBNJZSQVHLCKE]$/i;
+        
+        if (!value) {
+            window.updateFieldStatus(field, false, 'El DNI/NIE es obligatorio');
+            return false;
+        } else if (!dniRegex.test(value)) {
+            window.updateFieldStatus(field, false, 'El formato del DNI/NIE no es válido');
+            return false;
+        }
+        
+        window.updateFieldStatus(field, true);
+        return true;
+    };
+
+    const validateTelefono = function(prefix = '') {
+        const field = document.getElementById((prefix ? prefix + '_' : '') + 'telefono');
+        if (!field) return true;
+        
+        const value = field.value.trim();
+        const telefonoRegex = /^[0-9]{9}$/;
+        
+        if (!value) {
+            window.updateFieldStatus(field, false, 'El teléfono es obligatorio');
+            return false;
+        } else if (!telefonoRegex.test(value)) {
+            window.updateFieldStatus(field, false, 'El teléfono debe tener 9 dígitos');
+            return false;
+        }
+        
+        window.updateFieldStatus(field, true);
+        return true;
+    };
+
+    const validateEspecialidad = function(prefix = '') {
+        const field = document.getElementById((prefix ? prefix + '_' : '') + 'especialidad');
+        if (!field) return true;
+        
+        const value = field.value.trim();
+        if (!value) {
+            window.updateFieldStatus(field, false, 'La especialidad es obligatoria');
+            return false;
+        }
+        
+        window.updateFieldStatus(field, true);
+        return true;
+    };
+
+    const validateCargo = function(prefix = '') {
+        const field = document.getElementById((prefix ? prefix + '_' : '') + 'cargo');
+        if (!field) return true;
+        
+        const value = field.value.trim();
+        if (!value) {
+            window.updateFieldStatus(field, false, 'El cargo es obligatorio');
+            return false;
+        }
+        
+        window.updateFieldStatus(field, true);
+        return true;
+    };
+
+    // Configurar validaciones para el formulario de creación
+    document.addEventListener('DOMContentLoaded', function() {
+        // Validaciones para el formulario de creación
+        const createForm = document.getElementById('formNuevoDocente');
+        if (createForm) {
+            const fieldsToValidate = [
+                { id: 'nombre', validate: validateNombre },
+                { id: 'email', validate: validateEmail },
+                { id: 'dni', validate: validateDNI },
+                { id: 'telefono', validate: validateTelefono },
+                { id: 'especialidad', validate: validateEspecialidad },
+                { id: 'cargo', validate: validateCargo }
+            ];
+            
+            // Añadir validaciones onblur
+            fieldsToValidate.forEach(field => {
+                const element = document.getElementById(field.id);
+                if (element) {
+                    element.addEventListener('blur', () => field.validate());
+                }
+            });
+            
+            // Validar formulario al enviar
+            createForm.addEventListener('submit', function(event) {
+                const isValid = fieldsToValidate.map(field => field.validate()).every(Boolean);
+                
+                if (!isValid) {
+                    event.preventDefault();
+                    alert('Por favor, corrija los errores en el formulario antes de continuar.');
+                }
+            });
+        }
+        
+        // Validaciones para el formulario de edición
+        const editForm = document.getElementById('formEditarDocente');
+        if (editForm) {
+            const fieldsToValidate = [
+                { id: 'edit_nombre', validate: () => validateNombre('edit') },
+                { id: 'edit_email', validate: () => validateEmail('edit') },
+                { id: 'edit_dni', validate: () => validateDNI('edit') },
+                { id: 'edit_telefono', validate: () => validateTelefono('edit') },
+                { id: 'edit_especialidad', validate: () => validateEspecialidad('edit') },
+                { id: 'edit_cargo', validate: () => validateCargo('edit') }
+            ];
+            
+            // Añadir validaciones onblur
+            fieldsToValidate.forEach(field => {
+                const element = document.getElementById(field.id);
+                if (element) {
+                    element.addEventListener('blur', () => field.validate());
+                }
+            });
+            
+            // Validar formulario al enviar
+            editForm.addEventListener('submit', function(event) {
+                const isValid = fieldsToValidate.map(field => field.validate()).every(Boolean);
+                
+                if (!isValid) {
+                    event.preventDefault();
+                    alert('Por favor, corrija los errores en el formulario antes de continuar.');
+                }
+            });
+        }
+    });
     
     // Definición global de openEditModal
     function openEditModal(docenteId) {

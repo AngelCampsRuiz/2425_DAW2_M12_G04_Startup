@@ -16,12 +16,26 @@ class Convenio extends Model
         'activo',
         'fecha_aprobacion',
         'tutor_id',
-        'seguimiento_id'
+        'seguimiento_id',
+        'oferta_id',
+        'estudiante_id',
+        'empresa_id',
+        'fecha_inicio',
+        'fecha_fin',
+        'horario_practica',
+        'tutor_empresa',
+        'tareas',
+        'objetivos',
+        'estado',
+        'fecha_creacion'
     ];
 
     protected $casts = [
         'activo' => 'boolean',
-        'fecha_aprobacion' => 'datetime'
+        'fecha_aprobacion' => 'datetime',
+        'fecha_inicio' => 'date',
+        'fecha_fin' => 'date',
+        'fecha_creacion' => 'datetime'
     ];
 
     public function seguimiento()
@@ -37,5 +51,15 @@ class Convenio extends Model
     public function valoraciones()
     {
         return $this->hasMany(Valoracion::class);
+    }
+
+    public function oferta()
+    {
+        return $this->belongsTo(Publicacion::class, 'oferta_id');
+    }
+
+    public function estudiante()
+    {
+        return $this->belongsTo(User::class, 'estudiante_id');
     }
 }

@@ -4,7 +4,7 @@
 <div class="container mx-auto px-4 py-12">
     <div class="max-w-5xl mx-auto">
         <div class="text-center mb-12">
-            <h1 class="text-4xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent mb-4">{{ __('footer.help_center') }}</h1>
+            <h1 class="text-4xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent mb-4">Centro de ayuda</h1>
             <p class="text-xl text-gray-600 max-w-3xl mx-auto">Encuentra respuestas a tus preguntas y obtén el soporte que necesitas para aprovechar al máximo la plataforma NextGen.</p>
         </div>
         

@@ -129,17 +129,20 @@
                     <span id="nivel_educativo_id-error" class="text-red-500 text-xs"></span>
                 </div>
 
-                <!-- Título -->
+                <!-- Categoría (antes Título) -->
                 <div class="mb-4">
-                    <label for="titulo_id" class="block text-gray-700 text-sm font-medium mb-2">Título</label>
-                    <select id="titulo_id" name="titulo_id" class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary @error('titulo_id') border-red-500 @enderror">
+                    <label for="categoria_id" class="block text-gray-700 text-sm font-medium mb-2">Categoría</label>
+                    <select id="categoria_id" name="categoria_id" class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary @error('categoria_id') border-red-500 @enderror">
                         <option value="">Primero selecciona un nivel educativo</option>
+                        @foreach($categorias as $categoria)
+                            <option value="{{ $categoria->id }}">{{ $categoria->nombre_categoria }}</option>
+                        @endforeach
                     </select>
                     
-                    @error('titulo_id')
+                    @error('categoria_id')
                         <span class="text-red-500 text-xs">{{ $message }}</span>
                     @enderror
-                    <span id="titulo_id-error" class="text-red-500 text-xs"></span>
+                    <span id="categoria_id-error" class="text-red-500 text-xs"></span>
                 </div>
 
                 <!-- Número de Seguridad Social -->
@@ -379,19 +382,19 @@ window.validateNivelEducativo = function() {
     return true;
 };
 
-// Validación del título
-window.validateTitulo = function() {
-    const tituloField = document.getElementById('titulo_id');
-    if (!tituloField) return true;
+// Validación de categoría
+window.validateCategoria = function() {
+    const categoriaField = document.getElementById('categoria_id');
+    if (!categoriaField) return true;
     
-    const tituloValue = tituloField.value.trim();
+    const categoriaValue = categoriaField.value.trim();
     
-    if (!tituloValue) {
-        window.updateFieldStatus(tituloField, false, 'Debes seleccionar un título');
+    if (!categoriaValue) {
+        window.updateFieldStatus(categoriaField, false, 'Debes seleccionar una categoría');
         return false;
     }
     
-    window.updateFieldStatus(tituloField, true);
+    window.updateFieldStatus(categoriaField, true);
     return true;
 };
 
@@ -548,32 +551,41 @@ window.loadNivelesEducativos = function(institucionId) {
 window.loadCategorias = function(nivelId, institucionId) {
     console.log(`Cargando categorías para nivel ${nivelId} e institución ${institucionId}`);
     
+    const categoriaSelect = document.getElementById('categoria_id');
+    categoriaSelect.innerHTML = '<option value="">Cargando categorías...</option>';
+    
     fetch(`/api/categorias/${nivelId}/${institucionId}`)
         .then(response => {
             console.log('Respuesta API status:', response.status);
+            if (!response.ok) {
+                throw new Error(`Error ${response.status}: ${response.statusText}`);
+            }
             return response.json();
         })
         .then(data => {
             console.log('Datos de categorías recibidos:', data);
-            const select = document.getElementById('titulo_id');
-            select.innerHTML = '<option value="">Selecciona un título</option>';
+            categoriaSelect.innerHTML = '<option value="">Selecciona una categoría</option>';
             
             if (data && data.length > 0) {
                 data.forEach(categoria => {
                     const option = document.createElement('option');
                     option.value = categoria.id;
                     option.textContent = categoria.nombre_categoria;
-                    select.appendChild(option);
+                    categoriaSelect.appendChild(option);
                 });
+                // Habilitamos el campo
+                categoriaSelect.disabled = false;
             } else {
                 console.log('No se encontraron categorías para esta combinación de nivel e institución');
-                select.innerHTML = '<option value="">No hay títulos disponibles</option>';
+                categoriaSelect.innerHTML = '<option value="">No hay categorías disponibles</option>';
+                // Deshabilitamos el campo si no hay opciones
+                categoriaSelect.disabled = true;
             }
         })
         .catch(error => {
             console.error('Error cargando categorías:', error);
-            const select = document.getElementById('titulo_id');
-            select.innerHTML = '<option value="">Error al cargar títulos</option>';
+            categoriaSelect.innerHTML = '<option value="">Error al cargar categorías</option>';
+            categoriaSelect.disabled = true;
         });
 };
 
@@ -589,7 +601,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const ciudad = document.getElementById('ciudad');
     const centro_estudios = document.getElementById('centro_estudios');
     const nivel_educativo_id = document.getElementById('nivel_educativo_id');
-    const titulo_id = document.getElementById('titulo_id');
+    const categoria_id = document.getElementById('categoria_id');
     const numero_seguridad_social = document.getElementById('numero_seguridad_social');
     const password = document.getElementById('password');
     const password_confirmation = document.getElementById('password_confirmation');
@@ -609,7 +621,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 ciudad.innerHTML = '<option value="">Selecciona una ciudad</option>';
                 centro_estudios.innerHTML = '<option value="">Primero selecciona una ciudad</option>';
                 nivel_educativo_id.innerHTML = '<option value="">Primero selecciona un centro</option>';
-                titulo_id.innerHTML = '<option value="">Primero selecciona un nivel educativo</option>';
+                categoria_id.innerHTML = '<option value="">Primero selecciona un nivel educativo</option>';
             }
         });
     }
@@ -623,7 +635,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Reiniciar campos dependientes
                 centro_estudios.innerHTML = '<option value="">Selecciona un centro educativo</option>';
                 nivel_educativo_id.innerHTML = '<option value="">Primero selecciona un centro</option>';
-                titulo_id.innerHTML = '<option value="">Primero selecciona un nivel educativo</option>';
+                categoria_id.innerHTML = '<option value="">Primero selecciona un nivel educativo</option>';
             }
         });
     }
@@ -636,7 +648,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Reiniciar campos dependientes
                 nivel_educativo_id.innerHTML = '<option value="">Selecciona un nivel educativo</option>';
-                titulo_id.innerHTML = '<option value="">Primero selecciona un nivel educativo</option>';
+                categoria_id.innerHTML = '<option value="">Primero selecciona un nivel educativo</option>';
             }
         });
     }
@@ -649,7 +661,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 window.validateNivelEducativo();
                 
                 // Reiniciar campos dependientes
-                titulo_id.innerHTML = '<option value="">Selecciona un título</option>';
+                categoria_id.innerHTML = '<option value="">Selecciona una categoría</option>';
             }
         });
     }
@@ -662,7 +674,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (ciudad) ciudad.addEventListener('blur', window.validateCiudad);
     if (centro_estudios) centro_estudios.addEventListener('blur', window.validateCentroEstudios);
     if (nivel_educativo_id) nivel_educativo_id.addEventListener('blur', window.validateNivelEducativo);
-    if (titulo_id) titulo_id.addEventListener('change', window.validateTitulo);
+    if (categoria_id) categoria_id.addEventListener('change', window.validateCategoria);
     if (numero_seguridad_social) numero_seguridad_social.addEventListener('blur', window.validateNumeroSeguridadSocial);
     if (password) password.addEventListener('blur', window.validatePassword);
     if (password_confirmation) password_confirmation.addEventListener('blur', window.validatePasswordConfirmation);
@@ -680,7 +692,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const isCiudadValid = window.validateCiudad();
             const isCentroEstudiosValid = window.validateCentroEstudios();
             const isNivelEducativoValid = window.validateNivelEducativo();
-            const isTituloValid = window.validateTitulo();
+            const isCategoriaValid = window.validateCategoria();
             const isNumeroSeguridadSocialValid = window.validateNumeroSeguridadSocial();
             const isPasswordValid = window.validatePassword();
             const isPasswordConfirmationValid = window.validatePasswordConfirmation();
@@ -689,7 +701,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Si hay errores, prevenir el envío del formulario
             if (!isNameValid || !isEmailValid || !isDNIValid || !isTelefonoValid || 
                 !isProvinciaValid || !isCiudadValid || !isCentroEstudiosValid || 
-                !isNivelEducativoValid || !isTituloValid || !isNumeroSeguridadSocialValid || 
+                !isNivelEducativoValid || !isCategoriaValid || !isNumeroSeguridadSocialValid || 
                 !isPasswordValid || !isPasswordConfirmationValid || !isCVValid) {
                 e.preventDefault();
             }

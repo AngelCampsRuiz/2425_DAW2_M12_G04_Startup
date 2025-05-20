@@ -17,29 +17,27 @@ class ProfesorController extends Controller
     {
         $query = User::where('role_id', 4);
 
-        // Aplicar filtro por nombre
-        if ($request->has('nombre') && !empty($request->nombre)) {
+        // Aplicar filtros
+        if ($request->filled('nombre')) {
             $query->where('nombre', 'like', '%' . $request->nombre . '%');
         }
-
-        // Aplicar filtro por email
-        if ($request->has('email') && !empty($request->email)) {
+        if ($request->filled('email')) {
             $query->where('email', 'like', '%' . $request->email . '%');
         }
-
-        // Aplicar filtro por DNI
-        if ($request->has('dni') && !empty($request->dni)) {
+        if ($request->filled('dni')) {
             $query->where('dni', 'like', '%' . $request->dni . '%');
         }
-
-        // Aplicar filtro por ciudad
-        if ($request->has('ciudad') && !empty($request->ciudad)) {
-            $query->where('ciudad', $request->ciudad);
+        if ($request->filled('ciudad')) {
+            $query->where('ciudad', 'like', '%' . $request->ciudad . '%');
+        }
+        if ($request->has('estado')) {
+            $query->where('activo', $request->estado);
         }
 
-        // Aplicar filtro por estado
-        if ($request->has('estado') && $request->estado !== '') {
-            $query->where('activo', $request->estado);
+        $profesores = $query->paginate(10);
+
+        if ($request->ajax()) {
+            return view('admin.profesores.tabla', compact('profesores'))->render();
         }
 
         // Obtener ciudades únicas para el selector
@@ -50,17 +48,6 @@ class ProfesorController extends Controller
                        ->pluck('ciudad')
                        ->sort()
                        ->values();
-
-        $profesores = $query->select('id', 'nombre', 'email', 'dni', 'telefono', 'ciudad', 'activo', 'imagen', 'created_at')
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
-
-        if ($request->ajax()) {
-            return response()->json([
-                'tabla' => view('admin.profesores.tabla', compact('profesores'))->render(),
-                'pagination' => $profesores->links()->toHtml()
-            ]);
-        }
 
         return view('admin.profesores.index', compact('profesores', 'ciudades'));
     }
@@ -95,7 +82,7 @@ class ProfesorController extends Controller
             if ($request->hasFile('imagen')) {
                 $imagen = $request->file('imagen');
                 $nombreImagen = time() . '_' . $imagen->getClientOriginalName();
-                $imagen->move(public_path('public/profile_images'), $nombreImagen);
+                $imagen->move(public_path('profile_images'), $nombreImagen);
                 $imagenPath = $nombreImagen;
             }
 
@@ -126,7 +113,7 @@ class ProfesorController extends Controller
             
             // Si se subió una imagen, eliminarla
             if (isset($imagenPath)) {
-                $imagenPath = public_path('public/profile_images/' . $imagenPath);
+                $imagenPath = public_path('profile_images/' . $imagenPath);
                 if (file_exists($imagenPath)) {
                     unlink($imagenPath);
                 }
@@ -146,16 +133,19 @@ class ProfesorController extends Controller
         return response()->json([
             'profesor' => [
                 'id' => $profesor->id,
-                'nombre' => $profesor->nombre,
-                'email' => $profesor->email,
-                'dni' => $profesor->dni,
-                'telefono' => $profesor->telefono,
-                'ciudad' => $profesor->ciudad,
-                'fecha_nacimiento' => $profesor->fecha_nacimiento,
-                'sitio_web' => $profesor->sitio_web,
-                'descripcion' => $profesor->descripcion,
-                'activo' => $profesor->activo,
-                'imagen' => $profesor->imagen
+                'user' => [
+                    'id' => $profesor->id,
+                    'nombre' => $profesor->nombre,
+                    'email' => $profesor->email,
+                    'dni' => $profesor->dni,
+                    'telefono' => $profesor->telefono,
+                    'ciudad' => $profesor->ciudad,
+                    'fecha_nacimiento' => $profesor->fecha_nacimiento,
+                    'sitio_web' => $profesor->sitio_web,
+                    'descripcion' => $profesor->descripcion,
+                    'activo' => $profesor->activo,
+                    'imagen' => $profesor->imagen
+                ]
             ]
         ]);
     }
@@ -163,6 +153,44 @@ class ProfesorController extends Controller
     public function update(Request $request, $id)
     {
         $user = User::where('role_id', 4)->findOrFail($id);
+
+        // Si la solicitud solo contiene el campo 'activo', es una operación de activar/desactivar
+        if ($request->has('activo') && count(array_filter($request->except(['_method', '_token']))) <= 1) {
+            try {
+                DB::beginTransaction();
+                
+                $user->update([
+                    'activo' => $request->activo
+                ]);
+                
+                DB::commit();
+                
+                $mensaje = $request->activo ? 'Profesor activado exitosamente' : 'Profesor desactivado exitosamente';
+                
+                if ($request->ajax()) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => $mensaje
+                    ]);
+                }
+                
+                return redirect()->route('admin.profesores.index')
+                    ->with('success', $mensaje);
+            } catch (\Exception $e) {
+                DB::rollBack();
+                
+                if ($request->ajax()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Error al actualizar el estado del profesor: ' . $e->getMessage()
+                    ], 500);
+                }
+                
+                return redirect()->back()
+                    ->with('error', 'Error al actualizar el estado del profesor: ' . $e->getMessage())
+                    ->withInput();
+            }
+        }
 
         $validator = Validator::make($request->all(), [
             'nombre' => ['required', 'string', 'max:255'],
@@ -192,7 +220,7 @@ class ProfesorController extends Controller
             if ($request->hasFile('imagen')) {
                 // Eliminar imagen anterior si existe
                 if ($user->imagen) {
-                    $imagenPath = public_path('public/profile_images/' . $user->imagen);
+                    $imagenPath = public_path('profile_images/' . $user->imagen);
                     if (file_exists($imagenPath)) {
                         unlink($imagenPath);
                     }
@@ -200,12 +228,12 @@ class ProfesorController extends Controller
                 
                 $imagen = $request->file('imagen');
                 $nombreImagen = time() . '_' . $imagen->getClientOriginalName();
-                $imagen->move(public_path('public/profile_images'), $nombreImagen);
+                $imagen->move(public_path('profile_images'), $nombreImagen);
                 $user->imagen = $nombreImagen;
             } elseif ($request->has('eliminar_imagen_actual') && $request->eliminar_imagen_actual == '1') {
                 // Eliminar la imagen actual si se ha solicitado
                 if ($user->imagen) {
-                    $imagenPath = public_path('public/profile_images/' . $user->imagen);
+                    $imagenPath = public_path('profile_images/' . $user->imagen);
                     if (file_exists($imagenPath)) {
                         unlink($imagenPath);
                     }
@@ -224,7 +252,7 @@ class ProfesorController extends Controller
             $user->fecha_nacimiento = $request->fecha_nacimiento;
             $user->sitio_web = $request->sitio_web;
             $user->descripcion = $request->descripcion;
-            $user->activo = true;
+            $user->activo = $request->has('activo');
             $user->save();
 
             DB::commit();
@@ -250,28 +278,22 @@ class ProfesorController extends Controller
             
             $profesor = User::where('role_id', 4)->findOrFail($id);
             
-            // Eliminar imagen si existe
-            if ($profesor->imagen) {
-                $imagenPath = public_path('public/profile_images/' . $profesor->imagen);
-                if (file_exists($imagenPath)) {
-                    unlink($imagenPath);
-                }
-            }
-            
-            $profesor->delete();
+            // Desactivar el profesor en lugar de eliminarlo
+            $profesor->update(['activo' => false]);
             
             DB::commit();
             
             return response()->json([
                 'success' => true,
-                'message' => 'Profesor eliminado correctamente'
+                'message' => 'Profesor desactivado correctamente'
             ]);
             
         } catch (\Exception $e) {
             DB::rollBack();
+            
             return response()->json([
                 'success' => false,
-                'message' => 'Error al eliminar el profesor: ' . $e->getMessage()
+                'message' => 'Error al desactivar el profesor: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -285,7 +307,7 @@ class ProfesorController extends Controller
             
             // Eliminar imagen si existe
             if ($profesor->imagen) {
-                $imagenPath = public_path('public/profile_images/' . $profesor->imagen);
+                $imagenPath = public_path('profile_images/' . $profesor->imagen);
                 if (file_exists($imagenPath)) {
                     unlink($imagenPath);
                 }

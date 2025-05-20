@@ -272,7 +272,7 @@
                                     {{-- IMAGEN DE LA EMPRESA --}}
                                     <div class="w-1/3 bg-gray-50 flex items-center justify-center border-r border-gray-100" style="min-height: 160px;">
                                         <a href="{{ route('profile.show', $publication->empresa->user->id) }}" class="p-3 flex justify-center items-center h-full w-full">
-                                            <img src="{{ asset('public/profile_images/' . ($publication->empresa->user->imagen ?? 'company-default.png')) }}" 
+                                            <img src="{{ asset('profile_images/' . ($publication->empresa->user->imagen ?? 'company-default.png')) }}" 
                                                 alt="{{ $publication->empresa->user->nombre }}"
                                                 class="max-w-[90%] max-h-[90px] object-contain hover:scale-105 m-auto">
                                         </a>
@@ -361,7 +361,7 @@
                                     {{-- IMAGEN DE LA EMPRESA --}}
                                     <div class="w-full md:w-1/6 bg-gray-50 flex items-center justify-center p-4 md:border-r border-gray-100" style="min-height: 120px;">
                                         <a href="{{ route('profile.show', $publication->empresa->user->id) }}" class="block w-full h-full flex items-center justify-center">
-                                            <img src="{{ asset('public/profile_images/' . ($publication->empresa->user->imagen ?? 'company-default.png')) }}" 
+                                            <img src="{{ asset('profile_images/' . ($publication->empresa->user->imagen ?? 'company-default.png')) }}" 
                                                 alt="{{ $publication->empresa->user->nombre }}"
                                                 class="max-h-[80px] object-contain hover:scale-105 m-auto">
                                         </a>
@@ -792,7 +792,7 @@
                 const fechaFinValue = fechaFin.value;
                 const horasTotalesMinValue = horasTotalesMin.value;
                 const horasTotalesMaxValue = horasTotalesMax.value;
-                const favoritosValue = favoritosCheckbox && favoritosCheckbox.checked ? 'on' : 'off';
+                const favoritosValue = 'off';
 
                 const params = new URLSearchParams();
                 if (searchTerm) params.append('search', searchTerm);

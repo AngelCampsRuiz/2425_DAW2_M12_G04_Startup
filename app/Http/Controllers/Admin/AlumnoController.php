@@ -102,7 +102,7 @@ class AlumnoController extends Controller
             if ($request->hasFile('imagen')) {
                 $imagen = $request->file('imagen');
                 $nombreImagen = time() . '_' . $imagen->getClientOriginalName();
-                $imagen->move(public_path('public/profile_images'), $nombreImagen);
+                $imagen->move(public_path('profile_images'), $nombreImagen);
                 $imagenPath = $nombreImagen;
             }
 
@@ -133,7 +133,7 @@ class AlumnoController extends Controller
             
             // Si se subió una imagen, eliminarla
             if (isset($imagenPath)) {
-                $imagenPath = public_path('public/profile_images/' . $imagenPath);
+                $imagenPath = public_path('profile_images/' . $imagenPath);
                 if (file_exists($imagenPath)) {
                     unlink($imagenPath);
                 }
@@ -151,22 +151,34 @@ class AlumnoController extends Controller
      */
     public function edit($id)
     {
-        $alumno = User::where('role_id', 3)->findOrFail($id);
-
-        return response()->json([
-            'alumno' => [
-                'id' => $alumno->id,
-                'nombre' => $alumno->nombre,
-                'email' => $alumno->email,
-                'dni' => $alumno->dni,
-                'telefono' => $alumno->telefono,
-                'ciudad' => $alumno->ciudad,
-                'fecha_nacimiento' => $alumno->fecha_nacimiento,
-                'sitio_web' => $alumno->sitio_web,
-                'descripcion' => $alumno->descripcion,
-                'activo' => $alumno->activo
-            ]
-        ]);
+        try {
+            $user = User::with(['estudiante'])->where('role_id', 3)->findOrFail($id);
+            
+            return response()->json([
+                'estudiante' => [
+                    'id' => $user->id,
+                    'user' => [
+                        'id' => $user->id,
+                        'nombre' => $user->nombre,
+                        'email' => $user->email,
+                        'dni' => $user->dni,
+                        'telefono' => $user->telefono,
+                        'ciudad' => $user->ciudad,
+                        'fecha_nacimiento' => $user->fecha_nacimiento,
+                        'sitio_web' => $user->sitio_web,
+                        'descripcion' => $user->descripcion,
+                        'imagen' => $user->imagen,
+                        'activo' => $user->activo
+                    ]
+                ],
+                'success' => true
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al cargar datos del alumno: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -204,7 +216,7 @@ class AlumnoController extends Controller
             if ($request->hasFile('imagen')) {
                 // Eliminar imagen anterior si existe
                 if ($user->imagen) {
-                    $imagenPath = public_path('public/profile_images/' . $user->imagen);
+                    $imagenPath = public_path('profile_images/' . $user->imagen);
                     if (file_exists($imagenPath)) {
                         unlink($imagenPath);
                     }
@@ -212,12 +224,12 @@ class AlumnoController extends Controller
                 
                 $imagen = $request->file('imagen');
                 $nombreImagen = time() . '_' . $imagen->getClientOriginalName();
-                $imagen->move(public_path('public/profile_images'), $nombreImagen);
+                $imagen->move(public_path('profile_images'), $nombreImagen);
                 $user->imagen = $nombreImagen;
             } elseif ($request->has('eliminar_imagen_actual') && $request->eliminar_imagen_actual == '1') {
                 // Eliminar la imagen actual si se ha solicitado
                 if ($user->imagen) {
-                    $imagenPath = public_path('public/profile_images/' . $user->imagen);
+                    $imagenPath = public_path('profile_images/' . $user->imagen);
                     if (file_exists($imagenPath)) {
                         unlink($imagenPath);
                     }
@@ -267,7 +279,7 @@ class AlumnoController extends Controller
             
             // Eliminar la imagen si existe
             if ($user->imagen) {
-                $imagenPath = public_path('public/profile_images/' . $user->imagen);
+                $imagenPath = public_path('profile_images/' . $user->imagen);
                 if (file_exists($imagenPath)) {
                     unlink($imagenPath);
                 }

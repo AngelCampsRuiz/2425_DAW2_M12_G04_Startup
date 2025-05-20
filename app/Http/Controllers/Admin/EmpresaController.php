@@ -64,7 +64,7 @@ class EmpresaController extends Controller
 
         if (request()->ajax()) {
             return response()->json([
-                'tabla' => view('admin.empresas.tabla', compact('empresas'))->render()
+                'tabla' => view('admin.empresas.index', compact('empresas', 'ciudades'))->render()
             ]);
         }
 
@@ -88,6 +88,7 @@ class EmpresaController extends Controller
             'latitud' => 'nullable|numeric',
             'longitud' => 'nullable|numeric',
             'provincia' => 'required|string|max:255',
+            'descripcion' => 'nullable|string|max:500',
         ]);
 
         // Iniciar transacción
@@ -106,7 +107,7 @@ class EmpresaController extends Controller
             if ($request->hasFile('imagen')) {
                 $imagen = $request->file('imagen');
                 $nombreImagen = time() . '_' . $imagen->getClientOriginalName();
-                $imagen->move(public_path('public/profile_images'), $nombreImagen);
+                $imagen->move(public_path('profile_images'), $nombreImagen);
                 $imagenPath = $nombreImagen;
             }
 
@@ -191,6 +192,50 @@ class EmpresaController extends Controller
         $empresa = Empresa::findOrFail($id);
         $user = $empresa->user;
 
+        // Si la solicitud solo contiene el campo 'activo', es una operación de activar/desactivar
+        if ($request->has('activo') && count(array_filter($request->except(['_method', '_token']))) <= 1) {
+            try {
+                DB::beginTransaction();
+                
+                // Actualizar estado de la empresa
+                $empresa->update([
+                    'activo' => $request->activo
+                ]);
+                
+                // Actualizar estado del usuario asociado
+                $user->update([
+                    'activo' => $request->activo
+                ]);
+                
+                DB::commit();
+                
+                $mensaje = $request->activo ? 'Empresa activada exitosamente' : 'Empresa desactivada exitosamente';
+                
+                if ($request->ajax()) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => $mensaje
+                    ]);
+                }
+                
+                return redirect()->route('admin.empresas.index')
+                    ->with('success', $mensaje);
+            } catch (\Exception $e) {
+                DB::rollBack();
+                
+                if ($request->ajax()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Error al actualizar el estado de la empresa: ' . $e->getMessage()
+                    ], 500);
+                }
+                
+                return redirect()->back()
+                    ->with('error', 'Error al actualizar el estado de la empresa: ' . $e->getMessage())
+                    ->withInput();
+            }
+        }
+
         $rules = [
             'nombre' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:user,email,'.$user->id,
@@ -201,6 +246,7 @@ class EmpresaController extends Controller
             'latitud' => 'nullable|numeric',
             'longitud' => 'nullable|numeric',
             'provincia' => 'required|string|max:255',
+            'descripcion' => 'nullable|string|max:500',
         ];
 
         if ($request->filled('password')) {
@@ -221,7 +267,7 @@ class EmpresaController extends Controller
                 'fecha_nacimiento' => $request->input('fecha_nacimiento') ?? null,
                 'ciudad' => $request->input('ciudad') ?? null,
                 'dni' => $request->input('dni'),
-                'activo' => $request->has('activo') ? true : false,
+                'activo' => $request->has('activo'),
                 'sitio_web' => $request->input('sitio_web') ?? null,
                 'telefono' => $request->input('telefono') ?? null,
                 'descripcion' => $request->input('descripcion') ?? null,
@@ -231,7 +277,7 @@ class EmpresaController extends Controller
             if ($request->hasFile('imagen')) {
                 // Eliminar imagen anterior si existe
                 if ($user->imagen) {
-                    $imagenPath = public_path('public/profile_images/' . $user->imagen);
+                    $imagenPath = public_path('profile_images/' . $user->imagen);
                     if (file_exists($imagenPath)) {
                         unlink($imagenPath);
                     }
@@ -240,19 +286,19 @@ class EmpresaController extends Controller
                 // Guardar nueva imagen
                 $imagen = $request->file('imagen');
                 $nombreImagen = time() . '_' . $imagen->getClientOriginalName();
-                $imagen->move(public_path('public/profile_images'), $nombreImagen);
+                $imagen->move(public_path('profile_images'), $nombreImagen);
                 $imagenPath = $nombreImagen;
                 $userData['imagen'] = $imagenPath;
             } elseif ($request->has('eliminar_imagen_actual') && $user->imagen) {
                 // Si se solicita eliminar la imagen actual
-                $imagenPath = public_path('public/profile_images/' . $user->imagen);
+                $imagenPath = public_path('profile_images/' . $user->imagen);
                 if (file_exists($imagenPath)) {
                     unlink($imagenPath);
                 }
                 $userData['imagen'] = null;
             }
-
-            // Si se proporcionó una nueva contraseña, actualizarla
+            
+            // Actualizar contraseña si se proporciona
             if ($request->filled('password')) {
                 $userData['password'] = Hash::make($request->input('password'));
             }
@@ -263,9 +309,10 @@ class EmpresaController extends Controller
             $empresa->update([
                 'cif' => $request->input('cif'),
                 'direccion' => $request->input('direccion'),
-                'provincia' => $request->input('provincia') ?? null,
-                'latitud' => $request->input('latitud') ?? $empresa->latitud,
-                'longitud' => $request->input('longitud') ?? $empresa->longitud,
+                'provincia' => $request->input('provincia'),
+                'latitud' => $request->input('latitud') ?? 0,
+                'longitud' => $request->input('longitud') ?? 0,
+                'activo' => $request->has('activo'),
             ]);
 
             DB::commit();
@@ -287,8 +334,7 @@ class EmpresaController extends Controller
             if ($request->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Error al actualizar la empresa: ' . $e->getMessage(),
-                    'errors' => ['general' => ['Error al actualizar la empresa: ' . $e->getMessage()]]
+                    'message' => 'Error al actualizar la empresa: ' . $e->getMessage()
                 ], 500);
             }
 
@@ -299,59 +345,44 @@ class EmpresaController extends Controller
     }
 
     /**
-     * Elimina una empresa
+     * Desactiva una empresa en lugar de eliminarla
      */
     public function destroy($id)
     {
-        // Buscar la empresa con relaciones
-        $empresa = Empresa::with(['user', 'publicaciones'])->findOrFail($id);
-
-        // Iniciar transacción
-        DB::beginTransaction();
-
         try {
-            // Verificar si tiene publicaciones
-            if ($empresa->publicaciones->count() > 0) {
-                throw new \Exception('No se puede eliminar la empresa porque tiene publicaciones asociadas');
-            }
-
-            // Eliminar la imagen si existe
-            if ($empresa->user->imagen) {
-                $imagenPath = public_path('public/profile_images/' . $empresa->user->imagen);
-                if (file_exists($imagenPath)) {
-                    unlink($imagenPath);
-                }
-            }
-
-            // Eliminar primero la empresa y luego el usuario
-            $empresa->delete();
-            $empresa->user->delete();
-
+            DB::beginTransaction();
+            
+            $empresa = Empresa::findOrFail($id);
+            $usuario = $empresa->user;
+            
+            // Desactivar la empresa y el usuario
+            $empresa->update(['activo' => false]);
+            $usuario->update(['activo' => false]);
+            
             DB::commit();
 
             if (request()->ajax()) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'Empresa eliminada correctamente'
+                    'message' => 'Empresa desactivada correctamente'
                 ]);
             }
 
             return redirect()->route('admin.empresas.index')
-                ->with('success', 'Empresa eliminada correctamente');
-
+                ->with('success', 'Empresa desactivada correctamente');
+                
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error al eliminar empresa: ' . $e->getMessage());
-
+            
             if (request()->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Error al eliminar la empresa: ' . $e->getMessage()
+                    'message' => 'Error al desactivar la empresa: ' . $e->getMessage()
                 ], 500);
             }
-
-            return redirect()->back()
-                ->withErrors(['general' => 'Error al eliminar la empresa: ' . $e->getMessage()]);
+            
+            return redirect()->route('admin.empresas.index')
+                ->with('error', 'Error al desactivar la empresa: ' . $e->getMessage());
         }
     }
 
@@ -372,7 +403,7 @@ class EmpresaController extends Controller
 
             // Eliminar la imagen si existe
             if ($empresa && $empresa->user && $empresa->user->imagen) {
-                $imagenPath = public_path('public/profile_images/' . $empresa->user->imagen);
+                $imagenPath = public_path('profile_images/' . $empresa->user->imagen);
                 if (file_exists($imagenPath)) {
                     unlink($imagenPath);
                 }

@@ -12,6 +12,7 @@ class Estudiante extends Model
     protected $table = 'estudiantes';
 
     protected $fillable = [
+        'id',
         'user_id',
         'institucion_id',
         'docente_id',
@@ -21,9 +22,10 @@ class Estudiante extends Model
         'centro_educativo',
         'cv_pdf',
         'numero_seguridad_social',
-        'titulo_id',
+        'categoria_id',
         'conocimientos_previos',
-        'intereses'
+        'intereses',
+        'activo'
     ];
 
     // Indicar que la clave primaria no es autoincremental
@@ -90,8 +92,8 @@ class Estudiante extends Model
         return $this->hasMany(SolicitudEstudiante::class);
     }
 
-    public function titulo()
+    public function categoria()
     {
-        return $this->belongsTo(Titulo::class, 'titulo_id');
+        return $this->belongsTo(Categoria::class, 'categoria_id');
     }
 }

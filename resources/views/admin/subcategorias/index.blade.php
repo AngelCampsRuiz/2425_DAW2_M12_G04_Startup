@@ -91,7 +91,38 @@
                     </div>
                 </div>
             </div>
+            
+            <div class="relative">
+                <label for="filtro_estado" class="block text-sm font-medium text-purple-700 mb-2">Estado</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <select id="filtro_estado" class="pl-10 w-full rounded-lg border-purple-200 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50 appearance-none bg-white">
+                        <option value="">Todas</option>
+                        <option value="1">Activas</option>
+                        <option value="0">Inactivas</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                        <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
         </div>
+    </div>
+
+    <!-- Botón para crear nueva subcategoría -->
+    <div class="flex justify-between items-center mb-4">
+        <div class="text-sm text-gray-600">
+            Mostrando {{ $subcategorias->count() }} subcategorías de {{ $subcategorias->total() }}
+        </div>
+        <button class="btn-crear bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 transition-colors duration-200">
+            Nueva Subcategoría
+        </button>
     </div>
 
     <!-- Contenedor de la tabla -->
@@ -149,20 +180,21 @@
     <div id="modal-eliminar" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
         <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
             <div class="mt-3">
-                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Confirmar Eliminación</h3>
-                <p class="text-sm text-gray-500">¿Estás seguro de que deseas eliminar esta subcategoría?</p>
+                <h3 id="action-title" class="text-lg leading-6 font-medium text-gray-900 mb-4">Confirmar Desactivación</h3>
+                <p id="action-message" class="text-sm text-gray-500">¿Estás seguro de que deseas desactivar esta subcategoría? Las subcategorías desactivadas no serán visibles para los usuarios.</p>
                 
                 <form id="form-eliminar" method="POST" class="mt-4">
                     @csrf
-                    @method('DELETE')
+                    @method('PUT')
                     <input type="hidden" id="eliminar_id" name="subcategoria_id">
+                    <input type="hidden" id="is_active" name="activo" value="0">
                     
                     <div class="flex justify-end space-x-3">
                         <button type="button" id="btn-cancelar-eliminar" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded transition duration-300">
                             Cancelar
                         </button>
-                        <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition duration-300">
-                            Eliminar
+                        <button type="submit" id="action-button" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition duration-300">
+                            Desactivar
                         </button>
                     </div>
                 </form>
@@ -213,14 +245,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 cargarSubcategoria(id);
             }
             
-            // Botón de eliminar (delegación mejorada)
+            // Botón de eliminar/desactivar (delegación mejorada)
             const btnEliminar = e.target.closest('.btn-eliminar');
             if (btnEliminar) {
                 e.preventDefault(); // Evitar comportamiento por defecto
                 const id = btnEliminar.getAttribute('data-id');
-                document.getElementById('eliminar_id').value = id;
-                document.getElementById('form-eliminar').setAttribute('action', '{{ route('admin.subcategorias.destroy', ['subcategoria' => '__ID__']) }}'.replace('__ID__', id));
-                document.getElementById('modal-eliminar').classList.remove('hidden');
+                verificarEstadoSubcategoria(id);
             }
             
             // Botones de cerrar y cancelar
@@ -243,6 +273,127 @@ document.addEventListener('DOMContentLoaded', function() {
                 actualizarTabla(url);
             }
         });
+        
+        // Manejo del formulario de desactivación/activación
+        const formEliminar = document.getElementById('form-eliminar');
+        if (formEliminar) {
+            formEliminar.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const id = document.getElementById('eliminar_id').value;
+                const isActive = document.getElementById('is_active').value === '1';
+                
+                fetch(`/admin/subcategorias/${id}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({
+                        _method: 'PUT',
+                        activo: isActive ? 0 : 1
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('modal-eliminar').classList.add('hidden');
+                        mostrarNotificacion(data.message);
+                        actualizarTabla();
+                    } else {
+                        alert(data.message || 'Ha ocurrido un error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Ha ocurrido un error al procesar la solicitud');
+                });
+            });
+        }
+
+        // Función para verificar el estado de la subcategoría antes de mostrar el modal
+        function verificarEstadoSubcategoria(id) {
+            fetch(`/admin/subcategorias/${id}/edit`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const isActive = data.subcategoria.activo;
+                document.getElementById('eliminar_id').value = id;
+                document.getElementById('is_active').value = isActive ? '1' : '0';
+                document.getElementById('form-eliminar').setAttribute('action', `/admin/subcategorias/${id}`);
+                
+                // Actualizar título y mensaje según el estado
+                if (isActive) {
+                    document.getElementById('action-title').textContent = 'Confirmar Desactivación';
+                    document.getElementById('action-message').textContent = '¿Estás seguro de que deseas desactivar esta subcategoría? Las subcategorías desactivadas no serán visibles para los usuarios.';
+                    document.getElementById('action-button').textContent = 'Desactivar';
+                    document.getElementById('action-button').classList.remove('bg-green-600', 'hover:bg-green-700');
+                    document.getElementById('action-button').classList.add('bg-red-600', 'hover:bg-red-700');
+                } else {
+                    document.getElementById('action-title').textContent = 'Confirmar Activación';
+                    document.getElementById('action-message').textContent = '¿Estás seguro de que deseas activar esta subcategoría? Las subcategorías activas serán visibles para los usuarios.';
+                    document.getElementById('action-button').textContent = 'Activar';
+                    document.getElementById('action-button').classList.remove('bg-red-600', 'hover:bg-red-700');
+                    document.getElementById('action-button').classList.add('bg-green-600', 'hover:bg-green-700');
+                }
+                
+                document.getElementById('modal-eliminar').classList.remove('hidden');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al obtener información de la subcategoría');
+            });
+        }
+        
+        // Función para cargar subcategoría
+        function cargarSubcategoria(id) {
+            console.log('Cargando subcategoría ID:', id);
+            fetch('{{ route('admin.subcategorias.edit', ['subcategoria' => '__ID__']) }}'.replace('__ID__', id), {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Datos de subcategoría recibidos:', data);
+                if (data.success) {
+                    resetForm();
+                    
+                    const subcategoria = data.subcategoria;
+                    
+                    const subcategoriaIdField = document.getElementById('subcategoria_id');
+                    const nombreField = document.getElementById('nombre_subcategoria');
+                    const categoriaField = document.getElementById('categoria_id');
+                    const tituloModal = document.getElementById('modal-titulo');
+                    const formSubcategoria = document.getElementById('form-subcategoria');
+                    const modalSubcategoria = document.getElementById('modal-subcategoria');
+                    
+                    if (subcategoriaIdField) subcategoriaIdField.value = subcategoria.id;
+                    if (nombreField) nombreField.value = subcategoria.nombre_subcategoria;
+                    if (categoriaField) categoriaField.value = subcategoria.categoria_id;
+                    
+                    if (tituloModal) tituloModal.textContent = 'Editar Subcategoría';
+                    if (formSubcategoria) formSubcategoria.setAttribute('action', '{{ route('admin.subcategorias.update', ['subcategoria' => '__ID__']) }}'.replace('__ID__', id));
+                    
+                    const formMethodField = document.getElementById('form_method');
+                    if (formMethodField) formMethodField.value = 'PUT';
+                    
+                    if (modalSubcategoria) modalSubcategoria.classList.remove('hidden');
+                } else {
+                    mostrarNotificacion('Error al cargar la subcategoría', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                mostrarNotificacion('Error al cargar la subcategoría', 'error');
+            });
+        }
         
         // Manejo de envío de formularios
         const formSubcategoria = document.getElementById('form-subcategoria');
@@ -296,53 +447,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
         
-        // Formulario de eliminar
-        const formEliminar = document.getElementById('form-eliminar');
-        if (formEliminar) {
-            formEliminar.addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                // Obtener el ID directamente
-                const subcategoriaId = document.getElementById('eliminar_id').value;
-                if (!subcategoriaId) {
-                    console.error("Error: ID de subcategoría no encontrado para eliminación");
-                    mostrarNotificacion('Error: ID de subcategoría no encontrado', 'error');
-                    return;
-                }
-                
-                const url = '{{ route('admin.subcategorias.destroy', ['subcategoria' => '__ID__']) }}'.replace('__ID__', subcategoriaId);
-                const formData = new FormData(this);
-                console.log("Enviando eliminación para ID:", subcategoriaId, "a URL:", url);
-                
-                fetch(url, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('modal-eliminar').classList.add('hidden');
-                    
-                    console.log('Respuesta eliminación:', data);
-                    if (data.success) {
-                        mostrarNotificacion(data.message || 'Subcategoría eliminada correctamente', 'success');
-                        actualizarTabla();
-                    } else if (data.message) {
-                        mostrarNotificacion(data.message, 'error');
-                    } else {
-                        mostrarNotificacion('Error al eliminar la subcategoría', 'error');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error al eliminar:', error);
-                    mostrarNotificacion('Error al intentar eliminar la subcategoría', 'error');
-                });
-            });
-        }
-        
         // Detectar cuando se cierra el modal al hacer clic fuera de él
         const modales = document.querySelectorAll('#modal-subcategoria, #modal-eliminar');
         modales.forEach(modal => {
@@ -368,52 +472,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 errorsList.innerHTML = '';
             }
         }
-    }
-    
-    function cargarSubcategoria(id) {
-        console.log('Cargando subcategoría ID:', id);
-        fetch('{{ route('admin.subcategorias.edit', ['subcategoria' => '__ID__']) }}'.replace('__ID__', id), {
-            method: 'GET',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                'Accept': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Datos de subcategoría recibidos:', data);
-            if (data.success) {
-                resetForm();
-                
-                const subcategoria = data.subcategoria;
-                
-                const subcategoriaIdField = document.getElementById('subcategoria_id');
-                const nombreField = document.getElementById('nombre_subcategoria');
-                const categoriaField = document.getElementById('categoria_id');
-                const tituloModal = document.getElementById('modal-titulo');
-                const formSubcategoria = document.getElementById('form-subcategoria');
-                const modalSubcategoria = document.getElementById('modal-subcategoria');
-                
-                if (subcategoriaIdField) subcategoriaIdField.value = subcategoria.id;
-                if (nombreField) nombreField.value = subcategoria.nombre_subcategoria;
-                if (categoriaField) categoriaField.value = subcategoria.categoria_id;
-                
-                if (tituloModal) tituloModal.textContent = 'Editar Subcategoría';
-                if (formSubcategoria) formSubcategoria.setAttribute('action', '{{ route('admin.subcategorias.update', ['subcategoria' => '__ID__']) }}'.replace('__ID__', id));
-                
-                const formMethodField = document.getElementById('form_method');
-                if (formMethodField) formMethodField.value = 'PUT';
-                
-                if (modalSubcategoria) modalSubcategoria.classList.remove('hidden');
-            } else {
-                mostrarNotificacion('Error al cargar la subcategoría', 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            mostrarNotificacion('Error al cargar la subcategoría', 'error');
-        });
     }
     
     function mostrarNotificacion(mensaje, tipo) {
@@ -502,12 +560,14 @@ let timeoutId = null;
 document.getElementById('filtro_nombre').addEventListener('input', debounceFilter);
 document.getElementById('filtro_categoria').addEventListener('change', aplicarFiltros);
 document.getElementById('filtro_publicaciones').addEventListener('change', aplicarFiltros);
+document.getElementById('filtro_estado').addEventListener('change', aplicarFiltros);
 
 // Resetear filtros
 document.getElementById('reset-filtros').addEventListener('click', function() {
     document.getElementById('filtro_nombre').value = '';
     document.getElementById('filtro_categoria').value = '';
     document.getElementById('filtro_publicaciones').value = '';
+    document.getElementById('filtro_estado').value = '';
     aplicarFiltros();
 });
 
@@ -525,7 +585,8 @@ function aplicarFiltros() {
     const filtros = {
         nombre: document.getElementById('filtro_nombre').value,
         categoria: document.getElementById('filtro_categoria').value,
-        publicaciones: document.getElementById('filtro_publicaciones').value
+        publicaciones: document.getElementById('filtro_publicaciones').value,
+        activo: document.getElementById('filtro_estado').value
     };
     
     const params = new URLSearchParams();
@@ -558,5 +619,18 @@ function refreshTable(queryString = '') {
         console.error('Error:', error);
     });
 }
+
+// Añadir la función openEditModal que falta
+window.openEditModal = function(id) {
+    cargarSubcategoria(id);
+};
+
+// Añadir la función openDeleteModal que falta
+window.openDeleteModal = function(id) {
+    verificarEstadoSubcategoria(id);
+};
 </script>
+
+<!-- Script de validaciones para subcategorías -->
+<script src="{{ asset('js/subcategorias-validaciones.js') }}"></script>
 @endsection 

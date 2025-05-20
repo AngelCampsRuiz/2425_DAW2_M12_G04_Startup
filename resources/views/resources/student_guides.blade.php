@@ -5,7 +5,7 @@
     <div class="max-w-6xl mx-auto">
         <!-- Encabezado -->
         <div class="text-center mb-12">
-            <h1 class="text-4xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent mb-4">{{ __('footer.student_guides') }}</h1>
+            <h1 class="text-4xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent mb-4">Guia para estudiantes</h1>
             <p class="text-lg text-gray-600 max-w-3xl mx-auto">Recursos y guías diseñados para ayudarte a alcanzar tus objetivos profesionales y destacar frente a los reclutadores.</p>
         </div>
         

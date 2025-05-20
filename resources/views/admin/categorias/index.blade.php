@@ -56,6 +56,27 @@
                     </div>
                 </div>
             </div>
+            
+            <div class="relative">
+                <label for="filtro_estado" class="block text-sm font-medium text-purple-700 mb-2">Estado</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <select id="filtro_estado" class="pl-10 w-full rounded-lg border-purple-200 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-500 focus:ring-opacity-50 appearance-none bg-white">
+                        <option value="">Todas</option>
+                        <option value="1">Activas</option>
+                        <option value="0">Inactivas</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                        <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -110,7 +131,7 @@
     <div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
         <div class="bg-white rounded-lg p-8 max-w-md w-full">
             <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-semibold text-gray-800">Confirmar Eliminación</h3>
+                <h3 class="text-xl font-semibold text-gray-800" id="actionTitle">Confirmar Desactivación</h3>
                 <button onclick="closeDeleteModal()" class="text-gray-500 hover:text-gray-700">
                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -118,19 +139,20 @@
                 </button>
             </div>
 
-            <p class="text-gray-600 mb-6">¿Estás seguro de que deseas eliminar esta categoría? Esta acción no se puede deshacer.</p>
+            <p class="text-gray-600 mb-6" id="actionMessage">¿Estás seguro de que deseas desactivar esta categoría? Las categorías desactivadas no serán visibles para los usuarios.</p>
 
             <form id="deleteForm" onsubmit="handleDelete(event)">
                 @csrf
                 @method('DELETE')
                 <input type="hidden" name="delete_id" id="delete_id">
+                <input type="hidden" name="is_active" id="is_active" value="1">
 
                 <div class="flex justify-end space-x-3">
                     <button type="button" onclick="closeDeleteModal()" class="px-4 py-2 text-gray-600 bg-gray-100 rounded-md hover:bg-gray-200">
                         Cancelar
                     </button>
-                    <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
-                        Eliminar
+                    <button type="submit" id="actionButton" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
+                        Desactivar
                     </button>
                 </div>
             </form>
@@ -144,11 +166,13 @@
         // Eventos para filtrado automático
         document.getElementById('filtro_nombre').addEventListener('input', debounceFilter);
         document.getElementById('filtro_subcategorias').addEventListener('change', aplicarFiltros);
+        document.getElementById('filtro_estado').addEventListener('change', aplicarFiltros);
         
         // Resetear filtros
         document.getElementById('reset-filtros').addEventListener('click', function() {
             document.getElementById('filtro_nombre').value = '';
             document.getElementById('filtro_subcategorias').value = '';
+            document.getElementById('filtro_estado').value = '';
             aplicarFiltros();
         });
 
@@ -165,7 +189,8 @@
         function aplicarFiltros() {
             const filtros = {
                 nombre: document.getElementById('filtro_nombre').value,
-                subcategorias: document.getElementById('filtro_subcategorias').value
+                subcategorias: document.getElementById('filtro_subcategorias').value,
+                activo: document.getElementById('filtro_estado').value
             };
             
             const params = new URLSearchParams();
@@ -245,9 +270,35 @@
         }
 
         function openDeleteModal(id) {
-            document.getElementById('delete_id').value = id;
-            document.getElementById('deleteModal').classList.remove('hidden');
-            document.getElementById('deleteModal').classList.add('flex');
+            fetch(`/admin/categorias/${id}/edit`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const isActive = data.categoria.activo;
+                document.getElementById('delete_id').value = id;
+                document.getElementById('is_active').value = isActive ? '1' : '0';
+                
+                // Actualizar título y mensaje según el estado
+                if (isActive) {
+                    document.getElementById('actionTitle').textContent = 'Confirmar Desactivación';
+                    document.getElementById('actionMessage').textContent = '¿Estás seguro de que deseas desactivar esta categoría? Las categorías desactivadas no serán visibles para los usuarios.';
+                    document.getElementById('actionButton').textContent = 'Desactivar';
+                    document.getElementById('actionButton').classList.remove('bg-green-600', 'hover:bg-green-700');
+                    document.getElementById('actionButton').classList.add('bg-red-600', 'hover:bg-red-700');
+                } else {
+                    document.getElementById('actionTitle').textContent = 'Confirmar Activación';
+                    document.getElementById('actionMessage').textContent = '¿Estás seguro de que deseas activar esta categoría? Las categorías activas serán visibles para los usuarios.';
+                    document.getElementById('actionButton').textContent = 'Activar';
+                    document.getElementById('actionButton').classList.remove('bg-red-600', 'hover:bg-red-700');
+                    document.getElementById('actionButton').classList.add('bg-green-600', 'hover:bg-green-700');
+                }
+                
+                document.getElementById('deleteModal').classList.remove('hidden');
+                document.getElementById('deleteModal').classList.add('flex');
+            });
         }
 
         function closeDeleteModal() {
@@ -290,11 +341,17 @@
         function handleDelete(event) {
             event.preventDefault();
             const id = document.getElementById('delete_id').value;
+            const isActive = document.getElementById('is_active').value === '1';
 
             fetch(`/admin/categorias/${id}`, {
-                method: 'DELETE',
+                method: 'PUT',
+                body: JSON.stringify({ 
+                    nombre_categoria: '',  // Mantenemos el nombre actual
+                    activo: isActive ? 0 : 1  // Invertimos el estado
+                }),
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Content-Type': 'application/json',
                     'X-Requested-With': 'XMLHttpRequest'
                 }
             })
@@ -302,16 +359,19 @@
             .then(data => {
                 if (data.success) {
                     closeDeleteModal();
-                    refreshTable();
                     showSuccessMessage(data.message);
+                    refreshTable();
                 } else {
-                    alert(data.message);
+                    alert(data.message || 'Ha ocurrido un error');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Ha ocurrido un error al eliminar la categoría');
+                alert('Ha ocurrido un error al actualizar la categoría');
             });
         }
     </script>
+
+    <!-- Script de validaciones para categorías -->
+    <script src="{{ asset('js/categorias-validaciones.js') }}"></script>
 @endsection 

@@ -262,7 +262,7 @@ class CompanyDashboardController extends Controller
             ->findOrFail($publicationId);
 
         $solicitudes = Solicitud::where('publicacion_id', $publicationId)
-            ->with(['estudiante.user', 'estudiante.titulo', 'chat'])
+            ->with(['estudiante.user', 'chat'])
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -311,9 +311,24 @@ class CompanyDashboardController extends Controller
                 'solicitud_id' => $solicitud->id
             ]);
 
-            // Redirigir al chat
+            // Si es AJAX, responde con JSON, si no, redirige
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'redirect' => route('chat.show', $chat->id),
+                    'message' => 'Solicitud aceptada y chat creado correctamente'
+                ]);
+            }
             return redirect()->route('chat.show', $chat->id)
                 ->with('success', 'Solicitud aceptada y chat creado correctamente');
+        }
+
+        // Siempre responde JSON si es AJAX
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Solicitud rechazada correctamente'
+            ]);
         }
 
         return back()->with('success', 'Estado de la solicitud actualizado correctamente');

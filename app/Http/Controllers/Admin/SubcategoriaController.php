@@ -37,6 +37,11 @@ class SubcategoriaController extends Controller
                 $query->whereHas('publicaciones');
             }
         }
+        
+        // Aplicar filtro por estado activo/inactivo
+        if ($request->has('activo') && $request->activo !== '') {
+            $query->where('activo', $request->activo);
+        }
 
         // Usar selectRaw para el conteo de publicaciones directamente
         $query->selectRaw('subcategorias.*, (SELECT COUNT(*) FROM publicaciones WHERE publicaciones.subcategoria_id = subcategorias.id) as publicaciones_count');
@@ -116,23 +121,59 @@ class SubcategoriaController extends Controller
      */
     public function update(Request $request, Subcategoria $subcategoria)
     {
-        $validated = $request->validate([
+        // Si la solicitud solo contiene el campo 'activo', es una operación de activar/desactivar
+        if ($request->has('activo') && count($request->all()) <= 3) {
+            $subcategoria->update([
+                'activo' => $request->activo
+            ]);
+
+            $mensaje = $request->activo ? 'Subcategoría activada exitosamente' : 'Subcategoría desactivada exitosamente';
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => $mensaje
+                ]);
+            }
+
+            return redirect()->route('admin.subcategorias.index')
+                ->with('success', $mensaje);
+        }
+
+        // Si no, es una actualización normal
+        $request->validate([
             'nombre_subcategoria' => 'required|string|max:255',
             'categoria_id' => 'required|exists:categorias,id'
         ]);
 
-        $subcategoria->update($validated);
-
-        if ($request->ajax()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Subcategoría actualizada exitosamente',
-                'subcategoria' => $subcategoria
+        try {
+            $subcategoria->update([
+                'nombre_subcategoria' => $request->nombre_subcategoria,
+                'categoria_id' => $request->categoria_id
             ]);
-        }
 
-        return redirect()->route('admin.subcategorias.index')
-            ->with('success', 'Subcategoría actualizada exitosamente');
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Subcategoría actualizada exitosamente'
+                ]);
+            }
+
+            return redirect()->route('admin.subcategorias.index')
+                ->with('success', 'Subcategoría actualizada exitosamente');
+                
+        } catch (\Exception $e) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error al actualizar la subcategoría: ' . $e->getMessage()
+                ], 500);
+            }
+            
+            return redirect()->back()
+                ->with('error', 'Error al actualizar la subcategoría: ' . $e->getMessage())
+                ->withInput();
+        }
     }
 
     /**
@@ -141,68 +182,32 @@ class SubcategoriaController extends Controller
     public function destroy(Subcategoria $subcategoria)
     {
         try {
-            DB::beginTransaction();
-            
-            // Extraer el ID para la verificación
-            $subcategoriaId = $subcategoria->id;
-            
-            // IMPORTANTE: No intentar usar relaciones o modelos directamente
-            // En lugar de eso, usar query builder para verificar existencia de publicaciones
-            $publicacionesExisten = DB::table('publicaciones')
-                ->where('subcategoria_id', $subcategoriaId)
-                ->exists();
-            
-            if ($publicacionesExisten) {
-                DB::rollBack();
-                // Obtener el conteo para el mensaje (solo si existen)
-                $publicacionesCount = DB::table('publicaciones')
-                    ->where('subcategoria_id', $subcategoriaId)
-                    ->count();
-                
-                if (request()->ajax()) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'No se puede eliminar la subcategoría porque tiene ' . $publicacionesCount . ' publicaciones asociadas'
-                    ], 422);
-                }
-                return redirect()->route('admin.subcategorias.index')
-                    ->with('error', 'No se puede eliminar la subcategoría porque tiene ' . $publicacionesCount . ' publicaciones asociadas');
-            }
-            
-            // Si llegamos aquí, significa que no hay publicaciones asociadas
-            // Eliminar la subcategoría con delete() del modelo
-            $subcategoria->delete();
-            
-            // Confirmar la transacción
-            DB::commit();
+            // Desactivar la subcategoría en lugar de eliminarla
+            $subcategoria->update(['activo' => false]);
             
             if (request()->ajax()) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'Subcategoría eliminada exitosamente'
+                    'message' => 'Subcategoría desactivada exitosamente'
                 ]);
             }
             
             return redirect()->route('admin.subcategorias.index')
-                ->with('success', 'Subcategoría eliminada exitosamente');
+                ->with('success', 'Subcategoría desactivada exitosamente');
                 
         } catch (\Exception $e) {
-            DB::rollBack();
-            
             // Registrar el error para depuración
-            \Log::error('Error al eliminar subcategoría: ' . $e->getMessage());
-            \Log::error('Trace: ' . $e->getTraceAsString());
+            \Log::error('Error al desactivar subcategoría: ' . $e->getMessage());
             
             if (request()->ajax()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Error al eliminar la subcategoría: ' . $e->getMessage(),
-                    'trace' => $e->getTraceAsString()
+                    'message' => 'Error al desactivar la subcategoría: ' . $e->getMessage()
                 ], 500);
             }
             
             return redirect()->route('admin.subcategorias.index')
-                ->with('error', 'Error al eliminar la subcategoría: ' . $e->getMessage());
+                ->with('error', 'Error al desactivar la subcategoría: ' . $e->getMessage());
         }
     }
 
