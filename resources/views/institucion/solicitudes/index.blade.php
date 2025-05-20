@@ -3,6 +3,62 @@
 @section('title', 'Gestión de Solicitudes')
 
 @section('content')
+<!-- Script para desactivar Pusher completamente en esta página -->
+<script>
+    // Ejecutar inmediatamente para interceptar antes de cualquier inicialización
+    (function() {
+        console.log('Desactivando Pusher y notificaciones para prevenir solicitudes infinitas');
+        
+        // Desactivar la función Pusher antes de que se inicialice
+        window.Pusher = function() {
+            console.log('Constructor de Pusher interceptado y desactivado');
+            return {
+                subscribe: function() { 
+                    console.log('Pusher.subscribe interceptado y desactivado');
+                    return {
+                        bind: function() { 
+                            console.log('Channel.bind interceptado y desactivado');
+                        }
+                    };
+                }
+            };
+        };
+        
+        // Asegurarnos de que cualquier intervalo de notificaciones existente se detenga
+        if (window.notificationInterval) {
+            clearInterval(window.notificationInterval);
+            window.notificationInterval = null;
+        }
+        
+        // Sobrescribir cualquier función de carga de notificaciones
+        window.loadNotifications = function() {
+            console.log('Función loadNotifications desactivada en página de solicitudes');
+            return false;
+        };
+        
+        // Al cargar la página, evitar cualquier inicialización de notificaciones
+        document.addEventListener('DOMContentLoaded', function() {
+            // Detener cualquier intervalo que pueda crearse
+            setInterval(function() {
+                if (window.notificationInterval) {
+                    clearInterval(window.notificationInterval);
+                    window.notificationInterval = null;
+                }
+            }, 1000);
+            
+            // Remover cualquier event listener relacionado con visibilidad
+            var originalAddEventListener = document.addEventListener;
+            document.addEventListener = function(type, listener, options) {
+                if (type === 'visibilitychange') {
+                    console.log('Interceptado intento de agregar visibilitychange listener');
+                    return;
+                }
+                return originalAddEventListener.call(document, type, listener, options);
+            };
+        });
+    })();
+</script>
+
 <div class="bg-gray-50 p-6 rounded-xl shadow-sm">
     <div class="mb-6">
         <h1 class="text-2xl font-bold text-gray-800">Solicitudes de Estudiantes</h1>
@@ -100,7 +156,7 @@
                         <div class="text-3xl font-bold text-gray-800">{{ $stats['aprobadas'] }}</div>
                         <div class="ml-1 text-sm text-gray-500 font-medium">aprobadas</div>
                     </div>
-                    <div class="text-sm font-medium text-gray-500">Aprobadas</div>
+                    <div class="text-sm font-medium text-gray-500">Solicitudes Aprobadas</div>
                 </div>
                 <div class="bg-green-100 p-3 rounded-full">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -125,7 +181,7 @@
                         <div class="text-3xl font-bold text-gray-800">{{ $stats['rechazadas'] }}</div>
                         <div class="ml-1 text-sm text-gray-500 font-medium">rechazadas</div>
                     </div>
-                    <div class="text-sm font-medium text-gray-500">Rechazadas</div>
+                    <div class="text-sm font-medium text-gray-500">Solicitudes Rechazadas</div>
                 </div>
                 <div class="bg-red-100 p-3 rounded-full">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -231,10 +287,16 @@
         <div class="bg-gray-50 px-5 py-4 border-b">
             <div class="flex items-center text-gray-700">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                 </svg>
-                <span class="font-medium">Listado de Solicitudes</span>
+                <span class="font-medium">Solicitudes de Estudiantes</span>
             </div>
+            
+            @if(isset($solicitudes) && $solicitudes->count() > 0)
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                    {{ $solicitudes->count() }} solicitudes
+                </span>
+            @endif
         </div>
         
         <div class="p-5">
@@ -243,24 +305,57 @@
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th scope="col" class="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                                <th scope="col" class="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estudiante</th>
-                                <th scope="col" class="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                                <th scope="col" class="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
-                                <th scope="col" class="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-                                <th scope="col" class="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Clase</th>
-                                <th scope="col" class="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                                <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estudiante</th>
+                                <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Título</th>
+                                <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                                <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha solicitud</th>
+                                <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                                <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             @foreach($solicitudes as $solicitud)
                                 <tr class="hover:bg-gray-50 transition-colors">
-                                    <td class="px-5 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $solicitud->id }}</td>
-                                    <td class="px-5 py-4 whitespace-nowrap text-sm text-gray-700">
-                                        <div class="font-medium">{{ $solicitud->estudiante->user->nombre ?? 'N/A' }}</div>
+                                    <td class="px-5 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="flex-shrink-0 h-10 w-10 relative">
+                                                <img class="h-10 w-10 rounded-full object-cover border-2 border-gray-200" 
+                                                    src="{{ $solicitud->estudiante->user->imagen ? asset('storage/' . $solicitud->estudiante->user->imagen) : asset('assets/images/default-avatar.png') }}" 
+                                                    alt="{{ $solicitud->estudiante->user->nombre }}"
+                                                    onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode($solicitud->estudiante->user->nombre) }}&color=7F9CF5&background=EBF4FF'">
+                                                <span class="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full ring-2 ring-white bg-yellow-400"></span>
+                                            </div>
+                                            <div class="ml-4">
+                                                <div class="text-sm font-medium text-gray-900">{{ $solicitud->estudiante->user->nombre }}</div>
+                                                <div class="text-xs text-gray-500">
+                                                    @if($solicitud->estado == 'pendiente')
+                                                        Pendiente de activación
+                                                    @elseif($solicitud->estado == 'aprobada')
+                                                        Activado {{ $solicitud->fecha_respuesta ? $solicitud->fecha_respuesta->diffForHumans() : '' }}
+                                                    @else
+                                                        Rechazado {{ $solicitud->fecha_respuesta ? $solicitud->fecha_respuesta->diffForHumans() : '' }}
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </div>
                                     </td>
-                                    <td class="px-5 py-4 whitespace-nowrap text-sm text-gray-500">{{ $solicitud->estudiante->user->email ?? 'N/A' }}</td>
-                                    <td class="px-5 py-4 whitespace-nowrap text-sm text-gray-500">{{ $solicitud->created_at->format('d/m/Y H:i') }}</td>
+                                    <td class="px-5 py-4 whitespace-nowrap">
+                                        @if($solicitud->estudiante->categoria)
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                                {{ $solicitud->estudiante->categoria->nombre_categoria }}
+                                            </span>
+                                        @else
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                                Sin categoría
+                                            </span>
+                                        @endif
+                                    </td>
+                                    <td class="px-5 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">{{ $solicitud->estudiante->user->email }}</div>
+                                    </td>
+                                    <td class="px-5 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {{ $solicitud->created_at ? $solicitud->created_at->format('d/m/Y H:i') : 'N/A' }}
+                                    </td>
                                     <td class="px-5 py-4 whitespace-nowrap">
                                         @if($solicitud->estado == 'pendiente')
                                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Pendiente</span>
@@ -268,17 +363,6 @@
                                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Aprobada</span>
                                         @elseif($solicitud->estado == 'rechazada')
                                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Rechazada</span>
-                                        @endif
-                                    </td>
-                                    <td class="px-5 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        @if($solicitud->estado == 'aprobada')
-                                            @if($solicitud->clase)
-                                                <span class="text-blue-600 font-medium">{{ $solicitud->clase->nombre }}</span>
-                                            @else
-                                                <span class="text-red-600 font-medium">No asignada</span>
-                                            @endif
-                                        @else
-                                            <span class="text-gray-400">N/A</span>
                                         @endif
                                     </td>
                                     <td class="px-5 py-4 whitespace-nowrap text-sm font-medium">
@@ -291,7 +375,7 @@
                                             </a>
                                             
                                             @if($solicitud->estado == 'pendiente')
-                                                <form action="{{ route('institucion.solicitudes.aprobar', $solicitud->id) }}" method="POST" class="inline-flex">
+                                                <form action="{{ route('institucion.solicitudes.aprobar', $solicitud->id) }}" method="POST" class="inline">
                                                     @csrf
                                                     <button type="submit" class="bg-green-100 text-green-700 hover:bg-green-200 rounded-lg p-2 transition-colors" title="Aprobar">
                                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -299,6 +383,12 @@
                                                         </svg>
                                                     </button>
                                                 </form>
+                                                
+                                                <button onclick="mostrarModalRechazar({{ $solicitud->id }})" class="bg-red-100 text-red-700 hover:bg-red-200 rounded-lg p-2 transition-colors" title="Rechazar">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                    </svg>
+                                                </button>
                                             @elseif($solicitud->estado == 'aprobada' && !$solicitud->clase_id)
                                                 <a href="{{ route('institucion.solicitudes.asignar-clase', $solicitud->id) }}" class="bg-purple-100 text-purple-700 hover:bg-purple-200 rounded-lg p-2 transition-colors" title="Asignar Clase">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -334,212 +424,40 @@
     </div>
 
     {{-- SECCIÓN DE ESTUDIANTES PENDIENTES DE ACTIVACIÓN --}}
-    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-        <div class="flex justify-between items-center bg-gray-50 px-5 py-4 border-b">
-            <div class="flex items-center text-gray-700">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
-                <span class="font-medium">Estudiantes Pendientes de Activación</span>
-            </div>
-            
-            @if(isset($estudiantesPendientes) && !$estudiantesPendientes->isEmpty())
-                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                    {{ $estudiantesPendientes->count() }} estudiantes
-                </span>
-            @endif
-        </div>
-        
-        <div class="p-5">
-            @if(!isset($estudiantesPendientes) || $estudiantesPendientes->isEmpty())
-                <div class="text-center py-10 px-4">
-                    <img src="{{ asset('assets/images/empty-state.svg') }}" alt="No hay estudiantes" class="w-32 h-32 mx-auto mb-4 opacity-75" onerror="this.src='https://uxwing.com/wp-content/themes/uxwing/download/education-school/student-icon.png'; this.classList.add('w-24', 'h-24');">
-                    <h3 class="text-lg font-medium text-gray-900 mb-1">No hay estudiantes pendientes</h3>
-                    <p class="text-gray-500 max-w-md mx-auto">Todos los estudiantes están activados. Cuando nuevos estudiantes se registren, aparecerán aquí para su activación.</p>
-                </div>
-            @else
-                <div class="overflow-x-auto rounded-lg">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estudiante</th>
-                                <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Título</th>
-                                <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                                <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha registro</th>
-                                <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            @foreach($estudiantesPendientes as $estudiante)
-                                <tr class="hover:bg-gray-50 transition-colors">
-                                    <td class="px-5 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="flex-shrink-0 h-10 w-10 relative">
-                                                <img class="h-10 w-10 rounded-full object-cover border-2 border-gray-200" 
-                                                    src="{{ $estudiante->user->imagen ? asset('storage/' . $estudiante->user->imagen) : asset('assets/images/default-avatar.png') }}" 
-                                                    alt="{{ $estudiante->user->nombre }}"
-                                                    onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode($estudiante->user->nombre) }}&color=7F9CF5&background=EBF4FF'">
-                                                <span class="absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full ring-2 ring-white bg-yellow-400"></span>
-                                            </div>
-                                            <div class="ml-4">
-                                                <div class="text-sm font-medium text-gray-900">{{ $estudiante->user->nombre }}</div>
-                                                <div class="text-xs text-gray-500">Pendiente de activación</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-5 py-4 whitespace-nowrap">
-                                        @if($estudiante->categoria)
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                                                {{ $estudiante->categoria->nombre_categoria }}
-                                            </span>
-                                        @else
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                                                Sin categoría
-                                            </span>
-                                        @endif
-                                    </td>
-                                    <td class="px-5 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900">{{ $estudiante->user->email }}</div>
-                                    </td>
-                                    <td class="px-5 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {{ $estudiante->created_at ? $estudiante->created_at->format('d/m/Y H:i') : 'N/A' }}
-                                    </td>
-                                    <td class="px-5 py-4 whitespace-nowrap text-sm font-medium">
-                                        <div class="flex space-x-2">
-                                            <form action="{{ route('institucion.estudiantes.activar', $estudiante->id) }}" method="POST" class="inline">
-                                                @csrf
-                                                <button type="submit" class="bg-green-100 text-green-700 hover:bg-green-200 rounded-lg p-2 transition-colors" title="Activar estudiante">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                                    </svg>
-                                                </button>
-                                            </form>
-                                            
-                                            <button onclick="mostrarModalEditar({{ $estudiante->id }})" class="bg-blue-100 text-blue-700 hover:bg-blue-200 rounded-lg p-2 transition-colors" title="Editar información académica">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                                </svg>
-                                            </button>
-                                            
-                                            <form action="{{ route('institucion.estudiantes.eliminar', $estudiante->id) }}" method="POST" class="inline">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="bg-red-100 text-red-700 hover:bg-red-200 rounded-lg p-2 transition-colors" 
-                                                    onclick="return confirm('¿Estás seguro de que deseas eliminar este estudiante? Esta acción no se puede deshacer.')" title="Eliminar estudiante">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                    </svg>
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            @endif
-        </div>
+    <div class="bg-white rounded-xl shadow-sm overflow-hidden d-none" style="display: none;">
+        <!-- Esta sección se ha reemplazado por la tabla principal mejorada -->
     </div>
 
-    {{-- Modal para editar estudiante --}}
-    <div id="modalEditar" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden overflow-y-auto h-full w-full">
-        <div class="relative top-20 mx-auto p-0 border-0 shadow-xl rounded-xl bg-white max-w-md">
-            <div class="bg-primary text-white px-6 py-4 rounded-t-xl flex justify-between items-center">
-                <h3 class="text-lg font-medium flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                    </svg>
-                    Editar Información Académica
-                </h3>
-                <button type="button" onclick="cerrarModalEditar()" class="text-white hover:text-gray-200 transition-colors">
-                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
-                </button>
-            </div>
-            
-            <div id="modalContent" class="p-6">
-                <p class="text-sm text-gray-600 mb-4">Actualiza la información académica de este estudiante pendiente de activación.</p>
+    <!-- Modal de rechazo de solicitud -->
+    <div id="modalRechazarSolicitud" class="fixed inset-0 bg-black bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-full max-w-lg shadow-lg rounded-md bg-white">
+            <div class="flex flex-col items-center">
+                <div class="text-center">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-2">Rechazar Solicitud</h3>
+                    <p class="text-sm text-gray-500 mb-4">¿Estás seguro de que deseas rechazar esta solicitud? Esta acción no se puede deshacer.</p>
+                </div>
                 
-                <form id="formEditar" method="POST">
+                <form id="formRechazarSolicitud" method="POST" class="w-full">
                     @csrf
-                    @method('PUT')
-                    
-                    <div class="mb-5">
-                        <label class="block text-gray-700 text-sm font-medium mb-2" for="categoria_id">
-                            Categoría académica
-                        </label>
-                        <div class="relative">
-                            <select name="categoria_id" id="categoria_id" class="block w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-primary focus:border-primary appearance-none">
-                                @if(isset($categorias))
-                                    <option value="">Seleccionar categoría...</option>
-                                    @foreach($categorias as $categoria)
-                                        <option value="{{ $categoria->id }}">{{ $categoria->nombre_categoria }}</option>
-                                    @endforeach
-                                @endif
-                            </select>
-                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                </svg>
-                            </div>
-                        </div>
-                        <p class="mt-1 text-xs text-gray-500">Esta categoría aparecerá en el perfil del estudiante.</p>
+                    <div class="mb-4">
+                        <label for="mensaje_rechazo" class="block text-sm font-medium text-gray-700 mb-1">Mensaje de rechazo (opcional):</label>
+                        <textarea id="mensaje_rechazo" name="mensaje_rechazo" rows="3" class="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-sm border-gray-300 rounded-md"></textarea>
+                        <p class="mt-1 text-xs text-gray-500">Este mensaje será visible para el estudiante cuando intente acceder a la plataforma.</p>
                     </div>
                     
-                    <div class="flex justify-end space-x-3 mt-8">
-                        <button type="button" onclick="cerrarModalEditar()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors">
+                    <div class="flex justify-end space-x-3 mt-4">
+                        <button type="button" onclick="cerrarModalRechazar()" class="px-4 py-2 bg-gray-100 text-gray-800 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300">
                             Cancelar
                         </button>
-                        <button type="submit" class="px-4 py-2 border border-transparent rounded-lg text-white bg-primary hover:bg-primary-dark transition-colors flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                            </svg>
-                            Guardar cambios
+                        <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                            Rechazar
                         </button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
-    
-    <script>
-        function mostrarModalEditar(id) {
-            // Mostrar el modal
-            document.getElementById('modalEditar').classList.remove('hidden');
-            // Establecer la acción del formulario
-            document.getElementById('formEditar').action = `/institucion/estudiantes/${id}/actualizar`;
-            
-            // Añadir clase al body para evitar el scroll
-            document.body.classList.add('overflow-hidden');
-            
-            // Efecto de entrada suave
-            const modal = document.querySelector('#modalContent');
-            modal.classList.add('animate-fadeIn');
-        }
 
-        function cerrarModalEditar() {
-            // Ocultar el modal con transición
-            const modal = document.getElementById('modalEditar');
-            modal.classList.add('animate-fadeOut');
-            
-            // Después de la animación, ocultar completamente
-            setTimeout(() => {
-                modal.classList.add('hidden');
-                modal.classList.remove('animate-fadeOut');
-                document.body.classList.remove('overflow-hidden');
-            }, 200);
-        }
-        
-        // Cerrar al hacer clic fuera del modal
-        document.getElementById('modalEditar').addEventListener('click', function(e) {
-            if (e.target === this) {
-                cerrarModalEditar();
-            }
-        });
-    </script>
-    
     <style>
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-10px); }
@@ -561,14 +479,36 @@
     </style>
 
     <script>
-        function mostrarModalEditar(id) {
-            document.getElementById('modalEditar').classList.remove('hidden');
-            document.getElementById('formEditar').action = `/institucion/estudiantes/${id}/actualizar`;
+        // Funciones para el modal de rechazo de solicitud
+        function mostrarModalRechazar(id) {
+            const modal = document.getElementById('modalRechazarSolicitud');
+            const form = document.getElementById('formRechazarSolicitud');
+            
+            if (modal && form) {
+                // Configurar la URL del formulario
+                form.action = `/institucion/solicitudes/${id}/rechazar`;
+                
+                // Mostrar el modal
+                modal.classList.remove('hidden');
+            }
         }
-
-        function cerrarModalEditar() {
-            document.getElementById('modalEditar').classList.add('hidden');
+        
+        function cerrarModalRechazar() {
+            const modal = document.getElementById('modalRechazarSolicitud');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
         }
+        
+        // Cerrar el modal al hacer clic fuera de él
+        document.addEventListener('click', function(event) {
+            const modal = document.getElementById('modalRechazarSolicitud');
+            const modalContent = modal.querySelector('div');
+            
+            if (modal && !modal.classList.contains('hidden') && event.target === modal) {
+                cerrarModalRechazar();
+            }
+        });
     </script>
 </div>
 @endsection 

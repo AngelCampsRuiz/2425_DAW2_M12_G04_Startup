@@ -3,112 +3,131 @@
 namespace App\Http\Controllers\Estudiante;
 
 use App\Http\Controllers\Controller;
-use App\Models\Solicitud;
+use App\Models\SolicitudEstudiante;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class SolicitudAjaxController extends Controller
 {
     /**
-     * Obtiene las solicitudes del estudiante autenticado (para AJAX)
+     * Método para obtener todas las solicitudes del estudiante actual
      */
-    public function getSolicitudes(Request $request)
+    public function getSolicitudes()
     {
-        $estudiante = Auth::user()->estudiante;
-        
-        // Construir la consulta base
-        $query = Solicitud::where('estudiante_id', $estudiante->id)
-            ->with(['publicacion.empresa.user']);
-        
-        // Filtrar por estado si se proporciona
-        if ($request->has('estado') && $request->estado !== 'todos') {
-            $query->where('estado', $request->estado);
+        try {
+            $estudiante = Auth::user()->estudiante;
+            
+            if (!$estudiante) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'No se encontró el estudiante'
+                ], 404);
+            }
+            
+            $solicitudes = SolicitudEstudiante::where('estudiante_id', $estudiante->id)
+                                        ->with(['institucion.user', 'clase'])
+                                        ->latest()
+                                        ->get();
+            
+            return response()->json([
+                'success' => true,
+                'solicitudes' => $solicitudes
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Error al obtener las solicitudes: ' . $e->getMessage()
+            ], 500);
         }
-        
-        // Ordenar por fecha (más recientes primero)
-        $solicitudes = $query->orderBy('created_at', 'desc')->get();
-        
-        // Estadísticas
-        $stats = [
-            'total' => Solicitud::where('estudiante_id', $estudiante->id)->count(),
-            'pendientes' => Solicitud::where('estudiante_id', $estudiante->id)
-                ->where('estado', 'pendiente')->count(),
-            'aprobadas' => Solicitud::where('estudiante_id', $estudiante->id)
-                ->where('estado', 'aceptada')->count(),
-            'rechazadas' => Solicitud::where('estudiante_id', $estudiante->id)
-                ->where('estado', 'rechazada')->count(),
-        ];
-        
-        // Devolver los datos en formato JSON
-        return response()->json([
-            'success' => true,
-            'solicitudes' => $solicitudes,
-            'stats' => $stats
-        ]);
     }
     
     /**
-     * Obtiene una solicitud específica (para AJAX)
+     * Método para obtener una solicitud específica
      */
     public function getSolicitud($id)
     {
-        $estudiante = Auth::user()->estudiante;
-        
-        // Buscar la solicitud y verificar que pertenezca al estudiante
-        $solicitud = Solicitud::where('id', $id)
-            ->where('estudiante_id', $estudiante->id)
-            ->with(['publicacion.empresa.user'])
-            ->first();
-        
-        if (!$solicitud) {
+        try {
+            $estudiante = Auth::user()->estudiante;
+            
+            if (!$estudiante) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'No se encontró el estudiante'
+                ], 404);
+            }
+            
+            $solicitud = SolicitudEstudiante::where('id', $id)
+                                      ->where('estudiante_id', $estudiante->id)
+                                      ->with(['institucion.user', 'clase'])
+                                      ->first();
+            
+            if (!$solicitud) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'No se encontró la solicitud'
+                ], 404);
+            }
+            
+            return response()->json([
+                'success' => true,
+                'solicitud' => $solicitud
+            ]);
+        } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Solicitud no encontrada'
-            ], 404);
+                'error' => 'Error al obtener la solicitud: ' . $e->getMessage()
+            ], 500);
         }
-        
-        return response()->json([
-            'success' => true,
-            'solicitud' => $solicitud
-        ]);
     }
     
     /**
-     * Cancela una solicitud pendiente (para AJAX)
+     * Método para cancelar una solicitud (versión AJAX)
      */
     public function cancelarSolicitud($id)
     {
-        $estudiante = Auth::user()->estudiante;
-        
-        // Buscar la solicitud y verificar que pertenezca al estudiante
-        $solicitud = Solicitud::where('id', $id)
-            ->where('estudiante_id', $estudiante->id)
-            ->first();
-        
-        if (!$solicitud) {
+        try {
+            $estudiante = Auth::user()->estudiante;
+            
+            if (!$estudiante) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'No se encontró el estudiante'
+                ], 404);
+            }
+            
+            $solicitud = SolicitudEstudiante::where('id', $id)
+                                      ->where('estudiante_id', $estudiante->id)
+                                      ->first();
+            
+            if (!$solicitud) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'No se encontró la solicitud'
+                ], 404);
+            }
+            
+            // Solo se pueden cancelar solicitudes pendientes
+            if ($solicitud->estado !== 'pendiente') {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Solo se pueden cancelar solicitudes pendientes'
+                ], 400);
+            }
+            
+            // Cambiar estado de la solicitud
+            $solicitud->estado = 'cancelada';
+            $solicitud->fecha_respuesta = now();
+            $solicitud->save();
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Solicitud cancelada correctamente'
+            ]);
+        } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Solicitud no encontrada'
-            ], 404);
+                'error' => 'Error al cancelar la solicitud: ' . $e->getMessage()
+            ], 500);
         }
-        
-        // Solo se pueden cancelar solicitudes pendientes
-        if ($solicitud->estado !== 'pendiente') {
-            return response()->json([
-                'success' => false,
-                'message' => 'Solo puedes cancelar solicitudes pendientes'
-            ], 400);
-        }
-        
-        // Actualizar estado a rechazada (equivalente a cancelar)
-        $solicitud->update([
-            'estado' => 'rechazada',
-            'respuesta_empresa' => 'Cancelada por el estudiante'
-        ]);
-        
-        return response()->json([
-            'success' => true,
-            'message' => 'Solicitud cancelada correctamente'
-        ]);
     }
 } 
