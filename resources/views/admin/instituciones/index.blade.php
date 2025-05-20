@@ -1311,5 +1311,8 @@
             });
         });
     </script>
+
+    <!-- Script de validaciones para instituciones -->
+    <script src="{{ asset('js/instituciones-validaciones.js') }}"></script>
     @endpush
 @endsection 
