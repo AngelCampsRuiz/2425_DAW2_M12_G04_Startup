@@ -334,15 +334,7 @@
                                             </div>
                                         </div>
 
-                                        {{-- Checkbox para mostrar/ocultar CIF --}}
-                                        <label class="flex items-center space-x-3 p-4 bg-gradient-to-br from-white to-purple-50 rounded-xl hover:bg-purple-50 transition-all duration-200 cursor-pointer">
-                                            <input type="checkbox" 
-                                                   name="show_cif" 
-                                                   value="1"
-                                                   {{ $user->empresa && $user->empresa->show_cif ? 'checked' : '' }}
-                                                   class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-500 focus:ring-purple-500">
-                                            <span class="text-sm font-medium text-gray-700">Mostrar CIF</span>
-                                        </label>
+                                 
 
                                         {{-- Sección donde se muestra el CIF --}}
                                         @php
@@ -389,10 +381,15 @@
                                             </div>
                                             <div class="ml-4">
                                                 <p class="text-sm font-medium text-gray-500">Sitio Web</p>
-                                                <input type="url" name="sitio_web" id="sitio_web" value="{{ $user->sitio_web }}"
-                                                       class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
-                                                       placeholder="https://ejemplo.com">
-                                                <span id="error-sitio_web" class="error-message text-xs text-red-500 mt-1 hidden"></span>
+                                                @if($user->sitio_web)
+                                                    <a href="{{ $user->sitio_web }}" 
+                                                       target="_blank" 
+                                                       class="text-purple-600 hover:text-purple-800 transition-colors duration-200">
+                                                        {{ $user->sitio_web }}
+                                                    </a>
+                                                @else
+                                                    <p class="text-gray-700">No especificado</p>
+                                                @endif
                                             </div>
                                         </div>
                                     </div>
@@ -635,16 +632,23 @@
 
                                         <div class="flex items-start" data-campo="web" style="display: {{ $user->show_web ? 'flex' : 'none' }}">
                                             <div class="flex-shrink-0">
-                                                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
-                                                </svg>
+                                                <div class="bg-purple-100 p-2 rounded-lg">
+                                                    <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
+                                                    </svg>
+                                                </div>
                                             </div>
                                             <div class="ml-4">
                                                 <p class="text-sm font-medium text-gray-500">Sitio Web</p>
-                                                <input type="url" name="sitio_web" id="sitio_web" value="{{ $user->sitio_web }}"
-                                                       class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
-                                                       placeholder="https://ejemplo.com">
-                                                <span id="error-sitio_web" class="error-message text-xs text-red-500 mt-1 hidden"></span>
+                                                @if($user->sitio_web)
+                                                    <a href="{{ $user->sitio_web }}" 
+                                                       target="_blank" 
+                                                       class="text-purple-600 hover:text-purple-800 transition-colors duration-200">
+                                                        {{ $user->sitio_web }}
+                                                    </a>
+                                                @else
+                                                    <p class="text-gray-700">No especificado</p>
+                                                @endif
                                             </div>
                                         </div>
                                     </div>
@@ -1015,12 +1019,14 @@
                                         <span class="text-sm font-medium text-gray-700">Mostrar Teléfono</span>
                                     </label>
 
+                                    @if(auth()->user()->role_id == 2)
                                     <label class="flex items-center space-x-3 p-4 bg-gradient-to-br from-white to-purple-50 rounded-xl hover:bg-purple-50 transition-all duration-200 cursor-pointer">
                                         <input type="checkbox" name="show_cif" value="1"
                                                {{ optional($user->empresa)->show_cif ? 'checked' : '' }}
                                                class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-500 focus:ring-purple-500">
                                         <span class="text-sm font-medium text-gray-700">Mostrar CIF</span>
                                     </label>
+                                    @endif
 
                                     <label class="flex items-center space-x-3 p-4 bg-gradient-to-br from-white to-purple-50 rounded-xl hover:bg-purple-50 transition-all duration-200 cursor-pointer">
                                         <input type="checkbox" name="show_ciudad" value="1"
@@ -1098,6 +1104,26 @@
                                             <span class="error-message text-xs text-red-500 mt-1">{{ $message }}</span>
                                         @enderror
                                     </div>
+
+                                    <div class="form-group">
+                                        <label for="sitio_web" class="block text-sm font-medium text-gray-700 mb-2">Sitio Web</label>
+                                        <div class="mt-1 relative rounded-md shadow-sm">
+                                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
+                                                </svg>
+                                            </div>
+                                            <input type="url" 
+                                                   name="sitio_web" 
+                                                   id="sitio_web" 
+                                                   value="{{ $user->sitio_web }}"
+                                                   class="pl-10 w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
+                                                   placeholder="https://ejemplo.com"
+                                                   onblur="validarSitioWeb(this)">
+                                        </div>
+                                        <span id="error-sitio_web" class="error-message text-xs text-red-500 mt-1 hidden"></span>
+                                    </div>
+
                                 </div>
                             </div>
 
@@ -1444,6 +1470,22 @@
                 }
             }
 
+            function validarSitioWeb(field) {
+                if (field.value.trim()) {
+                    try {
+                        new URL(field.value);
+                        hideError(field);
+                        return true;
+                    } catch (e) {
+                        showError(field, "Por favor, introduce una URL válida (ejemplo: https://ejemplo.com)");
+                        return false;
+                    }
+                } else {
+                    hideError(field);
+                    return true; // Permitimos que esté vacío
+                }
+            }
+
             // Validar todo el formulario antes de enviar
             document.getElementById('profileForm').addEventListener('submit', function(e) {
                 // Primero validar todos los campos
@@ -1454,6 +1496,7 @@
                 if (!validarTelefono(document.getElementById('telefono'))) isValid = false;
                 if (!validarDNI(document.getElementById('dni'))) isValid = false;
                 if (!validarCiudad(document.getElementById('ciudad'))) isValid = false;
+                if (!validarSitioWeb(document.getElementById('sitio_web'))) isValid = false;
 
                 const imagenInput = document.getElementById('imagen');
                 if (imagenInput && imagenInput.files.length > 0) {
@@ -1575,6 +1618,27 @@
                             if (cvLink) {
                                 cvLink.href = `${window.location.origin}/cv/${user.estudiante.cv_pdf}`;
                             }
+                        }
+
+                        // Actualizar el sitio web en la vista
+                        const sitioWebElement = document.querySelector('[data-campo="web"]');
+                        if (sitioWebElement) {
+                            const sitioWebContent = sitioWebElement.querySelector('[data-valor="web"]');
+                            if (sitioWebContent) {
+                                if (user.sitio_web) {
+                                    sitioWebContent.innerHTML = `
+                                        <a href="${user.sitio_web}" 
+                                           target="_blank" 
+                                           class="text-purple-600 hover:text-purple-800 transition-colors duration-200">
+                                            ${user.sitio_web}
+                                        </a>`;
+                                } else {
+                                    sitioWebContent.textContent = 'No especificado';
+                                }
+                            }
+                            
+                            // Actualizar la visibilidad
+                            sitioWebElement.style.display = user.show_web ? 'flex' : 'none';
                         }
 
                         // Mostrar mensaje de éxito

@@ -455,6 +455,22 @@ function setupVisibilityToggles() {
     });
 }
 
+function validarSitioWeb(field) {
+    if (field.value.trim()) {
+        try {
+            new URL(field.value);
+            hideError(field);
+            return true;
+        } catch (e) {
+            showError(field, "Por favor, introduce una URL válida (ejemplo: https://ejemplo.com)");
+            return false;
+        }
+    } else {
+        hideError(field);
+        return true; // Permitimos que esté vacío
+    }
+}
+
 // Inicialización de validaciones
 document.addEventListener('DOMContentLoaded', function() {
     // Configurar el formulario
@@ -498,6 +514,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const emailInput = document.getElementById('email');
     if (emailInput) {
         emailInput.addEventListener('blur', () => validarEmail(emailInput));
+    }
+
+    const sitioWebInput = document.getElementById('sitio_web');
+    if (sitioWebInput) {
+        sitioWebInput.addEventListener('blur', () => validarSitioWeb(sitioWebInput));
     }
 
     setupVisibilityToggles();
