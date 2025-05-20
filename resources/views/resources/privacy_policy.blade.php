@@ -4,7 +4,7 @@
 <div class="container mx-auto px-4 py-12">
     <div class="max-w-5xl mx-auto">
         <div class="text-center mb-10">
-            <h1 class="text-4xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent mb-4">{{ __('footer.privacy_policy') }}</h1>
+            <h1 class="text-4xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent mb-4">Politica de privacidad</h1>
             <p class="text-lg text-gray-600 max-w-3xl mx-auto">Entendemos la importancia de tu privacidad. Esta política describe cómo recopilamos, usamos y protegemos tu información personal.</p>
             <div class="mt-4 text-gray-500">Última actualización: {{ date('d/m/Y') }}</div>
         </div>

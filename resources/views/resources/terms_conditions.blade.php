@@ -5,7 +5,7 @@
     <div class="max-w-4xl mx-auto">
         <!-- Encabezado -->
         <div class="text-center mb-10">
-            <h1 class="text-4xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent mb-4">{{ __('footer.terms_conditions') }}</h1>
+            <h1 class="text-4xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent mb-4">Términos y condiciones</h1>
             <p class="text-lg text-gray-600">Nuestras políticas y normas para el uso de la plataforma NextGen</p>
         </div>
         

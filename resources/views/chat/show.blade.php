@@ -272,11 +272,6 @@
                         </label>
                         <input type="file" id="file-input" name="archivo" class="hidden" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt">
 
-                        <button type="button" id="emoji-button" class="p-3 text-gray-500 hover:text-[#5e0490] bg-gray-100 hover:bg-purple-100 rounded-xl transition-all duration-300 transform hover:scale-105 flex items-center justify-center">
-                            <i class="fas fa-smile text-lg"></i>
-                            <span class="sr-only">Emojis</span>
-                        </button>
-
                         <div class="flex-1 relative">
                             <textarea id="message-input"
                                    class="w-full rounded-xl border-gray-300 focus:border-[#5e0490] focus:ring-[#5e0490] transition-colors duration-300 shadow-sm placeholder-gray-400 resize-none px-4 py-3 min-h-[50px] max-h-32"
