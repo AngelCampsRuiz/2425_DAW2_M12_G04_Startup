@@ -63,8 +63,21 @@ class EmpresaController extends BaseController
         $empresas = $query->orderBy('id', 'asc')->paginate(10);
 
         if (request()->ajax()) {
+            // Generar la vista del panel
+            $view = view('admin.empresas.index', compact('empresas', 'ciudades'))->render();
+            
+            // Extraer solo el contenedor de la tabla usando DOM
+            $dom = new \DOMDocument();
+            libxml_use_internal_errors(true); // Suprimir errores de HTML5
+            $dom->loadHTML($view);
+            libxml_clear_errors();
+            
+            $tablaContainer = $dom->getElementById('tabla-container');
+            $tabla = $tablaContainer ? $dom->saveHTML($tablaContainer) : null;
+            
             return response()->json([
-                'tabla' => view('admin.empresas.index', compact('empresas', 'ciudades'))->render()
+                'tabla' => $tabla,
+                'success' => true
             ]);
         }
 
