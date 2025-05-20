@@ -248,6 +248,48 @@ function handleFormSubmit(e) {
                 }
             }
 
+            // Actualizar la barra de progreso
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            const progressPercentage = document.getElementById('progressPercentage');
+            const progressMessage = document.getElementById('progressMessage');
+            const progressSection = document.getElementById('progressSection');
+
+            if (progressBar && progressText && progressPercentage && progressMessage) {
+                const porcentaje = data.porcentaje;
+                
+                // Actualizar la barra de progreso con animación
+                progressBar.style.width = porcentaje + '%';
+                progressText.textContent = porcentaje + '%';
+                progressPercentage.textContent = porcentaje + '%';
+
+                // Actualizar mensaje según el porcentaje
+                if (porcentaje < 50) {
+                    progressMessage.textContent = '¡Sigue completando tu perfil!';
+                } else if (porcentaje < 80) {
+                    progressMessage.textContent = '¡Vas por buen camino!';
+                } else {
+                    progressMessage.textContent = '¡Casi lo tienes!';
+                }
+
+                // Manejar la visibilidad de la sección de progreso
+                if (porcentaje === 100) {
+                    // Ocultar la sección con animación
+                    progressSection.style.opacity = '0';
+                    setTimeout(() => {
+                        progressSection.style.display = 'none';
+                    }, 500);
+                } else {
+                    // Mostrar la sección si estaba oculta
+                    if (progressSection.style.display === 'none') {
+                        progressSection.style.display = 'block';
+                        // Forzar un reflow para que la animación funcione
+                        progressSection.offsetHeight;
+                        progressSection.style.opacity = '1';
+                    }
+                }
+            }
+
             // Actualizar campos de visibilidad y valores
             const camposInfo = {
                 'telefono': { visible: user.show_telefono, valor: user.telefono },
@@ -413,6 +455,22 @@ function setupVisibilityToggles() {
     });
 }
 
+function validarSitioWeb(field) {
+    if (field.value.trim()) {
+        try {
+            new URL(field.value);
+            hideError(field);
+            return true;
+        } catch (e) {
+            showError(field, "Por favor, introduce una URL válida (ejemplo: https://ejemplo.com)");
+            return false;
+        }
+    } else {
+        hideError(field);
+        return true; // Permitimos que esté vacío
+    }
+}
+
 // Inicialización de validaciones
 document.addEventListener('DOMContentLoaded', function() {
     // Configurar el formulario
@@ -458,7 +516,10 @@ document.addEventListener('DOMContentLoaded', function() {
         emailInput.addEventListener('blur', () => validarEmail(emailInput));
     }
 
+    const sitioWebInput = document.getElementById('sitio_web');
+    if (sitioWebInput) {
+        sitioWebInput.addEventListener('blur', () => validarSitioWeb(sitioWebInput));
+    }
+
     setupVisibilityToggles();
 });
-
-
