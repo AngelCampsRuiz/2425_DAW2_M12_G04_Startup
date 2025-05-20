@@ -114,8 +114,8 @@
                                     </svg>
                                 </div>
                                 <div>
-                                    <h3 class="text-xl font-bold text-gray-900">{{ __('messages.profile_progress') }}</h3>
-                                    <p class="text-sm text-gray-500">{{ __('messages.complete_your_profile') }}</p>
+                                    <h3 class="text-xl font-bold text-gray-900">Progreso de perfil</h3>
+                                    <p class="text-sm text-gray-500">Completa tu perfil</p>
                                 </div>
                             </div>
                             <button id="toggleButton" class="text-gray-500 hover:text-purple-700 transition-colors">
@@ -175,7 +175,7 @@
                                         @elseif($porcentaje < 80)
                                             {{ __('messages.you_are_on_the_right_track') }}
                                         @else
-                                            {{ __('messages.almost_there') }}
+                                            {{ __('porcentaje del perfil completado') }}
                                         @endif
                                     </div>
                                 </div>
@@ -269,7 +269,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
                                         </svg>
                                     </div>
-                                    <h2 class="text-2xl font-bold text-gray-900">{{ __('messages.academic_information') }}</h2>
+                                    <h2 class="text-2xl font-bold text-gray-900">Información Académica</h2>
                                 </div>
                                 <div class="space-y-4">
                                     @if($user->estudiante)
@@ -277,7 +277,7 @@
                                             <svg class="w-5 h-5 text-purple-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                             </svg>
-                                            <span class="text-gray-700">{{ __('messages.cycle') }}: {{ $user->estudiante->ciclo }}</span>
+                                            <span class="text-gray-700">Ciclo: {{ $user->estudiante->ciclo }}</span>
                                         </div>
                                         @if($user->estudiante->cv_pdf)
                                             <div class="flex items-center">
@@ -287,7 +287,7 @@
                                                 <a href="{{ asset('public/cv_pdfs/' . $user->estudiante->cv_pdf) }}"
                                                    class="text-purple-600 hover:text-purple-800"
                                                    target="_blank">
-                                                    {{ __('messages.view_cv') }}
+                                                    Ver CV
                                                 </a>
                                             </div>
                                         @endif
@@ -304,17 +304,17 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                                             </svg>
                                         </div>
-                                        <h2 class="text-2xl font-bold text-gray-900">{{ __('messages.student_experiences') }}</h2>
+                                        <h2 class="text-2xl font-bold text-gray-900">Experiencias</h2>
                                     </div>
                                     <div class="overflow-x-auto">
                                         <table class="min-w-full divide-y divide-gray-200">
                                             <thead class="bg-gray-50">
                                                 <tr>
-                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('messages.student') }}</th>
-                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('messages.position') }}</th>
-                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('messages.start_date') }}</th>
-                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('messages.end_date') }}</th>
-                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('messages.description') }}</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estudiante</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Posición</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha de inicio</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha de finalización</th>
+                                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descripción</th>
                                                 </tr>
                                             </thead>
                                             <tbody class="bg-white divide-y divide-gray-200">
@@ -371,7 +371,7 @@
                                                 </div>
                                             </div>
                                             <div class="ml-4">
-                                                <p class="text-sm font-medium text-gray-500">{{ __('messages.city_profile') }}</p>
+                                                <p class="text-sm font-medium text-gray-500">Ciudad</p>
                                                 <p class="text-lg font-semibold text-gray-900" data-valor="ciudad">{{ $user->ciudad ?? 'No especificada' }}</p>
                                             </div>
                                         </div>
@@ -385,7 +385,7 @@
                                                 </div>
                                             </div>
                                             <div class="ml-4">
-                                                <p class="text-sm font-medium text-gray-500">{{ __('messages.phone') }}</p>
+                                                <p class="text-sm font-medium text-gray-500">Teléfono</p>
                                                 <p class="text-lg font-semibold text-gray-900" data-valor="telefono">{{ $user->telefono ?? 'No especificado' }}</p>
                                             </div>
                                         </div>
@@ -430,7 +430,7 @@
                                                 </div>
                                             </div>
                                             <div class="ml-4">
-                                                <p class="text-sm font-medium text-gray-500">{{ __('messages.address_profile') }}</p>
+                                                <p class="text-sm font-medium text-gray-500">Dirección</p>
                                                 <p class="text-lg font-semibold text-gray-900" data-valor="direccion">{{ $user->direccion ?? 'No especificada' }}</p>
                                             </div>
                                         </div>
@@ -1260,8 +1260,21 @@
                                     </div>
 
                                     {{-- Contenedor del mapa --}}
-                                    <div class="w-full rounded-xl overflow-hidden shadow-md mb-4" style="height: 400px;">
-                                        <div id="locationMap" class="w-full h-full"></div>
+                                    <div class="w-full rounded-xl overflow-hidden shadow-md mb-4">
+                                        {{-- Buscador de ubicaciones --}}
+                                        <div class="relative mb-4">
+                                            <input type="text" 
+                                                   id="searchLocation" 
+                                                   class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 pl-10"
+                                                   placeholder="Buscar dirección...">
+                                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                                </svg>
+                                            </div>
+                                            <div id="searchResults" class="absolute z-10 w-full mt-1 bg-white rounded-xl shadow-lg hidden"></div>
+                                        </div>
+                                        <div id="locationMap" class="w-full h-[400px]"></div>
                                     </div>
 
                                     {{-- Campos de ubicación --}}

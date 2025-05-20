@@ -3,7 +3,7 @@
 @section('content')
 <div class="container mx-auto px-4 py-12">
     <div class="max-w-6xl mx-auto">
-        <h1 class="text-4xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent mb-3">{{ __('footer.company_resources') }}</h1>
+        <h1 class="text-4xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent mb-3">Recursos de la empresa</h1>
         <p class="text-xl text-gray-600 mb-12 max-w-3xl">Recursos especializados para conectar tu empresa con el mejor talento joven y potenciar tu presencia en el mercado laboral.</p>
         
         <!-- Información principal -->

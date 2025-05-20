@@ -830,6 +830,9 @@
     }
 </script>
 
+<!-- Script de validaciones para profesores -->
+<script src="{{ asset('js/profesores-validaciones.js') }}"></script>
+
 <style>
 /* Asegurar que los botones de acción siempre estén visibles */
 .btn-editar, .btn-activar {
