@@ -49,7 +49,11 @@ class Chat extends Model
         $user = auth()->user();
         
         if ($user->role_id == 2) { // Empresa
-            return $this->estudiante->user;
+            if ($this->tipo == 'empresa_estudiante') {
+                return $this->estudiante->user;
+            } elseif ($this->tipo == 'docente_empresa') {
+                return $this->docente->user;
+            }
         } elseif ($user->role_id == 3) { // Estudiante
             if ($this->tipo == 'empresa_estudiante') {
                 return $this->empresa->user;
@@ -57,7 +61,11 @@ class Chat extends Model
                 return $this->docente->user;
             }
         } elseif ($user->role_id == 4) { // Docente
-            return $this->estudiante->user;
+            if ($this->tipo == 'docente_estudiante') {
+                return $this->estudiante->user;
+            } elseif ($this->tipo == 'docente_empresa') {
+                return $this->empresa->user;
+            }
         }
         
         return null;

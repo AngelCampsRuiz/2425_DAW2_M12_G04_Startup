@@ -204,8 +204,10 @@
                     Route::get('/chat/{chat}/messages', [ChatController::class, 'getMessages'])->name('chat.messages');
                     Route::post('/chat/create/{solicitud}', [ChatController::class, 'createChat'])->name('chat.create');
                     Route::post('/chat/create-docente', [ChatController::class, 'createDocenteChat'])->name('chat.create.docente');
+                    Route::post('/chat/create-docente-empresa', [ChatController::class, 'createDocenteEmpresaChat'])->name('chat.create.docente.empresa');
                     Route::get('/chat/check-new', [ChatController::class, 'checkNewMessages'])->name('chat.check_new');
                     Route::get('/chat/refresh', [ChatController::class, 'refreshChats'])->name('chat.refresh');
+                    Route::post('/chat/{messageId}/read', [ChatController::class, 'markMessageAsRead'])->name('chat.mark_read');
 
                 // RUTAS PARA VALORACIONES
                     Route::post('/valoraciones', [ValoracionController::class, 'store'])->name('valoraciones.store');

@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Notifications\MensajeNoLeidoNotification;
 use App\Events\NotificacionPusher;
+use App\Events\MessageSent;
 
 class ChatController extends Controller
 {
@@ -59,6 +60,11 @@ class ChatController extends Controller
                 $hasAccess = true;
             }
 
+            // Si es empresa en chat docente-empresa
+            if ($user->empresa && $chat->tipo == 'docente_empresa' && $user->empresa->id == $chat->empresa_id) {
+                $hasAccess = true;
+            }
+
             // Si es estudiante en chat empresa-estudiante
             if ($user->estudiante && $chat->tipo == 'empresa_estudiante' && $chat->solicitud && $chat->solicitud->estudiante_id == $user->estudiante->id) {
                 $hasAccess = true;
@@ -66,6 +72,14 @@ class ChatController extends Controller
             
             // Si es docente en chat docente-estudiante
             if ($user->role_id == 4 && $chat->tipo == 'docente_estudiante') {
+                $docente = \App\Models\Docente::where('user_id', $user->id)->first();
+                if ($docente && $chat->docente_id == $docente->id) {
+                    $hasAccess = true;
+                }
+            }
+            
+            // Si es docente en chat docente-empresa
+            if ($user->role_id == 4 && $chat->tipo == 'docente_empresa') {
                 $docente = \App\Models\Docente::where('user_id', $user->id)->first();
                 if ($docente && $chat->docente_id == $docente->id) {
                     $hasAccess = true;
@@ -124,6 +138,12 @@ class ChatController extends Controller
             // Crear el mensaje
             $mensaje = Mensaje::create($mensajeData);
 
+            // Cargar relación de usuario para el evento
+            $mensaje->load('user');
+
+            // Transmitir el mensaje a través de Pusher usando el evento MessageSent
+            broadcast(new MessageSent($mensaje, $user))->toOthers();
+
             // Determinar destinatario según el usuario autenticado y tipo de chat
             $destinatario = null;
             
@@ -141,6 +161,14 @@ class ChatController extends Controller
                     $destinatario = $chat->estudiante->user ?? null;
                 } else {
                     // Si el que envía es estudiante, destinatario es el docente
+                    $destinatario = $chat->docente->user ?? null;
+                }
+            } else if ($chat->tipo == 'docente_empresa') {
+                if (auth()->user()->role_id == 4) {
+                    // Si el que envía es docente, destinatario es la empresa
+                    $destinatario = $chat->empresa->user ?? null;
+                } else {
+                    // Si el que envía es empresa, destinatario es el docente
                     $destinatario = $chat->docente->user ?? null;
                 }
             }
@@ -239,6 +267,13 @@ class ChatController extends Controller
             $otherUser = $solicitud->estudiante->user;
         }
         
+        // Si es empresa y es una conversación docente-empresa
+        if ($user->empresa && $chat->tipo == 'docente_empresa' && $user->empresa->id == $chat->empresa_id) {
+            $hasAccess = true;
+            $solicitud = null;
+            $otherUser = $chat->docente->user;
+        }
+        
         // Si es estudiante en una conversación empresa-estudiante
         if ($user->estudiante && $chat->tipo == 'empresa_estudiante' && $chat->solicitud && $chat->solicitud->estudiante_id == $user->estudiante->id) {
             $hasAccess = true;
@@ -253,6 +288,16 @@ class ChatController extends Controller
                 $hasAccess = true;
                 $solicitud = null; // No hay solicitud en los chats docente-estudiante
                 $otherUser = $chat->estudiante->user;
+            }
+        }
+        
+        // Si es docente en una conversación docente-empresa
+        if ($user->role_id == 4 && $chat->tipo == 'docente_empresa') {
+            $docente = \App\Models\Docente::where('user_id', $user->id)->first();
+            if ($docente && $chat->docente_id == $docente->id) {
+                $hasAccess = true;
+                $solicitud = null;
+                $otherUser = $chat->empresa->user;
             }
         }
         
@@ -301,8 +346,11 @@ class ChatController extends Controller
         // Si es empresa
         if ($user->role_id == 2) {
             $chats = Chat::where('empresa_id', $user->empresa->id)
-                ->where('tipo', 'empresa_estudiante')
-                ->with(['solicitud.estudiante.user', 'solicitud.publicacion', 'mensajes' => function($query) {
+                ->where(function($query) {
+                    $query->where('tipo', 'empresa_estudiante')
+                          ->orWhere('tipo', 'docente_empresa');
+                })
+                ->with(['solicitud.estudiante.user', 'solicitud.publicacion', 'docente.user', 'mensajes' => function($query) {
                     $query->orderBy('created_at', 'desc');
                 }])
                 ->get();
@@ -376,10 +424,16 @@ class ChatController extends Controller
                     $query->where('docente_id', $docente->id);
                 }])->get();
 
+                // Obtener todas las empresas que tienen convenios o publicaciones
+                $empresas = \App\Models\Empresa::with('user')->get();
+
                 // Obtener los chats existentes
                 $chats = Chat::where('docente_id', $docente->id)
-                    ->where('tipo', 'docente_estudiante')
-                    ->with(['estudiante.user', 'mensajes' => function($query) {
+                    ->where(function($query) {
+                        $query->where('tipo', 'docente_estudiante')
+                              ->orWhere('tipo', 'docente_empresa');
+                    })
+                    ->with(['estudiante.user', 'empresa.user', 'mensajes' => function($query) {
                         $query->orderBy('created_at', 'desc');
                     }])
                     ->get();
@@ -396,7 +450,7 @@ class ChatController extends Controller
                     }
                 }
 
-                return view('chat.index', compact('chats', 'estudiantes', 'tienesNuevosMensajes'));
+                return view('chat.index', compact('chats', 'estudiantes', 'empresas', 'tienesNuevosMensajes'));
             }
         }
 
@@ -458,7 +512,13 @@ class ChatController extends Controller
         $hasNewChats = false;
         
         if ($user->role_id == 2) { // Empresa
-            $hasNewChats = Chat::where('empresa_id', $user->empresa->id)
+            $hasNewChats = Chat::where(function($query) use ($user) {
+                    $query->where('empresa_id', $user->empresa->id)
+                          ->where(function($q) {
+                              $q->where('tipo', 'empresa_estudiante')
+                                ->orWhere('tipo', 'docente_empresa');
+                          });
+                })
                 ->whereHas('mensajes', function($query) use ($user) {
                     $query->where('user_id', '!=', $user->id)
                           ->where(function($q) {
@@ -482,7 +542,13 @@ class ChatController extends Controller
         } elseif ($user->role_id == 4) { // Docente
             $docente = \App\Models\Docente::where('user_id', $user->id)->first();
             if ($docente) {
-                $hasNewChats = Chat::where('docente_id', $docente->id)
+                $hasNewChats = Chat::where(function($query) use ($docente) {
+                        $query->where('docente_id', $docente->id)
+                              ->where(function($q) {
+                                  $q->where('tipo', 'docente_estudiante')
+                                    ->orWhere('tipo', 'docente_empresa');
+                              });
+                    })
                     ->whereHas('mensajes', function($query) use ($user) {
                         $query->where('user_id', '!=', $user->id)
                               ->where(function($q) {
@@ -507,6 +573,97 @@ class ChatController extends Controller
         // Simplemente redirigimos a la vista de chats con un indicador para forzar la consulta
         return redirect()->route('chat.index', ['refresh' => true])
             ->with('info', 'Lista de conversaciones actualizada');
+    }
+
+    /**
+     * Marcar un mensaje como leído
+     */
+    public function markMessageAsRead($messageId)
+    {
+        $mensaje = Mensaje::findOrFail($messageId);
+        $user = Auth::user();
+        
+        // Verificar que el usuario tenga acceso al mensaje
+        $chat = $mensaje->chat;
+        $hasAccess = false;
+        
+        // Si es empresa en chat empresa-estudiante
+        if ($user->empresa && $chat->tipo == 'empresa_estudiante' && $user->empresa->id == $chat->empresa_id) {
+            $hasAccess = true;
+        }
+        
+        // Si es estudiante en chat empresa-estudiante
+        if ($user->estudiante && $chat->tipo == 'empresa_estudiante' && $chat->solicitud && $chat->solicitud->estudiante_id == $user->estudiante->id) {
+            $hasAccess = true;
+        }
+        
+        // Si es docente en chat docente-estudiante
+        if ($user->role_id == 4 && $chat->tipo == 'docente_estudiante') {
+            $docente = \App\Models\Docente::where('user_id', $user->id)->first();
+            if ($docente && $chat->docente_id == $docente->id) {
+                $hasAccess = true;
+            }
+        }
+        
+        // Si es estudiante en chat docente-estudiante
+        if ($user->estudiante && $chat->tipo == 'docente_estudiante' && $chat->estudiante_id == $user->estudiante->id) {
+            $hasAccess = true;
+        }
+        
+        if (!$hasAccess) {
+            return response()->json(['error' => true, 'message' => 'No tienes acceso a este mensaje'], 403);
+        }
+        
+        // Solo marcar como leído si no soy yo quien lo envió
+        if ($mensaje->user_id != $user->id) {
+            $mensaje->leido = true;
+            $mensaje->read_at = now();
+            $mensaje->save();
+        }
+        
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Crear un chat entre docente y empresa
+     */
+    public function createDocenteEmpresaChat(Request $request)
+    {
+        $user = Auth::user();
+        
+        // Verificar que el usuario sea un docente
+        if ($user->role_id != 4) {
+            return redirect()->back()->with('error', 'No tienes permiso para crear este chat');
+        }
+
+        $docente = \App\Models\Docente::where('user_id', $user->id)->first();
+        if (!$docente) {
+            return redirect()->back()->with('error', 'No se encontró el docente');
+        }
+
+        $request->validate([
+            'empresa_id' => 'required|exists:empresas,id'
+        ]);
+
+        // Verificar si ya existe un chat
+        $existingChat = Chat::where('docente_id', $docente->id)
+            ->where('empresa_id', $request->empresa_id)
+            ->where('tipo', 'docente_empresa')
+            ->first();
+
+        if ($existingChat) {
+            return redirect()->route('chat.show', $existingChat->id);
+        }
+
+        // Crear nuevo chat
+        $chat = Chat::create([
+            'docente_id' => $docente->id,
+            'empresa_id' => $request->empresa_id,
+            'tipo' => 'docente_empresa'
+        ]);
+
+        return redirect()->route('chat.show', $chat->id)
+            ->with('success', 'Chat creado correctamente');
     }
 }
 

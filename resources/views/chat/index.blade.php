@@ -403,6 +403,54 @@ if (auth()->user()->role_id == 4) {
                 </div>
             @endif
         </div>
+
+        @if(auth()->user()->role_id == 4)
+            <div class="mb-8">
+                <h2 class="text-xl font-bold text-[#5e0490] mb-4">Crear nuevo chat</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Formulario para crear chat con estudiante -->
+                    <div class="bg-white rounded-xl p-6 shadow-md border border-purple-100">
+                        <h3 class="text-lg font-semibold mb-4 text-gray-800">Chat con estudiante</h3>
+                        <form action="{{ route('chat.create.docente') }}" method="POST">
+                            @csrf
+                            <div class="mb-4">
+                                <label for="estudiante_id" class="block text-sm font-medium text-gray-700 mb-1">Seleccionar estudiante</label>
+                                <select name="estudiante_id" id="estudiante_id" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500">
+                                    <option value="">Selecciona un estudiante</option>
+                                    @foreach($estudiantes as $estudiante)
+                                        <option value="{{ $estudiante->id }}">{{ $estudiante->user->nombre }} ({{ $estudiante->clases->first()->nombre_clase ?? 'Sin clase' }})</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <button type="submit" class="w-full px-4 py-2 bg-gradient-to-r from-[#5e0490] to-[#4a0370] text-white rounded-md hover:from-[#4a0370] hover:to-[#5e0490] focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50 transition-all duration-300">
+                                Iniciar conversación
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <!-- Formulario para crear chat con empresa -->
+                    <div class="bg-white rounded-xl p-6 shadow-md border border-purple-100">
+                        <h3 class="text-lg font-semibold mb-4 text-gray-800">Chat con empresa</h3>
+                        <form action="{{ route('chat.create.docente.empresa') }}" method="POST">
+                            @csrf
+                            <div class="mb-4">
+                                <label for="empresa_id" class="block text-sm font-medium text-gray-700 mb-1">Seleccionar empresa</label>
+                                <select name="empresa_id" id="empresa_id" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500">
+                                    <option value="">Selecciona una empresa</option>
+                                    @foreach($empresas as $empresa)
+                                        <option value="{{ $empresa->id }}">{{ $empresa->user->nombre }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <button type="submit" class="w-full px-4 py-2 bg-gradient-to-r from-[#5e0490] to-[#4a0370] text-white rounded-md hover:from-[#4a0370] hover:to-[#5e0490] focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50 transition-all duration-300">
+                                Iniciar conversación
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        @endif
     </div>
 </div>
 

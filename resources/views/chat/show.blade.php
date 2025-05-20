@@ -80,6 +80,12 @@ if (auth()->user()->role_id == 4) {
                                     @else
                                         Docente
                                     @endif
+                                @elseif($chat->tipo == 'docente_empresa')
+                                    @if(auth()->user()->role_id == 4)
+                                        Empresa
+                                    @else
+                                        Docente
+                                    @endif
                                 @endif
                             </p>
                         </a>
@@ -354,6 +360,17 @@ if (auth()->user()->role_id == 4) {
                     <span>
                         @if(auth()->user()->role_id == 4)
                             Conversación con estudiante: <span class="font-medium">{{ $otherUser->nombre }}</span>
+                        @else
+                            Conversación con docente: <span class="font-medium">{{ $otherUser->nombre }}</span>
+                        @endif
+                    </span>
+                </div>
+                @elseif($chat->tipo == 'docente_empresa')
+                <div class="flex items-center bg-green-50 px-4 py-2 rounded-lg flex-grow-0 text-sm text-green-700">
+                    <i class="fas fa-info-circle mr-2 text-green-500"></i>
+                    <span>
+                        @if(auth()->user()->role_id == 4)
+                            Conversación con empresa: <span class="font-medium">{{ $otherUser->nombre }}</span>
                         @else
                             Conversación con docente: <span class="font-medium">{{ $otherUser->nombre }}</span>
                         @endif
@@ -1973,5 +1990,300 @@ if (auth()->user()->role_id == 4) {
     `);
 </script>
 <script src="{{ asset('js/chat-detail.js') }}"></script>
+
+<!-- Añadir soporte de Pusher para el chat en tiempo real -->
+<script src="https://js.pusher.com/7.2/pusher.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar Pusher con nuestra clave y opciones
+    const pusher = new Pusher('{{ env('PUSHER_APP_KEY') }}', {
+        cluster: '{{ env('PUSHER_APP_CLUSTER') }}',
+        forceTLS: true,
+        authEndpoint: '/broadcasting/auth',
+        auth: {
+            headers: {
+                'X-CSRF-Token': '{{ csrf_token() }}',
+            },
+        }
+    });
+    
+    // Suscribirse al canal privado del chat
+    const channel = pusher.subscribe('private-chat.{{ $chat->id }}');
+    
+    // Escuchar por eventos de nuevos mensajes
+    channel.bind('App\\Events\\MessageSent', function(data) {
+        // Solo procesar si el mensaje es de otra persona
+        if (data.user_id !== {{ auth()->id() }}) {
+            // Llamar a función para agregar mensaje a la conversación
+            appendMessage(data);
+            
+            // Reproducir sonido de notificación
+            playMessageSound();
+            
+            // Actualizar estado de lectura
+            markMessageAsRead(data.id);
+        }
+    });
+    
+    // Función para agregar mensaje recibido al chat
+    function appendMessage(data) {
+        const chatMessages = document.getElementById('chat-messages');
+        let messageHtml = '';
+        
+        // Crear elemento HTML para el mensaje recibido
+        if (data.user_id !== {{ auth()->id() }}) {
+            // Mensaje recibido (de la otra persona)
+            messageHtml = `
+                <div class="flex items-start message" data-message-id="${data.id}">
+                    <div class="flex-shrink-0 mr-3">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center overflow-hidden shadow-md">
+                            ${data.user.imagen 
+                                ? `<img src="{{ asset('profile_images/') }}/${data.user.imagen}" alt="Foto de perfil" class="w-full h-full object-cover">` 
+                                : `<span class="text-base font-bold text-gray-700">${data.user.nombre.substring(0, 2).toUpperCase()}</span>`
+                            }
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <div class="bg-white rounded-2xl p-4 shadow-md inline-block max-w-[85%] relative message-bubble">
+                            <p class="text-sm text-gray-800 message-content">${data.contenido}</p>
+                            ${data.archivo_adjunto ? generateAttachmentHTML(data) : ''}
+                            <div class="text-xs text-gray-500 mt-1 flex items-center justify-between">
+                                <span>${formatMessageTime(new Date(data.created_at))}</span>
+                            </div>
+                            <div class="absolute h-4 w-4 bg-white transform rotate-45 left-[-8px] top-4"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        if (messageHtml) {
+            // Agregar mensaje al contenedor
+            const messagesContainer = document.getElementById('chat-messages');
+            
+            // Verificar si debemos hacer scroll automático
+            const shouldScroll = messagesContainer.scrollHeight - messagesContainer.scrollTop - messagesContainer.clientHeight < 100;
+            
+            // Insertar HTML del mensaje
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = messageHtml;
+            const messageElement = tempDiv.firstElementChild;
+            messagesContainer.appendChild(messageElement);
+            
+            // Aplicar animación de entrada
+            setTimeout(() => {
+                messageElement.classList.add('animate-fadeIn');
+            }, 50);
+            
+            // Hacer scroll al final si estábamos cerca del final
+            if (shouldScroll) {
+                scrollToBottom();
+            } else {
+                // Mostrar botón "nuevos mensajes" si no estamos en el fondo
+                showNewMessageAlert();
+            }
+        }
+    }
+    
+    // Generar HTML para archivos adjuntos
+    function generateAttachmentHTML(data) {
+        if (!data.archivo_adjunto) return '';
+        
+        const isImage = data.tipo_archivo && data.tipo_archivo.startsWith('image/');
+        
+        if (isImage) {
+            return `
+                <div class="mt-2 relative group">
+                    <a href="${data.archivo_adjunto}" target="_blank" class="block">
+                        <img src="${data.archivo_adjunto}" alt="Imagen adjunta" class="max-w-full max-h-60 rounded-lg shadow-sm">
+                        <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
+                            <span class="bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded-full">
+                                <i class="fas fa-search-plus mr-1"></i> Ver imagen
+                            </span>
+                        </div>
+                    </a>
+                </div>
+            `;
+        } else {
+            return `
+                <div class="mt-2">
+                    <a href="${data.archivo_adjunto}" target="_blank" class="flex items-center p-3 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors duration-200">
+                        <div class="mr-3 bg-gray-200 w-10 h-10 rounded-lg flex items-center justify-center text-gray-500">
+                            <i class="fas fa-file-alt text-lg"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-gray-900 truncate">${data.nombre_archivo || 'Archivo adjunto'}</p>
+                            <p class="text-xs text-gray-500">Descargar archivo</p>
+                        </div>
+                        <i class="fas fa-download text-purple-600"></i>
+                    </a>
+                </div>
+            `;
+        }
+    }
+    
+    // Formatear hora del mensaje
+    function formatMessageTime(date) {
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        return `${hours}:${minutes}`;
+    }
+    
+    // Reproducir sonido de notificación
+    function playMessageSound() {
+        const audio = new Audio('/sounds/message.mp3');
+        audio.volume = 0.5;
+        audio.play().catch(e => console.log('Error reproduciendo sonido:', e));
+    }
+    
+    // Marcar mensaje como leído
+    function markMessageAsRead(messageId) {
+        fetch(`/chat/${messageId}/read`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            }
+        }).catch(e => console.error('Error marcando mensaje como leído:', e));
+    }
+    
+    // Animación de scroll al fondo
+    function scrollToBottom() {
+        const messagesContainer = document.getElementById('chat-messages');
+        messagesContainer.scrollTo({
+            top: messagesContainer.scrollHeight,
+            behavior: 'smooth'
+        });
+    }
+    
+    // Mostrar alerta de nuevos mensajes
+    function showNewMessageAlert() {
+        let newMessageAlert = document.getElementById('new-message-alert');
+        if (!newMessageAlert) {
+            newMessageAlert = document.createElement('div');
+            newMessageAlert.id = 'new-message-alert';
+            newMessageAlert.className = 'fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-purple-600 text-white px-4 py-2 rounded-full shadow-lg cursor-pointer z-10 animate-bounce';
+            newMessageAlert.innerHTML = '<i class="fas fa-chevron-down mr-2"></i> Nuevos mensajes';
+            newMessageAlert.addEventListener('click', scrollToBottom);
+            document.body.appendChild(newMessageAlert);
+            
+            // Auto-ocultar después de 5 segundos
+            setTimeout(() => {
+                if (newMessageAlert.parentNode) {
+                    newMessageAlert.remove();
+                }
+            }, 5000);
+        }
+    }
+    
+    // Inicializar envío de mensajes con Pusher
+    const messageForm = document.getElementById('message-form');
+    if (messageForm) {
+        messageForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const messageInput = document.getElementById('message-input');
+            const message = messageInput.value.trim();
+            
+            if (message) {
+                // Limpiar input antes de enviar para mejor UX
+                messageInput.value = '';
+                
+                // Crear formdata
+                const formData = new FormData();
+                formData.append('contenido', message);
+                formData.append('_token', '{{ csrf_token() }}');
+                
+                // Enviar mensaje mediante fetch API
+                fetch('{{ route("chat.message", $chat->id) }}', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error('Error enviando mensaje:', data.message);
+                        // Restaurar mensaje en caso de error
+                        messageInput.value = message;
+                    } else {
+                        // El mensaje se envió correctamente
+                        // Agregar mensaje a interfaz (opcional ya que Pusher también lo mostrará)
+                        // appendSentMessage(data.mensaje);
+                        scrollToBottom();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error en la solicitud:', error);
+                    messageInput.value = message;
+                });
+            }
+        });
+    }
+    
+    // Inicializar envío de archivos con Pusher
+    const fileInput = document.getElementById('file-input');
+    if (fileInput) {
+        fileInput.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                const file = this.files[0];
+                // Mostrar vista previa
+                showFilePreview(file);
+                
+                // Crear formdata
+                const formData = new FormData();
+                formData.append('archivo', file);
+                formData.append('_token', '{{ csrf_token() }}');
+                
+                // Mostrar indicador de carga
+                showUploadingIndicator();
+                
+                // Enviar archivo
+                fetch('{{ route("chat.message", $chat->id) }}', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        console.error('Error enviando archivo:', data.message);
+                        hideUploadingIndicator();
+                    } else {
+                        // Archivo enviado correctamente
+                        hideUploadingIndicator();
+                        scrollToBottom();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error en la solicitud:', error);
+                    hideUploadingIndicator();
+                });
+                
+                // Limpiar input
+                this.value = '';
+            }
+        });
+    }
+    
+    function showFilePreview(file) {
+        // Implementar vista previa de archivo si es necesario
+    }
+    
+    function showUploadingIndicator() {
+        const uploadIndicator = document.createElement('div');
+        uploadIndicator.id = 'upload-indicator';
+        uploadIndicator.className = 'fixed bottom-20 right-8 bg-purple-600 text-white px-4 py-2 rounded-lg shadow-lg z-10';
+        uploadIndicator.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Subiendo archivo...';
+        document.body.appendChild(uploadIndicator);
+    }
+    
+    function hideUploadingIndicator() {
+        const indicator = document.getElementById('upload-indicator');
+        if (indicator) indicator.remove();
+    }
+    
+    // Inicializar al cargar
+    scrollToBottom();
+});
+</script>
 
 @endsection
