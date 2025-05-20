@@ -798,8 +798,16 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // Si la operación fue exitosa, recargar la página
-                window.location.reload();
+                // Cerrar el modal
+                document.getElementById('modal-empresa').style.display = 'none';
+                document.getElementById('modal-empresa').classList.add('hidden');
+                document.getElementById('modal-empresa').classList.remove('flex');
+                
+                // Mostrar mensaje de éxito
+                mostrarMensajeExito(method === 'PUT' ? 'Empresa actualizada correctamente' : 'Empresa creada correctamente');
+                
+                // Actualizar la tabla en lugar de recargar la página
+                refreshEmpresasTable();
             } else if (data.errors) {
                 mostrarErrores(data.errors);
             } else {
@@ -893,8 +901,11 @@
             closeDeleteModal();
             
             if (data.success) {
-                // Recargar la página para mostrar los cambios
-                window.location.reload();
+                // Mostrar mensaje de éxito
+                mostrarMensajeExito(isActive ? 'Empresa desactivada correctamente' : 'Empresa activada correctamente');
+                
+                // Actualizar la tabla con AJAX en lugar de recargar la página
+                refreshEmpresasTable();
             } else {
                 alert(data.message || 'Ha ocurrido un error');
             }
@@ -902,6 +913,13 @@
         .catch(error => {
             console.error('Error al activar/desactivar empresa:', error);
             alert('Ha ocurrido un error al procesar la solicitud');
+            
+            // Restaurar el botón
+            const actionButton = document.getElementById('action-button');
+            if (actionButton) {
+                actionButton.disabled = false;
+                actionButton.innerHTML = isActive ? 'Desactivar' : 'Activar';
+            }
         });
     }
     
@@ -914,11 +932,29 @@
             messageText.textContent = mensaje;
             messageElement.style.display = 'block';
             
-            window.scrollTo(0, 0);
+            // Asegurarse de que el mensaje sea visible
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
         
+            // Ocultar el mensaje después de 5 segundos
             setTimeout(function() {
-                messageElement.style.display = 'none';
+                // Utilizar una animación de fade out
+                messageElement.style.opacity = '1';
+                
+                const fadeEffect = setInterval(function() {
+                    if (parseFloat(messageElement.style.opacity) > 0) {
+                        messageElement.style.opacity = (parseFloat(messageElement.style.opacity) - 0.1).toString();
+                    } else {
+                        clearInterval(fadeEffect);
+                        messageElement.style.display = 'none';
+                        messageElement.style.opacity = '1'; // Restaurar para el próximo uso
+                    }
+                }, 40);
             }, 5000);
+        } else {
+            console.error('No se encontraron los elementos para mostrar el mensaje de éxito');
         }
     }
     
