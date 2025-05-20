@@ -321,12 +321,10 @@
 
                 // RUTAS PARA GESTIONAR LAS INSTITUCIONES
                     // RUTA CAMBIAR VERIFICACIÓN
-                        Route::post('instituciones/cambiar-verificacion/{id}', [App\Http\Controllers\Admin\InstitucionController::class, 'cambiarVerificacion'])->name('instituciones.cambiar-verificacion');
-                        Route::post('instituciones/{id}/verificar', [App\Http\Controllers\Admin\InstitucionController::class, 'cambiarVerificacion'])->name('instituciones.verificar');
+                        Route::post('instituciones/cambiar-verificacion/{id}', [App\Http\Controllers\Admin\InstitucionController::class, 'toggleVerificacion'])->name('instituciones.cambiar-verificacion');
+                        Route::post('instituciones/{id}/verificar', [App\Http\Controllers\Admin\InstitucionController::class, 'toggleVerificacion'])->name('instituciones.verificar');
                     // RUTA CAMBIAR ESTADO
-                        Route::post('instituciones/{id}/cambiar-estado', [App\Http\Controllers\Admin\InstitucionController::class, 'cambiarEstado'])->name('instituciones.cambiar-estado');
-                    // RUTA ELIMINAR SQL
-                        Route::delete('instituciones/eliminar-sql/{institucion}', [App\Http\Controllers\Admin\InstitucionController::class, 'destroySQL'])->name('instituciones.destroySQL');
+                        Route::post('instituciones/{id}/cambiar-estado', [App\Http\Controllers\Admin\InstitucionController::class, 'toggleEstado'])->name('instituciones.cambiar-estado');
                     // RUTA OBTENER CATEGORÍAS
                         Route::get('instituciones/{id}/categorias', [App\Http\Controllers\Admin\InstitucionController::class, 'getCategorias'])->name('instituciones.categorias');
                     // RUTA ACTUALIZAR CATEGORÍAS

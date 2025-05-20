@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\BaseController;
 use App\Models\Empresa;
 use App\Models\User;
 use App\Models\Rol;
@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Models\Publication;
 use Illuminate\Support\Facades\Auth;
 
-class EmpresaController extends Controller
+class EmpresaController extends BaseController
 {
     /**
      * Muestra el listado de empresas
@@ -136,6 +136,9 @@ class EmpresaController extends Controller
                 'latitud' => $request->input('latitud') ?? 0,
                 'longitud' => $request->input('longitud') ?? 0,
             ]);
+            
+            // Registrar actividad
+            $this->logCreation($empresa, 'Se ha creado una nueva empresa: ' . $user->nombre);
 
             DB::commit();
 
@@ -206,6 +209,10 @@ class EmpresaController extends Controller
                 $user->update([
                     'activo' => $request->activo
                 ]);
+                
+                // Registrar actividad
+                $estadoTexto = $request->activo ? 'activado' : 'desactivado';
+                $this->logUpdate($empresa, 'Se ha ' . $estadoTexto . ' la empresa: ' . $user->nombre);
                 
                 DB::commit();
                 
@@ -315,6 +322,9 @@ class EmpresaController extends Controller
                 'activo' => $request->has('activo'),
             ]);
 
+            // Registrar actividad
+            $this->logUpdate($empresa, 'Se ha actualizado la empresa: ' . $user->nombre);
+
             DB::commit();
 
             if ($request->ajax()) {
@@ -352,22 +362,31 @@ class EmpresaController extends Controller
         try {
             DB::beginTransaction();
             
-            $empresa = Empresa::findOrFail($id);
-            $usuario = $empresa->user;
+            $empresa = Empresa::with('user')->findOrFail($id);
             
-            // Desactivar la empresa y el usuario
+            // Guardar nombre de la empresa para el registro
+            $nombreEmpresa = $empresa->user->nombre;
+            
+            // Desactivar la empresa en lugar de eliminarla físicamente
             $empresa->update(['activo' => false]);
-            $usuario->update(['activo' => false]);
+            
+            // También desactivar el usuario asociado
+            if ($empresa->user) {
+                $empresa->user->update(['activo' => false]);
+            }
+            
+            // Registrar actividad
+            $this->logDeletion($empresa, 'Se ha desactivado la empresa: ' . $nombreEmpresa);
             
             DB::commit();
-
+            
             if (request()->ajax()) {
                 return response()->json([
                     'success' => true,
                     'message' => 'Empresa desactivada correctamente'
                 ]);
             }
-
+            
             return redirect()->route('admin.empresas.index')
                 ->with('success', 'Empresa desactivada correctamente');
                 
