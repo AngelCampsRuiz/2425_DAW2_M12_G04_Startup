@@ -4,7 +4,7 @@
 <div class="container mx-auto px-4 py-12">
     <div class="max-w-5xl mx-auto">
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-12">
-            <h1 class="text-4xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">{{ __('footer.blog') }}</h1>
+            <h1 class="text-4xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">Blog</h1>
             
             <div class="relative w-full md:w-auto">
                 <input type="text" placeholder="Buscar artículos..." class="w-full md:w-72 pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary shadow-sm transition-all duration-200">
