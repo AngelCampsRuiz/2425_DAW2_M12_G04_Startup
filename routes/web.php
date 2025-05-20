@@ -234,6 +234,7 @@
         // RUTAS PROTEGIDAS PARA ESTUDIANTES
                 Route::middleware(['auth', \App\Http\Middleware\CheckRole::class.':student'])->group(function () {
                     Route::get('/student/dashboard', [StudentDashboardController::class, 'index'])->name('student.dashboard');
+                    Route::get('/estudiante/solicitudes', [App\Http\Controllers\Estudiante\SolicitudController::class, 'index'])->name('estudiante.solicitudes.index');
                 });
 
         // RUTAS PROTEGIDAS PARA EMPRESAS
