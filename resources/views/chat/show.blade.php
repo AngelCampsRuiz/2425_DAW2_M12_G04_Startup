@@ -774,6 +774,11 @@
         document.getElementById('video-container').style.display = 'flex';
 
         try {
+            // Verificar si la API de mediaDevices está disponible
+            if (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== 'function') {
+                throw new Error('La API de cámara no está disponible en este navegador o contexto. Intente usar HTTPS o un navegador más moderno.');
+            }
+            
             // Solicitar permisos explícitamente con las restricciones guardadas
             const stream = await navigator.mediaDevices.getUserMedia({
                 video: getVideoConstraints(),

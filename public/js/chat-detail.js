@@ -799,6 +799,11 @@ document.addEventListener('DOMContentLoaded', function() {
             initCallInterface();
             
             try {
+                // Verificar si el navegador soporta getUserMedia
+                if (!AgoraRTC.checkSystemRequirements()) {
+                    throw new Error('Su navegador no cumple con los requisitos para videollamadas. Intente usar un navegador más moderno o acceder por HTTPS.');
+                }
+                
                 // Inicializar cliente Agora si es necesario
                 if (!rtcClient && typeof AgoraRTC !== 'undefined') {
                     rtcClient = AgoraRTC.createClient({
@@ -886,12 +891,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 } catch (error) {
                     console.error('Error al acceder a la cámara o micrófono:', error);
+                    showErrorNotification('No se pudo acceder a la cámara o micrófono. Por favor, verifica los permisos.');
                     if (callStatus) {
                         callStatus.textContent = 'Error al iniciar la cámara';
                     }
                 }
             } catch (error) {
                 console.error('Error al iniciar la videollamada:', error);
+                showErrorNotification('Error al iniciar la videollamada: ' + error.message);
                 if (callStatus) {
                     callStatus.textContent = 'Error al iniciar la llamada';
                 }
