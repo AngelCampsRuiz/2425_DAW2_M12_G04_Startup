@@ -51,6 +51,8 @@
             // CONTROLADOR ESTUDIANTE (EMPRESA)
                 use App\Http\Controllers\Empresa\EstudianteController;
                 use Illuminate\Http\Response;
+            // CONTROLADOR DE PAGO DE INSTITUCIONES
+                use App\Http\Controllers\InstitucionPaymentController;
 
     // RUTAS DE LA APLICACIÓN
         // RUTA PRINCIPAL HOME
@@ -451,7 +453,7 @@ Route::prefix('institucion')->middleware(['auth', \App\Http\Middleware\CheckRole
             Route::post('/{id}/asignar-clase', [App\Http\Controllers\Institucion\EstudianteController::class, 'asignarClase'])->name('asignar-clase');
             Route::delete('/{id}/eliminar-clase/{claseId}', [App\Http\Controllers\Institucion\EstudianteController::class, 'eliminarClase'])->name('eliminar-clase');
         });
-        
+
         // Clases
         Route::prefix('clases')->name('clases.')->group(function () {
             Route::get('/', [App\Http\Controllers\Institucion\ClaseController::class, 'index'])->name('index');
@@ -461,7 +463,7 @@ Route::prefix('institucion')->middleware(['auth', \App\Http\Middleware\CheckRole
             Route::get('/{id}/edit', [App\Http\Controllers\Institucion\ClaseController::class, 'edit'])->name('edit');
             Route::put('/{id}', [App\Http\Controllers\Institucion\ClaseController::class, 'update'])->name('update');
             Route::delete('/{id}', [App\Http\Controllers\Institucion\ClaseController::class, 'destroy'])->name('destroy');
-            
+
             // Asignación de estudiantes
             Route::get('/{id}/asignar-estudiantes', [App\Http\Controllers\Institucion\ClaseController::class, 'asignarEstudiantes'])->name('asignar-estudiantes');
             Route::post('/{id}/guardar-estudiantes', [App\Http\Controllers\Institucion\ClaseController::class, 'guardarEstudiantes'])->name('guardar-estudiantes');
@@ -529,7 +531,7 @@ Route::prefix('institucion')->middleware(['auth', \App\Http\Middleware\CheckRole
 
     // Ruta para actualizar estudiantes desde modal
     Route::put('/estudiantes/update-modal', [App\Http\Controllers\Institucion\EstudianteController::class, 'updateModal']);
-    
+
     // Rutas de chat
     Route::middleware(['auth'])->prefix('chat')->name('chat.')->group(function () {
         Route::get('/', [App\Http\Controllers\ChatController::class, 'index'])->name('index');
@@ -577,3 +579,9 @@ Route::get('/game-scores/top', [App\Http\Controllers\GameScoreController::class,
 Route::get('/page-not-found', [App\Http\Controllers\ErrorController::class, 'notFound'])->name('game.error-page');
 Route::get('/save-score', [App\Http\Controllers\GameScoreController::class, 'saveScore'])->name('game.save-score');
 Route::get('/ranking', [App\Http\Controllers\GameScoreController::class, 'showRanking'])->name('game.ranking');
+
+// Ruta para crear la sesión de pago
+Route::post('/institucion/pago', [InstitucionPaymentController::class, 'createSession'])->name('institucion.payment');
+Route::get('/institucion/pago-cancelado', function() {
+    return view('institucion.payment-cancel');
+})->name('institucion.payment.cancel');
