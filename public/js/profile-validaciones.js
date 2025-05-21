@@ -471,6 +471,48 @@ function validarSitioWeb(field) {
     }
 }
 
+function actualizarCV(cvFileName) {
+    const timestamp = new Date().getTime();
+    const cvSection = document.getElementById('cv-section');
+    const cvLink = document.getElementById('cv-link');
+
+    if (cvLink) {
+        cvLink.href = `${window.location.origin}/cv/${cvFileName}?t=${timestamp}`;
+    }
+
+    // Si no existe la sección del CV, la creamos
+    if (!cvSection && cvFileName) {
+        const gridContainer = document.querySelector('.grid.grid-cols-1.md\\:grid-cols-2.gap-8');
+        if (gridContainer) {
+            const newCvSection = document.createElement('div');
+            newCvSection.id = 'cv-section';
+            newCvSection.className = 'bg-white rounded-xl shadow-lg p-6 transform transition-all duration-300 hover:shadow-xl md:col-span-2';
+            newCvSection.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <div class="p-3 bg-purple-100 rounded-lg">
+                            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-900 ml-4">Curriculum Vitae</h3>
+                    </div>
+                    <a href="${window.location.origin}/cv/${cvFileName}?t=${timestamp}"
+                       target="_blank"
+                       id="cv-link"
+                       class="inline-flex items-center px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                        </svg>
+                        Ver CV
+                    </a>
+                </div>
+            `;
+            gridContainer.appendChild(newCvSection);
+        }
+    }
+}
+
 // Inicialización de validaciones
 document.addEventListener('DOMContentLoaded', function() {
     // Configurar el formulario

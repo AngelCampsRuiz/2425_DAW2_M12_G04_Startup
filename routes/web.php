@@ -48,6 +48,8 @@
                 use App\Http\Controllers\ReminderController;
             // CONTROLADOR ESTUDIANTE (EMPRESA)
                 use App\Http\Controllers\Empresa\EstudianteController;
+            // CONTROLADOR EXPERIENCIAS
+                use App\Http\Controllers\ExperienciaController;
 
     // RUTAS DE LA APLICACIÓN
         // RUTA PRINCIPAL HOME
@@ -226,13 +228,21 @@
                     Route::get('/saved-publications/partial', [ProfileController::class, 'savedPartial'])->name('saved.publications.partial');
                     Route::post('/saved-publications/{id}', [ProfileController::class, 'savedPublication'])->name('saved.publications.store');
                     Route::delete('/favorite/{id}', [ProfileController::class, 'deleteSavedPublication']);
+
+                // RUTAS DE EXPERIENCIAS
+                Route::post('/experiencias', [ExperienciaController::class, 'store'])->name('experiencias.store');
+                Route::put('/experiencias/{experiencia}', [ExperienciaController::class, 'update'])->name('experiencias.update');
+                Route::delete('/experiencias/{experiencia}', [ExperienciaController::class, 'destroy'])->name('experiencias.destroy');
+                Route::get('/experiencias/{experiencia}', [ExperienciaController::class, 'show'])->name('experiencias.show');
             });
 
         // RUTAS PROTEGIDAS PARA ESTUDIANTES
-                Route::middleware(['auth', \App\Http\Middleware\CheckRole::class.':student'])->group(function () {
-                    Route::get('/student/dashboard', [StudentDashboardController::class, 'index'])->name('student.dashboard');
-                    Route::get('/estudiante/solicitudes', [App\Http\Controllers\Estudiante\SolicitudController::class, 'index'])->name('estudiante.solicitudes.index');
-                });
+            Route::middleware(['auth', \App\Http\Middleware\CheckRole::class.':student'])->group(function () {
+                Route::get('/student/dashboard', [StudentDashboardController::class, 'index'])->name('student.dashboard');
+                Route::get('/estudiante/solicitudes', [App\Http\Controllers\Estudiante\SolicitudController::class, 'index'])->name('estudiante.solicitudes.index');
+                
+               
+            });
 
         // RUTAS PROTEGIDAS PARA EMPRESAS
             Route::middleware(['auth', \App\Http\Middleware\CheckRole::class.':empresa'])->group(function () {

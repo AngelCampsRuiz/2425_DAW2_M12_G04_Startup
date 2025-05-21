@@ -4,42 +4,40 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Auth;
 
 class CheckRole
 {
     /**
      * Handle an incoming request.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Closure  $next
+     * @param  string  $role
+     * @return mixed
      */
-    public function handle(Request $request, Closure $next, string $role): Response
+    public function handle(Request $request, Closure $next, $role)
     {
-        if (!$request->user() || !$request->user()->role) {
-            return redirect('/');
+        if (!Auth::check()) {
+            return redirect('login');
         }
 
-        // Si el rol es numérico, comparamos por ID, de lo contrario por nombre
-        if (is_numeric($role)) {
-            if ($request->user()->role_id != $role) {
-                return redirect('/');
-            }
-        } else {
-            // Convert role names to match what's in the database
-            $roleMap = [
-                'student' => 'Estudiante',
-                'admin' => 'Administrador',
-                'empresa' => 'Empresa',
-                'tutor' => 'Tutor',
-                'institucion' => 'Institución',
-                'docente' => 'Docente'
-            ];
+        $roles = [
+            'admin' => 1,
+            'institucion' => 2,
+            'student' => 3,
+            'empresa' => 4,
+            'docente' => 5
+        ];
 
-            $requiredRole = $roleMap[$role] ?? $role;
-
-            if ($request->user()->role->nombre_rol !== $requiredRole) {
-                return redirect('/');
+        if (!isset($roles[$role]) || Auth::user()->role_id !== $roles[$role]) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No tienes permiso para realizar esta acción'
+                ], 403);
             }
+            return redirect()->back()->with('error', 'No tienes permiso para realizar esta acción');
         }
 
         return $next($request);
