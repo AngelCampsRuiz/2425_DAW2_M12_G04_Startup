@@ -48,7 +48,17 @@ class Docente extends Model
 
     public function clases()
     {
-        return $this->hasMany(Clase::class);
+        return $this->belongsToMany(Clase::class, 'docente_clase')
+                    ->withPivot('fecha_asignacion', 'es_titular', 'rol')
+                    ->withTimestamps();
+    }
+
+    /**
+     * Obtiene las asignaciones de clases para este docente
+     */
+    public function docenteClases()
+    {
+        return $this->hasMany(DocenteClase::class);
     }
 
     public function departamentosJefe()

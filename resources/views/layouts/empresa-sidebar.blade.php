@@ -1,22 +1,26 @@
 <!-- Sidebar para la empresa -->
+@php
+use Illuminate\Support\Facades\Auth;
+@endphp
+
 <div class="w-full md:w-1/4">
     <div class="bg-white rounded-xl shadow-lg p-6 mb-6 hover:shadow-xl transition-shadow duration-300">
         <div class="flex items-center space-x-4 mb-6">
-            @if(Auth::user()->imagen)
+            @if(auth()->user()->imagen)
                 <div class="relative flex items-center justify-center w-16 h-16 rounded-full bg-purple-50 border-2 border-purple-200 overflow-hidden">
-                    <img src="{{ asset('profile_images/' . Auth::user()->imagen) }}" alt="Logo empresa" class="w-full h-full object-contain">
+                    <img src="{{ asset('profile_images/' . auth()->user()->imagen) }}" alt="Logo empresa" class="w-full h-full object-contain">
                     <div class="absolute bottom-0 right-0 w-4 h-4 bg-green-400 rounded-full border-2 border-white"></div>
                 </div>
             @else
                 <div class="relative">
                     <div class="w-16 h-16 rounded-full bg-gradient-to-br from-purple-400 to-indigo-500 flex items-center justify-center text-white text-xl font-bold shadow-md">
-                        {{ strtoupper(substr(Auth::user()->nombre, 0, 2)) }}
+                        {{ strtoupper(substr(auth()->user()->nombre, 0, 2)) }}
                     </div>
                     <div class="absolute bottom-0 right-0 w-4 h-4 bg-green-400 rounded-full border-2 border-white"></div>
                 </div>
             @endif
             <div>
-                <h2 class="text-lg font-bold text-gray-800">{{ Auth::user()->nombre }}</h2>
+                <h2 class="text-lg font-bold text-gray-800">{{ auth()->user()->nombre }}</h2>
                 <p class="text-indigo-600 font-medium">Empresa</p>
             </div>
         </div>
@@ -25,7 +29,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
                 </svg>
-                CIF: <span class="font-medium text-gray-800 ml-1">{{ Auth::user()->empresa->cif ?? 'No especificado' }}</span>
+                CIF: <span class="font-medium text-gray-800 ml-1">{{ auth()->user()->empresa->cif ?? 'No especificado' }}</span>
             </p>
             <p class="text-gray-600 flex items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">

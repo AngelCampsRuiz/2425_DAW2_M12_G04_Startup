@@ -1,48 +1,13 @@
 @php
-$layout = 'layouts.app';
-
-if (auth()->user()->role_id == 4) {
-    $layout = 'layouts.docente';
-} elseif (auth()->user()->role_id == 2) {
-    $layout = 'layouts.empresa-sidebar';
-} elseif (auth()->user()->role_id == 5) {
-    $layout = 'layouts.institucion';
-}
+use Illuminate\Support\Facades\Auth;
 @endphp
 
-@extends($layout)
+@extends('layouts.chat')
+
+@section('title', 'Chat con ' . $otherUser->nombre)
 
 @section('content')
 <div class="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 transition-colors duration-500">
-    {{-- MIGAS DE PAN --}}
-    @if(auth()->user()->role_id != 4 && auth()->user()->role_id != 5 && auth()->user()->role_id != 2)
-    <div class="bg-white shadow-md backdrop-blur-xl bg-opacity-80 sticky top-0 z-10 border-b border-purple-100">
-        <div class="container mx-auto px-4 py-3">
-            <div class="flex items-center text-sm">
-                <a href="{{ route('home') }}" class="text-gray-500 hover:text-[#5e0490] transition-all duration-300 flex items-center">
-                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-                    </svg>
-                    Inicio
-                </a>
-                <span class="mx-2 text-gray-400">/</span>
-                @if(auth()->user()->role_id == 2)
-                <a href="{{ route('empresa.dashboard') }}" class="text-gray-500 hover:text-[#5e0490] transition-all duration-300">
-                    Dashboard
-                </a>
-                @elseif(auth()->user()->role_id == 3)
-                <a href="{{ route('student.dashboard') }}" class="text-gray-500 hover:text-[#5e0490] transition-all duration-300">
-                    Dashboard
-                </a>
-                @endif
-                <span class="mx-2 text-gray-400">/</span>
-                <a href="{{ route('chat.index') }}" class="text-gray-500 hover:text-[#5e0490] transition-all duration-300">Mis Conversaciones</a>
-                <span class="mx-2 text-gray-400">/</span>
-                <span class="text-[#5e0490] font-medium">{{ $otherUser?->nombre ?? 'Usuario desconocido' }}</span>
-            </div>
-        </div>
-    </div>
-    @endif
 
     <div class="container mx-auto px-4 py-8">
         <!-- Encabezado del chat -->
@@ -73,7 +38,7 @@ if (auth()->user()->role_id == 4) {
                             <p class="text-xs sm:text-sm text-gray-600 flex items-center">
                                 <span class="inline-block w-2 h-2 rounded-full bg-green-500 mr-2"></span>
                                 @if(isset($solicitud) && $solicitud)
-                                    {{ $solicitud->publicacion->titulo }}
+                                {{ $solicitud->publicacion->titulo }}
                                 @elseif($chat->tipo == 'docente_estudiante')
                                     @if(auth()->user()->role_id == 4)
                                         Estudiante
@@ -325,8 +290,8 @@ if (auth()->user()->role_id == 4) {
                             <i class="far fa-smile-beam text-xl"></i>
                         </button>
                     </div>
-                    
-                    <div class="flex items-center justify-between">
+
+                            <div class="flex items-center justify-between">
                         <div class="flex items-center space-x-2">
                             <label for="file-upload" class="p-2 bg-purple-50 text-purple-700 rounded-lg cursor-pointer hover:bg-purple-100 transition-colors">
                                 <span class="flex items-center">
@@ -334,26 +299,26 @@ if (auth()->user()->role_id == 4) {
                                     <span>Adjuntar</span>
                                 </span>
                                 <input id="file-upload" name="archivo" type="file" class="hidden" />
-                            </label>
+                        </label>
                             <span id="file-name" class="text-sm text-gray-500"></span>
-                        </div>
-                        
+                </div>
+
                         <button type="submit" id="send-button" class="px-5 py-2 bg-gradient-to-r from-[#5e0490] to-[#4a0370] text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed">
                             <span class="flex items-center">
                                 <span class="mr-2">Enviar</span>
                                 <i class="fas fa-paper-plane"></i>
-                            </span>
-                        </button>
-                    </div>
+                    </span>
+                    </button>
+                </div>
                 </form>
             </div>
-            
+
             <div class="flex flex-col sm:flex-row gap-3 border-t border-gray-200 p-4 bg-white">
                 @if(isset($solicitud) && $solicitud)
                 <div class="flex items-center bg-purple-50 px-4 py-2 rounded-lg flex-grow-0 text-sm text-purple-700">
                     <i class="fas fa-info-circle mr-2 text-purple-500"></i>
                     <span>Conversación sobre: <span class="font-medium">{{ $solicitud->publicacion->titulo }}</span></span>
-                </div>
+                                    </div>
                 @elseif($chat->tipo == 'docente_estudiante')
                 <div class="flex items-center bg-blue-50 px-4 py-2 rounded-lg flex-grow-0 text-sm text-blue-700">
                     <i class="fas fa-info-circle mr-2 text-blue-500"></i>
@@ -364,7 +329,7 @@ if (auth()->user()->role_id == 4) {
                             Conversación con docente: <span class="font-medium">{{ $otherUser->nombre }}</span>
                         @endif
                     </span>
-                </div>
+                                </div>
                 @elseif($chat->tipo == 'docente_empresa')
                 <div class="flex items-center bg-green-50 px-4 py-2 rounded-lg flex-grow-0 text-sm text-green-700">
                     <i class="fas fa-info-circle mr-2 text-green-500"></i>
@@ -375,7 +340,7 @@ if (auth()->user()->role_id == 4) {
                             Conversación con docente: <span class="font-medium">{{ $otherUser->nombre }}</span>
                         @endif
                     </span>
-                </div>
+                                    </div>
                 @endif
                 
                 <div class="flex items-center ml-auto gap-2">
@@ -387,10 +352,10 @@ if (auth()->user()->role_id == 4) {
                         <i class="fas fa-paper-plane mr-2"></i>
                         <span>Responder</span>
                     </a>
-                </div>
-            </div>
-        </div>
-    </div>
+                            </div>
+                            </div>
+                            </div>
+                            </div>
 </div>
 
 <!-- Añadir Font Awesome -->

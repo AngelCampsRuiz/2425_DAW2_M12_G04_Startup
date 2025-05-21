@@ -1,53 +1,13 @@
 @php
-$layout = 'layouts.app';
-
-if (auth()->user()->role_id == 4) {
-    $layout = 'layouts.docente';
-} elseif (auth()->user()->role_id == 2) {
-    $layout = 'layouts.empresa-sidebar';
-} elseif (auth()->user()->role_id == 5) {
-    $layout = 'layouts.institucion';
-}
+use Illuminate\Support\Facades\Auth;
 @endphp
 
-@extends($layout)
+@extends('layouts.chat')
+
+@section('title', 'Mis Conversaciones')
 
 @section('content')
 <div class="min-h-screen bg-gradient-to-br from-gray-50 to-purple-50">
-    {{-- MIGAS DE PAN --}}
-    @if(auth()->user()->role_id != 4 && auth()->user()->role_id != 5 && auth()->user()->role_id != 2)
-    <div class="bg-white shadow-sm sticky top-0 z-10">
-        <div class="container mx-auto px-4 py-3">
-            <div class="flex items-center text-sm">
-                <a href="{{ route('home') }}" class="text-gray-500 hover:text-purple-700 transition-colors duration-200">
-                    <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-                    </svg>
-                    Inicio
-                </a>
-                <span class="mx-2 text-gray-400">/</span>
-                @php
-                    $user = auth()->user();
-                    $dashboardRoute = match($user->role_id) {
-                        2 => route('empresa.dashboard'),
-                        3 => route('student.dashboard'),
-                        4 => route('docente.dashboard'),
-                        5 => route('institucion.dashboard'),
-                        default => '#'
-                    };
-                @endphp
-                
-                @if($dashboardRoute !== '#')
-                <a href="{{ $dashboardRoute }}" class="text-gray-500 hover:text-purple-700 transition-colors duration-200">
-                    Dashboard
-                </a>
-                <span class="mx-2 text-gray-400">/</span>
-                @endif
-                <span class="text-purple-700 font-medium">Mis Conversaciones</span>
-            </div>
-        </div>
-    </div>
-    @endif
 
     <div class="container mx-auto px-4 py-8">
         <!-- Mensajes de notificación -->
@@ -115,6 +75,8 @@ if (auth()->user()->role_id == 4) {
                                 Gestiona tus conversaciones con empresas y docentes
                             @elseif(auth()->user()->role_id == 4)
                                 Gestiona tus conversaciones con estudiantes
+                            @elseif(auth()->user()->role_id == 5)
+                                Gestiona tus conversaciones
                             @endif
                         </p>
                     </div>
@@ -256,6 +218,13 @@ if (auth()->user()->role_id == 4) {
                             </a>
                             
                             <p class="mt-3 text-sm text-gray-500">Puedes iniciar conversaciones con los estudiantes asignados a tus clases</p>
+                        @elseif(auth()->user()->role_id == 5)
+                            <a href="{{ route('institucion.dashboard') }}" class="inline-flex items-center px-5 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg shadow-md hover:from-purple-700 hover:to-indigo-700 transition-all duration-200">
+                                <i class="fas fa-university mr-2"></i>
+                                Volver al panel
+                            </a>
+                            
+                            <p class="mt-3 text-sm text-gray-500">Aquí aparecerán tus conversaciones con docentes y estudiantes</p>
                         @endif
                     </div>
                 </div>
@@ -418,9 +387,11 @@ if (auth()->user()->role_id == 4) {
                                 <label for="estudiante_id" class="block text-sm font-medium text-gray-700 mb-1">Seleccionar estudiante</label>
                                 <select name="estudiante_id" id="estudiante_id" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500">
                                     <option value="">Selecciona un estudiante</option>
-                                    @foreach($estudiantes as $estudiante)
-                                        <option value="{{ $estudiante->id }}">{{ $estudiante->user->nombre }} ({{ $estudiante->clases->first()->nombre_clase ?? 'Sin clase' }})</option>
-                                    @endforeach
+                                    @isset($estudiantes)
+                                        @foreach($estudiantes as $estudiante)
+                                            <option value="{{ $estudiante->id }}">{{ $estudiante->user->nombre }} ({{ $estudiante->clases->first()->nombre_clase ?? 'Sin clase' }})</option>
+                                        @endforeach
+                                    @endisset
                                 </select>
                             </div>
                             <button type="submit" class="w-full px-4 py-2 bg-gradient-to-r from-[#5e0490] to-[#4a0370] text-white rounded-md hover:from-[#4a0370] hover:to-[#5e0490] focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50 transition-all duration-300">
@@ -438,9 +409,11 @@ if (auth()->user()->role_id == 4) {
                                 <label for="empresa_id" class="block text-sm font-medium text-gray-700 mb-1">Seleccionar empresa</label>
                                 <select name="empresa_id" id="empresa_id" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500">
                                     <option value="">Selecciona una empresa</option>
-                                    @foreach($empresas as $empresa)
-                                        <option value="{{ $empresa->id }}">{{ $empresa->user->nombre }}</option>
-                                    @endforeach
+                                    @isset($empresas)
+                                        @foreach($empresas as $empresa)
+                                            <option value="{{ $empresa->id }}">{{ $empresa->user->nombre }}</option>
+                                        @endforeach
+                                    @endisset
                                 </select>
                             </div>
                             <button type="submit" class="w-full px-4 py-2 bg-gradient-to-r from-[#5e0490] to-[#4a0370] text-white rounded-md hover:from-[#4a0370] hover:to-[#5e0490] focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50 transition-all duration-300">

@@ -197,17 +197,37 @@
                 // PUBLICACIONES VISIBLES PARA TODOS LOS USUARIOS
                     Route::get('/publication/{id}', [PublicationController::class, 'show'])->name('publication.show');
 
-                // RUTAS PARA EL CHAT
-                    Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
-                    Route::get('/chat/{chat}', [ChatController::class, 'showChat'])->name('chat.show');
-                    Route::post('/chat/{chat}/message', [ChatController::class, 'sendMessage'])->name('chat.message');
-                    Route::get('/chat/{chat}/messages', [ChatController::class, 'getMessages'])->name('chat.messages');
-                    Route::post('/chat/create/{solicitud}', [ChatController::class, 'createChat'])->name('chat.create');
-                    Route::post('/chat/create-docente', [ChatController::class, 'createDocenteChat'])->name('chat.create.docente');
-                    Route::post('/chat/create-docente-empresa', [ChatController::class, 'createDocenteEmpresaChat'])->name('chat.create.docente.empresa');
-                    Route::get('/chat/check-new', [ChatController::class, 'checkNewMessages'])->name('chat.check_new');
-                    Route::get('/chat/refresh', [ChatController::class, 'refreshChats'])->name('chat.refresh');
-                    Route::post('/chat/{messageId}/read', [ChatController::class, 'markMessageAsRead'])->name('chat.mark_read');
+                // RUTAS PARA EL CHAT - No accesibles para instituciones (role_id = 5)
+                    Route::get('/chat', [ChatController::class, 'index'])
+                        ->middleware(\App\Http\Middleware\RestrictChatInstitucion::class)
+                        ->name('chat.index');
+                    Route::get('/chat/{chat}', [ChatController::class, 'showChat'])
+                        ->middleware(\App\Http\Middleware\RestrictChatInstitucion::class)
+                        ->name('chat.show');
+                    Route::post('/chat/{chat}/message', [ChatController::class, 'sendMessage'])
+                        ->middleware(\App\Http\Middleware\RestrictChatInstitucion::class)
+                        ->name('chat.message');
+                    Route::get('/chat/{chat}/messages', [ChatController::class, 'getMessages'])
+                        ->middleware(\App\Http\Middleware\RestrictChatInstitucion::class)
+                        ->name('chat.messages');
+                    Route::post('/chat/create/{solicitud}', [ChatController::class, 'createChat'])
+                        ->middleware(\App\Http\Middleware\RestrictChatInstitucion::class)
+                        ->name('chat.create');
+                    Route::post('/chat/create-docente', [ChatController::class, 'createDocenteChat'])
+                        ->middleware(\App\Http\Middleware\RestrictChatInstitucion::class)
+                        ->name('chat.create.docente');
+                    Route::post('/chat/create-docente-empresa', [ChatController::class, 'createDocenteEmpresaChat'])
+                        ->middleware(\App\Http\Middleware\RestrictChatInstitucion::class)
+                        ->name('chat.create.docente.empresa');
+                    Route::get('/chat/check-new', [ChatController::class, 'checkNewMessages'])
+                        ->middleware(\App\Http\Middleware\RestrictChatInstitucion::class)
+                        ->name('chat.check_new');
+                    Route::get('/chat/refresh', [ChatController::class, 'refreshChats'])
+                        ->middleware(\App\Http\Middleware\RestrictChatInstitucion::class)
+                        ->name('chat.refresh');
+                    Route::post('/chat/{messageId}/read', [ChatController::class, 'markMessageAsRead'])
+                        ->middleware(\App\Http\Middleware\RestrictChatInstitucion::class)
+                        ->name('chat.mark_read');
 
                 // RUTAS PARA VALORACIONES
                     Route::post('/valoraciones', [ValoracionController::class, 'store'])->name('valoraciones.store');
@@ -486,8 +506,8 @@ Route::prefix('institucion')->middleware(['auth', \App\Http\Middleware\CheckRole
     // Ruta para actualizar estudiantes desde modal
     Route::put('/estudiantes/update-modal', [App\Http\Controllers\Institucion\EstudianteController::class, 'updateModal']);
     
-    // Rutas de chat
-    Route::middleware(['auth'])->prefix('chat')->name('chat.')->group(function () {
+    // Rutas de chat - No accesibles para instituciones
+    Route::middleware(['auth', \App\Http\Middleware\RestrictChatInstitucion::class])->prefix('chat')->name('chat.')->group(function () {
         Route::get('/', [App\Http\Controllers\ChatController::class, 'index'])->name('index');
         Route::get('/create/{receiver_id}', [App\Http\Controllers\ChatController::class, 'create'])->name('create');
         Route::post('/send', [App\Http\Controllers\ChatController::class, 'send'])->name('send');

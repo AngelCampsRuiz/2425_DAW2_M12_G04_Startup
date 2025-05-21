@@ -7,6 +7,10 @@
     
     <title>NextGen - Panel de Institución</title>
 
+    @php
+    use Illuminate\Support\Facades\Auth;
+    @endphp
+
     <!-- Favicon -->
     <link rel="icon" href="{{ asset('assets/images/logo.svg') }}" type="image/svg+xml">
     
@@ -76,21 +80,21 @@
                 <div class="w-full md:w-1/4">
                     <div class="bg-white rounded-xl shadow-lg p-6 mb-6 hover:shadow-xl transition-shadow duration-300">
                         <div class="flex items-center space-x-4 mb-6">
-                            @if(Auth::user()->imagen)
+                            @if(auth()->user()->imagen)
                                 <div class="relative">
-                                    <img src="{{ asset('profile_images/' . Auth::user()->imagen) }}" alt="Logo institución" class="w-16 h-16 rounded-full object-cover border-2 border-purple-200">
+                                    <img src="{{ asset('profile_images/' . auth()->user()->imagen) }}" alt="Logo institución" class="w-16 h-16 rounded-full object-cover border-2 border-purple-200">
                                     <div class="absolute bottom-0 right-0 w-4 h-4 bg-green-400 rounded-full border-2 border-white"></div>
                                 </div>
                             @else
                                 <div class="relative">
                                     <div class="w-16 h-16 rounded-full bg-gradient-to-br from-purple-400 to-indigo-500 flex items-center justify-center text-white text-xl font-bold shadow-md">
-                                    {{ strtoupper(substr(Auth::user()->nombre, 0, 2)) }}
+                                    {{ strtoupper(substr(auth()->user()->nombre, 0, 2)) }}
                                     </div>
                                     <div class="absolute bottom-0 right-0 w-4 h-4 bg-green-400 rounded-full border-2 border-white"></div>
                                 </div>
                             @endif
                             <div>
-                                <h2 class="text-lg font-bold text-gray-800">{{ Auth::user()->nombre }}</h2>
+                                <h2 class="text-lg font-bold text-gray-800">{{ auth()->user()->nombre }}</h2>
                                 <p class="text-indigo-600 font-medium">Institución</p>
                             </div>
                         </div>
@@ -99,7 +103,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                 </svg>
-                                Email: <span class="font-medium text-gray-800 ml-1">{{ Auth::user()->email }}</span>
+                                Email: <span class="font-medium text-gray-800 ml-1">{{ auth()->user()->email }}</span>
                             </p>
                             <p class="text-gray-600 flex items-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -160,9 +164,9 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                                     </svg>
                                     Solicitudes
-                                    @if(Auth::user()->institucion->solicitudesPendientes()->count() > 0)
+                                    @if(auth()->user()->institucion->solicitudesPendientes()->count() > 0)
                                         <span class="ml-auto bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                                            {{ Auth::user()->institucion->solicitudesPendientes()->count() }}
+                                            {{ auth()->user()->institucion->solicitudesPendientes()->count() }}
                                         </span>
                                     @endif
                                 </a></li>

@@ -315,7 +315,7 @@ class DocenteController extends Controller
         $solicitudesPendientes = SolicitudEstudiante::where(function($q) use ($user, $categoriasDocente) {
             // Solicitudes para clases del docente
             $q->whereHas('clase', function($query) use ($user) {
-                $query->where('docente_id', $user->id);
+            $query->where('docente_id', $user->id);
             });
             
             // O solicitudes de estudiantes que han seleccionado una categoría que imparte el docente
@@ -403,7 +403,7 @@ class DocenteController extends Controller
         $query = SolicitudEstudiante::where(function($q) use ($user, $categoriasDocente) {
             // Incluir solicitudes donde el docente es tutor de la clase asignada
             $q->whereHas('clase', function($query) use ($user) {
-                $query->where('docente_id', $user->id);
+            $query->where('docente_id', $user->id);
             });
             
             // O incluir solicitudes donde el estudiante ha seleccionado una categoría que imparte el docente
