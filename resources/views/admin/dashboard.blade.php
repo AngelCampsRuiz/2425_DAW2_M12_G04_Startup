@@ -155,16 +155,16 @@
                     <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg shadow-md overflow-hidden border border-blue-200">
                         <div class="p-5">
                             <div class="flex justify-between items-center mb-3">
-                                <div>
+                            <div>
                                     <p class="text-sm text-blue-600 font-medium">Total Ofertas</p>
                                     <p class="text-2xl font-bold text-blue-800">{{ $stats['ofertas']['total'] }}</p>
-                                </div>
-                                <div class="bg-blue-100 p-3 rounded-full">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                    </svg>
-                                </div>
                             </div>
+                            <div class="bg-blue-100 p-3 rounded-full">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                            </div>
+                        </div>
                             <div class="flex items-center">
                                 <div class="w-full">
                                     <div class="flex justify-between mb-1 text-xs text-blue-700">
@@ -207,16 +207,16 @@
                     <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-lg shadow-md overflow-hidden border border-green-200">
                         <div class="p-5">
                             <div class="flex justify-between items-center mb-3">
-                                <div>
+                            <div>
                                     <p class="text-sm text-green-600 font-medium">Total Empresas</p>
                                     <p class="text-2xl font-bold text-green-800">{{ $stats['empresas']['total'] }}</p>
-                                </div>
-                                <div class="bg-green-100 p-3 rounded-full">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                                    </svg>
-                                </div>
                             </div>
+                            <div class="bg-green-100 p-3 rounded-full">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                </svg>
+                            </div>
+                        </div>
                             <div class="flex items-center">
                                 <div class="w-full">
                                     <div class="flex justify-between mb-1 text-xs text-green-700">
@@ -259,16 +259,16 @@
                     <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg shadow-md overflow-hidden border border-purple-200">
                         <div class="p-5">
                             <div class="flex justify-between items-center mb-3">
-                                <div>
+                            <div>
                                     <p class="text-sm text-purple-600 font-medium">Total Alumnos</p>
                                     <p class="text-2xl font-bold text-purple-800">{{ $stats['alumnos']['total'] }}</p>
-                                </div>
-                                <div class="bg-purple-100 p-3 rounded-full">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                                    </svg>
-                                </div>
                             </div>
+                            <div class="bg-purple-100 p-3 rounded-full">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                </svg>
+                            </div>
+                        </div>
                             <div class="flex items-center">
                                 <div class="w-full">
                                     <div class="flex justify-between mb-1 text-xs text-purple-700">
@@ -311,16 +311,16 @@
                     <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-lg shadow-md overflow-hidden border border-yellow-200">
                         <div class="p-5">
                             <div class="flex justify-between items-center mb-3">
-                                <div>
+                            <div>
                                     <p class="text-sm text-yellow-600 font-medium">Total Profesores</p>
                                     <p class="text-2xl font-bold text-yellow-800">{{ $stats['profesores']['total'] }}</p>
-                                </div>
-                                <div class="bg-yellow-100 p-3 rounded-full">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
-                                    </svg>
-                                </div>
                             </div>
+                            <div class="bg-yellow-100 p-3 rounded-full">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                                </svg>
+                            </div>
+                        </div>
                             <div class="flex items-center">
                                 <div class="w-full">
                                     <div class="flex justify-between mb-1 text-xs text-yellow-700">
@@ -540,7 +540,7 @@
                     <!-- Columna 1: Últimos usuarios -->
                     <div class="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-lg p-6 shadow-md border border-purple-200">
                         <h3 class="text-xl font-semibold text-purple-800 mb-4">Últimos Usuarios</h3>
-                        <div class="space-y-4">
+                    <div class="space-y-4">
                             @forelse($nuevos_usuarios as $usuario)
                             <div class="flex items-center bg-white p-3 rounded-lg shadow-sm">
                                 <div class="flex-shrink-0">
@@ -615,16 +615,16 @@
                                         <p class="font-medium text-gray-700">Subcategorías activas</p>
                                     </div>
                                     <p class="text-lg font-bold text-purple-700">{{ $stats['subcategorias']['total'] }}</p>
-                                </div>
                             </div>
-                            
+                        </div>
+                        
                             <div class="bg-white p-4 rounded-lg shadow-sm">
                                 <div class="flex justify-between items-center">
                                     <div class="flex items-center">
                                         <div class="bg-purple-100 p-2 rounded-full mr-3">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
-                                            </svg>
+                                </svg>
                                         </div>
                                         <p class="font-medium text-gray-700">Instituciones registradas</p>
                                     </div>
@@ -647,9 +647,9 @@
                                     </p>
                                 </div>
                             </div>
+                            </div>
                         </div>
-                    </div>
-                    
+                        
                     <!-- Columna 3: Actividad reciente -->
                     <div class="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-lg p-6 shadow-md border border-purple-200">
                         <div class="flex justify-between items-center mb-4">
