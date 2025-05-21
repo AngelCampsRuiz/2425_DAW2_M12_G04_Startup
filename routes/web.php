@@ -229,11 +229,7 @@
                     Route::post('/saved-publications/{id}', [ProfileController::class, 'savedPublication'])->name('saved.publications.store');
                     Route::delete('/favorite/{id}', [ProfileController::class, 'deleteSavedPublication']);
 
-                // RUTAS DE EXPERIENCIAS
-                Route::post('/experiencias', [ExperienciaController::class, 'store'])->name('experiencias.store');
-                Route::put('/experiencias/{experiencia}', [ExperienciaController::class, 'update'])->name('experiencias.update');
-                Route::delete('/experiencias/{experiencia}', [ExperienciaController::class, 'destroy'])->name('experiencias.destroy');
-                Route::get('/experiencias/{experiencia}', [ExperienciaController::class, 'show'])->name('experiencias.show');
+  
             });
 
         // RUTAS PROTEGIDAS PARA ESTUDIANTES
