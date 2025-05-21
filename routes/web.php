@@ -384,9 +384,16 @@ Route::prefix('institucion')->middleware(['auth', \App\Http\Middleware\CheckRole
     // RUTAS PARA ESTUDIANTES PENDIENTES
     Route::prefix('estudiantes')->name('estudiantes.')->group(function() {
         Route::get('/', [App\Http\Controllers\Institucion\EstudianteController::class, 'index'])->name('index');
+        Route::get('/pendientes', [App\Http\Controllers\Institucion\EstudianteController::class, 'pendientes'])->name('pendientes');
+        Route::get('/{id}', [App\Http\Controllers\Institucion\EstudianteController::class, 'show'])->name('show');
+        Route::get('/{id}/edit', [App\Http\Controllers\Institucion\EstudianteController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [App\Http\Controllers\Institucion\EstudianteController::class, 'update'])->name('update');
+        Route::post('/{id}/asignar-clase', [App\Http\Controllers\Institucion\EstudianteController::class, 'asignarClase'])->name('asignar-clase');
+        Route::delete('/{id}/clase/{claseId}', [App\Http\Controllers\Institucion\EstudianteController::class, 'eliminarClase'])->name('eliminar-clase');
         Route::post('/{id}/activar', [App\Http\Controllers\Institucion\EstudiantePendienteController::class, 'activar'])->name('activar');
-        Route::delete('/{id}', [App\Http\Controllers\Institucion\EstudiantePendienteController::class, 'eliminar'])->name('eliminar');
+        Route::delete('/pendiente/{id}', [App\Http\Controllers\Institucion\EstudiantePendienteController::class, 'eliminar'])->name('eliminar');
         Route::put('/{id}/actualizar', [App\Http\Controllers\Institucion\EstudiantePendienteController::class, 'actualizar'])->name('actualizar');
+        Route::put('/update-modal', [App\Http\Controllers\Institucion\EstudianteController::class, 'updateModal'])->name('update-modal');
     });
 
     // RUTAS PARA SOLICITUDES
