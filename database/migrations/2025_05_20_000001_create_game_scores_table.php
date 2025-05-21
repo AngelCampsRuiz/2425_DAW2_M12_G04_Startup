@@ -13,10 +13,17 @@ return new class extends Migration
     {
         Schema::create('game_scores', function (Blueprint $table) {
             $table->id();
-            $table->string('player_name');
+            $table->foreignId('user_id')->constrained('user')->onDelete('cascade');
+            $table->string('game_name');
             $table->integer('score');
-            $table->integer('obstacles_avoided');
+            $table->string('difficulty')->default('medium');
+            $table->integer('time_spent')->comment('Tiempo en segundos');
+            $table->boolean('completed')->default(false);
             $table->timestamps();
+            
+            // Índices para optimizar las búsquedas
+            $table->index(['user_id', 'game_name']);
+            $table->index('score');
         });
     }
 

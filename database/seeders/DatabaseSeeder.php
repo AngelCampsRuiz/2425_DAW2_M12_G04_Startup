@@ -12,26 +12,31 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
+            // Seeders base (entidades fundamentales)
             RolSeeder::class,
             NivelEducativoSeeder::class,
             CategoriaSeeder::class,
+            SubcategoriaSeeder::class,
+            
+            // Usuario y entidades relacionadas
             UserSeeder::class,
+            InstitucionSeeder::class,
             EmpresaSeeder::class,
             EstudianteSeeder::class,
             TutorSeeder::class,
-            AlumnoTutorSeeder::class,
-            SubcategoriaSeeder::class,
+            DocenteSeeder::class,
+            
+            // Estructuras educativas
+            DepartamentoSeeder::class,
+            ClaseSeeder::class,
+            EstudianteClaseSeeder::class,
+            
+            // Publicaciones
             PublicacionSeeder::class,
-            ChatSeeder::class,
-            MensajeSeeder::class,
-            SeguimientoSeeder::class,
-            ConvenioSeeder::class,
-            ExperienciaSeeder::class,
-            ValoracionSeeder::class,
-            FavoritoSeeder::class,
-            SolicitudSeeder::class,
-            InstitucionSeeder::class,
-            DocenteSeeder::class
+            
+            // Funcionalidades adicionales
+            NotificationSeeder::class,
+            GameScoreSeeder::class,
         ]);
     }
 }
