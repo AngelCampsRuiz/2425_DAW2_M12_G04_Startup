@@ -161,7 +161,23 @@ function crearConvenio(ofertaId, estudianteId) {
                     }
                 });
 
-                                    // Format dates in YYYY-MM-DD format for Laravel validation                    const formattedFechaInicio = result.value.fecha_inicio;                    const formattedFechaFin = result.value.fecha_fin;                                        // Debug data being sent                    const formData = {                        oferta_id: result.value.oferta_id,                        estudiante_id: result.value.estudiante_id,                        fecha_inicio: formattedFechaInicio,                        fecha_fin: formattedFechaFin,                        horario_practica: result.value.horario_practica,                        tutor_empresa: result.value.tutor_empresa,                        tareas: result.value.tareas,                        objetivos: result.value.objetivos,                        _token: $('meta[name="csrf-token"]').attr('content')                    };
+                // Format dates in YYYY-MM-DD format for Laravel validation
+                const formattedFechaInicio = result.value.fecha_inicio;
+                const formattedFechaFin = result.value.fecha_fin;
+                
+                // Debug data being sent
+                const formData = {
+                    oferta_id: result.value.oferta_id,
+                    estudiante_id: result.value.estudiante_id,
+                    empresa_id: {{ Auth::id() }}, // Agregamos el ID de la empresa autenticada
+                    fecha_inicio: formattedFechaInicio,
+                    fecha_fin: formattedFechaFin,
+                    horario_practica: result.value.horario_practica,
+                    tutor_empresa: result.value.tutor_empresa,
+                    tareas: result.value.tareas,
+                    objetivos: result.value.objetivos,
+                    _token: $('meta[name="csrf-token"]').attr('content')
+                };
                 console.log('Sending data to server:', formData);
 
                 // Send data to server using jQuery for better compatibility
@@ -359,7 +375,7 @@ function crearConvenio(ofertaId, estudianteId) {
                             <div class="flex justify-between items-center mb-4">
                                 <h2 class="text-xl font-semibold text-gray-800 flex items-center">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                                     </svg>
                                     Ofertas con Candidatos Aceptados
                                 </h2>
@@ -368,109 +384,235 @@ function crearConvenio(ofertaId, estudianteId) {
                                 </div>
                             </div>
 
+                            <!-- Filtros adicionales para ofertas -->
+                            <div class="mb-6 bg-white border border-gray-200 rounded-xl p-4 shadow-sm">
+                                <div class="flex flex-col sm:flex-row gap-3 justify-between items-center">
+                                    <div class="w-full sm:w-auto flex flex-row gap-2">
+                                        <button id="btnTodas" class="filter-btn inline-flex items-center px-3 py-1.5 rounded text-sm font-medium bg-indigo-600 text-white" data-filter="todas">
+                                            Todas
+                                        </button>
+                                        <button id="btnActivas" class="filter-btn inline-flex items-center px-3 py-1.5 rounded text-sm font-medium bg-gray-200 text-gray-800" data-filter="activas">
+                                            <span class="w-2 h-2 bg-green-500 rounded-full mr-1.5"></span>
+                                            Activas
+                                        </button>
+                                        <button id="btnInactivas" class="filter-btn inline-flex items-center px-3 py-1.5 rounded text-sm font-medium bg-gray-200 text-gray-800" data-filter="inactivas">
+                                            <span class="w-2 h-2 bg-amber-500 rounded-full mr-1.5"></span>
+                                            Inactivas
+                                        </button>
+                                    </div>
+                                    <div class="w-full sm:w-auto">
+                                        <select id="sortOrder" class="border border-gray-300 rounded-md text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                            <option value="newest">Más recientes primero</option>
+                                            <option value="oldest">Más antiguas primero</option>
+                                            <option value="most_candidates">Más candidatos primero</option>
+                                            <option value="alphabetical">Orden alfabético</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="mt-4 flex flex-wrap gap-2 text-xs text-gray-500">
+                                    <div class="flex items-center">
+                                        <span class="font-semibold">Estado actual:</span> 
+                                        <span id="currentFilter" class="ml-1 px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 font-medium">Mostrando todas</span>
+                                    </div>
+                                    <div class="flex items-center ml-auto">
+                                        <span class="font-semibold">Encontradas:</span> 
+                                        <span id="ofertasFoundCount" class="ml-1 px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 font-medium">{{ $ofertas->count() }}</span>
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- Lista de Ofertas -->
                             <div class="space-y-6" id="ofertasConCandidatos">
-                                <!-- Esta sección se llenará con PHP desde el controlador -->
+                                <!-- Contenido de ofertas con candidatos aceptados -->
                                 @forelse($ofertas ?? [] as $oferta)
-                                    <div class="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 p-3 sm:p-6">
-                                        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
-                                            <div>
-                                                <h3 class="text-base sm:text-lg font-medium text-gray-900">{{ $oferta->titulo }}</h3>
-                                                <p class="text-xs sm:text-sm text-gray-500 mb-1 sm:mb-2">Publicada el {{ $oferta->created_at->format('d/m/Y') }}</p>
-
-                                                <div class="flex flex-wrap gap-1 sm:gap-2 mb-2 sm:mb-3">
+                                    <div class="oferta-item bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 p-6 {{ $oferta->activa ? 'oferta-activa' : 'oferta-inactiva' }}">
+                                        <div class="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4">
+                                            <div class="flex-1">
+                                                <!-- Badge flotante de estado -->
+                                                <div class="float-right ml-2 mb-2">
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $oferta->activa ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-amber-100 text-amber-800 border border-amber-200' }}">
+                                                        {{ $oferta->activa ? 'Oferta Activa' : 'Oferta Inactiva' }}
+                                                    </span>
+                                                </div>
+                                                
+                                                <h3 class="text-lg font-semibold text-gray-900 mb-1 transition-colors group-hover:text-indigo-600">
+                                                    {{ $oferta->titulo }}
+                                                </h3>
+                                                
+                                                <div class="flex items-center text-xs text-gray-500 mb-2">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-1 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                                    </svg>
+                                                    Publicada el {{ $oferta->created_at->format('d/m/Y') }}
+                                                    
+                                                    @if(!$oferta->activa && $oferta->fecha_inactivacion)
+                                                    <span class="mx-2">•</span>
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-1 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                    Inactivada el {{ \Carbon\Carbon::parse($oferta->fecha_inactivacion)->format('d/m/Y') }}
+                                                    @endif
+                                                </div>
+                                                
+                                                <div class="flex flex-wrap gap-2 mb-3">
                                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
                                                         {{ $oferta->categoria->nombre_categoria ?? 'Sin categoría' }}
                                                     </span>
                                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                                        {{ $oferta->horario }}
+                                                        {{ $oferta->modalidad }}
                                                     </span>
                                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                        {{ $oferta->horario }}
+                                                    </span>
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                                                         {{ $oferta->horas_totales }} horas
                                                     </span>
                                                 </div>
+                                                
+                                                <div class="relative">
+                                                    <div class="description-container overflow-hidden">
+                                                        <p class="text-gray-600 text-sm mb-2 description-text line-clamp-3">
+                                                            {{ $oferta->descripcion }}
+                                                        </p>
+                                                    </div>
+                                                    <button class="show-more-btn text-xs font-medium text-indigo-600 hover:text-indigo-700 focus:outline-none mt-1 flex items-center">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                                        </svg>
+                                                        Mostrar más
+                                                    </button>
+                                                </div>
                                             </div>
-
-                                            <div class="mt-2 sm:mt-0">
-                                                <span class="inline-block rounded-full px-2 py-0.5 sm:px-3 sm:py-1 text-xs sm:text-sm font-medium bg-blue-100 text-blue-800">
-                                                    {{ $oferta->candidatos_aceptados_count ?? $oferta->candidatosAceptados->count() }} candidatos aceptados
-                                                </span>
+                                            
+                                            <div class="flex flex-col gap-3 lg:w-auto">
+                                                <div class="flex flex-col sm:flex-row lg:flex-col gap-2">
+                                                    <span class="inline-flex items-center justify-center px-3 py-1 rounded-md text-sm font-medium bg-indigo-50 text-indigo-700 border border-indigo-100">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                                        </svg>
+                                                        {{ $oferta->candidatosAceptados->count() }} candidatos aceptados
+                                                    </span>
+                                                    
+                                                    <!-- Convenios actuales -->
+                                                    @php
+                                                        $conventionCount = \App\Models\Convenio::where('oferta_id', $oferta->id)->count();
+                                                    @endphp
+                                                    <span class="inline-flex items-center justify-center px-3 py-1 rounded-md text-sm font-medium border {{ $conventionCount > 0 ? 'bg-purple-50 text-purple-700 border-purple-100' : 'bg-gray-50 text-gray-500 border-gray-200' }}">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                        </svg>
+                                                        {{ $conventionCount }} convenios creados
+                                                    </span>
+                                                </div>
+                                                
+                                                <!-- Botón para expandir/colapsar candidatos -->
+                                                <button class="toggle-candidates mt-2 inline-flex items-center justify-center px-3 py-1.5 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 toggle-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                                    </svg>
+                                                    <span class="toggle-text">Ver candidatos</span>
+                                                </button>
                                             </div>
                                         </div>
-
-                                        <!-- Lista de Candidatos Aceptados -->
-                                        <div class="mt-4 border-t pt-4">
+                                        
+                                        <!-- Lista de candidatos (inicialmente oculta) -->
+                                        <div class="mt-4 pt-4 border-t border-gray-200 candidates-container hidden">
                                             <h4 class="text-md font-medium text-gray-800 mb-3 flex items-center">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                                                 </svg>
                                                 Candidatos Aceptados
                                             </h4>
-
-                                            <div class="divide-y divide-gray-200">
-                                                @forelse($oferta->candidatosAceptados ?? [] as $candidato)
-                                                    <div class="py-2 sm:py-3 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-                                                        <div class="flex items-center space-x-2 sm:space-x-3">
-                                                            @if($candidato->imagen)
-                                                                <img src="{{ asset('profile_images/' . $candidato->imagen) }}" alt="{{ $candidato->nombre }}" class="h-10 w-10 rounded-full object-cover border border-gray-200 shadow-sm" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<?xml version=\'1.0\' encoding=\'UTF-8\'?><svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\' width=\'40\' height=\'40\'><rect width=\'100\' height=\'100\' fill=\'%236366F1\'/><text x=\'50\' y=\'50\' font-size=\'35\' fill=\'white\' text-anchor=\'middle\' dominant-baseline=\'middle\'>{{ substr($candidato->nombre, 0, 1) }}{{ isset(explode(" ", $candidato->nombre)[1]) ? substr(explode(" ", $candidato->nombre)[1], 0, 1) : "" }}</text></svg>';">
-                                                            @else
-                                                                <div class="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-lg shadow-sm">
-                                                                    {{ substr($candidato->nombre, 0, 1) }}{{ isset(explode(" ", $candidato->nombre)[1]) ? substr(explode(" ", $candidato->nombre)[1], 0, 1) : "" }}
+                                            
+                                            <div>
+                                                <ul class="divide-y divide-gray-200">
+                                                    @forelse($oferta->candidatosAceptados ?? [] as $candidato)
+                                                        <li class="py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                                            <div class="flex items-center">
+                                                                @if($candidato->imagen)
+                                                                    <img src="{{ asset('profile_images/' . $candidato->imagen) }}" alt="{{ $candidato->nombre }}" class="h-10 w-10 rounded-full object-cover border border-gray-200 shadow-sm" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<?xml version=\'1.0\' encoding=\'UTF-8\'?><svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\' width=\'40\' height=\'40\'><rect width=\'100\' height=\'100\' fill=\'%236366F1\'/><text x=\'50\' y=\'50\' font-size=\'35\' fill=\'white\' text-anchor=\'middle\' dominant-baseline=\'middle\'>{{ substr($candidato->nombre, 0, 1) }}{{ isset(explode(" ", $candidato->nombre)[1]) ? substr(explode(" ", $candidato->nombre)[1], 0, 1) : "" }}</text></svg>';">
+                                                                @else
+                                                                    <div class="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold shadow-sm">
+                                                                        {{ substr($candidato->nombre, 0, 1) }}{{ isset(explode(" ", $candidato->nombre)[1]) ? substr(explode(" ", $candidato->nombre)[1], 0, 1) : "" }}
+                                                                    </div>
+                                                                @endif
+                                                                
+                                                                <div class="ml-3">
+                                                                    <div class="text-sm font-medium text-gray-900">{{ $candidato->nombre }}</div>
+                                                                    <div class="text-xs text-gray-500 flex items-center">
+                                                                        {{ $candidato->email }}
+                                                                        @if($candidato->telefono)
+                                                                        <span class="mx-1">•</span>
+                                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 inline mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                                                        </svg>
+                                                                        {{ $candidato->telefono }}
+                                                                        @endif
+                                                                    </div>
                                                                 </div>
-                                                            @endif
-
-                                                            <div>
-                                                                <h5 class="text-sm font-medium text-gray-900">{{ $candidato->nombre }}</h5>
-                                                                <p class="text-xs text-gray-500">{{ $candidato->email }}</p>
                                                             </div>
-                                                        </div>
-
-                                                        <div class="flex flex-col sm:flex-row gap-2 mt-2 sm:mt-0">
-                                                            @php
-                                                                $convenio = \App\Models\Convenio::where('oferta_id', $oferta->id)
-                                                                    ->where('estudiante_id', $candidato->id)
-                                                                    ->first();
-                                                            @endphp
-
-                                                            @if($convenio)
-                                                                <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium {{ $convenio->estado == 'activo' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800' }}">
-                                                                    Convenio {{ ucfirst($convenio->estado) }}
-                                                                </span>
-                                                                <a href="{{ route('empresa.convenios.show', $convenio->id) }}" class="inline-flex items-center px-2.5 py-1 border border-gray-300 rounded-md text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 transition-all duration-300">
+                                                            
+                                                            <div class="flex gap-2 items-center flex-wrap">
+                                                                @php
+                                                                    $convenio = \App\Models\Convenio::where('oferta_id', $oferta->id)
+                                                                        ->where('estudiante_id', $candidato->id)
+                                                                        ->first();
+                                                                @endphp
+                                                                
+                                                                @if($convenio)
+                                                                    <span class="px-2.5 py-1 text-xs font-medium rounded-md {{ $convenio->estado == 'activo' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800' }}">
+                                                                        Convenio {{ ucfirst($convenio->estado) }}
+                                                                    </span>
+                                                                    <a href="{{ route('empresa.convenios.show', $convenio->id) }}" class="inline-flex items-center px-2.5 py-1 border border-gray-300 rounded-md text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 transition-all duration-200">
+                                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                                        </svg>
+                                                                        Ver convenio
+                                                                    </a>
+                                                                @else
+                                                                    <button 
+                                                                        onclick="crearConvenio({{ $oferta->id }}, {{ $candidato->id }})" 
+                                                                        type="button" 
+                                                                        class="inline-flex items-center px-3 py-1 border border-transparent rounded-md shadow-sm text-xs font-medium text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200 create-convenio-btn"
+                                                                        data-oferta-id="{{ $oferta->id }}"
+                                                                        data-estudiante-id="{{ $candidato->id }}">
+                                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 btn-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                                                        </svg>
+                                                                        <span class="btn-text">Crear Convenio</span>
+                                                                    </button>
+                                                                @endif
+                                                                
+                                                                <!-- Botón para ver el curriculum -->
+                                                                <a href="{{ route('estudiante.perfil', $candidato->id) }}" class="inline-flex items-center px-2.5 py-1 border border-gray-300 rounded-md text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 transition-all duration-200">
                                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                                                     </svg>
-                                                                    Ver convenio
+                                                                    Ver CV
                                                                 </a>
-                                                            @else
-                                                                <button onclick="crearConvenio({{ $oferta->id }}, {{ $candidato->id }})" class="inline-flex items-center px-3 py-1 border border-transparent rounded-md shadow-sm text-xs font-medium text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                                                                    </svg>
-                                                                    Crear Convenio
-                                                                </button>
-                                                            @endif
-                                                        </div>
-                                                    </div>
-                                                @empty
-                                                    <div class="py-4 text-center text-sm text-gray-500">
-                                                        No hay candidatos aceptados para esta oferta.
-                                                    </div>
-                                                @endforelse
+                                                            </div>
+                                                        </li>
+                                                    @empty
+                                                        <li class="py-4 text-center text-sm text-gray-500">
+                                                            No hay candidatos aceptados para esta oferta.
+                                                        </li>
+                                                    @endforelse
+                                                </ul>
                                             </div>
                                         </div>
                                     </div>
                                 @empty
-                                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
+                                    <div class="bg-white border border-gray-200 rounded-lg p-8 text-center">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                                         </svg>
                                         <h3 class="text-lg font-medium text-gray-900 mb-2">No hay ofertas con candidatos aceptados</h3>
                                         <p class="text-gray-500 max-w-md mx-auto mb-6">
-                                            Cuando aceptes candidatos para tus ofertas, podrás crear convenios de prácticas con ellos desde aquí.
+                                            Puedes aceptar candidatos para tus ofertas activas desde el panel de ofertas activas.
                                         </p>
-                                        <a href="{{ route('empresa.offers.active') }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition-all duration-300">
+                                        <a href="{{ route('empresa.offers.active') }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                                             </svg>
@@ -478,6 +620,23 @@ function crearConvenio(ofertaId, estudianteId) {
                                         </a>
                                     </div>
                                 @endforelse
+                            </div>
+                            
+                            <!-- Mensaje sin resultados para el filtro -->
+                            <div id="noFilterResults" class="bg-white border border-gray-200 rounded-lg p-8 text-center hidden">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                                </svg>
+                                <h3 class="text-lg font-medium text-gray-900 mb-2">No hay ofertas que coincidan con este filtro</h3>
+                                <p class="text-gray-500 max-w-md mx-auto mb-6">
+                                    Cambia los criterios de filtrado para ver más resultados.
+                                </p>
+                                <button id="resetFiltersBtn" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                    </svg>
+                                    Quitar filtros
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -892,6 +1051,28 @@ function crearConvenio(ofertaId, estudianteId) {
     .rounded-full:hover {
         transform: scale(1.05) !important;
     }
+    
+    /* Description styles */
+    .description-container {
+        max-height: 4.5rem; /* 3 lines at 1.5rem line height */
+        transition: max-height 0.3s ease-out;
+    }
+
+    .description-container.expanded {
+        max-height: 500px;
+    }
+
+    .description-text {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        transition: all 0.3s ease-out;
+    }
+
+    .description-text.expanded {
+        -webkit-line-clamp: unset;
+    }
 </style>
 
 <!-- Inline script to ensure global function availability -->
@@ -1141,5 +1322,191 @@ function crearConvenio(ofertaId, estudianteId) {
             });
         };
     }
+
+    // Show More/Less functionality for descriptions
+    document.addEventListener('DOMContentLoaded', function() {
+        const showMoreButtons = document.querySelectorAll('.show-more-btn');
+        
+        showMoreButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const container = this.previousElementSibling;
+                const text = container.querySelector('.description-text');
+                
+                container.classList.toggle('expanded');
+                text.classList.toggle('expanded');
+                
+                if (container.classList.contains('expanded')) {
+                    this.textContent = 'Mostrar menos';
+                    this.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" /></svg>Mostrar menos';
+                } else {
+                    this.textContent = 'Mostrar más';
+                    this.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>Mostrar más';
+                }
+            });
+        });
+
+        // Handle loading indicators for create convenio buttons
+        const createConvenioButtons = document.querySelectorAll('.create-convenio-btn');
+        createConvenioButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const btnText = this.querySelector('.btn-text');
+                const btnIcon = this.querySelector('.btn-icon');
+                
+                // Save original content
+                const originalText = btnText.innerHTML;
+                const originalIcon = btnIcon.outerHTML;
+                
+                // Change to loading state
+                btnText.innerHTML = 'Cargando...';
+                btnIcon.outerHTML = '<svg class="animate-spin h-4 w-4 mr-1 btn-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
+                
+                // Disable the button
+                this.disabled = true;
+                
+                // Re-enable after Swal is shown (it will handle further disabling)
+                setTimeout(() => {
+                    this.disabled = false;
+                    btnText.innerHTML = originalText;
+                    this.querySelector('.btn-icon').outerHTML = originalIcon;
+                }, 1000);
+            });
+        });
+        
+        // Filtering de ofertas (activas/inactivas)
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const ofertaItems = document.querySelectorAll('.oferta-item');
+        const noFilterResults = document.getElementById('noFilterResults');
+        const currentFilterLabel = document.getElementById('currentFilter');
+        const ofertasFoundCount = document.getElementById('ofertasFoundCount');
+        
+        // Setup filter buttons
+        filterButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Reset all buttons
+                filterButtons.forEach(btn => {
+                    btn.classList.remove('bg-indigo-600', 'text-white');
+                    btn.classList.add('bg-gray-200', 'text-gray-800');
+                });
+                
+                // Activate current button
+                this.classList.remove('bg-gray-200', 'text-gray-800');
+                this.classList.add('bg-indigo-600', 'text-white');
+                
+                const filter = this.dataset.filter;
+                let visibleCount = 0;
+                
+                // Apply filter
+                ofertaItems.forEach(item => {
+                    if (filter === 'todas') {
+                        item.classList.remove('hidden');
+                        visibleCount++;
+                    } else if (filter === 'activas' && item.classList.contains('oferta-activa')) {
+                        item.classList.remove('hidden');
+                        visibleCount++;
+                    } else if (filter === 'inactivas' && item.classList.contains('oferta-inactiva')) {
+                        item.classList.remove('hidden');
+                        visibleCount++;
+                    } else {
+                        item.classList.add('hidden');
+                    }
+                });
+                
+                // Update filter label and count
+                if (filter === 'todas') {
+                    currentFilterLabel.textContent = 'Mostrando todas';
+                } else if (filter === 'activas') {
+                    currentFilterLabel.textContent = 'Solo ofertas activas';
+                } else {
+                    currentFilterLabel.textContent = 'Solo ofertas inactivas';
+                }
+                
+                ofertasFoundCount.textContent = visibleCount;
+                
+                // Show/hide no results message
+                if (visibleCount === 0) {
+                    noFilterResults.classList.remove('hidden');
+                } else {
+                    noFilterResults.classList.add('hidden');
+                }
+                
+                // Apply any active sorting
+                applySorting();
+            });
+        });
+        
+        // Reset filter button
+        const resetFiltersBtn = document.getElementById('resetFiltersBtn');
+        if (resetFiltersBtn) {
+            resetFiltersBtn.addEventListener('click', function() {
+                document.getElementById('btnTodas').click();
+            });
+        }
+        
+        // Sorting functionality
+        const sortSelect = document.getElementById('sortOrder');
+        
+        function applySorting() {
+            const sortValue = sortSelect.value;
+            const container = document.getElementById('ofertasConCandidatos');
+            const items = Array.from(container.querySelectorAll('.oferta-item:not(.hidden)'));
+            
+            items.sort((a, b) => {
+                if (sortValue === 'newest') {
+                    // Sort by date (newest first) - assuming data-date attribute exists
+                    const dateA = new Date(a.querySelector('h3').nextElementSibling.textContent.replace('Publicada el ', ''));
+                    const dateB = new Date(b.querySelector('h3').nextElementSibling.textContent.replace('Publicada el ', ''));
+                    return dateB - dateA;
+                } else if (sortValue === 'oldest') {
+                    // Sort by date (oldest first)
+                    const dateA = new Date(a.querySelector('h3').nextElementSibling.textContent.replace('Publicada el ', ''));
+                    const dateB = new Date(b.querySelector('h3').nextElementSibling.textContent.replace('Publicada el ', ''));
+                    return dateA - dateB;
+                } else if (sortValue === 'most_candidates') {
+                    // Sort by number of candidates
+                    const countA = parseInt(a.querySelector('span:nth-of-type(1)').textContent.match(/\d+/)[0]);
+                    const countB = parseInt(b.querySelector('span:nth-of-type(1)').textContent.match(/\d+/)[0]);
+                    return countB - countA;
+                } else if (sortValue === 'alphabetical') {
+                    // Sort alphabetically
+                    return a.querySelector('h3').textContent.trim().localeCompare(
+                        b.querySelector('h3').textContent.trim()
+                    );
+                }
+                return 0;
+            });
+            
+            // Add items back in sorted order
+            items.forEach(item => {
+                container.appendChild(item);
+            });
+        }
+        
+        if (sortSelect) {
+            sortSelect.addEventListener('change', applySorting);
+        }
+        
+        // Toggle candidates list
+        const toggleButtons = document.querySelectorAll('.toggle-candidates');
+        toggleButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const candidatesContainer = this.closest('.oferta-item').querySelector('.candidates-container');
+                const toggleIcon = this.querySelector('.toggle-icon');
+                const toggleText = this.querySelector('.toggle-text');
+                
+                candidatesContainer.classList.toggle('hidden');
+                
+                if (candidatesContainer.classList.contains('hidden')) {
+                    toggleText.textContent = 'Ver candidatos';
+                    toggleIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />';
+                } else {
+                    toggleText.textContent = 'Ocultar candidatos';
+                    toggleIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />';
+                }
+            });
+        });
+        
+        // Initialize with sorting
+        applySorting();
+    });
 </script>
 @endsection
