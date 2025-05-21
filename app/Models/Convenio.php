@@ -62,4 +62,9 @@ class Convenio extends Model
     {
         return $this->belongsTo(User::class, 'estudiante_id');
     }
+
+    public function empresa()
+    {
+        return $this->belongsTo(User::class, 'empresa_id');
+    }
 }
