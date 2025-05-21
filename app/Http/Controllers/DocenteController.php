@@ -30,10 +30,7 @@ class DocenteController extends Controller
     // Formulario crear docente
     public function create()
     {
-        $institucion = Auth::user()->institucion;
-        $departamentos = $institucion->departamentos;
-        
-        return view('institucion.docentes.create', compact('departamentos'));
+        return redirect()->route('institucion.dashboard')->with('open_modal', 'docente');
     }
 
     // Guardar docente

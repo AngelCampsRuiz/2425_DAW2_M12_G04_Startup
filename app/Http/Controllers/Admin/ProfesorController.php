@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\BaseController;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
-class ProfesorController extends Controller
+class ProfesorController extends BaseController
 {
     public function index(Request $request)
     {
@@ -100,6 +100,9 @@ class ProfesorController extends Controller
                 'activo' => true,
                 'imagen' => $imagenPath
             ]);
+            
+            // Registrar actividad
+            $this->logCreation($user, 'Se ha creado un nuevo profesor: ' . $user->nombre);
 
             DB::commit();
 
@@ -159,9 +162,18 @@ class ProfesorController extends Controller
             try {
                 DB::beginTransaction();
                 
+                // Estado anterior para el registro
+                $estadoAnterior = $user->activo;
+                
                 $user->update([
                     'activo' => $request->activo
                 ]);
+                
+                // Registrar actividad solo si cambió el estado
+                if ($estadoAnterior != $request->activo) {
+                    $estadoTexto = $request->activo ? 'activado' : 'desactivado';
+                    $this->logUpdate($user, 'Se ha ' . $estadoTexto . ' el profesor: ' . $user->nombre);
+                }
                 
                 DB::commit();
                 
@@ -254,6 +266,9 @@ class ProfesorController extends Controller
             $user->descripcion = $request->descripcion;
             $user->activo = $request->has('activo');
             $user->save();
+            
+            // Registrar actividad
+            $this->logUpdate($user, 'Se ha actualizado el profesor: ' . $user->nombre);
 
             DB::commit();
 
@@ -278,8 +293,14 @@ class ProfesorController extends Controller
             
             $profesor = User::where('role_id', 4)->findOrFail($id);
             
+            // Guardar nombre antes de desactivar para el registro
+            $nombreProfesor = $profesor->nombre;
+            
             // Desactivar el profesor en lugar de eliminarlo
             $profesor->update(['activo' => false]);
+            
+            // Registrar actividad
+            $this->logDeletion($profesor, 'Se ha desactivado el profesor: ' . $nombreProfesor);
             
             DB::commit();
             

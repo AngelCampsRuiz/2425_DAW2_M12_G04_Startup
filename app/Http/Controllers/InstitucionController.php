@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-class InstitucionController extends Controller
+class InstitucionController extends BaseController
 {
     // Dashboard
     public function dashboard()
@@ -68,24 +68,48 @@ class InstitucionController extends Controller
             'cargo_representante' => 'required|string|max:255',
         ]);
 
-        // Actualizar usuario
-        $user->update([
-            'nombre' => $request->nombre,
-            'email' => $request->email,
-            'telefono' => $request->telefono,
-        ]);
+        try {
+            DB::beginTransaction();
+            
+            // Guardar datos anteriores para el registro
+            $nombreAnterior = $user->nombre;
+            $emailAnterior = $user->email;
+            
+            // Actualizar usuario
+            $user->update([
+                'nombre' => $request->nombre,
+                'email' => $request->email,
+                'telefono' => $request->telefono,
+            ]);
 
-        // Actualizar institución
-        $institucion->update([
-            'tipo_institucion' => $request->tipo_institucion,
-            'direccion' => $request->direccion,
-            'provincia' => $request->provincia,
-            'codigo_postal' => $request->codigo_postal,
-            'representante_legal' => $request->representante_legal,
-            'cargo_representante' => $request->cargo_representante,
-        ]);
+            // Actualizar institución
+            $institucion->update([
+                'tipo_institucion' => $request->tipo_institucion,
+                'direccion' => $request->direccion,
+                'provincia' => $request->provincia,
+                'codigo_postal' => $request->codigo_postal,
+                'representante_legal' => $request->representante_legal,
+                'cargo_representante' => $request->cargo_representante,
+            ]);
+            
+            // Registrar la actividad
+            $this->logUpdate($institucion, 'Se ha actualizado el perfil de la institución: ' . $user->nombre);
+            
+            DB::commit();
 
-        return redirect()->route('institucion.perfil')->with('success', 'Perfil actualizado correctamente');
+            return redirect()->route('institucion.perfil')->with('success', 'Perfil actualizado correctamente');
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error al actualizar perfil de institución', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage()
+            ]);
+            
+            return redirect()->back()
+                ->with('error', 'Error al actualizar el perfil: ' . $e->getMessage())
+                ->withInput();
+        }
     }
 
     // Cambiar contraseña
@@ -97,18 +121,39 @@ class InstitucionController extends Controller
         ]);
 
         $user = Auth::user();
+        $institucion = $user->institucion;
 
         // Verificar contraseña actual
         if (!Hash::check($request->current_password, $user->password)) {
             return back()->withErrors(['current_password' => 'La contraseña actual no es correcta']);
         }
 
-        // Actualizar contraseña
-        $user->update([
-            'password' => Hash::make($request->password),
-        ]);
+        try {
+            DB::beginTransaction();
+            
+            // Actualizar contraseña
+            $user->update([
+                'password' => Hash::make($request->password),
+            ]);
+            
+            // Registrar la actividad
+            $this->logUpdate($institucion, 'Se ha actualizado la contraseña de la institución: ' . $user->nombre);
+            
+            DB::commit();
 
-        return redirect()->route('institucion.perfil')->with('success', 'Contraseña actualizada correctamente');
+            return redirect()->route('institucion.perfil')->with('success', 'Contraseña actualizada correctamente');
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error al cambiar contraseña de institución', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage()
+            ]);
+            
+            return redirect()->back()
+                ->with('error', 'Error al actualizar la contraseña: ' . $e->getMessage())
+                ->withInput();
+        }
     }
     
     /**
