@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\BaseController;
 use App\Models\User;
 use App\Models\Alumno;
 use Illuminate\Http\Request;
@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
-class AlumnoController extends Controller
+class AlumnoController extends BaseController
 {
     /**
      * Display a listing of the resource.
@@ -120,6 +120,9 @@ class AlumnoController extends Controller
                 'activo' => true,
                 'imagen' => $imagenPath
             ]);
+
+            // Registrar actividad
+            $this->logCreation($user, 'Se ha creado un nuevo alumno: ' . $user->nombre);
 
             DB::commit();
 
@@ -251,6 +254,14 @@ class AlumnoController extends Controller
             $user->activo = $request->activo;
             $user->save();
 
+            // Registrar actividad
+            if ($request->has('activo') && $user->activo != $request->activo) {
+                $estadoTexto = $request->activo ? 'activado' : 'desactivado';
+                $this->logUpdate($user, 'Se ha ' . $estadoTexto . ' el alumno: ' . $user->nombre);
+            } else {
+                $this->logUpdate($user, 'Se ha actualizado el alumno: ' . $user->nombre);
+            }
+
             DB::commit();
 
             return response()->json([
@@ -277,6 +288,9 @@ class AlumnoController extends Controller
 
             $user = User::where('role_id', 3)->findOrFail($id);
             
+            // Guardar nombre para el registro
+            $nombreAlumno = $user->nombre;
+            
             // Eliminar la imagen si existe
             if ($user->imagen) {
                 $imagenPath = public_path('profile_images/' . $user->imagen);
@@ -286,6 +300,9 @@ class AlumnoController extends Controller
             }
             
             $user->delete();
+            
+            // Registrar actividad
+            $this->logDeletion($user, 'Se ha eliminado el alumno: ' . $nombreAlumno);
 
             DB::commit();
 

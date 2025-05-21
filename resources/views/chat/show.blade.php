@@ -1,8 +1,21 @@
-@extends('layouts.app')
+@php
+$layout = 'layouts.app';
+
+if (auth()->user()->role_id == 4) {
+    $layout = 'layouts.docente';
+} elseif (auth()->user()->role_id == 2) {
+    $layout = 'layouts.empresa-sidebar';
+} elseif (auth()->user()->role_id == 5) {
+    $layout = 'layouts.institucion';
+}
+@endphp
+
+@extends($layout)
 
 @section('content')
 <div class="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 transition-colors duration-500">
     {{-- MIGAS DE PAN --}}
+    @if(auth()->user()->role_id != 4 && auth()->user()->role_id != 5 && auth()->user()->role_id != 2)
     <div class="bg-white shadow-md backdrop-blur-xl bg-opacity-80 sticky top-0 z-10 border-b border-purple-100">
         <div class="container mx-auto px-4 py-3">
             <div class="flex items-center text-sm">
@@ -29,6 +42,7 @@
             </div>
         </div>
     </div>
+    @endif
 
     <div class="container mx-auto px-4 py-8">
         <!-- Encabezado del chat -->
@@ -58,7 +72,15 @@
                             <h1 class="text-lg sm:text-2xl font-bold text-gray-800 group-hover:text-[#5e0490] transition-colors duration-300">{{ $otherUser->nombre }}</h1>
                             <p class="text-xs sm:text-sm text-gray-600 flex items-center">
                                 <span class="inline-block w-2 h-2 rounded-full bg-green-500 mr-2"></span>
-                                {{ $solicitud->publicacion->titulo }}
+                                @if(isset($solicitud) && $solicitud)
+                                    {{ $solicitud->publicacion->titulo }}
+                                @elseif($chat->tipo == 'docente_estudiante')
+                                    @if(auth()->user()->role_id == 4)
+                                        Estudiante
+                                    @else
+                                        Docente
+                                    @endif
+                                @endif
                             </p>
                         </a>
                     </div>
@@ -199,8 +221,27 @@
                     </div>
                 @else
                     @foreach($mensajes as $mensaje)
-                        <div class="flex {{ $mensaje->user_id === auth()->id() ? 'justify-end' : 'justify-start' }} animate-fadeIn">
-                            <div class="group max-w-xs md:max-w-md lg:max-w-lg {{ $mensaje->user_id === auth()->id() ? 'bg-gradient-to-r from-[#5e0490] to-[#4a0370] text-white' : 'bg-white text-gray-800 border border-gray-200' }} rounded-2xl px-4 py-3 shadow-md transform transition-all duration-300 hover:shadow-lg {{ $mensaje->user_id === auth()->id() ? 'hover:-translate-y-1 hover:scale-102' : 'hover:-translate-y-1 hover:scale-102' }}">
+                        @php
+                            $isCurrentUser = $mensaje->user_id == auth()->id();
+                            $userName = $mensaje->user->nombre;
+                            $userRole = '';
+                            
+                            if ($mensaje->user->role_id == 2) {
+                                $userRole = 'Empresa';
+                            } elseif ($mensaje->user->role_id == 3) {
+                                $userRole = 'Estudiante';
+                            } elseif ($mensaje->user->role_id == 4) {
+                                $userRole = 'Docente';
+                            }
+                            
+                            // Determinar la imagen o iniciales para mostrar
+                            $userImage = null;
+                            if ($mensaje->user->imagen) {
+                                $userImage = asset('profile_images/' . $mensaje->user->imagen);
+                            }
+                        @endphp
+                        <div class="flex {{ $isCurrentUser ? 'justify-end' : 'justify-start' }} animate-fadeIn">
+                            <div class="group max-w-xs md:max-w-md lg:max-w-lg {{ $isCurrentUser ? 'bg-gradient-to-r from-[#5e0490] to-[#4a0370] text-white' : 'bg-white text-gray-800 border border-gray-200' }} rounded-2xl px-4 py-3 shadow-md transform transition-all duration-300 hover:shadow-lg {{ $isCurrentUser ? 'hover:-translate-y-1 hover:scale-102' : 'hover:-translate-y-1 hover:scale-102' }}">
                                 @if($mensaje->contenido)
                                     <p class="text-sm leading-relaxed">{{ $mensaje->contenido }}</p>
                                 @endif
@@ -224,20 +265,20 @@
                                             </div>
                                         @else
                                             <!-- Mostrar documento -->
-                                            <div class="flex items-center gap-3 p-3 rounded-xl {{ $mensaje->user_id === auth()->id() ? 'bg-purple-200 bg-opacity-20' : 'bg-purple-50' }} backdrop-blur-sm transition-transform duration-300 transform hover:scale-102">
+                                            <div class="flex items-center gap-3 p-3 rounded-xl {{ $isCurrentUser ? 'bg-purple-200 bg-opacity-20' : 'bg-purple-50' }} backdrop-blur-sm transition-transform duration-300 transform hover:scale-102">
                                                 <div class="flex-shrink-0">
-                                                    <i class="fas fa-file-alt text-2xl {{ $mensaje->user_id === auth()->id() ? 'text-purple-100' : 'text-[#5e0490]' }}"></i>
+                                                    <i class="fas fa-file-alt text-2xl {{ $isCurrentUser ? 'text-purple-100' : 'text-[#5e0490]' }}"></i>
                                                 </div>
-                                                <div class="flex-grow overflow-hidden text-sm {{ $mensaje->user_id === auth()->id() ? 'text-purple-100' : 'text-gray-700' }}">
+                                                <div class="flex-grow overflow-hidden text-sm {{ $isCurrentUser ? 'text-purple-100' : 'text-gray-700' }}">
                                                     <p class="truncate font-medium">{{ $mensaje->nombre_archivo }}</p>
-                                                    <p class="text-xs {{ $mensaje->user_id === auth()->id() ? 'text-purple-200' : 'text-gray-500' }}">
+                                                    <p class="text-xs {{ $isCurrentUser ? 'text-purple-200' : 'text-gray-500' }}">
                                                         {{ number_format(strlen($mensaje->archivo_adjunto) / 1024, 0) }} KB
                                                     </p>
                                                 </div>
                                                 <div class="flex-shrink-0">
                                                     <a href="{{ $mensaje->archivo_adjunto }}"
                                                     download="{{ $mensaje->nombre_archivo }}"
-                                                    class="{{ $mensaje->user_id === auth()->id() ? 'bg-purple-300 bg-opacity-30 text-white' : 'bg-purple-100 text-[#5e0490]' }} p-2 rounded-full hover:bg-opacity-100 transition-all duration-300 block">
+                                                    class="{{ $isCurrentUser ? 'bg-purple-300 bg-opacity-30 text-white' : 'bg-purple-100 text-[#5e0490]' }} p-2 rounded-full hover:bg-opacity-100 transition-all duration-300 block">
                                                         <i class="fas fa-download"></i>
                                                     </a>
                                                 </div>
@@ -247,10 +288,10 @@
                                 @endif
 
                                 <div class="flex justify-between items-center mt-2">
-                                    <p class="text-xs {{ $mensaje->user_id === auth()->id() ? 'text-purple-200' : 'text-gray-500' }} flex items-center">
+                                    <p class="text-xs {{ $isCurrentUser ? 'text-purple-200' : 'text-gray-500' }} flex items-center">
                                         <span>{{ \Carbon\Carbon::parse($mensaje->fecha_envio)->format('H:i') }}</span>
                                     </p>
-                                    @if($mensaje->user_id === auth()->id())
+                                    @if($isCurrentUser)
                                         <span class="message-status flex items-center" data-message-id="{{ $mensaje->id }}">
                                             <i class="fas fa-check {{ $mensaje->leido ? 'fa-check-double text-purple-200' : 'text-purple-200 opacity-60' }} ml-1 text-xs"></i>
                                         </span>
@@ -262,354 +303,73 @@
                 @endif
             </div>
 
-            <!-- Formulario para enviar mensajes -->
-            <div class="border-t border-purple-100 p-4 bg-white backdrop-blur-lg shadow-inner">
-                <form id="message-form" class="flex flex-col space-y-3" enctype="multipart/form-data">
-                    <div class="flex items-center space-x-3">
-                        <label for="file-input" class="cursor-pointer p-3 text-gray-500 hover:text-[#5e0490] bg-gray-100 hover:bg-purple-100 rounded-xl transition-all duration-300 transform hover:scale-105 flex items-center justify-center">
-                            <i class="fas fa-paperclip text-lg"></i>
-                            <span class="sr-only">Adjuntar archivo</span>
-                        </label>
-                        <input type="file" id="file-input" name="archivo" class="hidden" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt">
-
-                        <div class="flex-1 relative">
-                            <textarea id="message-input"
-                                   class="w-full rounded-xl border-gray-300 focus:border-[#5e0490] focus:ring-[#5e0490] transition-colors duration-300 shadow-sm placeholder-gray-400 resize-none px-4 py-3 min-h-[50px] max-h-32"
-                                   placeholder="Escribe un mensaje a {{ $otherUser->nombre }}..."
-                                   rows="1"></textarea>
-                            <div class="absolute right-3 bottom-3 text-gray-400 text-xs font-medium message-length hidden">
-                                <span id="current-length">0</span>/<span id="max-length">500</span>
-                            </div>
-                        </div>
-
-                        <button type="submit"
-                                class="inline-flex items-center px-5 py-3 bg-gradient-to-r from-[#5e0490] to-[#4a0370] text-white rounded-xl hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#5e0490] transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed">
-                            <i class="fas fa-paper-plane mr-2"></i>
-                            <span>Enviar</span>
+            <!-- Formulario para enviar un nuevo mensaje -->
+            <div id="chat-form" class="p-5 border-t border-gray-100 bg-white rounded-b-2xl">
+                <form id="message-form" class="space-y-4" data-chat-id="{{ $chat->id }}">
+                    @csrf
+                    <div class="relative">
+                        <textarea
+                            id="message-input"
+                            name="contenido"
+                            rows="3"
+                            placeholder="Escribe tu mensaje aquí..."
+                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-purple-500 focus:border-purple-500 resize-none transition-all duration-300"
+                        ></textarea>
+                        <button type="button" id="emoji-button" class="absolute bottom-3 right-4 text-gray-500 hover:text-purple-600 transition-colors">
+                            <i class="far fa-smile-beam text-xl"></i>
                         </button>
                     </div>
-
-                    <div id="file-preview" class="hidden flex-grow p-3 bg-purple-50 rounded-xl border border-purple-100 animate-fadeIn">
-                        <div class="flex items-center">
-                            <i class="fas fa-paperclip mr-2 text-[#5e0490]"></i>
-                            <span id="file-name" class="text-sm text-gray-600 mr-2 truncate"></span>
-                            <button id="remove-file" type="button" class="text-red-500 hover:text-red-700 bg-white rounded-full p-1 shadow-sm transition-transform duration-300 hover:scale-110">
-                                <i class="fas fa-times-circle"></i>
-                            </button>
+                    
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                            <label for="file-upload" class="p-2 bg-purple-50 text-purple-700 rounded-lg cursor-pointer hover:bg-purple-100 transition-colors">
+                                <span class="flex items-center">
+                                    <i class="fas fa-paperclip mr-2"></i>
+                                    <span>Adjuntar</span>
+                                </span>
+                                <input id="file-upload" name="archivo" type="file" class="hidden" />
+                            </label>
+                            <span id="file-name" class="text-sm text-gray-500"></span>
                         </div>
-                        <div id="image-preview-container" class="mt-2 hidden">
-                            <img id="image-preview" class="h-20 rounded-lg object-cover shadow-sm" alt="Vista previa">
-                        </div>
+                        
+                        <button type="submit" id="send-button" class="px-5 py-2 bg-gradient-to-r from-[#5e0490] to-[#4a0370] text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <span class="flex items-center">
+                                <span class="mr-2">Enviar</span>
+                                <i class="fas fa-paper-plane"></i>
+                            </span>
+                        </button>
                     </div>
                 </form>
             </div>
-        </div>
-    </div>
-
-    <!-- Panel de configuración (oculto por defecto) -->
-    <div id="settings-panel" class="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center hidden backdrop-blur-sm">
-        <div class="bg-white rounded-xl w-full max-w-lg mx-4 overflow-hidden shadow-2xl animate-fadeIn">
-            <div class="flex justify-between items-center p-4 border-b bg-gradient-to-r from-[#5e0490] to-[#4a0370] text-white">
-                <h3 class="text-lg font-bold">Configuración de audio y video</h3>
-                <button id="close-settings" class="p-2 rounded-full hover:bg-white hover:bg-opacity-20 text-white transition-colors">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="p-6 max-h-[70vh] overflow-y-auto">
-                <!-- Pestañas -->
-                <div class="mb-6 border-b">
-                    <div class="flex space-x-2">
-                        <button class="settings-tab px-4 py-2 font-medium text-[#5e0490] border-b-2 border-[#5e0490]" data-tab="audio">Audio</button>
-                        <button class="settings-tab px-4 py-2 font-medium text-gray-500" data-tab="video">Video</button>
-                        <button class="settings-tab px-4 py-2 font-medium text-gray-500" data-tab="advanced">Avanzado</button>
-                    </div>
+            
+            <div class="flex flex-col sm:flex-row gap-3 border-t border-gray-200 p-4 bg-white">
+                @if(isset($solicitud) && $solicitud)
+                <div class="flex items-center bg-purple-50 px-4 py-2 rounded-lg flex-grow-0 text-sm text-purple-700">
+                    <i class="fas fa-info-circle mr-2 text-purple-500"></i>
+                    <span>Conversación sobre: <span class="font-medium">{{ $solicitud->publicacion->titulo }}</span></span>
                 </div>
-
-                <!-- Contenido de las pestañas -->
-                <div class="tab-content" id="audio-tab">
-                    <div class="mb-6">
-                        <label for="microphone-select" class="block text-sm font-medium text-gray-700 mb-1">Micrófono</label>
-                        <select id="microphone-select" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#5e0490] focus:border-[#5e0490]">
-                            <option value="">Cargando dispositivos...</option>
-                        </select>
-                        <div class="mt-4">
-                            <label for="mic-volume" class="block text-sm font-medium text-gray-700 mb-1">Nivel de micrófono</label>
-                            <input type="range" id="mic-volume" min="0" max="100" value="100" class="w-full">
-                            <div class="flex justify-between text-xs text-gray-500 mt-1">
-                                <span>0%</span>
-                                <span>50%</span>
-                                <span>100%</span>
-                            </div>
-                        </div>
-                        <div class="mt-4">
-                            <div class="flex items-center justify-between">
-                                <label for="mic-level" class="block text-sm font-medium text-gray-700">Nivel de entrada</label>
-                                <span id="mic-level-value" class="text-xs bg-gray-100 px-2 py-1 rounded">0%</span>
-                            </div>
-                            <div id="mic-level-meter" class="w-full h-2 bg-gray-200 rounded-full mt-1 overflow-hidden">
-                                <div id="mic-level-indicator" class="h-full bg-gradient-to-r from-green-500 to-[#5e0490] w-0 transition-all"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="mb-6">
-                        <label for="speaker-select" class="block text-sm font-medium text-gray-700 mb-1">Altavoz</label>
-                        <select id="speaker-select" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#5e0490] focus:border-[#5e0490]">
-                            <option value="">Cargando dispositivos...</option>
-                        </select>
-                        <div class="mt-4">
-                            <label for="speaker-volume" class="block text-sm font-medium text-gray-700 mb-1">Volumen de altavoz</label>
-                            <input type="range" id="speaker-volume" min="0" max="100" value="100" class="w-full">
-                            <div class="flex justify-between text-xs text-gray-500 mt-1">
-                                <span>0%</span>
-                                <span>50%</span>
-                                <span>100%</span>
-                            </div>
-                        </div>
-                        <div class="mt-4">
-                            <button id="test-audio" class="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded hover:bg-gray-200 transition-colors">
-                                <i class="fas fa-play mr-1"></i> Probar sonido
-                            </button>
-                        </div>
-                    </div>
-                    <div class="mb-4">
-                        <label class="flex items-center">
-                            <input type="checkbox" id="echo-cancellation" class="rounded text-[#5e0490] focus:ring-[#5e0490]">
-                            <span class="ml-2 text-sm text-gray-700">Activar cancelación de eco</span>
-                        </label>
-                    </div>
-                    <div class="mb-4">
-                        <label class="flex items-center">
-                            <input type="checkbox" id="noise-suppression" class="rounded text-[#5e0490] focus:ring-[#5e0490]">
-                            <span class="ml-2 text-sm text-gray-700">Activar supresión de ruido</span>
-                        </label>
-                    </div>
-                </div>
-
-                <div class="tab-content hidden" id="video-tab">
-                    <div class="mb-6">
-                        <label for="camera-select" class="block text-sm font-medium text-gray-700 mb-1">Cámara</label>
-                        <select id="camera-select" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#5e0490] focus:border-[#5e0490]">
-                            <option value="">Cargando dispositivos...</option>
-                        </select>
-                    </div>
-                    <div class="mb-6">
-                        <label for="video-quality" class="block text-sm font-medium text-gray-700 mb-1">Calidad de video</label>
-                        <select id="video-quality" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#5e0490] focus:border-[#5e0490]">
-                            <option value="low">Baja (320p)</option>
-                            <option value="standard" selected>Estándar (480p)</option>
-                            <option value="high">Alta (720p)</option>
-                            <option value="hd">HD (1080p)</option>
-                        </select>
-                    </div>
-                    <div class="mb-6">
-                        <label class="block text-sm font-medium text-gray-700 mb-3">Vista previa</label>
-                        <div class="relative w-full h-40 bg-black rounded-lg overflow-hidden">
-                            <video id="camera-preview" autoplay muted playsinline class="w-full h-full object-cover"></video>
-                            <div id="no-camera-message" class="absolute inset-0 flex items-center justify-center bg-gray-900 text-white text-sm hidden">
-                                <p>No se detecta cámara</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="tab-content hidden" id="advanced-tab">
-                    <div class="mb-6">
-                        <label for="bandwidth-limit" class="block text-sm font-medium text-gray-700 mb-1">Límite de ancho de banda</label>
-                        <select id="bandwidth-limit" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#5e0490] focus:border-[#5e0490]">
-                            <option value="unlimited">Sin límite</option>
-                            <option value="1000">1 Mbps</option>
-                            <option value="500">500 Kbps</option>
-                            <option value="250">250 Kbps</option>
-                        </select>
-                        <p class="text-xs text-gray-500 mt-1">Límite inferior puede mejorar la estabilidad en conexiones lentas</p>
-                    </div>
-                    <div class="mb-6">
-                        <label for="video-fps" class="block text-sm font-medium text-gray-700 mb-1">Fotogramas por segundo (FPS)</label>
-                        <select id="video-fps" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#5e0490] focus:border-[#5e0490]">
-                            <option value="15">15 FPS (Económico)</option>
-                            <option value="24" selected>24 FPS (Estándar)</option>
-                            <option value="30">30 FPS (Fluido)</option>
-                        </select>
-                    </div>
-                    <div class="mb-6">
-                        <label class="flex items-center">
-                            <input type="checkbox" id="low-bandwidth-mode" class="rounded text-[#5e0490] focus:ring-[#5e0490]">
-                            <span class="ml-2 text-sm text-gray-700">Modo de bajo ancho de banda (prioriza audio)</span>
-                        </label>
-                    </div>
-                    <div class="mb-6">
-                        <label class="flex items-center">
-                            <input type="checkbox" id="hardware-acceleration" class="rounded text-[#5e0490] focus:ring-[#5e0490]" checked>
-                            <span class="ml-2 text-sm text-gray-700">Activar aceleración por hardware</span>
-                        </label>
-                    </div>
-                    <div class="mb-4">
-                        <p class="text-sm font-medium text-gray-700 mb-2">Información de conexión</p>
-                        <div class="bg-gray-50 p-3 rounded text-xs text-gray-600">
-                            <div class="grid grid-cols-2 gap-y-1">
-                                <span>Velocidad de descarga:</span>
-                                <span id="download-speed">Calculando...</span>
-                                <span>Velocidad de subida:</span>
-                                <span id="upload-speed">Calculando...</span>
-                                <span>Latencia:</span>
-                                <span id="latency">Calculando...</span>
-                                <span>Paquetes perdidos:</span>
-                                <span id="packet-loss">Calculando...</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="p-4 border-t bg-gray-50 flex justify-end">
-                <button id="reset-settings" class="px-4 py-2 text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-md mr-2 text-sm">
-                    Restablecer
-                </button>
-                <button id="save-settings" class="px-4 py-2 bg-gradient-to-r from-[#5e0490] to-[#4a0370] text-white rounded-md hover:shadow-lg text-sm">
-                    Guardar cambios
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Panel de pizarra virtual (oculto por defecto) -->
-    <div id="whiteboard-panel" class="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center hidden backdrop-blur-sm">
-        <div class="bg-white rounded-xl w-full max-w-5xl mx-4 h-[85vh] overflow-hidden shadow-2xl animate-fadeIn flex flex-col">
-            <div class="flex justify-between items-center p-4 border-b bg-gradient-to-r from-[#5e0490] to-[#4a0370] text-white">
-                <h3 class="text-lg font-bold">Pizarra virtual compartida</h3>
-                <div class="flex items-center space-x-3">
-                    <span id="whiteboard-status" class="text-xs bg-green-500 px-2 py-1 rounded-full flex items-center">
-                        <i class="fas fa-circle text-[5px] mr-1"></i> Conectado
+                @elseif($chat->tipo == 'docente_estudiante')
+                <div class="flex items-center bg-blue-50 px-4 py-2 rounded-lg flex-grow-0 text-sm text-blue-700">
+                    <i class="fas fa-info-circle mr-2 text-blue-500"></i>
+                    <span>
+                        @if(auth()->user()->role_id == 4)
+                            Conversación con estudiante: <span class="font-medium">{{ $otherUser->nombre }}</span>
+                        @else
+                            Conversación con docente: <span class="font-medium">{{ $otherUser->nombre }}</span>
+                        @endif
                     </span>
-                    <button id="close-whiteboard" class="p-2 rounded-full hover:bg-white hover:bg-opacity-20 text-white transition-colors">
-                        <i class="fas fa-times"></i>
-                    </button>
                 </div>
-            </div>
-
-            <div class="flex flex-1 overflow-hidden">
-                <!-- Área principal de la pizarra -->
-                <div class="flex-1 flex flex-col h-full">
-                    <div class="relative flex-1 bg-white overflow-hidden">
-                        <canvas id="whiteboard-canvas" class="absolute inset-0 w-full h-full cursor-crosshair"></canvas>
-
-                        <!-- Indicador de otro usuario dibujando -->
-                        <div id="remote-cursor" class="absolute w-4 h-4 rounded-full border-2 border-red-500 hidden pointer-events-none transform -translate-x-1/2 -translate-y-1/2"></div>
-
-                        <!-- Área de videollamada minimizada -->
-                        <div id="whiteboard-video-container" class="absolute bottom-4 right-4 w-64 h-48 bg-gray-900 rounded-lg shadow-lg overflow-hidden border-2 border-[#5e0490] animate-fadeIn">
-                            <div class="grid grid-cols-2 gap-1 h-full">
-                                <div class="bg-black rounded-l-lg overflow-hidden relative">
-                                    <video id="whiteboard-local-video" autoplay playsinline muted class="w-full h-full object-cover"></video>
-                                    <div class="absolute bottom-1 left-1 text-white text-xs bg-black bg-opacity-50 px-1 py-0.5 rounded">
-                                        Tú
-                                    </div>
-                                </div>
-                                <div class="bg-black rounded-r-lg overflow-hidden relative">
-                                    <video id="whiteboard-remote-video" autoplay playsinline class="w-full h-full object-cover"></video>
-                                    <div class="absolute bottom-1 left-1 text-white text-xs bg-black bg-opacity-50 px-1 py-0.5 rounded">
-                                        {{ $otherUser->nombre }}
-                                    </div>
-                                </div>
-                            </div>
-                            <div id="drag-handle" class="absolute top-0 left-0 right-0 h-6 bg-gradient-to-r from-[#5e0490] to-[#4a0370] cursor-move flex items-center justify-center">
-                                <div class="w-12 h-1 bg-white bg-opacity-30 rounded-full"></div>
-                            </div>
-                            <button id="toggle-video-size" class="absolute top-1 right-2 w-6 h-6 bg-black bg-opacity-50 text-white rounded-full flex items-center justify-center hover:bg-opacity-70 transition-opacity">
-                                <i class="fas fa-expand-alt text-xs"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Barra lateral de herramientas -->
-                <div class="w-20 border-l border-gray-200 flex flex-col bg-gray-50 py-4">
-                    <div class="flex flex-col items-center space-y-6">
-                        <!-- Herramienta de lápiz -->
-                        <button class="whiteboard-tool active" data-tool="pen">
-                            <div class="w-12 h-12 rounded-lg flex items-center justify-center bg-white shadow-sm border border-gray-200 hover:bg-purple-50 hover:border-purple-200 transition-colors">
-                                <i class="fas fa-pencil-alt text-[#5e0490]"></i>
-                            </div>
-                        </button>
-
-                        <!-- Herramienta de línea -->
-                        <button class="whiteboard-tool" data-tool="line">
-                            <div class="w-12 h-12 rounded-lg flex items-center justify-center bg-white shadow-sm border border-gray-200 hover:bg-purple-50 hover:border-purple-200 transition-colors">
-                                <i class="fas fa-slash text-gray-600"></i>
-                            </div>
-                        </button>
-
-                        <!-- Herramienta de rectángulo -->
-                        <button class="whiteboard-tool" data-tool="rectangle">
-                            <div class="w-12 h-12 rounded-lg flex items-center justify-center bg-white shadow-sm border border-gray-200 hover:bg-purple-50 hover:border-purple-200 transition-colors">
-                                <i class="far fa-square text-gray-600"></i>
-                            </div>
-                        </button>
-
-                        <!-- Herramienta de círculo -->
-                        <button class="whiteboard-tool" data-tool="circle">
-                            <div class="w-12 h-12 rounded-lg flex items-center justify-center bg-white shadow-sm border border-gray-200 hover:bg-purple-50 hover:border-purple-200 transition-colors">
-                                <i class="far fa-circle text-gray-600"></i>
-                            </div>
-                        </button>
-
-                        <!-- Herramienta de texto -->
-                        <button class="whiteboard-tool" data-tool="text">
-                            <div class="w-12 h-12 rounded-lg flex items-center justify-center bg-white shadow-sm border border-gray-200 hover:bg-purple-50 hover:border-purple-200 transition-colors">
-                                <i class="fas fa-font text-gray-600"></i>
-                            </div>
-                        </button>
-
-                        <!-- Herramienta de borrador -->
-                        <button class="whiteboard-tool" data-tool="eraser">
-                            <div class="w-12 h-12 rounded-lg flex items-center justify-center bg-white shadow-sm border border-gray-200 hover:bg-purple-50 hover:border-purple-200 transition-colors">
-                                <i class="fas fa-eraser text-gray-600"></i>
-                            </div>
-                        </button>
-
-                        <!-- Selector de color -->
-                        <div class="mt-4 text-center">
-                            <div class="color-picker flex flex-wrap justify-center gap-2 w-16 mx-auto">
-                                <button class="color-option active w-6 h-6 rounded-full bg-black border-2 border-gray-300" data-color="#000000"></button>
-                                <button class="color-option w-6 h-6 rounded-full bg-red-500 border-2 border-gray-300" data-color="#ef4444"></button>
-                                <button class="color-option w-6 h-6 rounded-full bg-blue-500 border-2 border-gray-300" data-color="#3b82f6"></button>
-                                <button class="color-option w-6 h-6 rounded-full bg-green-500 border-2 border-gray-300" data-color="#22c55e"></button>
-                                <button class="color-option w-6 h-6 rounded-full bg-yellow-500 border-2 border-gray-300" data-color="#eab308"></button>
-                                <button class="color-option w-6 h-6 rounded-full bg-purple-500 border-2 border-gray-300" data-color="#8b5cf6"></button>
-                            </div>
-                        </div>
-
-                        <!-- Selector de tamaño -->
-                        <div class="mt-4 text-center">
-                            <div class="line-width-picker flex flex-col items-center gap-2">
-                                <button class="line-width-option w-12 h-6 rounded-md flex items-center justify-center bg-white active" data-width="2">
-                                    <div class="w-8 h-2 bg-black rounded-full"></div>
-                                </button>
-                                <button class="line-width-option w-12 h-6 rounded-md flex items-center justify-center bg-white" data-width="4">
-                                    <div class="w-8 h-4 bg-black rounded-full"></div>
-                                </button>
-                                <button class="line-width-option w-12 h-6 rounded-md flex items-center justify-center bg-white" data-width="6">
-                                    <div class="w-8 h-6 bg-black rounded-full"></div>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Barra inferior con acciones -->
-            <div class="p-3 border-t bg-gray-50 flex justify-between items-center">
-                <div class="flex space-x-2">
-                    <button id="undo-whiteboard" class="px-3 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md text-sm flex items-center">
-                        <i class="fas fa-undo mr-1"></i> Deshacer
-                    </button>
-                    <button id="clear-whiteboard" class="px-3 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md text-sm flex items-center">
-                        <i class="fas fa-trash-alt mr-1"></i> Limpiar
-                    </button>
-                </div>
-                <div class="flex space-x-2">
-                    <button id="save-whiteboard" class="px-3 py-1.5 bg-[#5e0490] hover:bg-[#4a0370] text-white rounded-md text-sm flex items-center">
-                        <i class="fas fa-download mr-1"></i> Guardar
-                    </button>
+                @endif
+                
+                <div class="flex items-center ml-auto gap-2">
+                    <a href="{{ route('chat.index') }}" class="flex items-center justify-center px-4 py-2 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 text-gray-700 transition-colors duration-200">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Volver a conversaciones
+                    </a>
+                    <a href="#chat-form" class="flex items-center justify-center px-4 py-2 bg-gradient-to-r from-[#5e0490] to-[#4a0370] text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105">
+                        <i class="fas fa-paper-plane mr-2"></i>
+                        <span>Responder</span>
+                    </a>
                 </div>
             </div>
         </div>
@@ -774,6 +534,11 @@
         document.getElementById('video-container').style.display = 'flex';
 
         try {
+            // Verificar si la API de mediaDevices está disponible
+            if (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== 'function') {
+                throw new Error('La API de cámara no está disponible en este navegador o contexto. Intente usar HTTPS o un navegador más moderno.');
+            }
+            
             // Solicitar permisos explícitamente con las restricciones guardadas
             const stream = await navigator.mediaDevices.getUserMedia({
                 video: getVideoConstraints(),

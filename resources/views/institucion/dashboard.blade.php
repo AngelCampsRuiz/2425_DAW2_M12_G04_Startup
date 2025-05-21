@@ -731,6 +731,15 @@
                 }
             });
         }
+
+        // Verificar si hay que abrir algún modal desde flash data
+        @if(session('open_modal') === 'docente')
+            openModalDocente();
+        @elseif(session('open_modal') === 'departamento')
+            openModalDepartamento();
+        @elseif(session('open_modal') === 'clase')
+            openModalClase();
+        @endif
     });
 </script>
 @endsection 

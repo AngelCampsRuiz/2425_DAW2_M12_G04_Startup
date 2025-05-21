@@ -30,10 +30,7 @@ class DocenteController extends Controller
     // Formulario crear docente
     public function create()
     {
-        $institucion = Auth::user()->institucion;
-        $departamentos = $institucion->departamentos;
-        
-        return view('institucion.docentes.create', compact('departamentos'));
+        return redirect()->route('institucion.dashboard')->with('open_modal', 'docente');
     }
 
     // Guardar docente
@@ -507,5 +504,63 @@ class DocenteController extends Controller
 
         return redirect()->route('docente.solicitudes.index')
             ->with('success', 'Solicitud rechazada correctamente');
+    }
+
+    /**
+     * Calificar a un estudiante en una clase específica
+     */
+    public function calificarEstudiante(Request $request, $estudianteId, $claseId)
+    {
+        // Validar que sea el docente de la clase
+        $user = Auth::user();
+        $clase = Clase::where('id', $claseId)
+            ->where('docente_id', $user->id)
+            ->firstOrFail();
+            
+        $estudiante = Estudiante::findOrFail($estudianteId);
+        
+        // Validar entrada
+        $validated = $request->validate([
+            'calificacion' => 'nullable|numeric|min:0|max:10',
+            'comentarios' => 'nullable|string|max:1000',
+        ]);
+        
+        // Actualizar la calificación en la tabla pivote
+        $estudiante->clases()->updateExistingPivot($claseId, [
+            'calificacion' => $validated['calificacion'],
+            'comentarios' => $validated['comentarios'],
+            'updated_at' => now(),
+        ]);
+        
+        return redirect()->route('docente.clases.alumnos', $claseId)
+            ->with('success', "Calificación actualizada para {$estudiante->user->nombre}");
+    }
+    
+    /**
+     * Cambiar el estado de un estudiante en una clase específica
+     */
+    public function cambiarEstadoEstudiante(Request $request, $estudianteId, $claseId)
+    {
+        // Validar que sea el docente de la clase
+        $user = Auth::user();
+        $clase = Clase::where('id', $claseId)
+            ->where('docente_id', $user->id)
+            ->firstOrFail();
+            
+        $estudiante = Estudiante::findOrFail($estudianteId);
+        
+        // Validar entrada
+        $validated = $request->validate([
+            'estado' => 'required|string|in:activo,inactivo,completado,pendiente',
+        ]);
+        
+        // Actualizar el estado en la tabla pivote
+        $estudiante->clases()->updateExistingPivot($claseId, [
+            'estado' => $validated['estado'],
+            'updated_at' => now(),
+        ]);
+        
+        return redirect()->route('docente.clases.alumnos', $claseId)
+            ->with('success', "Estado actualizado para {$estudiante->user->nombre}");
     }
 } 

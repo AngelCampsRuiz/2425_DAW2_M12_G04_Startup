@@ -6,8 +6,9 @@ use App\Models\Publication;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Solicitud;
+use App\Http\Controllers\BaseController;
 
-class PublicationController extends Controller
+class PublicationController extends BaseController
 {
     public function show($id)
     {
@@ -62,5 +63,61 @@ class PublicationController extends Controller
         $publications = $query->paginate(10);
 
         return view('publication.index', compact('publications'));
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(Request $request)
+    {
+        // Valida y guarda la publicación como lo hacía antes
+        $publicacion = Publication::create($request->all());
+        
+        // Registra la actividad
+        $this->logCreation($publicacion, 'Se ha creado una nueva oferta: ' . $publicacion->titulo);
+        
+        return redirect()->route('admin.publicaciones.index')
+            ->with('success', 'Oferta creada correctamente');
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, $id)
+    {
+        $publicacion = Publication::findOrFail($id);
+        $publicacion->update($request->all());
+        
+        // Registra la actividad
+        $this->logUpdate($publicacion, 'Se ha actualizado la oferta: ' . $publicacion->titulo);
+        
+        return redirect()->route('admin.publicaciones.index')
+            ->with('success', 'Oferta actualizada correctamente');
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy($id)
+    {
+        $publicacion = Publication::findOrFail($id);
+        $titulo = $publicacion->titulo; // Guardamos el título antes de eliminar
+        $publicacion->delete();
+        
+        // Registra la actividad
+        $this->logDeletion($publicacion, 'Se ha eliminado la oferta: ' . $titulo);
+        
+        return redirect()->route('admin.publicaciones.index')
+            ->with('success', 'Oferta eliminada correctamente');
     }
 }

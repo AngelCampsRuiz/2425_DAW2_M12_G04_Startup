@@ -64,7 +64,7 @@
                 <!-- Código de centro -->
                 <div class="mb-4">
                     <label for="codigo_centro" class="block text-gray-700 text-sm font-medium mb-2">Código de centro</label>
-                    <input id="codigo_centro" type="text" name="codigo_centro" value="{{ old('codigo_centro') }}" 
+                    <input id="codigo_centro" type="text" name="codigo_centro" value="{{ old('codigo_centro') }}"
                         class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary @error('codigo_centro') border-red-500 @enderror"
                         placeholder="Ej: 08012345">
                     @error('codigo_centro')
@@ -111,7 +111,7 @@
                 <!-- Dirección -->
                 <div class="mb-4">
                     <label for="direccion" class="block text-gray-700 text-sm font-medium mb-2">Dirección</label>
-                    <input id="direccion" type="text" name="direccion" value="{{ old('direccion') }}" 
+                    <input id="direccion" type="text" name="direccion" value="{{ old('direccion') }}"
                         class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary @error('direccion') border-red-500 @enderror"
                         placeholder="Ej: Calle Gran Vía 123">
                     @error('direccion')
@@ -123,7 +123,7 @@
                 <!-- Provincia -->
                 <div class="mb-4">
                     <label for="provincia" class="block text-gray-700 text-sm font-medium mb-2">Provincia</label>
-                    <select id="provincia" name="provincia" 
+                    <select id="provincia" name="provincia"
                         class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary @error('provincia') border-red-500 @enderror">
                         <option value="">Selecciona una provincia</option>
                     </select>
@@ -137,7 +137,7 @@
                 <!-- Ciudad -->
                 <div class="mb-4">
                     <label for="ciudad" class="block text-gray-700 text-sm font-medium mb-2">Ciudad</label>
-                    <select id="ciudad" name="ciudad" 
+                    <select id="ciudad" name="ciudad"
                         class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary @error('ciudad') border-red-500 @enderror">
                         <option value="">Primero selecciona una provincia</option>
                     </select>
@@ -187,7 +187,7 @@
                 <!-- Contraseña -->
                 <div class="mb-4">
                     <label for="password" class="block text-gray-700 text-sm font-medium mb-2">Contraseña</label>
-                    <input id="password" type="password" name="password" 
+                    <input id="password" type="password" name="password"
                         class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary @error('password') border-red-500 @enderror"
                         placeholder="Mínimo 8 caracteres">
                     @error('password')
@@ -199,7 +199,7 @@
                 <!-- Confirmar Contraseña -->
                 <div class="mb-4">
                     <label for="password_confirmation" class="block text-gray-700 text-sm font-medium mb-2">Confirmar contraseña</label>
-                    <input id="password_confirmation" type="password" name="password_confirmation" 
+                    <input id="password_confirmation" type="password" name="password_confirmation"
                         class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary"
                         placeholder="Repite la contraseña">
                     <span id="password_confirmation-error" class="text-red-500 text-xs"></span>
@@ -235,12 +235,12 @@
         line-height: 24px;
         padding: 2px 4px;
     }
-    
+
     .select2-container--default.select2-container--focus .select2-selection--multiple {
         border-color: #4f46e5;
         box-shadow: 0 0 0 1px #4f46e5;
     }
-    
+
     .select2-container--default .select2-selection--multiple .select2-selection__choice {
         background-color: #4f46e5;
         color: white;
@@ -251,7 +251,7 @@
         margin-right: 4px;
         position: relative;  /* Para posicionar correctamente el botón de eliminar */
     }
-    
+
     .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
         color: white;
         margin-right: 5px;
@@ -263,19 +263,19 @@
         border: none;
         background: none;
     }
-    
+
     .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
         color: #f9fafb;
         background-color: rgba(255, 255, 255, 0.1);  /* Fondo sutil al hacer hover */
         border-radius: 50%;  /* Forma circular al hacer hover */
     }
-    
+
     .select2-dropdown {
         border-color: #e2e8f0;
         border-radius: 0.5rem;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     }
-    
+
     .select2-container--default .select2-results__option--highlighted[aria-selected] {
         background-color: #4f46e5;
     }
@@ -301,13 +301,13 @@ $(document).ready(function() {
     }).on('select2:selecting', function(e) {
         const existingValues = $(this).val() || [];
         const selectedValue = e.params.args.data.id;
-        
+
         // Si ya está seleccionado, prevenir la selección
         if (existingValues.includes(selectedValue)) {
             e.preventDefault();
         }
     });
-    
+
     // Detectar cambios en Select2
     $('.select2').on('change', function() {
         validateNivelesEducativos();
@@ -316,7 +316,7 @@ $(document).ready(function() {
 
     // Cargar provincias al inicio
     window.loadProvincias();
-    
+
     // Configurar evento para actualizar ciudades cuando cambia la provincia
     const provinciaSelect = document.getElementById('provincia');
     if (provinciaSelect) {
@@ -325,14 +325,14 @@ $(document).ready(function() {
                 console.log('Provincia seleccionada:', this.value);
                 window.loadCiudades(this.value);
                 window.validateProvincia();
-                
+
                 // Reiniciar el selector de ciudad
                 const ciudadSelect = document.getElementById('ciudad');
                 ciudadSelect.innerHTML = '<option value="">Selecciona una ciudad</option>';
             }
         });
     }
-    
+
     // Configurar evento para validar ciudad cuando cambia
     const ciudadSelect = document.getElementById('ciudad');
     if (ciudadSelect) {
@@ -343,7 +343,7 @@ $(document).ready(function() {
             window.validateCiudad();
         });
     }
-    
+
     // Configurar validaciones onblur para todos los campos
     const camposAValidar = [
         { id: 'name', validacion: window.validateName },
@@ -358,14 +358,14 @@ $(document).ready(function() {
         { id: 'password', validacion: window.validatePassword },
         { id: 'password_confirmation', validacion: window.validatePasswordConfirmation }
     ];
-    
+
     camposAValidar.forEach(campo => {
         const elemento = document.getElementById(campo.id);
         if (elemento) {
             elemento.addEventListener('blur', campo.validacion);
         }
     });
-    
+
     // Restaurar provincia y ciudad si existen valores anteriores
     const provinciaAnterior = document.getElementById('provincia_anterior').value;
     if (provinciaAnterior) {
@@ -390,7 +390,7 @@ $(document).ready(function() {
             }
         }, 500);
     }
-    
+
     // Activar carga inicial de categorías si hay niveles seleccionados
     if ($('#niveles_educativos').val() && $('#niveles_educativos').val().length > 0) {
         cargarCategoriasPorNivel();
@@ -404,10 +404,10 @@ window.validationErrors = {};
 window.updateFieldStatus = function(input, isValid, errorMessage = '') {
     const formGroup = input.closest('.mb-4') || input.closest('.mb-6');
     if (!formGroup) return;
-    
+
     const fieldId = input.id;
     const errorElement = document.getElementById(fieldId + '-error');
-    
+
     if (!isValid) {
         window.validationErrors[fieldId] = errorMessage;
         input.classList.add('border-red-500');
@@ -427,7 +427,7 @@ window.updateFieldStatus = function(input, isValid, errorMessage = '') {
 window.validateName = function() {
     const nameField = document.getElementById('name');
     if (!nameField) return true;
-    
+
     const nameValue = nameField.value.trim();
     if (!nameValue) {
         window.updateFieldStatus(nameField, false, 'El nombre de la institución es obligatorio');
@@ -436,7 +436,7 @@ window.validateName = function() {
         window.updateFieldStatus(nameField, false, 'El nombre debe tener al menos 2 caracteres');
         return false;
     }
-    
+
     window.updateFieldStatus(nameField, true);
     return true;
 };
@@ -445,10 +445,10 @@ window.validateName = function() {
 window.validateEmail = function() {
     const emailField = document.getElementById('email');
     if (!emailField) return true;
-    
+
     const emailValue = emailField.value.trim();
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    
+
     if (!emailValue) {
         window.updateFieldStatus(emailField, false, 'El correo electrónico es obligatorio');
         return false;
@@ -456,7 +456,7 @@ window.validateEmail = function() {
         window.updateFieldStatus(emailField, false, 'El formato del correo electrónico no es válido');
         return false;
     }
-    
+
     window.updateFieldStatus(emailField, true);
     return true;
 };
@@ -465,10 +465,10 @@ window.validateEmail = function() {
 window.validateCodigoCentro = function() {
     const codigoField = document.getElementById('codigo_centro');
     if (!codigoField) return true;
-    
+
     const codigoValue = codigoField.value.trim();
     const codigoRegex = /^[0-9]{8}$/;
-    
+
     if (!codigoValue) {
         window.updateFieldStatus(codigoField, false, 'El código de centro es obligatorio');
         return false;
@@ -476,7 +476,7 @@ window.validateCodigoCentro = function() {
         window.updateFieldStatus(codigoField, false, 'El código de centro debe tener 8 dígitos');
         return false;
     }
-    
+
     window.updateFieldStatus(codigoField, true);
     return true;
 };
@@ -485,14 +485,14 @@ window.validateCodigoCentro = function() {
 window.validateNivelesEducativos = function() {
     const nivelesField = document.getElementById('niveles_educativos');
     if (!nivelesField) return true;
-    
+
     const nivelesSeleccionados = $('#niveles_educativos').val(); // Uso de jQuery para Select2
-    
+
     if (!nivelesSeleccionados || nivelesSeleccionados.length === 0) {
         window.updateFieldStatus(nivelesField, false, 'Debes seleccionar al menos un nivel educativo');
         return false;
     }
-    
+
     window.updateFieldStatus(nivelesField, true);
     return true;
 };
@@ -501,13 +501,13 @@ window.validateNivelesEducativos = function() {
 window.validateDireccion = function() {
     const direccionField = document.getElementById('direccion');
     if (!direccionField) return true;
-    
+
     const direccionValue = direccionField.value.trim();
     if (!direccionValue) {
         window.updateFieldStatus(direccionField, false, 'La dirección es obligatoria');
         return false;
     }
-    
+
     window.updateFieldStatus(direccionField, true);
     return true;
 };
@@ -516,13 +516,13 @@ window.validateDireccion = function() {
 window.validateProvincia = function() {
     const provinciaField = document.getElementById('provincia');
     if (!provinciaField) return true;
-    
+
     const provinciaValue = provinciaField.value.trim();
     if (!provinciaValue) {
         window.updateFieldStatus(provinciaField, false, 'La provincia es obligatoria');
         return false;
     }
-    
+
     window.updateFieldStatus(provinciaField, true);
     return true;
 };
@@ -531,10 +531,10 @@ window.validateProvincia = function() {
 window.validateCodigoPostal = function() {
     const codigoPostalField = document.getElementById('codigo_postal');
     if (!codigoPostalField) return true;
-    
+
     const codigoPostalValue = codigoPostalField.value.trim();
     const codigoPostalRegex = /^[0-9]{5}$/;
-    
+
     if (!codigoPostalValue) {
         window.updateFieldStatus(codigoPostalField, false, 'El código postal es obligatorio');
         return false;
@@ -542,7 +542,7 @@ window.validateCodigoPostal = function() {
         window.updateFieldStatus(codigoPostalField, false, 'El código postal debe tener 5 dígitos');
         return false;
     }
-    
+
     window.updateFieldStatus(codigoPostalField, true);
     return true;
 };
@@ -551,13 +551,13 @@ window.validateCodigoPostal = function() {
 window.validateRepresentanteLegal = function() {
     const representanteField = document.getElementById('representante_legal');
     if (!representanteField) return true;
-    
+
     const representanteValue = representanteField.value.trim();
     if (!representanteValue) {
         window.updateFieldStatus(representanteField, false, 'El nombre del representante legal es obligatorio');
         return false;
     }
-    
+
     window.updateFieldStatus(representanteField, true);
     return true;
 };
@@ -566,13 +566,13 @@ window.validateRepresentanteLegal = function() {
 window.validateCargoRepresentante = function() {
     const cargoField = document.getElementById('cargo_representante');
     if (!cargoField) return true;
-    
+
     const cargoValue = cargoField.value.trim();
     if (!cargoValue) {
         window.updateFieldStatus(cargoField, false, 'El cargo del representante es obligatorio');
         return false;
     }
-    
+
     window.updateFieldStatus(cargoField, true);
     return true;
 };
@@ -581,7 +581,7 @@ window.validateCargoRepresentante = function() {
 window.validatePassword = function() {
     const passwordField = document.getElementById('password');
     if (!passwordField) return true;
-    
+
     const passwordValue = passwordField.value;
     if (!passwordValue) {
         window.updateFieldStatus(passwordField, false, 'La contraseña es obligatoria');
@@ -590,7 +590,7 @@ window.validatePassword = function() {
         window.updateFieldStatus(passwordField, false, 'La contraseña debe tener al menos 8 caracteres');
         return false;
     }
-    
+
     window.updateFieldStatus(passwordField, true);
     return true;
 };
@@ -600,10 +600,10 @@ window.validatePasswordConfirmation = function() {
     const passwordField = document.getElementById('password');
     const confirmField = document.getElementById('password_confirmation');
     if (!passwordField || !confirmField) return true;
-    
+
     const passwordValue = passwordField.value;
     const confirmValue = confirmField.value;
-    
+
     if (!confirmValue) {
         window.updateFieldStatus(confirmField, false, 'La confirmación de contraseña es obligatoria');
         return false;
@@ -611,7 +611,7 @@ window.validatePasswordConfirmation = function() {
         window.updateFieldStatus(confirmField, false, 'Las contraseñas no coinciden');
         return false;
     }
-    
+
     window.updateFieldStatus(confirmField, true);
     return true;
 };
@@ -621,7 +621,7 @@ document.getElementById('institutionRegisterForm').addEventListener('submit', fu
     // Depuración: Mostrar las categorías seleccionadas en consola antes de enviar
     const categoriaCheckboxes = document.querySelectorAll('input[name^="categorias["]');
     const categoriasSeleccionadas = {};
-    
+
     categoriaCheckboxes.forEach(checkbox => {
         if (checkbox.checked) {
             const match = checkbox.name.match(/\[(\d+)\]/);
@@ -634,11 +634,11 @@ document.getElementById('institutionRegisterForm').addEventListener('submit', fu
             }
         }
     });
-    
+
     console.log('Categorías seleccionadas:', categoriasSeleccionadas);
-    
+
     // Validar todos los campos
-    const isValid = 
+    const isValid =
         validateName() &&
         validateEmail() &&
         validateCodigoCentro() &&
@@ -650,7 +650,7 @@ document.getElementById('institutionRegisterForm').addEventListener('submit', fu
         validateCargoRepresentante() &&
         validatePassword() &&
         validatePasswordConfirmation();
-    
+
     if (!isValid) {
         event.preventDefault();
     }
@@ -660,7 +660,7 @@ document.getElementById('institutionRegisterForm').addEventListener('submit', fu
 function cargarCategoriasPorNivel() {
     const nivelesSeleccionados = $('#niveles_educativos').val(); // Uso de jQuery para Select2
     const contenedorCategorias = document.getElementById('categorias-por-nivel');
-    
+
     // Guardar las selecciones actuales antes de recargar
     const seleccionesActuales = {};
     document.querySelectorAll('input[name^="categorias["]').forEach(checkbox => {
@@ -673,27 +673,27 @@ function cargarCategoriasPorNivel() {
             seleccionesActuales[name].push(value);
         }
     });
-    
+
     // Recuperar categorías de old() si existen
     @php
     $oldCategorias = session()->getOldInput('categorias', []);
     @endphp
-    
+
     const oldCategorias = @json($oldCategorias);
-    
+
     // Mostrar un estado de carga
     contenedorCategorias.innerHTML = '<p class="text-sm text-gray-500">Cargando categorías...</p>';
-    
+
     // Limpiar el contenedor
     if (!nivelesSeleccionados || nivelesSeleccionados.length === 0) {
         contenedorCategorias.innerHTML = '<p class="text-sm text-gray-500">Selecciona primero los niveles educativos para ver las categorías disponibles</p>';
         return;
     }
-    
+
     // Mapear los niveles seleccionados con sus nombres (sin duplicados)
     const nivelesInfo = [];
     const nivelesYaAgregados = new Set();
-    
+
     $('#niveles_educativos option:selected').each(function() {
         const nivelId = $(this).val();
         // Solo agregamos el nivel si no está ya en el conjunto
@@ -705,7 +705,7 @@ function cargarCategoriasPorNivel() {
             });
         }
     });
-    
+
     // Solicitar las categorías para cada nivel seleccionado
     fetch(window.location.origin + '/api/categorias-por-niveles', {
         method: 'POST',
@@ -723,37 +723,37 @@ function cargarCategoriasPorNivel() {
     })
     .then(data => {
         console.log('Datos recibidos:', data); // Para depuración
-        
+
         if (Object.keys(data).length === 0) {
             contenedorCategorias.innerHTML = '<p class="text-sm text-gray-500">No hay categorías disponibles para los niveles seleccionados</p>';
             return;
         }
-        
+
         // Limpiar el contenedor antes de añadir nuevos elementos
         contenedorCategorias.innerHTML = '';
-        
+
         // Crear una sección para cada nivel con sus categorías
         nivelesInfo.forEach(nivel => {
             if (!data[nivel.id]) {
                 console.log('No hay datos para el nivel:', nivel.id); // Para depuración
                 return;
             }
-            
+
             // Almacenar todas las categorías para este nivel
             const todasLasCategorias = data[nivel.id] || [];
             console.log('Categorías para nivel', nivel.id, ':', todasLasCategorias); // Para depuración
-            
+
             // Crear el contenedor para este nivel
             const nivelContainer = document.createElement('div');
             nivelContainer.className = 'p-4 border rounded-lg mb-4';
             nivelContainer.dataset.nivelId = nivel.id;
-            
+
             // Título del nivel
             const nivelTitle = document.createElement('h3');
             nivelTitle.className = 'font-medium text-gray-800 mb-2';
             nivelTitle.textContent = nivel.nombre;
             nivelContainer.appendChild(nivelTitle);
-            
+
             // Si no hay categorías para este nivel
             if (todasLasCategorias.length === 0) {
                 const noCategoriasMsg = document.createElement('p');
@@ -764,79 +764,79 @@ function cargarCategoriasPorNivel() {
                 // Añadir un campo de búsqueda
                 const searchContainer = document.createElement('div');
                 searchContainer.className = 'mb-3';
-                
+
                 const searchInput = document.createElement('input');
                 searchInput.type = 'text';
                 searchInput.placeholder = 'Buscar categorías...';
                 searchInput.className = 'w-full px-3 py-2 text-sm border rounded-lg focus:ring-primary focus:border-primary';
                 searchInput.dataset.nivelId = nivel.id;
-                
+
                 searchContainer.appendChild(searchInput);
                 nivelContainer.appendChild(searchContainer);
-                
+
                 // Crear un div para contener las checkboxes de las categorías
                 const categoriasWrapper = document.createElement('div');
                 categoriasWrapper.className = 'grid grid-cols-2 gap-2';
                 categoriasWrapper.id = `categorias-wrapper-${nivel.id}`;
-                
+
                 // Eliminar duplicados en las categorías mediante un Set de IDs
                 const categoriasVistas = new Set();
                 const categoriasFiltradas = [];
-                
+
                 todasLasCategorias.forEach(categoria => {
                     if (!categoriasVistas.has(categoria.id)) {
                         categoriasVistas.add(categoria.id);
                         categoriasFiltradas.push(categoria);
                     }
                 });
-                
+
                 // Añadir las checkboxes de categorías sin duplicados
                 categoriasFiltradas.forEach(categoria => {
                     const categoriaDiv = document.createElement('div');
                     categoriaDiv.className = 'flex items-center categoria-item';
                     categoriaDiv.dataset.nombre = categoria.nombre_categoria.toLowerCase();
-                    
+
                     const checkbox = document.createElement('input');
                     checkbox.type = 'checkbox';
                     checkbox.name = `categorias[${nivel.id}][]`;
                     checkbox.value = categoria.id;
                     checkbox.id = `categoria-${nivel.id}-${categoria.id}`;
                     checkbox.className = 'mr-2';
-                    
+
                     // Comprobar si esta categoría estaba seleccionada anteriormente
                     // Primero verificar en old() de Laravel
                     const nivelIdStr = nivel.id.toString();
-                    if (oldCategorias && oldCategorias[nivelIdStr] && 
+                    if (oldCategorias && oldCategorias[nivelIdStr] &&
                         oldCategorias[nivelIdStr].includes(categoria.id.toString())) {
                         checkbox.checked = true;
                     }
                     // Si no está en old(), verificar en las selecciones actuales de la sesión
                     else {
                         const checkboxName = `categorias[${nivel.id}][]`;
-                        if (seleccionesActuales[checkboxName] && 
+                        if (seleccionesActuales[checkboxName] &&
                             seleccionesActuales[checkboxName].includes(categoria.id.toString())) {
                             checkbox.checked = true;
                         }
                     }
-                    
+
                     const label = document.createElement('label');
                     label.htmlFor = `categoria-${nivel.id}-${categoria.id}`;
                     label.className = 'text-sm text-gray-700';
                     label.textContent = categoria.nombre_categoria;
-                    
+
                     categoriaDiv.appendChild(checkbox);
                     categoriaDiv.appendChild(label);
                     categoriasWrapper.appendChild(categoriaDiv);
                 });
-                
+
                 nivelContainer.appendChild(categoriasWrapper);
-                
+
                 // Añadir evento de búsqueda
                 searchInput.addEventListener('input', function() {
                     const searchText = this.value.toLowerCase();
                     const nivelId = this.dataset.nivelId;
                     const categoriaItems = document.querySelectorAll(`#categorias-wrapper-${nivelId} .categoria-item`);
-                    
+
                     categoriaItems.forEach(item => {
                         const nombreCategoria = item.dataset.nombre;
                         if (nombreCategoria.includes(searchText)) {
@@ -847,7 +847,7 @@ function cargarCategoriasPorNivel() {
                     });
                 });
             }
-            
+
             // Añadir este nivel al contenedor principal
             contenedorCategorias.appendChild(nivelContainer);
         });
@@ -865,14 +865,14 @@ window.loadProvincias = function() {
         .then(data => {
             const select = document.getElementById('provincia');
             select.innerHTML = '<option value="">Selecciona una provincia</option>';
-            
+
             data.forEach(provincia => {
                 const option = document.createElement('option');
                 option.value = provincia.nombre;
                 option.textContent = provincia.nombre;
                 select.appendChild(option);
             });
-            
+
             // Restaurar provincia si hay un valor anterior
             const provinciaAnterior = document.getElementById('provincia_anterior').value;
             if (provinciaAnterior) {
@@ -895,20 +895,20 @@ window.loadCiudades = function(provincia, callback) {
             console.log('Ciudades recibidas:', data);
             const select = document.getElementById('ciudad');
             select.innerHTML = '<option value="">Selecciona una ciudad</option>';
-            
+
             data.forEach(ciudad => {
                 const option = document.createElement('option');
                 option.value = ciudad.nombre;
                 option.textContent = ciudad.nombre;
                 select.appendChild(option);
             });
-            
+
             // Restaurar ciudad si hay un valor anterior
             const ciudadAnterior = document.getElementById('ciudad_anterior').value;
             if (ciudadAnterior) {
                 select.value = ciudadAnterior;
             }
-            
+
             // Si hay un callback, ejecutarlo
             if (typeof callback === 'function') {
                 callback();
@@ -921,13 +921,13 @@ window.loadCiudades = function(provincia, callback) {
 window.validateCiudad = function() {
     const ciudadField = document.getElementById('ciudad');
     if (!ciudadField) return true;
-    
+
     const ciudadValue = ciudadField.value.trim();
     if (!ciudadValue) {
         window.updateFieldStatus(ciudadField, false, 'Debes seleccionar una ciudad');
         return false;
     }
-    
+
     window.updateFieldStatus(ciudadField, true);
     return true;
 };
@@ -948,14 +948,14 @@ window.validateForm = function() {
         window.validatePassword(),
         window.validatePasswordConfirmation()
     ];
-    
+
     return validations.every(Boolean);
 };
 
 // Cuando el DOM esté cargado
 document.addEventListener('DOMContentLoaded', function() {
     // ... existing code ...
-    
+
     // Marcar los campos con errores de servidor
     const serverErrors = document.querySelectorAll('.text-red-500:not([id*="-error"])');
     serverErrors.forEach(errorElement => {
@@ -969,4 +969,5 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-@endsection 
+@endsection
+

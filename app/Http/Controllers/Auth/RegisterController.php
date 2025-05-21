@@ -30,12 +30,12 @@ class RegisterController extends Controller
     public function showStudentRegistrationForm(Request $request)
     {
         $registrationData = $request->session()->get('registration_data');
-        
+
         if (!$registrationData) {
             return redirect()->route('register')
                 ->withErrors(['error' => 'Por favor complete el primer paso del registro']);
         }
-        
+
         // Verificar que el rol sea alumno
         if ($registrationData['role'] !== 'alumno') {
             return redirect()->route('register')
@@ -51,18 +51,18 @@ class RegisterController extends Controller
     public function showCompanyRegistrationForm(Request $request)
     {
         $registrationData = $request->session()->get('registration_data');
-        
+
         if (!$registrationData) {
             return redirect()->route('register')
                 ->withErrors(['error' => 'Por favor complete el primer paso del registro']);
         }
-        
+
         // Verificar que el rol sea empresa
         if ($registrationData['role'] !== 'empresa') {
             return redirect()->route('register')
                 ->withErrors(['error' => 'Esta página es solo para empresas']);
         }
-        
+
         return view('auth.register-company');
     }
 
@@ -70,24 +70,24 @@ class RegisterController extends Controller
     public function showInstitutionRegistrationForm(Request $request)
     {
         $registrationData = $request->session()->get('registration_data');
-        
+
         if (!$registrationData) {
             return redirect()->route('register')
                 ->withErrors(['error' => 'Por favor complete el primer paso del registro']);
         }
-        
+
         // Verificar que el rol sea institución
         if ($registrationData['role'] !== 'institucion') {
             return redirect()->route('register')
                 ->withErrors(['error' => 'Esta página es solo para instituciones']);
         }
-        
+
         // Obtener todos los niveles educativos para pasarlos a la vista (asegurando que no haya duplicados)
         $nivelesEducativos = \App\Models\NivelEducativo::select('id', 'nombre_nivel')
                                 ->distinct()
                                 ->orderBy('nombre_nivel')
                                 ->get();
-        
+
         return view('auth.register-institution', compact('nivelesEducativos'));
     }
 
@@ -96,12 +96,12 @@ class RegisterController extends Controller
     {
         // Obtener datos de registro de la sesión
         $registrationData = $request->session()->get('registration_data');
-        
+
         if (!$registrationData) {
             return redirect()->route('register')
                 ->withErrors(['error' => 'Por favor complete el primer paso del registro']);
         }
-        
+
         // Combinar datos de la sesión con los datos del formulario
         $data = array_merge($request->all(), [
             'name' => $registrationData['name'],
@@ -150,7 +150,7 @@ class RegisterController extends Controller
 
         // Obtener el nombre de la ciudad seleccionada
         $nombreCiudad = $request->ciudad;
-        
+
         // Obtener el nombre del centro educativo
         $institucion = Institucion::find($request->centro_estudios);
         $nombreCentro = $institucion ? $institucion->user->nombre : 'Centro no encontrado';
@@ -174,12 +174,12 @@ class RegisterController extends Controller
         if ($request->hasFile('cv_pdf')) {
             $cvFile = $request->file('cv_pdf');
             $cvFileName = 'cv_' . $user->id . '_' . time() . '.pdf';
-            
+
             // Crear directorio si no existe
             if (!file_exists(public_path('cv'))) {
                 mkdir(public_path('cv'), 0777, true);
             }
-            
+
             // Mover el archivo a public/cv
             $cvFile->move(public_path('cv'), $cvFileName);
         }
@@ -187,7 +187,7 @@ class RegisterController extends Controller
         // Crear estudiante
         // Desactivar temporalmente la comprobación de claves foráneas
         DB::statement('SET FOREIGN_KEY_CHECKS=0');
-        
+
         Estudiante::create([
             'id' => $user->id,
             'institucion_id' => $request->centro_estudios,
@@ -197,7 +197,7 @@ class RegisterController extends Controller
             'categoria_id' => $request->categoria_id,
             'estado' => 'pendiente'
         ]);
-        
+
         // Reactivar la comprobación de claves foráneas
         DB::statement('SET FOREIGN_KEY_CHECKS=1');
 
@@ -206,7 +206,7 @@ class RegisterController extends Controller
 
         event(new Registered($user));
         // Auth::login($user); // Comentado para evitar el inicio de sesión automático
-        
+
         return redirect()->route('login')
             ->with('success', 'Registro completado correctamente. Tu cuenta debe ser activada por tu institución antes de poder acceder.');
     }
@@ -216,19 +216,19 @@ class RegisterController extends Controller
     {
         // Recuperar datos de los pasos anteriores
         $registrationData = $request->session()->get('registration_data');
-        
+
         if (!$registrationData) {
             return redirect()->route('register')
                 ->withErrors(['error' => 'Por favor complete el primer paso del registro']);
         }
-        
+
         $request->validate([
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'cif' => ['required', 'string', 'max:15'],
             'direccion' => ['required', 'string', 'max:255'],
             'provincia' => ['required', 'string', 'max:100'],
         ]);
-        
+
         // Crear usuario
         $user = User::create([
             'nombre' => $registrationData['name'],
@@ -256,7 +256,7 @@ class RegisterController extends Controller
 
         // Limpiar los datos de sesión
         $request->session()->forget('registration_data');
-        
+
         event(new Registered($user));
         Auth::login($user);
         return redirect()->route('empresa.dashboard');
@@ -267,12 +267,12 @@ class RegisterController extends Controller
     {
         // Recuperar datos de los pasos anteriores
         $registrationData = $request->session()->get('registration_data');
-        
+
         if (!$registrationData) {
             return redirect()->route('register')
                 ->withErrors(['error' => 'Por favor complete el primer paso del registro']);
         }
-        
+
         $validator = Validator::make($request->all(), [
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'codigo_centro' => ['required', 'string', 'max:8', 'unique:instituciones,codigo_centro'],
@@ -295,13 +295,13 @@ class RegisterController extends Controller
             'provincia.required' => 'Debes seleccionar una provincia',
             'ciudad.required' => 'Debes seleccionar una ciudad',
         ]);
-        
+
         if ($validator->fails()) {
             return redirect()->back()
                 ->withErrors($validator)
                 ->withInput();
         }
-        
+
         // Crear usuario
         $user = User::create([
             'nombre' => $registrationData['name'],
@@ -311,12 +311,12 @@ class RegisterController extends Controller
             'fecha_nacimiento' => now()->subYears(rand(25, 50)),
             'ciudad' => $request->ciudad,
             'dni' => 'INST' . rand(10000000, 99999999),
-            'activo' => true,
+            'activo' => false,
             'telefono' => '9' . rand(10000000, 99999999),
             'descripcion' => 'Institución Educativa',
             'imagen' => null
         ]);
-        
+
         // Crear el perfil de institución
         $institucion = Institucion::create([
             'user_id' => $user->id,
@@ -328,7 +328,7 @@ class RegisterController extends Controller
             'cargo_representante' => $request->cargo_representante,
             'verificada' => false,
         ]);
-        
+
         // Registrar los niveles educativos seleccionados
         if ($request->has('niveles_educativos')) {
             foreach ($request->niveles_educativos as $nivelId) {
@@ -340,7 +340,7 @@ class RegisterController extends Controller
                 ]);
             }
         }
-        
+
         // Registrar las categorías seleccionadas para cada nivel
         if ($request->has('categorias') && is_array($request->categorias)) {
             foreach ($request->categorias as $nivelId => $categorias) {
@@ -360,13 +360,13 @@ class RegisterController extends Controller
                 }
             }
         }
-        
+
         // Limpiar los datos de sesión
         $request->session()->forget('registration_data');
-        
+
         event(new Registered($user));
         Auth::login($user);
-        return redirect()->route('institucion.dashboard');
+        return view('institucion.redirect-to-payment', ['institution_id' => $institucion->id]);
     }
 
     // Registro general - Primer paso (nombre, email, rol)
@@ -410,20 +410,20 @@ class RegisterController extends Controller
             return redirect()->route('register.institucion');
         }
     }
-    
+
     // Mostrar formulario para el segundo paso (datos personales)
     public function showPersonalInfoForm(Request $request)
     {
         $registrationData = $request->session()->get('registration_data');
-        
+
         if (!$registrationData || !isset($registrationData['step']) || $registrationData['step'] < 1) {
             return redirect()->route('register')
                 ->withErrors(['error' => 'Por favor complete el primer paso del registro']);
         }
-        
+
         return view('auth.register-personal');
     }
-    
+
     // Procesar el segundo paso (datos personales)
     public function registerPersonalInfo(Request $request)
     {
@@ -432,10 +432,10 @@ class RegisterController extends Controller
         if (!$registrationData || $registrationData['step'] < 1) {
             return redirect()->route('register');
         }
-        
+
         // Calcular la fecha de hace 16 años
         $minAgeDate = now()->subYears(16)->format('Y-m-d');
-        
+
         // Validar los datos personales con reglas más estrictas
         $request->validate([
             'fecha_nacimiento' => ['required', 'date', 'before_or_equal:'.$minAgeDate, 'after:1900-01-01'],
@@ -452,25 +452,25 @@ class RegisterController extends Controller
             'dni.regex' => 'El formato del DNI/NIE no es válido',
             'telefono.regex' => 'El formato del teléfono no es válido'
         ]);
-        
+
         // Actualizar el usuario con los datos personales
         $user = User::find($registrationData['user_id']);
         if (!$user) {
             return redirect()->route('register')
                 ->withErrors(['error' => 'Usuario no encontrado']);
         }
-        
+
         $user->update([
             'fecha_nacimiento' => $request->fecha_nacimiento,
             'ciudad' => $request->ciudad,
             'dni' => $request->dni,
             'telefono' => $request->telefono
         ]);
-        
+
         // Actualizar datos de sesión para el tercer paso
         $registrationData['step'] = 2;
         $request->session()->put('registration_data', $registrationData);
-        
+
         // Redirigir según el rol seleccionado al tercer paso
         if ($registrationData['role'] === 'alumno') {
             return redirect()->route('register.alumno');
