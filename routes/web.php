@@ -383,6 +383,7 @@ Route::prefix('institucion')->middleware(['auth', \App\Http\Middleware\CheckRole
 
     // RUTAS PARA ESTUDIANTES PENDIENTES
     Route::prefix('estudiantes')->name('estudiantes.')->group(function() {
+        Route::get('/', [App\Http\Controllers\Institucion\EstudianteController::class, 'index'])->name('index');
         Route::post('/{id}/activar', [App\Http\Controllers\Institucion\EstudiantePendienteController::class, 'activar'])->name('activar');
         Route::delete('/{id}', [App\Http\Controllers\Institucion\EstudiantePendienteController::class, 'eliminar'])->name('eliminar');
         Route::put('/{id}/actualizar', [App\Http\Controllers\Institucion\EstudiantePendienteController::class, 'actualizar'])->name('actualizar');
@@ -431,38 +432,23 @@ Route::prefix('institucion')->middleware(['auth', \App\Http\Middleware\CheckRole
         Route::get('/departamentos/{id}/get-data', [App\Http\Controllers\DepartamentoController::class, 'getData'])->name('departamentos.get-data');
 
         // Clases
-        Route::get('/clases', [App\Http\Controllers\ClaseController::class, 'index'])->name('clases.index');
-        Route::get('/clases/create', [App\Http\Controllers\ClaseController::class, 'create'])->name('clases.create');
-        Route::post('/clases', [App\Http\Controllers\ClaseController::class, 'store'])->name('clases.store');
-        Route::get('/clases/{id}', [App\Http\Controllers\ClaseController::class, 'show'])->name('clases.show');
-        Route::get('/clases/{id}/edit', [App\Http\Controllers\ClaseController::class, 'edit'])->name('clases.edit');
-        Route::put('/clases/{id}', [App\Http\Controllers\ClaseController::class, 'update'])->name('clases.update');
-        Route::delete('/clases/{id}', [App\Http\Controllers\ClaseController::class, 'destroy'])->name('clases.destroy');
-        Route::post('/clases/{id}/toggle-active', [App\Http\Controllers\ClaseController::class, 'toggleActive'])->name('clases.toggle-active');
-        Route::get('/clases/{id}/asignar-estudiantes', [App\Http\Controllers\ClaseController::class, 'asignarEstudiantes'])->name('clases.asignar-estudiantes');
-        Route::post('/clases/{id}/asignar-estudiantes', [App\Http\Controllers\ClaseController::class, 'guardarAsignacionEstudiantes'])->name('clases.guardar-asignacion-estudiantes');
-        Route::get('/clases/{id}/getData', [App\Http\Controllers\ClaseController::class, 'getData'])->name('clases.getData');
-
-        // Estudiantes
-        Route::prefix('estudiantes')->name('estudiantes.')->group(function () {
-            Route::get('/', [App\Http\Controllers\Institucion\EstudianteController::class, 'index'])->name('index');
-            Route::get('/pendientes', [App\Http\Controllers\Institucion\EstudianteController::class, 'pendientes'])->name('pendientes');
-            Route::get('/{id}', [App\Http\Controllers\Institucion\EstudianteController::class, 'show'])->name('show');
-            Route::get('/{id}/edit', [App\Http\Controllers\Institucion\EstudianteController::class, 'edit'])->name('edit');
-            Route::put('/{id}', [App\Http\Controllers\Institucion\EstudianteController::class, 'update'])->name('update');
-            Route::post('/{id}/asignar-clase', [App\Http\Controllers\Institucion\EstudianteController::class, 'asignarClase'])->name('asignar-clase');
-            Route::delete('/{id}/eliminar-clase/{claseId}', [App\Http\Controllers\Institucion\EstudianteController::class, 'eliminarClase'])->name('eliminar-clase');
-        });
-
-        // Clases
         Route::prefix('clases')->name('clases.')->group(function () {
             Route::get('/', [App\Http\Controllers\Institucion\ClaseController::class, 'index'])->name('index');
             Route::get('/create', [App\Http\Controllers\Institucion\ClaseController::class, 'create'])->name('create');
             Route::post('/', [App\Http\Controllers\Institucion\ClaseController::class, 'store'])->name('store');
+            
+            // Rutas específicas SIN parámetros (estas deben ir ANTES de las rutas con {id})
+            Route::get('/get-nivel-categorias', [App\Http\Controllers\Institucion\ClaseController::class, 'getNivelCategorias'])->name('get-nivel-categorias');
+            Route::get('/test-route', function() {
+                return response()->json(['message' => 'Ruta de prueba funcionando correctamente']);
+            })->name('test-route');
+            
+            // Rutas con {id} (estas deben ir DESPUÉS de las rutas específicas)
             Route::get('/{id}', [App\Http\Controllers\Institucion\ClaseController::class, 'show'])->name('show');
             Route::get('/{id}/edit', [App\Http\Controllers\Institucion\ClaseController::class, 'edit'])->name('edit');
             Route::put('/{id}', [App\Http\Controllers\Institucion\ClaseController::class, 'update'])->name('update');
             Route::delete('/{id}', [App\Http\Controllers\Institucion\ClaseController::class, 'destroy'])->name('destroy');
+            Route::post('/{id}/toggle-active', [App\Http\Controllers\Institucion\ClaseController::class, 'toggleActive'])->name('toggle-active');
 
             // Asignación de estudiantes
             Route::get('/{id}/asignar-estudiantes', [App\Http\Controllers\Institucion\ClaseController::class, 'asignarEstudiantes'])->name('asignar-estudiantes');

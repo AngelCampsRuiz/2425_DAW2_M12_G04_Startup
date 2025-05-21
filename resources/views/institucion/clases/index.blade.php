@@ -15,12 +15,12 @@
                 <span>Clases</span>
             </div>
         </div>
-        <a href="{{ route('institucion.clases.create') }}" class="bg-primary hover:bg-primary-dark text-white py-2 px-4 rounded-lg flex items-center transition-colors">
+        <button onclick="openCreateModal()" class="bg-primary hover:bg-primary-dark text-white py-2 px-4 rounded-lg flex items-center transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
             </svg>
             Nueva Clase
-        </a>
+        </button>
     </div>
 
     {{-- Mostrar alertas --}}
@@ -193,12 +193,12 @@
                     </svg>
                     <h3 class="text-lg font-medium text-gray-900 mb-1">No hay clases</h3>
                     <p class="text-gray-500 max-w-md mx-auto mb-6">No se encontraron clases con los criterios de búsqueda actuales o aún no has creado ninguna clase.</p>
-                    <a href="{{ route('institucion.clases.create') }}" class="bg-primary hover:bg-primary-dark text-white py-2 px-6 rounded-lg inline-flex items-center transition-colors">
+                    <button onclick="openCreateModal()" class="bg-primary hover:bg-primary-dark text-white py-2 px-6 rounded-lg inline-flex items-center transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                             </svg>
                         Crear primera clase
-                    </a>
+                    </button>
                 </div>
             </div>
         @endforelse
@@ -212,3 +212,4 @@
 @endsection
 
 @include('components.edit-clase-modal') 
+@include('components.create-clase-modal') 
