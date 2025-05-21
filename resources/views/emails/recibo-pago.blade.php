@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <link rel="stylesheet" href="{{ asset('assets/css/stylePago.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/stylePago.css') }}">
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <img src="{{ asset('assets/images/logo.svg') }}" alt="PickJob Logo" class="logo">
+            <img src="{{ asset('images/logo.svg') }}" alt="PickJob Logo" class="logo">
             <h1>Recibo de Pago</h1>
         </div>
 
