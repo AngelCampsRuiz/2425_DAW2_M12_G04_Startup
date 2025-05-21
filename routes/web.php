@@ -575,6 +575,5 @@ Route::get('/ranking', [App\Http\Controllers\GameScoreController::class, 'showRa
 
 // Ruta para crear la sesión de pago
 Route::post('/institucion/pago', [InstitucionPaymentController::class, 'createSession'])->name('institucion.payment');
-Route::get('/institucion/pago-cancelado', function() {
-    return view('institucion.payment-cancel');
-})->name('institucion.payment.cancel');
+Route::get('/institucion/pago-exitoso', [InstitucionPaymentController::class, 'handleSuccess'])->name('institucion.payment.success');
+Route::get('/institucion/pago-cancelado', [InstitucionPaymentController::class, 'handleCancel'])->name('institucion.payment.cancel');

@@ -311,7 +311,7 @@ class RegisterController extends Controller
             'fecha_nacimiento' => now()->subYears(rand(25, 50)),
             'ciudad' => $request->ciudad,
             'dni' => 'INST' . rand(10000000, 99999999),
-            'activo' => true,
+            'activo' => false,
             'telefono' => '9' . rand(10000000, 99999999),
             'descripcion' => 'Institución Educativa',
             'imagen' => null
