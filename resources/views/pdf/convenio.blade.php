@@ -117,14 +117,32 @@
             margin-top: 50px;
             display: flex;
             justify-content: space-between;
+            flex-wrap: wrap;
         }
         
         .signature {
             width: 45%;
-            margin-top: 60px;
+            margin-top: 30px;
             border-top: 1px solid #000;
             padding-top: 10px;
             text-align: center;
+            font-size: 12px;
+        }
+        
+        .signature-name {
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        
+        .signature-role {
+            color: #6b7280;
+            font-size: 10px;
+        }
+        
+        .signature-date {
+            font-size: 10px;
+            color: #6b7280;
+            margin-top: 5px;
         }
         
         .status {
@@ -231,6 +249,14 @@
         
         .table-info tr:nth-child(even) {
             background-color: #f9fafb;
+        }
+        
+        .signature-section {
+            width: 100%;
+            margin-top: 50px;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
         }
     </style>
 </head>
@@ -433,17 +459,33 @@
             Conformidad de las partes
         </p>
         
-        <div class="signatures">
+        <div class="signature-section">
+            <!-- Firmas de estudiante y empresa -->
             <div class="signature">
-                <p>Por la Empresa</p>
-                <p>{{ $convenio->tutor_empresa }}</p>
-                <p>Fecha: {{ date('d/m/Y') }}</p>
+                <div class="signature-role">Firma del Estudiante</div>
+                <div class="signature-name">{{ $convenio->estudiante->nombre }}</div>
+                <div class="signature-date">Fecha: {{ $convenio->fecha_creacion ? $convenio->fecha_creacion->format('d/m/Y') : '' }}</div>
             </div>
+            
             <div class="signature">
-                <p>El/La Estudiante</p>
-                <p>{{ $convenio->estudiante->nombre }}</p>
-                <p>Fecha: {{ date('d/m/Y') }}</p>
+                <div class="signature-role">Firma de la Empresa</div>
+                <div class="signature-name">{{ $convenio->oferta->empresa->nombre ?? ($convenio->empresa_id ? User::find($convenio->empresa_id)->nombre : 'Empresa') }}</div>
+                <div class="signature-date">Fecha: {{ $convenio->fecha_creacion ? $convenio->fecha_creacion->format('d/m/Y') : '' }}</div>
             </div>
+        </div>
+
+        <div class="signature-section">
+            <!-- Firma de la institución -->
+            @if($convenio->firmado_institucion && $convenio->firmado_por_institucion)
+                @php
+                    $institucion = User::find($convenio->firmado_por_institucion);
+                @endphp
+                <div class="signature">
+                    <div class="signature-role">Firma de la Institución</div>
+                    <div class="signature-name">{{ $institucion ? $institucion->nombre : 'Institución' }}</div>
+                    <div class="signature-date">Fecha de firma: {{ $convenio->fecha_firma_institucion ? $convenio->fecha_firma_institucion->format('d/m/Y') : '' }}</div>
+                </div>
+            @endif
         </div>
     </div>
 

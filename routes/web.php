@@ -280,7 +280,8 @@
                     Route::get('/empresa/ofertas/activas', [CompanyDashboardController::class, 'activeOffers'])->name('empresa.offers.active');
                 // RUTA OFERTAS INACTIVAS
                     Route::get('/empresa/ofertas/inactivas', [CompanyDashboardController::class, 'inactiveOffers'])->name('empresa.offers.inactive');
-                    Route::get('/empresa/ofertas/activas/data', [App\Http\Controllers\Admin\EmpresaController::class, 'getActiveOffers'])->name('empresa.offers.active.data');
+                    Route::get('/empresa/ofertas/candidatos-aceptados', [CompanyDashboardController::class, 'acceptedCandidates'])->name('empresa.offers.accepted-candidates');
+                    Route::get('/empresa/ofertas/activas/data', [CompanyDashboardController::class, 'getActiveOffers'])->name('empresa.offers.active.data');
                     Route::prefix('empresa/calendar')->group(function () {
                         Route::get('/reminders', [CalendarController::class, 'getReminders']);
                         Route::post('/reminders', [CalendarController::class, 'store']);
@@ -547,6 +548,12 @@ Route::get('/test/table-structure', [App\Http\Controllers\TestController::class,
         Route::post('/send', [App\Http\Controllers\ChatController::class, 'send'])->name('send');
     });
 
+    // Rutas para la institución
+    Route::get('/convenios', [App\Http\Controllers\Institucion\ConvenioController::class, 'index'])->name('convenios.index');
+    Route::get('/convenios/{convenio}', [App\Http\Controllers\Institucion\ConvenioController::class, 'show'])->name('convenios.show');
+    Route::post('/convenios/{convenio}/firmar', [App\Http\Controllers\Institucion\ConvenioController::class, 'firmar'])->name('convenios.firmar');
+    Route::get('/convenios/{convenio}/download', [App\Http\Controllers\Institucion\ConvenioController::class, 'download'])->name('convenios.download');
+    Route::get('/convenios/firmados/lista', [App\Http\Controllers\Institucion\ConvenioController::class, 'firmados'])->name('convenios.firmados');
 });
 
 // RUTAS PARA DOCENTES

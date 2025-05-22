@@ -27,7 +27,11 @@ class Convenio extends Model
         'tareas',
         'objetivos',
         'estado',
-        'fecha_creacion'
+        'fecha_creacion',
+        'aprobado_por',
+        'firmado_institucion',
+        'firmado_por_institucion',
+        'fecha_firma_institucion'
     ];
 
     protected $casts = [
@@ -35,7 +39,9 @@ class Convenio extends Model
         'fecha_aprobacion' => 'datetime',
         'fecha_inicio' => 'date',
         'fecha_fin' => 'date',
-        'fecha_creacion' => 'datetime'
+        'fecha_creacion' => 'datetime',
+        'firmado_institucion' => 'boolean',
+        'fecha_firma_institucion' => 'datetime'
     ];
 
     public function seguimiento()
@@ -61,5 +67,15 @@ class Convenio extends Model
     public function estudiante()
     {
         return $this->belongsTo(User::class, 'estudiante_id');
+    }
+
+    public function empresa()
+    {
+        return $this->belongsTo(User::class, 'empresa_id');
+    }
+
+    public function firmadoPorInstitucion()
+    {
+        return $this->belongsTo(User::class, 'firmado_por_institucion');
     }
 }
