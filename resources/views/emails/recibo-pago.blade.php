@@ -6,7 +6,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <img src="{{ asset('images/logo.svg') }}" alt="PickJob Logo" class="logo">
+            <img src="{{ asset('assets/images/logo.svg') }}" alt="NextGen Logo" class="logo">
             <h1>Recibo de Pago</h1>
         </div>
 
@@ -29,7 +29,7 @@
 
         <div class="footer">
             <p>Este es un recibo electrónico automático. Por favor, guárdelo para sus registros.</p>
-            <p>© {{ date('Y') }} PickJob. Todos los derechos reservados.</p>
+            <p>© {{ date('Y') }} NextGen. Todos los derechos reservados.</p>
         </div>
     </div>
 </body>

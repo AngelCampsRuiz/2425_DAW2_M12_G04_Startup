@@ -20,7 +20,7 @@ class ReciboPago extends Mailable
 
     public function build()
     {
-        return $this->subject('Recibo de Pago - PickJob')
+        return $this->subject('Recibo de Pago - NextGen')
                     ->view('emails.recibo-pago');
     }
 }
