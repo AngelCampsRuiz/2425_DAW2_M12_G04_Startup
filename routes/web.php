@@ -243,13 +243,17 @@
                     Route::get('/saved-publications/partial', [ProfileController::class, 'savedPartial'])->name('saved.publications.partial');
                     Route::post('/saved-publications/{id}', [ProfileController::class, 'savedPublication'])->name('saved.publications.store');
                     Route::delete('/favorite/{id}', [ProfileController::class, 'deleteSavedPublication']);
+
+  
             });
 
         // RUTAS PROTEGIDAS PARA ESTUDIANTES
-                Route::middleware(['auth', \App\Http\Middleware\CheckRole::class.':student'])->group(function () {
-                    Route::get('/student/dashboard', [StudentDashboardController::class, 'index'])->name('student.dashboard');
-                    Route::get('/estudiante/solicitudes', [App\Http\Controllers\Estudiante\SolicitudController::class, 'index'])->name('estudiante.solicitudes.index');
-                });
+            Route::middleware(['auth', \App\Http\Middleware\CheckRole::class.':student'])->group(function () {
+                Route::get('/student/dashboard', [StudentDashboardController::class, 'index'])->name('student.dashboard');
+                Route::get('/estudiante/solicitudes', [App\Http\Controllers\Estudiante\SolicitudController::class, 'index'])->name('estudiante.solicitudes.index');
+                
+               
+            });
 
         // RUTAS PROTEGIDAS PARA EMPRESAS
             Route::middleware(['auth', \App\Http\Middleware\CheckRole::class.':empresa'])->group(function () {

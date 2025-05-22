@@ -13,12 +13,12 @@ return new class extends Migration
     {
         Schema::create('experiencias', function (Blueprint $table) {
             $table->id();
-            $table->string('empresa_nombre', 100);
             $table->string('puesto', 100);
+            $table->string('empresa_nombre', 100);
             $table->date('fecha_inicio');
-            $table->date('fecha_fin');
-            $table->string('especializacion', 100);
-            $table->foreignId('alumno_id')->constrained('estudiantes');
+            $table->date('fecha_fin')->nullable();
+            $table->text('descripcion')->nullable();
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -30,4 +30,4 @@ return new class extends Migration
     {
         Schema::dropIfExists('experiencias');
     }
-};
+}; 

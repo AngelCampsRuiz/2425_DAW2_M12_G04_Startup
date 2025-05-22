@@ -5,6 +5,9 @@
     <link rel="stylesheet" href="{{ asset('css/profile.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    {{-- SweetAlert2 CSS --}}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
     @section('content')
         <div class="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-50">
             {{-- MIGAS DE PAN --}}
@@ -465,7 +468,7 @@
 
                             {{-- CV --}}
                             @if($user->estudiante && $user->estudiante->cv_pdf)
-                                <div class="bg-white rounded-xl shadow-lg p-6 transform transition-all duration-300 hover:shadow-xl md:col-span-2">
+                                <div class="bg-white rounded-xl shadow-lg p-6 transform transition-all duration-300 hover:shadow-xl md:col-span-2" id="cv-section">
                                     <div class="flex items-center justify-between">
                                         <div class="flex items-center">
                                             <div class="p-3 bg-purple-100 rounded-lg">
@@ -477,6 +480,7 @@
                                         </div>
                                         <a href="{{ url('cv/' . $user->estudiante->cv_pdf) }}"
                                            target="_blank"
+                                           id="cv-link"
                                            class="inline-flex items-center px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
                                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
@@ -784,7 +788,7 @@
 
         <!-- Sección de Valoraciones -->
         <div class="valoraciones-section mt-8">
-            <div class="bg-white rounded-xl shadow-lg p-6 transform transition-all duration-300 hover:shadow-xl">
+            <div class="bg-white rounded-xl shadow-lg p-6 transform transition-all duration-300 hover:shadow-md border border-purple-100">
                 <div class="flex items-center mb-6">
                     <div class="bg-gradient-to-br from-purple-100 to-indigo-100 p-3 rounded-xl shadow-sm">
                         <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -889,7 +893,6 @@
 
                     <form id="editValoracionForm" class="p-6">
                         @csrf
-                        @method('PUT')
                         <input type="hidden" id="valoracionId" name="valoracion_id">
 
                         {{-- Estrellas de Valoración --}}
@@ -1496,46 +1499,20 @@
 
             // Validar todo el formulario antes de enviar
             document.getElementById('profileForm').addEventListener('submit', function(e) {
-                // Primero validar todos los campos
-                let isValid = true;
-
-                if (!validarNombre(document.getElementById('nombre'))) isValid = false;
-                if (!validarDescripcion(document.getElementById('descripcion'))) isValid = false;
-                if (!validarTelefono(document.getElementById('telefono'))) isValid = false;
-                if (!validarDNI(document.getElementById('dni'))) isValid = false;
-                if (!validarCiudad(document.getElementById('ciudad'))) isValid = false;
-                if (!validarSitioWeb(document.getElementById('sitio_web'))) isValid = false;
-
-                const imagenInput = document.getElementById('imagen');
-                if (imagenInput && imagenInput.files.length > 0) {
-                    if (!validarImagen(imagenInput)) isValid = false;
-                }
-
-                const cvInput = document.getElementById('cv_pdf');
-                if (cvInput && cvInput.files.length > 0) {
-                    if (!validarCV(cvInput)) isValid = false;
-                }
-
-                if (!isValid) {
-                    e.preventDefault();
-                    return false;
-                }
-
                 e.preventDefault();
 
                 const formData = new FormData(this);
                 const submitButton = this.querySelector('button[type="submit"]');
                 const originalButtonText = submitButton.innerHTML;
 
-                // Mostrar indicador de carga
                 submitButton.disabled = true;
                 submitButton.innerHTML = `
                     <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                Guardando...
-            `;
+                    Guardando...
+                `;
 
                 fetch(this.action, {
                     method: 'POST',
@@ -1622,8 +1599,41 @@
 
                         // Actualizar CV si se cambió
                         if (user.estudiante && user.estudiante.cv_pdf) {
-                            const cvLink = document.querySelector('a[href*="cv/"]');
-                            if (cvLink) {
+                            const cvSection = document.getElementById('cv-section');
+                            const cvLink = document.getElementById('cv-link');
+                            
+                            if (!cvSection) {
+                                // Si no existe la sección del CV, la creamos
+                                const gridContainer = document.querySelector('.grid.grid-cols-1.md\\:grid-cols-2.gap-8');
+                                if (gridContainer) {
+                                    const newCvSection = document.createElement('div');
+                                    newCvSection.id = 'cv-section';
+                                    newCvSection.className = 'bg-white rounded-xl shadow-lg p-6 transform transition-all duration-300 hover:shadow-xl md:col-span-2';
+                                    newCvSection.innerHTML = `
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center">
+                                                <div class="p-3 bg-purple-100 rounded-lg">
+                                                    <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                                                    </svg>
+                                                </div>
+                                                <h3 class="text-xl font-semibold text-gray-900 ml-4">Curriculum Vitae</h3>
+                                            </div>
+                                            <a href="${window.location.origin}/cv/${user.estudiante.cv_pdf}"
+                                               target="_blank"
+                                               id="cv-link"
+                                               class="inline-flex items-center px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                                </svg>
+                                                Ver CV
+                                            </a>
+                                        </div>
+                                    `;
+                                    gridContainer.appendChild(newCvSection);
+                                }
+                            } else if (cvLink) {
+                                // Si existe el link del CV, actualizamos su URL
                                 cvLink.href = `${window.location.origin}/cv/${user.estudiante.cv_pdf}`;
                             }
                         }
@@ -1876,35 +1886,271 @@
                 }).then(() => {
                     window.location.reload();
                 });
+
+        {{-- Sección de Experiencias --}}
+        <div class="bg-white rounded-xl shadow-lg p-6 transform transition-all duration-300 hover:shadow-xl">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mr-4">
+                        <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                        </svg>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-900">{{ __('Experiencias') }}</h2>
+                </div>
+                @if(auth()->id() == $user->id)
+                    <button onclick="openExperienciaModal()"
+                            class="px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors duration-200 flex items-center space-x-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                        </svg>
+                        <span>Añadir Experiencia</span>
+                    </button>
+                @endif
+            </div>
+            <div class="space-y-4">
+                @if($user->experiencias->count() > 0)
+                    @foreach($user->experiencias as $experiencia)
+                        <div class="bg-gradient-to-br from-white to-purple-50 rounded-xl p-4 border border-purple-100">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h4 class="font-semibold text-gray-900">{{ $experiencia->puesto }}</h4>
+                                    <p class="text-sm text-purple-600">{{ $experiencia->empresa_nombre }}</p>
+                                    <p class="text-sm text-gray-500">
+                                        {{ \Carbon\Carbon::parse($experiencia->fecha_inicio)->format('M Y') }} - 
+                                        {{ $experiencia->fecha_fin ? \Carbon\Carbon::parse($experiencia->fecha_fin)->format('M Y') : 'Actual' }}
+                                    </p>
+                                    @if($experiencia->descripcion)
+                                        <p class="text-sm text-gray-600 mt-2">{{ $experiencia->descripcion }}</p>
+                                    @endif
+                                </div>
+                                @if(auth()->id() == $user->id)
+                                    <div class="flex space-x-2">
+                                        <button onclick="openEditExperiencia({
+                                            id: {{ $experiencia->id }},
+                                            puesto: '{{ $experiencia->puesto }}',
+                                            empresa_nombre: '{{ $experiencia->empresa_nombre }}',
+                                            fecha_inicio: '{{ $experiencia->fecha_inicio }}',
+                                            fecha_fin: '{{ $experiencia->fecha_fin }}',
+                                            descripcion: '{{ $experiencia->descripcion }}'
+                                        })"
+                                                class="text-purple-600 hover:text-purple-800 transition-colors">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                            </svg>
+                                        </button>
+                                        <form action="{{ route('experiencias.destroy', $experiencia->id) }}" method="POST" class="inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="text-red-600 hover:text-red-800 transition-colors" 
+                                                    onclick="return confirm('¿Estás seguro de que deseas eliminar esta experiencia?')">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                                </svg>
+                                            </button>
+                                        </form>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    @endforeach
+                @else
+                    <p class="text-gray-500">No hay experiencias registradas</p>
+                @endif
+            </div>
+        </div>
+
+        {{-- Modal de Experiencia --}}
+        <div id="experienciaModal" class="fixed inset-0 bg-black bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+            <div class="relative top-20 mx-auto p-5 w-full max-w-md">
+                <div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
+                    <div class="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-4">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-xl font-semibold text-white">Añadir Experiencia</h3>
+                            <button onclick="closeExperienciaModal()" class="text-white hover:text-purple-200">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <form action="{{ route('experiencias.store') }}" method="POST" class="p-6">
+                        @csrf
+                        <div class="space-y-4">
+                            <div>
+                                <label for="puesto" class="block text-sm font-medium text-gray-700 mb-1">Puesto</label>
+                                <input type="text" name="puesto" id="puesto" required
+                                       class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500">
+                            </div>
+
+                            <div>
+                                <label for="empresa_nombre" class="block text-sm font-medium text-gray-700 mb-1">Empresa</label>
+                                <input type="text" name="empresa_nombre" id="empresa_nombre" required
+                                       class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500">
+                            </div>
+
+                            <div>
+                                <label for="fecha_inicio" class="block text-sm font-medium text-gray-700 mb-1">Fecha de inicio</label>
+                                <input type="date" name="fecha_inicio" id="fecha_inicio" required
+                                       class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500">
+                            </div>
+
+                            <div>
+                                <label for="fecha_fin" class="block text-sm font-medium text-gray-700 mb-1">Fecha de fin</label>
+                                <input type="date" name="fecha_fin" id="fecha_fin"
+                                       class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500">
+                            </div>
+
+                            <div>
+                                <label for="descripcion" class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                                <textarea name="descripcion" id="descripcion" rows="3"
+                                          class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 flex justify-end space-x-3">
+                            <button type="button" onclick="closeExperienciaModal()"
+                                    class="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200">
+                                Cancelar
+                            </button>
+                            <button type="submit"
+                                    class="px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700">
+                                Guardar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        {{-- Modal de Editar Experiencia --}}
+        <div id="editExperienciaModal" class="fixed inset-0 bg-black bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+            <div class="relative top-20 mx-auto p-5 w-full max-w-md">
+                <div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
+                    <div class="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-4">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-xl font-semibold text-white">Editar Experiencia</h3>
+                            <button onclick="closeEditExperienciaModal()" class="text-white hover:text-purple-200">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <form id="editForm" method="POST" class="p-6">
+                        @csrf
+                        @method('PUT')
+                        <div class="space-y-4">
+                            <div>
+                                <label for="edit_puesto" class="block text-sm font-medium text-gray-700 mb-1">Puesto</label>
+                                <input type="text" name="puesto" id="edit_puesto" required
+                                       class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500">
+                            </div>
+
+                            <div>
+                                <label for="edit_empresa_nombre" class="block text-sm font-medium text-gray-700 mb-1">Empresa</label>
+                                <input type="text" name="empresa_nombre" id="edit_empresa_nombre" required
+                                       class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500">
+                            </div>
+
+                            <div>
+                                <label for="edit_fecha_inicio" class="block text-sm font-medium text-gray-700 mb-1">Fecha de inicio</label>
+                                <input type="date" name="fecha_inicio" id="edit_fecha_inicio" required
+                                       class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500">
+                            </div>
+
+                            <div>
+                                <label for="edit_fecha_fin" class="block text-sm font-medium text-gray-700 mb-1">Fecha de fin</label>
+                                <input type="date" name="fecha_fin" id="edit_fecha_fin"
+                                       class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500">
+                            </div>
+
+                            <div>
+                                <label for="edit_descripcion" class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+                                <textarea name="descripcion" id="edit_descripcion" rows="3"
+                                          class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"></textarea>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 flex justify-end space-x-3">
+                            <button type="button" onclick="closeEditExperienciaModal()"
+                                    class="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200">
+                                Cancelar
+                            </button>
+                            <button type="submit"
+                                    class="px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700">
+                                Guardar Cambios
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        @push('scripts')
+        <script>
+        function openExperienciaModal(experiencia = null) {
+            const modal = document.getElementById('experienciaModal');
+            const form = document.getElementById('experienciaForm');
+            const title = document.getElementById('experienciaModalTitle');
+            const methodInput = document.getElementById('formMethod');
+            const experienciaIdInput = document.getElementById('experiencia_id');
+
+            // Limpiar el formulario
+            form.reset();
+
+            if (experiencia) {
+                // Modo edición
+                title.textContent = 'Editar Experiencia';
+                form.action = `/experiencias/${experiencia.id}`;
+                methodInput.value = 'PUT';
+                experienciaIdInput.value = experiencia.id;
+                
+                // Rellenar el formulario con los datos de la experiencia
+                document.getElementById('puesto').value = experiencia.puesto;
+                document.getElementById('empresa_nombre').value = experiencia.empresa_nombre;
+                document.getElementById('fecha_inicio').value = experiencia.fecha_inicio;
+                if (experiencia.fecha_fin) {
+                    document.getElementById('fecha_fin').value = experiencia.fecha_fin;
+                }
+                if (experiencia.descripcion) {
+                    document.getElementById('descripcion').value = experiencia.descripcion;
+                }
             } else {
-                throw new Error(data.message || 'Error al guardar los cambios');
+                // Modo creación
+                title.textContent = 'Añadir Experiencia';
+                form.action = "{{ route('experiencias.store') }}";
+                methodInput.value = 'POST';
+                experienciaIdInput.value = '';
             }
-        })
-        .catch(error => {
-            Swal.fire({
-                title: 'Error',
-                text: error.message || 'Ha ocurrido un error al guardar los cambios',
-                icon: 'error',
-                confirmButtonColor: '#7C3AED'
-            });
-        })
-        .finally(() => {
-            const submitButton = form.querySelector('button[type="submit"]');
-            if (submitButton) {
-                submitButton.disabled = false;
-                submitButton.innerHTML = 'Guardar cambios';
-            }
-            window.isFormSubmitting = false;
-        });
-    }
 
-    document.addEventListener('DOMContentLoaded', function() {
-        const profileForm = document.getElementById('profileForm');
-
-        if (profileForm) {
-            const newForm = profileForm.cloneNode(true);
-            profileForm.parentNode.replaceChild(newForm, profileForm);
-            newForm.addEventListener('submit', handleFormSubmit);
+            modal.classList.remove('hidden');
         }
-    });
-</script>
+
+        function closeExperienciaModal() {
+            document.getElementById('experienciaModal').classList.add('hidden');
+        }
+
+        // Cerrar modal al hacer clic fuera
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('experienciaModal');
+            if (modal) {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        closeExperienciaModal();
+                    }
+                });
+            }
+        });
+        </script>
+        @endpush
+    @endsection
+
+    {{-- Scripts necesarios --}}
+    @push('scripts')
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script src="{{ asset('js/experiencias.js') }}"></script>
+    @endpush
