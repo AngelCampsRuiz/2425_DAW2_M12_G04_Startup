@@ -310,7 +310,7 @@ class ConvenioController extends Controller
      * @param Convenio $convenio
      * @return string Nombre del archivo PDF generado
      */
-    private function generarPDF($convenio)
+    public function generarPDF($convenio)
     {
         // Cargar el convenio con todas las relaciones necesarias si no están cargadas
         if (!$convenio->relationLoaded('estudiante') || !$convenio->relationLoaded('oferta')) {
