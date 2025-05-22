@@ -56,8 +56,9 @@ class InstitucionPaymentController extends Controller
         $sessionId = $request->get('session_id');
 
         if (!$sessionId) {
-            return redirect()->route('institucion.dashboard')
-                ->with('error', 'No se pudo verificar el pago.');
+            Auth::logout();
+            return redirect()->route('login')
+                ->with('error', 'No se pudo verificar el pago. Por favor, inicia sesión de nuevo.');
         }
 
         Stripe::setApiKey(env('STRIPE_SECRET_KEY'));
@@ -84,22 +85,26 @@ class InstitucionPaymentController extends Controller
                     Mail::to($user->email)->send(new ReciboPago($pago));
                 }
 
-                return redirect()->route('institucion.dashboard')
-                    ->with('success', '¡Pago realizado con éxito! Tu cuenta ha sido activada.');
+                Auth::logout();
+                return redirect()->route('login')
+                    ->with('success', '¡Pago realizado con éxito! Tu cuenta ha sido activada. Por favor, inicia sesión.');
             }
 
-            return redirect()->route('institucion.dashboard')
-                ->with('error', 'El pago no se ha completado correctamente.');
+            Auth::logout();
+            return redirect()->route('login')
+                ->with('error', 'El pago no se ha completado correctamente. Inicia sesión para intentarlo de nuevo.');
 
         } catch (\Exception $e) {
-            return redirect()->route('institucion.dashboard')
+            Auth::logout();
+            return redirect()->route('login')
                 ->with('error', 'Error al verificar el pago: ' . $e->getMessage());
         }
     }
 
     public function handleCancel()
     {
-        return redirect()->route('institucion.dashboard')
-            ->with('error', 'El pago ha sido cancelado. Por favor, inténtalo de nuevo.');
+        Auth::logout();
+        return redirect()->route('login')
+            ->with('error', 'El pago ha sido cancelado. Por favor, inicia sesión para intentarlo de nuevo.');
     }
 }
