@@ -134,41 +134,51 @@ use Illuminate\Support\Facades\Auth;
             @endphp
 
             @if($chats->isEmpty())
-            @if(auth()->user()->role_id == 4 && isset($estudiantes) && $estudiantes->isNotEmpty())
+            @if(auth()->user()->role_id == 4)
             <!-- Lista de estudiantes para docentes -->
             <div class="mb-8 bg-white rounded-xl shadow-md overflow-hidden transform transition-all duration-300 hover:shadow-lg border border-purple-100">
                 <div class="bg-gray-50 px-5 py-4 border-b">
-                    <div class="flex items-center text-gray-700">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                        </svg>
-                        <span class="font-medium">Mis Estudiantes</span>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center text-gray-700">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                            </svg>
+                            <span class="font-medium">Mis Estudiantes</span>
+                        </div>
+                        <a href="{{ route('docente.alumnos.index') }}" class="text-sm text-purple-600 hover:text-purple-800 transition-all duration-200 flex items-center">
+                            <i class="fas fa-users mr-1"></i> Ver todos mis estudiantes
+                        </a>
                     </div>
                 </div>
                 <div class="p-6">
+                    @if(isset($estudiantes) && $estudiantes->isNotEmpty())
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         @foreach($estudiantes as $estudiante)
                             <div class="bg-purple-50 rounded-lg p-4 hover:bg-purple-100 transition-colors duration-200 shadow-sm hover:shadow transform hover:-translate-y-1">
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center space-x-3">
                                         <div class="w-10 h-10 rounded-full bg-purple-200 flex items-center justify-center">
-                                            @if($estudiante->user->imagen)
+                                            @if($estudiante->user && $estudiante->user->imagen)
                                                 <img src="{{ asset('profile_images/' . $estudiante->user->imagen) }}" 
                                                     alt="{{ $estudiante->user->nombre }}"
                                                     class="w-10 h-10 rounded-full object-cover">
                                             @else
                                                 <span class="text-purple-700 font-semibold">
-                                                    {{ strtoupper(substr($estudiante->user->nombre, 0, 2)) }}
+                                                    @if($estudiante->user)
+                                                        {{ strtoupper(substr($estudiante->user->nombre, 0, 2)) }}
+                                                    @else
+                                                        ST
+                                                    @endif
                                                 </span>
                                             @endif
                                         </div>
                                         <div>
-                                            <h3 class="font-medium text-gray-800">{{ $estudiante->user->nombre }}</h3>
+                                            <h3 class="font-medium text-gray-800">{{ $estudiante->user ? $estudiante->user->nombre : 'Estudiante' }}</h3>
                                             <p class="text-sm text-gray-600">
-                                                {{ $estudiante->user->email }}
+                                                {{ $estudiante->user ? $estudiante->user->email : 'Sin email' }}
                                             </p>
                                             <p class="text-xs text-gray-500 mt-1">
-                                                {{ $estudiante->clases->pluck('nombre')->implode(', ') }}
+                                                {{ $estudiante->clases ? $estudiante->clases->pluck('nombre')->implode(', ') : 'Sin clases asignadas' }}
                                             </p>
                                         </div>
                                     </div>
@@ -183,15 +193,100 @@ use Illuminate\Support\Facades\Auth;
                             </div>
                         @endforeach
                     </div>
+                    @else
+                    <div class="text-center py-8">
+                        <div class="mx-auto w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4">
+                            <i class="fas fa-user-graduate text-2xl text-purple-500"></i>
+                        </div>
+                        <h3 class="font-medium text-gray-700 mb-2">No se encontraron estudiantes</h3>
+                        <p class="text-gray-500 text-sm max-w-md mx-auto mb-4">
+                            No se detectaron estudiantes asignados a tus clases. Verifica que tengas clases asignadas correctamente.
+                        </p>
+                        <a href="{{ route('docente.alumnos.index') }}" class="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors duration-200">
+                            <i class="fas fa-search mr-2"></i> Buscar estudiantes
+                        </a>
+                    </div>
+                    @endif
                 </div>
             </div>
             @endif
+                @if(auth()->user()->role_id == 3)
+                <!-- Lista de docentes para estudiantes -->
+                <div class="mb-8">
+                    <div class="bg-gray-50 px-5 py-4 border-b">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center text-gray-700">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                                </svg>
+                                <span class="font-medium">Mis Profesores</span>
+                            </div>
+                            <a href="{{ route('student.dashboard') }}" class="text-sm text-purple-600 hover:text-purple-800 transition-all duration-200 flex items-center">
+                                <i class="fas fa-graduation-cap mr-1"></i> Volver al dashboard
+                            </a>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        @if(isset($docentes) && $docentes->isNotEmpty())
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            @foreach($docentes as $docente)
+                                <div class="bg-purple-50 rounded-lg p-4 hover:bg-purple-100 transition-colors duration-200 shadow-sm hover:shadow transform hover:-translate-y-1">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center space-x-3">
+                                            <div class="w-10 h-10 rounded-full bg-purple-200 flex items-center justify-center">
+                                                @if($docente->user && $docente->user->imagen)
+                                                    <img src="{{ asset('profile_images/' . $docente->user->imagen) }}" 
+                                                        alt="{{ $docente->user->nombre }}"
+                                                        class="w-10 h-10 rounded-full object-cover">
+                                                @else
+                                                    <span class="text-purple-700 font-semibold">
+                                                        {{ $docente->user ? strtoupper(substr($docente->user->nombre, 0, 2)) : 'PR' }}
+                                                    </span>
+                                                @endif
+                                            </div>
+                                            <div>
+                                                <h3 class="font-medium text-gray-800">{{ $docente->user ? $docente->user->nombre : 'Profesor' }}</h3>
+                                                <p class="text-sm text-gray-600">
+                                                    {{ $docente->especialidad ?? 'Docente' }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <form action="{{ route('chat.create.docente') }}" method="POST" class="inline">
+                                                @csrf
+                                                <input type="hidden" name="docente_id" value="{{ $docente->id }}">
+                                                <button type="submit" class="p-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors duration-200">
+                                                    <i class="fas fa-comment"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                        @else
+                        <div class="text-center py-8">
+                            <div class="mx-auto w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4">
+                                <i class="fas fa-chalkboard-teacher text-2xl text-purple-500"></i>
+                            </div>
+                            <h3 class="font-medium text-gray-700 mb-2">No se encontraron profesores</h3>
+                            <p class="text-gray-500 text-sm max-w-md mx-auto mb-4">
+                                No se detectaron profesores asignados a tus clases. Verifica con tu institución que estés correctamente matriculado.
+                            </p>
+                            <a href="{{ route('chat.refresh') }}" class="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors duration-200">
+                                <i class="fas fa-sync-alt mr-2"></i> Refrescar datos
+                            </a>
+                        </div>
+                        @endif
+                    </div>
+                </div>
+                @else
                 <div class="p-12 text-center">
                     <div class="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br from-purple-100 to-indigo-100 mb-6 transform transition-transform duration-300 hover:scale-105 shadow-md">
                         <i class="fas fa-comments text-4xl text-purple-600"></i>
                     </div>
                     <h3 class="text-xl font-semibold text-gray-900 mb-2">No tienes conversaciones</h3>
-                    <p class="mt-2 text-gray-500 max-w-md mx-auto">Cuando inicies una conversación con {{ auth()->user()->role_id == 2 ? 'estudiantes' : 'empresas' }}, aparecerán aquí.</p>
+                    <p class="mt-2 text-gray-500 max-w-md mx-auto">Cuando inicies una conversación con {{ auth()->user()->role_id == 2 ? 'estudiantes' : (auth()->user()->role_id == 3 ? 'profesores o empresas' : 'empresas') }}, aparecerán aquí.</p>
                     
                     <div class="mt-8">
                         @if(auth()->user()->role_id == 2)
@@ -228,6 +323,7 @@ use Illuminate\Support\Facades\Auth;
                         @endif
                     </div>
                 </div>
+                @endif
             @else
                 <div id="chat-list" class="divide-y divide-gray-200">
                     @foreach($chats as $chat)

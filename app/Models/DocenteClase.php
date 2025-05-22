@@ -33,4 +33,4 @@ class DocenteClase extends Model
     {
         return $this->belongsTo(Clase::class);
     }
-} 
+}

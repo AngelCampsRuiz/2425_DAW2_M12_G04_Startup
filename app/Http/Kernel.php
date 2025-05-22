@@ -68,6 +68,5 @@ class Kernel extends HttpKernel
         'registration.step' => \App\Http\Middleware\VerifyRegistrationSteps::class,
         'admin' => \App\Http\Middleware\AdminMiddleware::class,
         'estudiante.activo' => \App\Http\Middleware\CheckEstudianteActivo::class,
-        'chat.restrict.institucion' => \App\Http\Middleware\RestrictChatInstitucion::class,
     ];
 }

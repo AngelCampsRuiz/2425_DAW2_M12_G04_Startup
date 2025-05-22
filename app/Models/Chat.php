@@ -16,6 +16,7 @@ class Chat extends Model
         'solicitud_id',
         'docente_id',
         'estudiante_id',
+        'institucion_id',
         'tipo'
     ];
 
@@ -43,6 +44,11 @@ class Chat extends Model
     {
         return $this->belongsTo(Docente::class);
     }
+    
+    public function institucion()
+    {
+        return $this->belongsTo(Institucion::class);
+    }
 
     public function getOtherUser()
     {
@@ -50,21 +56,31 @@ class Chat extends Model
         
         if ($user->role_id == 2) { // Empresa
             if ($this->tipo == 'empresa_estudiante') {
-                return $this->estudiante->user;
+                return $this->estudiante->user()->first();
             } elseif ($this->tipo == 'docente_empresa') {
-                return $this->docente->user;
+                return $this->docente->user()->first();
+            } elseif ($this->tipo == 'institucion_empresa') {
+                return $this->institucion->user()->first();
             }
         } elseif ($user->role_id == 3) { // Estudiante
             if ($this->tipo == 'empresa_estudiante') {
-                return $this->empresa->user;
+                return $this->empresa->user()->first();
             } else {
-                return $this->docente->user;
+                return $this->docente->user()->first();
             }
         } elseif ($user->role_id == 4) { // Docente
             if ($this->tipo == 'docente_estudiante') {
-                return $this->estudiante->user;
+                return $this->estudiante->user()->first();
             } elseif ($this->tipo == 'docente_empresa') {
-                return $this->empresa->user;
+                return $this->empresa->user()->first();
+            } elseif ($this->tipo == 'institucion_docente') {
+                return $this->institucion->user()->first();
+            }
+        } elseif ($user->role_id == 5) { // Institución
+            if ($this->tipo == 'institucion_docente') {
+                return $this->docente->user()->first();
+            } elseif ($this->tipo == 'institucion_empresa') {
+                return $this->empresa->user()->first();
             }
         }
         
