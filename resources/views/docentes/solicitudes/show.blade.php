@@ -5,18 +5,18 @@
 @section('content')
 <div class="bg-gray-50 p-6 rounded-xl shadow-sm">
     <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">Detalle de Solicitud</h1>
-        <div class="flex items-center text-sm text-gray-500 mt-1">
-            <a href="{{ route('docente.dashboard') }}" class="hover:text-primary">Dashboard</a>
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mx-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-            </svg>
-            <a href="{{ route('docente.solicitudes.index') }}" class="hover:text-primary">Solicitudes</a>
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mx-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-            </svg>
-            <span>Detalle</span>
-        </div>
+            <h1 class="text-2xl font-bold text-gray-800">Detalle de Solicitud</h1>
+            <div class="flex items-center text-sm text-gray-500 mt-1">
+                <a href="{{ route('docente.dashboard') }}" class="hover:text-primary">Dashboard</a>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mx-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+                <a href="{{ route('docente.solicitudes.index') }}" class="hover:text-primary">Solicitudes</a>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mx-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+                <span>Detalle</span>
+            </div>
         <div class="text-sm text-gray-600 mt-2">
             Última actualización: {{ now()->format('d/m/Y H:i') }}
         </div>
@@ -66,51 +66,51 @@
                     </div>
                 </div>
                 <div class="p-5">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
                             <p class="text-sm font-medium text-gray-500 mb-1">Fecha de solicitud:</p>
                             <p class="text-base text-gray-900">{{ $solicitud->created_at->format('d/m/Y H:i') }}</p>
-                        </div>
-                        <div>
+                    </div>
+                    <div>
                             <p class="text-sm font-medium text-gray-500 mb-1">Fecha de respuesta:</p>
                             <p class="text-base text-gray-900">{{ $solicitud->fecha_respuesta ? $solicitud->fecha_respuesta->format('d/m/Y H:i') : 'Pendiente' }}</p>
-                        </div>
                     </div>
+                </div>
 
-                    @if($solicitud->mensaje_rechazo && $solicitud->estado == 'rechazada')
+                @if($solicitud->mensaje_rechazo && $solicitud->estado == 'rechazada')
                         <div class="bg-red-50 border-l-4 border-red-400 p-4 rounded-md mb-6">
-                            <div class="flex">
+                        <div class="flex">
                                 <div class="flex-shrink-0 mr-3">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </div>
+                                </svg>
+                            </div>
                                 <div>
                                     <h3 class="text-red-800 font-medium mb-1">Motivo del rechazo</h3>
                                     <p>{{ $solicitud->mensaje_rechazo }}</p>
-                                </div>
                             </div>
                         </div>
-                    @endif
+                    </div>
+                @endif
 
                     <div class="flex flex-wrap gap-3 mt-6">
-                        @if($solicitud->estado == 'pendiente')
-                            <form action="{{ route('docente.solicitudes.aprobar', $solicitud->id) }}" method="POST">
-                                @csrf
+                @if($solicitud->estado == 'pendiente')
+                        <form action="{{ route('docente.solicitudes.aprobar', $solicitud->id) }}" method="POST">
+                            @csrf
                                 <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                    </svg>
-                                    Aprobar Solicitud
-                                </button>
-                            </form>
-                            
-                            <button onclick="document.getElementById('modal-rechazar').classList.remove('hidden')" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                                 </svg>
-                                Rechazar Solicitud
+                                Aprobar Solicitud
                             </button>
+                        </form>
+
+                            <button onclick="document.getElementById('modal-rechazar').classList.remove('hidden')" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                            Rechazar Solicitud
+                        </button>
                         @endif
 
                         <a href="{{ route('docente.solicitudes.index') }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors flex items-center">
@@ -128,46 +128,46 @@
                 <div class="bg-gray-50 px-5 py-4 border-b">
                     <div class="flex items-center text-gray-700">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
                         <span class="font-medium">Información del Estudiante</span>
                     </div>
                 </div>
                 <div class="p-5">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <h3 class="text-sm font-medium text-gray-500 mb-1">Nombre completo</h3>
-                            <p class="text-gray-800">{{ $solicitud->estudiante->user->nombre }}</p>
-                        </div>
-                        <div>
-                            <h3 class="text-sm font-medium text-gray-500 mb-1">Email</h3>
-                            <p class="text-gray-800">{{ $solicitud->estudiante->user->email }}</p>
-                        </div>
-                        <div>
-                            <h3 class="text-sm font-medium text-gray-500 mb-1">Teléfono</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500 mb-1">Nombre completo</h3>
+                        <p class="text-gray-800">{{ $solicitud->estudiante->user->nombre }}</p>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500 mb-1">Email</h3>
+                        <p class="text-gray-800">{{ $solicitud->estudiante->user->email }}</p>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500 mb-1">Teléfono</h3>
                             <p class="text-gray-800">{{ $solicitud->estudiante->user->telefono ?: 'No proporcionado' }}</p>
-                        </div>
-                        <div>
-                            <h3 class="text-sm font-medium text-gray-500 mb-1">Edad</h3>
-                            <p class="text-gray-800">{{ $solicitud->estudiante->edad ?: 'No proporcionada' }}</p>
-                        </div>
                     </div>
-
-                    <div class="mt-6">
-                        <h3 class="text-sm font-medium text-gray-500 mb-1">Mensaje del estudiante</h3>
-                        <div class="bg-gray-50 rounded-lg p-4 mt-2">
-                            <p class="text-gray-800">{{ $solicitud->mensaje ?: 'El estudiante no ha dejado ningún mensaje.' }}</p>
-                        </div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500 mb-1">Edad</h3>
+                        <p class="text-gray-800">{{ $solicitud->estudiante->edad ?: 'No proporcionada' }}</p>
                     </div>
+                </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                        <div>
-                            <h3 class="text-sm font-medium text-gray-500 mb-1">Conocimientos previos</h3>
-                            <p class="text-gray-800">{{ $solicitud->estudiante->conocimientos_previos ?: 'No especificados' }}</p>
-                        </div>
-                        <div>
-                            <h3 class="text-sm font-medium text-gray-500 mb-1">Intereses</h3>
-                            <p class="text-gray-800">{{ $solicitud->estudiante->intereses ?: 'No especificados' }}</p>
+                <div class="mt-6">
+                    <h3 class="text-sm font-medium text-gray-500 mb-1">Mensaje del estudiante</h3>
+                    <div class="bg-gray-50 rounded-lg p-4 mt-2">
+                        <p class="text-gray-800">{{ $solicitud->mensaje ?: 'El estudiante no ha dejado ningún mensaje.' }}</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500 mb-1">Conocimientos previos</h3>
+                        <p class="text-gray-800">{{ $solicitud->estudiante->conocimientos_previos ?: 'No especificados' }}</p>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500 mb-1">Intereses</h3>
+                        <p class="text-gray-800">{{ $solicitud->estudiante->intereses ?: 'No especificados' }}</p>
                         </div>
                     </div>
                 </div>
@@ -218,10 +218,10 @@
                         <div class="flex justify-between items-center py-3 border-b border-gray-100">
                             <div class="flex items-center text-gray-700">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path d="M12 14l9-5-9-5-9 5 9 5z" />
-                                    <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+                        <path d="M12 14l9-5-9-5-9 5 9 5z" />
+                        <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998a12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
-                                </svg>
+                    </svg>
                                 <span>Clase</span>
                             </div>
                             <span class="text-gray-900">{{ $solicitud->clase ? $solicitud->clase->nombre : 'No asignada' }}</span>
@@ -244,35 +244,35 @@
                     </div>
                 </div>
                 <div class="p-5">
-                    <div class="space-y-4">
-                        <div>
-                            <h3 class="text-sm font-medium text-gray-500 mb-1">Nombre de la clase</h3>
-                            <p class="text-gray-800">{{ $solicitud->clase->nombre }}</p>
-                        </div>
-                        <div>
-                            <h3 class="text-sm font-medium text-gray-500 mb-1">Código</h3>
-                            <p class="text-gray-800">{{ $solicitud->clase->codigo }}</p>
-                        </div>
-                        <div>
-                            <h3 class="text-sm font-medium text-gray-500 mb-1">Departamento</h3>
-                            <p class="text-gray-800">{{ $solicitud->clase->departamento->nombre }}</p>
-                        </div>
-                        <div>
-                            <h3 class="text-sm font-medium text-gray-500 mb-1">Total de estudiantes</h3>
-                            <p class="text-gray-800">{{ $solicitud->clase->estudiantes()->count() }} estudiantes</p>
-                        </div>
+                <div class="space-y-4">
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500 mb-1">Nombre de la clase</h3>
+                        <p class="text-gray-800">{{ $solicitud->clase->nombre }}</p>
                     </div>
-
-                    <div class="mt-6">
-                        <a href="{{ route('docente.clases.show', $solicitud->clase->id) }}" class="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                            </svg>
-                            Ver detalles de la clase
-                        </a>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500 mb-1">Código</h3>
+                        <p class="text-gray-800">{{ $solicitud->clase->codigo }}</p>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500 mb-1">Departamento</h3>
+                        <p class="text-gray-800">{{ $solicitud->clase->departamento->nombre }}</p>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500 mb-1">Total de estudiantes</h3>
+                        <p class="text-gray-800">{{ $solicitud->clase->estudiantes()->count() }} estudiantes</p>
                     </div>
                 </div>
+
+                <div class="mt-6">
+                        <a href="{{ route('docente.clases.show', $solicitud->clase->id) }}" class="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                        Ver detalles de la clase
+                    </a>
+                </div>
+            </div>
             </div>
             @endif
         </div>

@@ -5,14 +5,14 @@
 @section('content')
 <div class="bg-gray-50 p-6 rounded-xl shadow-sm">
     <div class="mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">Solicitudes de Estudiantes</h1>
-        <div class="flex items-center text-sm text-gray-500 mt-1">
-            <a href="{{ route('docente.dashboard') }}" class="hover:text-primary">Dashboard</a>
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mx-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-            </svg>
-            <span>Solicitudes</span>
-        </div>
+            <h1 class="text-2xl font-bold text-gray-800">Solicitudes de Estudiantes</h1>
+            <div class="flex items-center text-sm text-gray-500 mt-1">
+                <a href="{{ route('docente.dashboard') }}" class="hover:text-primary">Dashboard</a>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mx-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+                <span>Solicitudes</span>
+            </div>
         <div class="text-sm text-gray-600 mt-2">
             Última actualización: {{ now()->format('d/m/Y H:i') }}
         </div>
@@ -157,8 +157,8 @@
         <div class="p-5">
             <form action="{{ route('docente.solicitudes.index') }}" method="GET" class="space-y-4">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                        <label for="buscar" class="block text-sm font-medium text-gray-700 mb-1">Buscar por nombre o email</label>
+                <div>
+                    <label for="buscar" class="block text-sm font-medium text-gray-700 mb-1">Buscar por nombre o email</label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -166,29 +166,29 @@
                                 </svg>
                             </div>
                             <input type="text" class="block w-full border border-gray-300 rounded-lg pl-10 px-4 py-2 focus:ring-primary focus:border-primary" 
-                                id="buscar" name="buscar" value="{{ $busqueda }}" placeholder="Nombre o email del estudiante">
+                        id="buscar" name="buscar" value="{{ $busqueda }}" placeholder="Nombre o email del estudiante">
                         </div>
-                    </div>
-                    
-                    <div>
-                        <label for="estado" class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+                </div>
+                
+                <div>
+                    <label for="estado" class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
                         <select class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-primary focus:border-primary" id="estado" name="estado">
                             <option value="todos" {{ $filtro == 'todos' ? 'selected' : '' }}>Todos los estados</option>
-                            <option value="pendiente" {{ $filtro == 'pendiente' ? 'selected' : '' }}>Pendiente</option>
-                            <option value="aprobada" {{ $filtro == 'aprobada' ? 'selected' : '' }}>Aprobada</option>
-                            <option value="rechazada" {{ $filtro == 'rechazada' ? 'selected' : '' }}>Rechazada</option>
-                        </select>
-                    </div>
+                        <option value="pendiente" {{ $filtro == 'pendiente' ? 'selected' : '' }}>Pendiente</option>
+                        <option value="aprobada" {{ $filtro == 'aprobada' ? 'selected' : '' }}>Aprobada</option>
+                        <option value="rechazada" {{ $filtro == 'rechazada' ? 'selected' : '' }}>Rechazada</option>
+                    </select>
+                </div>
 
-                    <div class="flex items-end">
+                <div class="flex items-end">
                         <button type="submit" class="w-full bg-primary hover:bg-primary-dark focus:ring-4 focus:ring-primary/30 text-white font-medium rounded-lg px-5 py-2.5 transition-colors duration-300">
-                            <div class="flex items-center justify-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                </svg>
-                                <span>Buscar</span>
-                            </div>
-                        </button>
+                        <div class="flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                            <span>Buscar</span>
+                        </div>
+                    </button>
                     </div>
                 </div>
                 

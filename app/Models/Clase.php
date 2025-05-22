@@ -49,6 +49,24 @@ class Clase extends Model
         return $this->belongsTo(Docente::class)->withDefault();
     }
 
+    /**
+     * Relación muchos a muchos con docentes
+     */
+    public function docentes()
+    {
+        return $this->belongsToMany(Docente::class, 'docente_clase')
+                    ->withPivot('fecha_asignacion', 'es_titular', 'rol')
+                    ->withTimestamps();
+    }
+    
+    /**
+     * Obtiene las asignaciones de docentes a esta clase
+     */
+    public function docentesClase()
+    {
+        return $this->hasMany(DocenteClase::class);
+    }
+
     public function categoria()
     {
         return $this->belongsTo(Categoria::class);

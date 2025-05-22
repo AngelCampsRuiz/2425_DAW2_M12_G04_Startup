@@ -492,7 +492,7 @@
                 modal.classList.remove('hidden');
             }
         }
-        
+
         function cerrarModalRechazar() {
             const modal = document.getElementById('modalRechazarSolicitud');
             if (modal) {
@@ -507,7 +507,7 @@
             
             if (modal && !modal.classList.contains('hidden') && event.target === modal) {
                 cerrarModalRechazar();
-            }
+        }
         });
     </script>
 </div>

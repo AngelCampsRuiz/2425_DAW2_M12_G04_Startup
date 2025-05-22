@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="bg-gray-50 p-6 rounded-xl shadow-sm">
-    <div class="flex justify-between items-center mb-6">
+<div class="flex justify-between items-center mb-6">
         <div>
             <h1 class="text-2xl font-bold text-gray-800">Docentes</h1>
             <div class="flex items-center text-sm text-gray-500 mt-1">
@@ -20,8 +20,8 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
             </svg>
             Nuevo Docente
-        </a>
-    </div>
+    </a>
+</div>
 
     {{-- Mostrar alertas --}}
     {{-- Comentado para evitar duplicidad con los mensajes del layout
@@ -48,15 +48,15 @@
     @endif
     --}}
 
-    <div class="bg-white rounded-lg shadow overflow-hidden">
-        <div class="p-4 border-b">
-            <div class="flex justify-between items-center">
-                <h2 class="text-lg font-medium">Listado de Docentes</h2>
-                <div class="flex items-center">
-                    <input type="text" id="searchInput" placeholder="Buscar docente..." class="px-3 py-2 border rounded-md text-sm">
-                </div>
+<div class="bg-white rounded-lg shadow overflow-hidden">
+    <div class="p-4 border-b">
+        <div class="flex justify-between items-center">
+            <h2 class="text-lg font-medium">Listado de Docentes</h2>
+            <div class="flex items-center">
+                <input type="text" id="searchInput" placeholder="Buscar docente..." class="px-3 py-2 border rounded-md text-sm">
             </div>
         </div>
+    </div>
         
         <!-- Mostrar alertas -->
         @if(session('success'))
@@ -106,19 +106,19 @@
                 </div>
             </div>
         @endif
-        
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
+    
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Docente</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Departamento</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Especialidad</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cargo</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Departamento</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Especialidad</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cargo</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
-                    </tr>
-                </thead>
+                </tr>
+            </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse($docentes as $docente)
                     <tr class="hover:bg-gray-50 department-row" data-department="{{ $docente->departamento_id ?: 'null' }}">
@@ -145,15 +145,15 @@
                             </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            @if($docente->departamentoObj)
+                                @if($docente->departamentoObj)
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
                                     {{ $docente->departamentoObj->nombre }}
                                 </span>
-                            @else
+                                @else
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
                                     Sin departamento
                                 </span>
-                            @endif
+                                @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {{ $docente->especialidad }}
@@ -165,7 +165,7 @@
                             @if($docente->activo)
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                                     Activo
-                                </span>
+                            </span>
                             @else
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
                                     Inactivo
@@ -176,209 +176,209 @@
                             <a href="{{ route('institucion.docentes.show', $docente->id) }}" class="text-indigo-600 hover:text-indigo-900">Ver</a>
                         </td>
                     </tr>
-                    @empty
-                        <tr>
-                            <td colspan="7" class="px-6 py-4 text-center text-gray-500">
-                                No hay docentes registrados en esta institución.
-                                <a href="{{ route('institucion.docentes.create') }}" class="text-primary font-medium">Crear uno ahora</a>
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
+                @empty
+                    <tr>
+                        <td colspan="7" class="px-6 py-4 text-center text-gray-500">
+                            No hay docentes registrados en esta institución.
+                            <a href="{{ route('institucion.docentes.create') }}" class="text-primary font-medium">Crear uno ahora</a>
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
     </div>
+</div>
 
-    <!-- Filtros por Departamento -->
-    <div class="mt-6 bg-white rounded-lg shadow p-6">
-        <h3 class="font-medium text-lg mb-4">Filtrar por Departamento</h3>
-        <div class="flex flex-wrap gap-2">
-            <button class="department-filter px-3 py-1 rounded-full bg-primary text-white text-sm" data-department="all">
-                Todos
+<!-- Filtros por Departamento -->
+<div class="mt-6 bg-white rounded-lg shadow p-6">
+    <h3 class="font-medium text-lg mb-4">Filtrar por Departamento</h3>
+    <div class="flex flex-wrap gap-2">
+        <button class="department-filter px-3 py-1 rounded-full bg-primary text-white text-sm" data-department="all">
+            Todos
+        </button>
+        
+        @foreach ($departamentos as $departamento)
+            <button class="department-filter px-3 py-1 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300 text-sm" data-department="{{ $departamento->id }}">
+                {{ $departamento->nombre }}
             </button>
-            
-            @foreach ($departamentos as $departamento)
-                <button class="department-filter px-3 py-1 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300 text-sm" data-department="{{ $departamento->id }}">
-                    {{ $departamento->nombre }}
-                </button>
-            @endforeach
-            
-            <button class="department-filter px-3 py-1 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300 text-sm" data-department="null">
-                Sin departamento
-            </button>
-        </div>
+        @endforeach
+        
+        <button class="department-filter px-3 py-1 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300 text-sm" data-department="null">
+            Sin departamento
+        </button>
     </div>
+</div>
 
-    <!-- Modal de Nuevo Docente -->
-    <div id="modalNuevoDocente" class="fixed inset-0 bg-black bg-opacity-50 hidden overflow-y-auto h-full w-full z-50 backdrop-blur-sm transition-all duration-300">
-        <div class="relative top-20 mx-auto p-0 w-full max-w-2xl transform transition-all duration-300">
-            <div class="bg-white rounded-xl shadow-2xl overflow-hidden">
-                <div class="bg-gradient-to-r from-indigo-600 to-purple-600 py-4 px-6 flex justify-between items-center">
-                    <h3 class="text-xl font-bold text-white flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                        </svg>
-                        Crear Nuevo Docente
-                    </h3>
-                    <button onclick="closeModalDocente()" class="text-white hover:text-gray-200 focus:outline-none transition-colors">
-                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+<!-- Modal de Nuevo Docente -->
+<div id="modalNuevoDocente" class="fixed inset-0 bg-black bg-opacity-50 hidden overflow-y-auto h-full w-full z-50 backdrop-blur-sm transition-all duration-300">
+    <div class="relative top-20 mx-auto p-0 w-full max-w-2xl transform transition-all duration-300">
+        <div class="bg-white rounded-xl shadow-2xl overflow-hidden">
+            <div class="bg-gradient-to-r from-indigo-600 to-purple-600 py-4 px-6 flex justify-between items-center">
+                <h3 class="text-xl font-bold text-white flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
                     </svg>
-                </button>
-            </div>
+                    Crear Nuevo Docente
+                </h3>
+                <button onclick="closeModalDocente()" class="text-white hover:text-gray-200 focus:outline-none transition-colors">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
 
-                <form id="formNuevoDocente" action="{{ route('institucion.docentes.store') }}" method="POST" class="p-6">
-                @csrf
-                    <!-- Mensajes de error -->
-                    @if ($errors->any())
-                    <div class="mb-4 bg-red-50 border-l-4 border-red-500 p-4 rounded">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <svg class="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                </svg>
-                            </div>
-                            <div class="ml-3">
-                                <h3 class="text-sm font-medium text-red-800">Se encontraron los siguientes errores:</h3>
-                                <ul class="mt-1 text-xs text-red-700 list-disc list-inside">
-                                    @foreach ($errors->all() as $error)
-                                        <li>{{ $error }}</li>
-                                    @endforeach
-                                </ul>
-                            </div>
+            <form id="formNuevoDocente" action="{{ route('institucion.docentes.store') }}" method="POST" class="p-6">
+            @csrf
+                <!-- Mensajes de error -->
+                @if ($errors->any())
+                <div class="mb-4 bg-red-50 border-l-4 border-red-500 p-4 rounded">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-red-800">Se encontraron los siguientes errores:</h3>
+                            <ul class="mt-1 text-xs text-red-700 list-disc list-inside">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
                         </div>
                     </div>
-                    @endif
-                    
-                    <!-- Información Personal -->
-                    <div class="mb-6">
-                        <h4 class="text-md font-medium text-gray-800 mb-3 flex items-center">
-                            <div class="w-8 h-8 flex items-center justify-center bg-indigo-100 rounded-full mr-2 text-indigo-600">1</div>
-                            Información Personal
-                        </h4>
-                        <div class="bg-gray-50 p-4 rounded-lg space-y-4">
-                            <div>
-                                <label for="nombre" class="block text-sm font-medium text-gray-700 mb-1">Nombre Completo *</label>
-                                <input type="text" name="nombre" id="nombre" required 
-                                       class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-sm transition-all"
-                                       value="{{ old('nombre') }}">
-                            </div>
+                </div>
+                @endif
+                
+                <!-- Información Personal -->
+                <div class="mb-6">
+                    <h4 class="text-md font-medium text-gray-800 mb-3 flex items-center">
+                        <div class="w-8 h-8 flex items-center justify-center bg-indigo-100 rounded-full mr-2 text-indigo-600">1</div>
+                        Información Personal
+                    </h4>
+                    <div class="bg-gray-50 p-4 rounded-lg space-y-4">
+                        <div>
+                            <label for="nombre" class="block text-sm font-medium text-gray-700 mb-1">Nombre Completo *</label>
+                            <input type="text" name="nombre" id="nombre" required 
+                                   class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-sm transition-all"
+                                   value="{{ old('nombre') }}">
+                        </div>
 
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                            <input type="email" name="email" id="email" required 
+                                   class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-sm transition-all"
+                                   value="{{ old('email') }}">
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
-                                <input type="email" name="email" id="email" required 
+                                <label for="dni" class="block text-sm font-medium text-gray-700 mb-1">DNI/NIF/NIE *</label>
+                                <input type="text" name="dni" id="dni" required 
                                        class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-sm transition-all"
-                                       value="{{ old('email') }}">
+                                       value="{{ old('dni') }}">
                             </div>
                             
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label for="dni" class="block text-sm font-medium text-gray-700 mb-1">DNI/NIF/NIE *</label>
-                                    <input type="text" name="dni" id="dni" required 
-                                           class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-sm transition-all"
-                                           value="{{ old('dni') }}">
-                                </div>
-                                
-                                <div>
-                                    <label for="telefono" class="block text-sm font-medium text-gray-700 mb-1">Teléfono *</label>
-                                    <input type="text" name="telefono" id="telefono" required 
-                                           class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-sm transition-all"
-                                           value="{{ old('telefono') }}">
-                                </div>
+                            <div>
+                                <label for="telefono" class="block text-sm font-medium text-gray-700 mb-1">Teléfono *</label>
+                                <input type="text" name="telefono" id="telefono" required 
+                                       class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-sm transition-all"
+                                       value="{{ old('telefono') }}">
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Información Profesional -->
-                    <div class="mb-6">
-                        <h4 class="text-md font-medium text-gray-800 mb-3 flex items-center">
-                            <div class="w-8 h-8 flex items-center justify-center bg-indigo-100 rounded-full mr-2 text-indigo-600">2</div>
-                            Información Profesional
-                        </h4>
-                        <div class="bg-gray-50 p-4 rounded-lg space-y-4">
+                <!-- Información Profesional -->
+                <div class="mb-6">
+                    <h4 class="text-md font-medium text-gray-800 mb-3 flex items-center">
+                        <div class="w-8 h-8 flex items-center justify-center bg-indigo-100 rounded-full mr-2 text-indigo-600">2</div>
+                        Información Profesional
+                    </h4>
+                    <div class="bg-gray-50 p-4 rounded-lg space-y-4">
+                        <div>
+                            <label for="departamento_id" class="block text-sm font-medium text-gray-700 mb-1">Departamento</label>
+                            <select name="departamento_id" id="departamento_id"
+                                    class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-sm transition-all">
+                                <option value="">-- Seleccionar Departamento --</option>
+                                @foreach($departamentos as $departamento)
+                                    <option value="{{ $departamento->id }}">{{ $departamento->nombre }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label for="departamento_id" class="block text-sm font-medium text-gray-700 mb-1">Departamento</label>
-                                <select name="departamento_id" id="departamento_id"
+                                <label for="especialidad" class="block text-sm font-medium text-gray-700 mb-1">Especialidad *</label>
+                                <input type="text" name="especialidad" id="especialidad" required 
+                                       class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-sm transition-all">
+                            </div>
+                            
+                            <div>
+                                <label for="cargo" class="block text-sm font-medium text-gray-700 mb-1">Cargo *</label>
+                                <select name="cargo" id="cargo" required
                                         class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-sm transition-all">
-                                    <option value="">-- Seleccionar Departamento --</option>
-                                    @foreach($departamentos as $departamento)
-                                        <option value="{{ $departamento->id }}">{{ $departamento->nombre }}</option>
-                                    @endforeach
+                                    <option value="">-- Seleccionar Cargo --</option>
+                                    <option value="Profesor">Profesor</option>
+                                    <option value="Jefe de Estudios">Jefe de Estudios</option>
+                                    <option value="Director">Director</option>
+                                    <option value="Coordinador">Coordinador</option>
+                                    <option value="Tutor">Tutor</option>
+                                    <option value="Otro">Otro</option>
                                 </select>
                             </div>
-                            
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label for="especialidad" class="block text-sm font-medium text-gray-700 mb-1">Especialidad *</label>
-                                    <input type="text" name="especialidad" id="especialidad" required 
-                                           class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-sm transition-all">
-                                </div>
-                                
-                                <div>
-                                    <label for="cargo" class="block text-sm font-medium text-gray-700 mb-1">Cargo *</label>
-                                    <select name="cargo" id="cargo" required
-                                            class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 text-sm transition-all">
-                                        <option value="">-- Seleccionar Cargo --</option>
-                                        <option value="Profesor">Profesor</option>
-                                        <option value="Jefe de Estudios">Jefe de Estudios</option>
-                                        <option value="Director">Director</option>
-                                        <option value="Coordinador">Coordinador</option>
-                                        <option value="Tutor">Tutor</option>
-                                        <option value="Otro">Otro</option>
-                                    </select>
-                                </div>
-                            </div>
                         </div>
                     </div>
+                </div>
 
-                    <div class="mt-4 text-sm text-gray-600 mb-4">
-                        <div class="flex items-center bg-blue-50 p-3 rounded-lg border border-blue-100">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <div class="mt-4 text-sm text-gray-600 mb-4">
+                    <div class="flex items-center bg-blue-50 p-3 rounded-lg border border-blue-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <p>Al crear un docente, se generará automáticamente una contraseña temporal que será enviada al correo electrónico proporcionado.</p>
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-3 pt-4 border-t">
+                    <button type="button" onclick="closeModalDocente()"
+                            class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all">
+                        Cancelar
+                    </button>
+                    <button type="submit" id="submitButton"
+                            class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-indigo-600 to-purple-600 border border-transparent rounded-lg hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all shadow-lg">
+                        <div class="flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                             </svg>
-                            <p>Al crear un docente, se generará automáticamente una contraseña temporal que será enviada al correo electrónico proporcionado.</p>
+                            Guardar Docente
                         </div>
-                    </div>
-
-                    <div class="flex justify-end space-x-3 pt-4 border-t">
-                        <button type="button" onclick="closeModalDocente()"
-                                class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all">
-                            Cancelar
-                        </button>
-                        <button type="submit" id="submitButton"
-                                class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-indigo-600 to-purple-600 border border-transparent rounded-lg hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all shadow-lg">
-                            <div class="flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                </svg>
-                                Guardar Docente
-                            </div>
-                        </button>
-                    </div>
-                </form>
-            </div>
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
+</div>
 
-    <!-- Modal de Edición de Docente -->
-    <div id="modalEditarDocente" class="fixed inset-0 bg-black bg-opacity-50 hidden overflow-y-auto h-full w-full z-50 backdrop-blur-sm transition-all duration-300">
-        <div class="relative top-20 mx-auto p-0 w-full max-w-2xl transform transition-all duration-300">
-            <div class="bg-white rounded-xl shadow-2xl overflow-hidden">
-                <div class="bg-gradient-to-r from-yellow-600 to-amber-600 py-4 px-6 flex justify-between items-center">
-                    <h3 class="text-xl font-bold text-white flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                        Editar Docente
-                    </h3>
-                    <button onclick="closeEditModal()" class="text-white hover:text-gray-200 focus:outline-none transition-colors">
-                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+<!-- Modal de Edición de Docente -->
+<div id="modalEditarDocente" class="fixed inset-0 bg-black bg-opacity-50 hidden overflow-y-auto h-full w-full z-50 backdrop-blur-sm transition-all duration-300">
+    <div class="relative top-20 mx-auto p-0 w-full max-w-2xl transform transition-all duration-300">
+        <div class="bg-white rounded-xl shadow-2xl overflow-hidden">
+            <div class="bg-gradient-to-r from-yellow-600 to-amber-600 py-4 px-6 flex justify-between items-center">
+                <h3 class="text-xl font-bold text-white flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>
-                </button>
-            </div>
+                    Editar Docente
+                </h3>
+                <button onclick="closeEditModal()" class="text-white hover:text-gray-200 focus:outline-none transition-colors">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
 
-                <form id="formEditarDocente" method="POST" class="p-6">
+            <form id="formEditarDocente" method="POST" class="p-6">
                 @csrf
                 @method('PUT')
                 <input type="hidden" id="edit_docente_id" name="docente_id">

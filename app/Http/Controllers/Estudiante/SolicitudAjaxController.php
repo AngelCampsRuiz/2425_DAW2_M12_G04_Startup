@@ -15,8 +15,8 @@ class SolicitudAjaxController extends Controller
     public function getSolicitudes()
     {
         try {
-            $estudiante = Auth::user()->estudiante;
-            
+        $estudiante = Auth::user()->estudiante;
+        
             if (!$estudiante) {
                 return response()->json([
                     'success' => false,
@@ -28,9 +28,9 @@ class SolicitudAjaxController extends Controller
                                         ->with(['institucion.user', 'clase'])
                                         ->latest()
                                         ->get();
-            
-            return response()->json([
-                'success' => true,
+        
+        return response()->json([
+            'success' => true,
                 'solicitudes' => $solicitudes
             ]);
         } catch (\Exception $e) {
@@ -47,8 +47,8 @@ class SolicitudAjaxController extends Controller
     public function getSolicitud($id)
     {
         try {
-            $estudiante = Auth::user()->estudiante;
-            
+        $estudiante = Auth::user()->estudiante;
+        
             if (!$estudiante) {
                 return response()->json([
                     'success' => false,
@@ -57,21 +57,21 @@ class SolicitudAjaxController extends Controller
             }
             
             $solicitud = SolicitudEstudiante::where('id', $id)
-                                      ->where('estudiante_id', $estudiante->id)
+            ->where('estudiante_id', $estudiante->id)
                                       ->with(['institucion.user', 'clase'])
-                                      ->first();
-            
-            if (!$solicitud) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'No se encontró la solicitud'
-                ], 404);
-            }
-            
+            ->first();
+        
+        if (!$solicitud) {
             return response()->json([
-                'success' => true,
-                'solicitud' => $solicitud
-            ]);
+                'success' => false,
+                    'error' => 'No se encontró la solicitud'
+            ], 404);
+        }
+        
+        return response()->json([
+            'success' => true,
+            'solicitud' => $solicitud
+        ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -86,8 +86,8 @@ class SolicitudAjaxController extends Controller
     public function cancelarSolicitud($id)
     {
         try {
-            $estudiante = Auth::user()->estudiante;
-            
+        $estudiante = Auth::user()->estudiante;
+        
             if (!$estudiante) {
                 return response()->json([
                     'success' => false,
@@ -96,33 +96,33 @@ class SolicitudAjaxController extends Controller
             }
             
             $solicitud = SolicitudEstudiante::where('id', $id)
-                                      ->where('estudiante_id', $estudiante->id)
-                                      ->first();
-            
-            if (!$solicitud) {
-                return response()->json([
-                    'success' => false,
+            ->where('estudiante_id', $estudiante->id)
+            ->first();
+        
+        if (!$solicitud) {
+            return response()->json([
+                'success' => false,
                     'error' => 'No se encontró la solicitud'
-                ], 404);
-            }
-            
-            // Solo se pueden cancelar solicitudes pendientes
-            if ($solicitud->estado !== 'pendiente') {
-                return response()->json([
-                    'success' => false,
+            ], 404);
+        }
+        
+        // Solo se pueden cancelar solicitudes pendientes
+        if ($solicitud->estado !== 'pendiente') {
+            return response()->json([
+                'success' => false,
                     'error' => 'Solo se pueden cancelar solicitudes pendientes'
-                ], 400);
-            }
-            
+            ], 400);
+        }
+        
             // Cambiar estado de la solicitud
             $solicitud->estado = 'cancelada';
             $solicitud->fecha_respuesta = now();
             $solicitud->save();
-            
-            return response()->json([
-                'success' => true,
-                'message' => 'Solicitud cancelada correctamente'
-            ]);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Solicitud cancelada correctamente'
+        ]);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

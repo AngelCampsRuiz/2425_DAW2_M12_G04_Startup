@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\CategoriaController;
 use App\Http\Controllers\API\LocationController;
+use Illuminate\Support\Facades\Broadcast;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,7 +17,11 @@ use App\Http\Controllers\API\LocationController;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+// Ruta para autorización de canales de Pusher
+Broadcast::routes(['middleware' => ['auth:api']]);
+
+// Ruta de usuario autenticado
+Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 

@@ -202,15 +202,27 @@
                 // PUBLICACIONES VISIBLES PARA TODOS LOS USUARIOS
                     Route::get('/publication/{id}', [PublicationController::class, 'show'])->name('publication.show');
 
-                // RUTAS PARA EL CHAT
-                    Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
-                    Route::get('/chat/{chat}', [ChatController::class, 'showChat'])->name('chat.show');
-                    Route::post('/chat/{chat}/message', [ChatController::class, 'sendMessage'])->name('chat.message');
-                    Route::get('/chat/{chat}/messages', [ChatController::class, 'getMessages'])->name('chat.messages');
-                    Route::post('/chat/create/{solicitud}', [ChatController::class, 'createChat'])->name('chat.create');
-                    Route::post('/chat/create-docente', [ChatController::class, 'createDocenteChat'])->name('chat.create.docente');
-                    Route::get('/chat/check-new', [ChatController::class, 'checkNewMessages'])->name('chat.check_new');
-                    Route::get('/chat/refresh', [ChatController::class, 'refreshChats'])->name('chat.refresh');
+                // RUTAS PARA EL CHAT - Accesibles para todos los usuarios autenticados
+                    Route::get('/chat', [ChatController::class, 'index'])
+                        ->name('chat.index');
+                    Route::get('/chat/{chat}', [ChatController::class, 'showChat'])
+                        ->name('chat.show');
+                    Route::post('/chat/{chat}/message', [ChatController::class, 'sendMessage'])
+                        ->name('chat.message');
+                    Route::get('/chat/{chat}/messages', [ChatController::class, 'getMessages'])
+                        ->name('chat.messages');
+                    Route::post('/chat/create/{solicitud}', [ChatController::class, 'createChat'])
+                        ->name('chat.create');
+                    Route::post('/chat/create-docente', [ChatController::class, 'createDocenteChat'])
+                        ->name('chat.create.docente');
+                    Route::post('/chat/create-docente-empresa', [ChatController::class, 'createDocenteEmpresaChat'])
+                        ->name('chat.create.docente.empresa');
+                    Route::get('/chat/check-new', [ChatController::class, 'checkNewMessages'])
+                        ->name('chat.check_new');
+                    Route::get('/chat/refresh', [ChatController::class, 'refreshChats'])
+                        ->name('chat.refresh');
+                    Route::post('/chat/{messageId}/read', [ChatController::class, 'markMessageAsRead'])
+                        ->name('chat.mark_read');
 
                 // RUTAS PARA VALORACIONES
                     Route::post('/valoraciones', [ValoracionController::class, 'store'])->name('valoraciones.store');
@@ -527,10 +539,13 @@ Route::prefix('institucion')->middleware(['auth', \App\Http\Middleware\CheckRole
     }
 });
 
+// Ruta temporal para verificar la estructura de la tabla chats
+Route::get('/test/table-structure', [App\Http\Controllers\TestController::class, 'showTableStructure']);
+
     // Ruta para actualizar estudiantes desde modal
     Route::put('/estudiantes/update-modal', [App\Http\Controllers\Institucion\EstudianteController::class, 'updateModal']);
-
-    // Rutas de chat
+    
+    // Rutas de chat - Accesibles para todos los usuarios
     Route::middleware(['auth'])->prefix('chat')->name('chat.')->group(function () {
         Route::get('/', [App\Http\Controllers\ChatController::class, 'index'])->name('index');
         Route::get('/create/{receiver_id}', [App\Http\Controllers\ChatController::class, 'create'])->name('create');
