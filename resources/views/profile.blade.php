@@ -272,7 +272,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                                         </svg>
                                     </div>
-                                    <h2 class="text-2xl font-bold text-gray-900">{{ __('Experiencias') }}</h2>
+                                    <h2 class="text-2xl font-bold text-gray-900">Experiencias</h2>
                                 </div>
                                 <div class="space-y-4">
                                     @if($user->experiencias->count() > 0)
@@ -281,12 +281,20 @@
                                                 <h4 class="font-semibold text-gray-900">{{ $experiencia->puesto }}</h4>
                                                 <p class="text-sm text-purple-600">{{ $experiencia->empresa_nombre }}</p>
                                                 <p class="text-sm text-gray-500">
-                                                    {{ \Carbon\Carbon::parse($experiencia->fecha_inicio)->format('M Y') }} - 
+                                                    {{ \Carbon\Carbon::parse($experiencia->fecha_inicio)->format('M Y') }} -
                                                     {{ $experiencia->fecha_fin ? \Carbon\Carbon::parse($experiencia->fecha_fin)->format('M Y') : 'Actual' }}
                                                 </p>
                                                 @if($experiencia->descripcion)
                                                     <p class="text-sm text-gray-600 mt-2">{{ $experiencia->descripcion }}</p>
                                                 @endif
+                                                @auth
+                                                    @if(auth()->id() == $user->id)
+                                                        <!-- Editar -->
+                                                        <button class="text-sm text-yellow-600"><i class="fas fa-pencil-alt"></i>Editar</button>
+                                                        <!-- Eliminar -->
+                                                        <button class="text-sm text-red-600"><i class="fas fa-trash-alt"></i>Eliminar</button>
+                                                    @endif
+                                                @endauth
                                             </div>
                                         @endforeach
                                     @else
@@ -295,7 +303,7 @@
                                 </div>
                             </div>
 
-                            
+
                               {{-- Información Personal --}}
                             <div class="bg-white rounded-xl shadow-lg p-6 transform transition-all duration-300 hover:shadow-xl">
                                 <div class="flex items-center mb-6">
@@ -337,15 +345,15 @@
                                             </div>
                                         </div>
 
-                                 
+
 
                                         {{-- Sección donde se muestra el CIF --}}
                                         @php
                                             $showCif = $user->empresa && $user->empresa->show_cif;
                                         @endphp
 
-                                        <div class="flex items-start" 
-                                             data-campo="empresa-cif" 
+                                        <div class="flex items-start"
+                                             data-campo="empresa-cif"
                                              style="display: {{ $showCif ? 'flex' : 'none' }}">
                                             <div class="flex-shrink-0">
                                                 <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -385,8 +393,8 @@
                                             <div class="ml-4">
                                                 <p class="text-sm font-medium text-gray-500">Sitio Web</p>
                                                 @if($user->sitio_web)
-                                                    <a href="{{ $user->sitio_web }}" 
-                                                       target="_blank" 
+                                                    <a href="{{ $user->sitio_web }}"
+                                                       target="_blank"
                                                        class="text-purple-600 hover:text-purple-800 transition-colors duration-200">
                                                         {{ $user->sitio_web }}
                                                     </a>
@@ -398,7 +406,7 @@
                                     </div>
                                 </div>
                             </div>
-                           
+
 
                             @if($empresa && isset($experiencias) && $experiencias->count() > 0)
                                 {{-- Experiencias de Estudiantes --}}
@@ -409,7 +417,7 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                                             </svg>
                                         </div>
-                                        <h2 class="text-2xl font-bold text-gray-900">{{ __('Experiencias') }}</h2>
+                                        <h2 class="text-2xl font-bold text-gray-900">Experiencias</h2>
                                     </div>
                                     <div class="overflow-x-auto">
                                         <table class="min-w-full divide-y divide-gray-200">
@@ -454,9 +462,9 @@
                                 </div>
                             @endif
 
-                           
 
-                            
+
+
 
                             {{-- CV --}}
                             @if($user->estudiante && $user->estudiante->cv_pdf)
@@ -581,8 +589,8 @@
                                             </div>
                                         </div>
                                         <div class="flex items-start">
-                                          
-                                            
+
+
                                         </div>
                                     </div>
                                 </div>
@@ -645,8 +653,8 @@
                                             <div class="ml-4">
                                                 <p class="text-sm font-medium text-gray-500">Sitio Web</p>
                                                 @if($user->sitio_web)
-                                                    <a href="{{ $user->sitio_web }}" 
-                                                       target="_blank" 
+                                                    <a href="{{ $user->sitio_web }}"
+                                                       target="_blank"
                                                        class="text-purple-600 hover:text-purple-800 transition-colors duration-200">
                                                         {{ $user->sitio_web }}
                                                     </a>
@@ -949,9 +957,9 @@
 
                     {{-- Contenido del Modal --}}
                     <div class="p-8">
-                        <form id="profileForm" 
-                              action="{{ route('profile.update') }}" 
-                              method="POST" 
+                        <form id="profileForm"
+                              action="{{ route('profile.update') }}"
+                              method="POST"
                               enctype="multipart/form-data">
                             @csrf
                             @method('PUT')
@@ -1116,9 +1124,9 @@
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
                                                 </svg>
                                             </div>
-                                            <input type="url" 
-                                                   name="sitio_web" 
-                                                   id="sitio_web" 
+                                            <input type="url"
+                                                   name="sitio_web"
+                                                   id="sitio_web"
                                                    value="{{ $user->sitio_web }}"
                                                    class="pl-10 w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500"
                                                    placeholder="https://ejemplo.com"
@@ -1239,8 +1247,8 @@
                                     <div class="w-full rounded-xl overflow-hidden shadow-md mb-4">
                                         {{-- Buscador de ubicaciones --}}
                                         <div class="relative mb-4">
-                                            <input type="text" 
-                                                   id="searchLocation" 
+                                            <input type="text"
+                                                   id="searchLocation"
                                                    class="w-full rounded-xl border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 pl-10"
                                                    placeholder="Buscar dirección...">
                                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -1637,8 +1645,8 @@
                             if (sitioWebContent) {
                                 if (user.sitio_web) {
                                     sitioWebContent.innerHTML = `
-                                        <a href="${user.sitio_web}" 
-                                           target="_blank" 
+                                        <a href="${user.sitio_web}"
+                                           target="_blank"
                                            class="text-purple-600 hover:text-purple-800 transition-colors duration-200">
                                             ${user.sitio_web}
                                         </a>`;
@@ -1646,7 +1654,7 @@
                                     sitioWebContent.textContent = 'No especificado';
                                 }
                             }
-                            
+
                             // Actualizar la visibilidad
                             sitioWebElement.style.display = user.show_web ? 'flex' : 'none';
                         }
@@ -1795,6 +1803,89 @@
                 </div>
             </div>
         @endif
+    @endsection
+
+@push('scripts')
+    {{-- Cargar las dependencias --}}
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    {{-- Cargar los scripts en orden --}}
+    <script src="{{ asset('js/mapa.js') }}?v={{ time() }}"></script>
+    <script src="{{ asset('js/profile-validaciones.js') }}?v={{ time() }}"></script>
+    <script src="{{ asset('js/profile.js') }}?v={{ time() }}"></script>
+@endpush
+
+@prepend('scripts')
+    {{-- Leaflet CSS --}}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+
+    {{-- SweetAlert2 CSS --}}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+@endprepend
+
+@if(auth()->user()->role_id == 2)
+    <div data-role="empresa" class="hidden"></div>
+@endif
+
+<script>
+    function handleFormSubmit(e) {
+        e.preventDefault();
+
+        if (window.isFormSubmitting) return;
+
+        const form = e.target;
+
+        const emailInput = form.querySelector('input[name="email"]') ||
+                          form.querySelector('#email') ||
+                          form.querySelector('input[type="email"]');
+
+        const nombreInput = form.querySelector('input[name="nombre"]') ||
+                           form.querySelector('#nombre') ||
+                           form.querySelector('input[name="name"]');
+
+        if (!emailInput) {
+            Swal.fire({
+                title: 'Error',
+                text: 'No se encontró el campo de email en el formulario',
+                icon: 'error',
+                confirmButtonColor: '#7C3AED'
+            });
+            return;
+        }
+
+        if (!nombreInput) {
+            Swal.fire({
+                title: 'Error',
+                text: 'No se encontró el campo de nombre en el formulario',
+                icon: 'error',
+                confirmButtonColor: '#7C3AED'
+            });
+            return;
+        }
+
+        const formData = new FormData(form);
+
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire({
+                    title: '¡Éxito!',
+                    text: 'Los cambios se han guardado correctamente',
+                    icon: 'success',
+                    confirmButtonColor: '#7C3AED'
+                }).then(() => {
+                    window.location.reload();
+                });
 
         {{-- Sección de Experiencias --}}
         <div class="bg-white rounded-xl shadow-lg p-6 transform transition-all duration-300 hover:shadow-xl">
