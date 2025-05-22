@@ -52,7 +52,10 @@ class ClaseController extends Controller
             $query->where('instituciones.id', $institucion->id);
         })->get();
         
-        return view('institucion.clases.index', compact('clases', 'departamentos', 'docentes', 'categorias'));
+        // Obtener niveles educativos para el modal de creación
+        $nivelesEducativos = NivelEducativo::all();
+        
+        return view('institucion.clases.index', compact('clases', 'departamentos', 'docentes', 'categorias', 'nivelesEducativos'));
     }
 
     /**
@@ -77,7 +80,7 @@ class ClaseController extends Controller
         $request->validate([
             'nombre' => 'required|string|max:255',
             'codigo' => 'required|string|max:50|unique:clases',
-            'nivel_educativo_id' => 'required|exists:nivel_educativo,id',
+            'nivel_educativo_id' => 'required|exists:niveles_educativos,id',
             'categoria_id' => 'required|exists:categorias,id',
             'departamento_id' => 'nullable|exists:departamentos,id',
             'docente_id' => 'nullable|exists:docentes,id',
@@ -99,6 +102,12 @@ class ClaseController extends Controller
             $clase->capacidad = $request->capacidad;
             $clase->institucion_id = Auth::user()->institucion->id;
             $clase->activa = true;
+            
+            // Obtener el nivel (curso) del nivel educativo o usar un valor predeterminado
+            $nivelEducativo = NivelEducativo::find($request->nivel_educativo_id);
+            $clase->nivel = $nivelEducativo ? $nivelEducativo->nombre_nivel : 'Nivel no especificado';
+            $clase->curso = $request->nombre; // Usar el nombre de la clase como curso por defecto
+            
             $clase->save();
             
             return redirect()->route('institucion.clases.show', $clase->id)
@@ -258,6 +267,28 @@ class ClaseController extends Controller
     }
     
     /**
+     * Cambia el estado activo/inactivo de una clase.
+     */
+    public function toggleActive($id)
+    {
+        try {
+            $institucion = Auth::user()->institucion;
+            $clase = Clase::where('institucion_id', $institucion->id)->findOrFail($id);
+            
+            // Cambiar el estado de la clase
+            $clase->activa = !$clase->activa;
+            $clase->save();
+            
+            $estadoTexto = $clase->activa ? 'activada' : 'desactivada';
+            
+            return redirect()->back()->with('success', "Clase {$estadoTexto} correctamente.");
+        } catch (\Exception $e) {
+            Log::error('Error al cambiar estado de clase: ' . $e->getMessage());
+            return back()->with('error', 'Error al cambiar el estado de la clase: ' . $e->getMessage());
+        }
+    }
+    
+    /**
      * Muestra la pantalla para asignar estudiantes a la clase.
      */
     public function asignarEstudiantes(Request $request, $id)
@@ -393,41 +424,83 @@ class ClaseController extends Controller
      */
     public function getData($id)
     {
-        $institucion = Auth::user()->institucion;
-        
-        $clase = Clase::where('institucion_id', $institucion->id)->findOrFail($id);
-        $departamentos = Departamento::where('institucion_id', $institucion->id)->get();
-        $docentes = Docente::with('user')->where('institucion_id', $institucion->id)->get();
-        
-        // Obtener solo los niveles educativos asignados a la institución
-        $nivelesEducativos = $institucion->nivelesEducativos()->get();
-        
-        // Obtener categorías organizadas por nivel educativo
-        $categoriasPorNivel = [];
-        foreach ($nivelesEducativos as $nivel) {
-            $categorias = DB::table('institucion_categoria')
-                ->join('categorias', 'institucion_categoria.categoria_id', '=', 'categorias.id')
-                ->where('institucion_categoria.institucion_id', $institucion->id)
-                ->where('institucion_categoria.nivel_educativo_id', $nivel->id)
-                ->where('institucion_categoria.activo', true)
-                ->select('categorias.id', 'categorias.nombre_categoria', 'institucion_categoria.nombre_personalizado')
-                ->get();
+        try {
+            $institucion = Auth::user()->institucion;
+            $clase = Clase::where('institucion_id', $institucion->id)->findOrFail($id);
+            
+            // Obtener los datos necesarios para los selects
+            $departamentos = Departamento::where('institucion_id', $institucion->id)->get();
+            $docentes = Docente::with('user')->where('institucion_id', $institucion->id)->get();
+            $nivelesEducativos = NivelEducativo::all();
+            
+            // Preparar las categorías por nivel educativo
+            $categoriasPorNivel = [];
+            foreach ($nivelesEducativos as $nivel) {
+                $categorias = Categoria::whereHas('niveles_educativos', function($query) use ($nivel) {
+                    $query->where('niveles_educativos.id', $nivel->id);
+                })->get();
                 
-            $categoriasPorNivel[$nivel->id] = $categorias;
+                $categoriasPorNivel[$nivel->id] = $categorias;
+            }
+            
+            return response()->json([
+                'clase' => $clase,
+                'departamentos' => $departamentos,
+                'docentes' => $docentes,
+                'nivelesEducativos' => $nivelesEducativos,
+                'categoriasPorNivel' => $categoriasPorNivel
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error al obtener datos: ' . $e->getMessage()], 500);
         }
-        
-        // Todas las categorías disponibles para la institución
-        $categorias = Categoria::whereHas('instituciones', function($query) use ($institucion) {
-            $query->where('instituciones.id', $institucion->id);
-        })->get();
-        
-        return response()->json([
-            'clase' => $clase,
-            'departamentos' => $departamentos,
-            'docentes' => $docentes,
-            'nivelesEducativos' => $nivelesEducativos,
-            'categorias' => $categorias,
-            'categoriasPorNivel' => $categoriasPorNivel
-        ]);
+    }
+
+    /**
+     * Obtiene las categorías por nivel educativo para el modal de creación.
+     */
+    public function getNivelCategorias()
+    {
+        try {
+            $institucion = Auth::user()->institucion;
+            $nivelesEducativos = NivelEducativo::all();
+            
+            // Preparar las categorías por nivel educativo
+            $categoriasPorNivel = [];
+            foreach ($nivelesEducativos as $nivel) {
+                // Obtener categorías relacionadas con este nivel y esta institución
+                $categorias = DB::table('institucion_categoria as ic')
+                    ->join('categorias as c', 'ic.categoria_id', '=', 'c.id')
+                    ->where('ic.institucion_id', $institucion->id)
+                    ->where('ic.nivel_educativo_id', $nivel->id)
+                    ->where('ic.activo', true)
+                    ->select('c.id', 'c.nombre_categoria as nombre', 'ic.nombre_personalizado')
+                    ->get();
+                
+                $categoriasPorNivel[$nivel->id] = $categorias;
+                
+                // Registrar para depuración
+                Log::info('Categorías para nivel ' . $nivel->nombre_nivel, [
+                    'nivel_id' => $nivel->id,
+                    'count' => count($categorias),
+                    'categorias' => $categorias
+                ]);
+            }
+            
+            // Registrar para depuración
+            Log::info('Datos completos para crear clase', [
+                'niveles_count' => count($nivelesEducativos),
+                'categorias_por_nivel' => $categoriasPorNivel
+            ]);
+            
+            return response()->json([
+                'nivelesEducativos' => $nivelesEducativos,
+                'categoriasPorNivel' => $categoriasPorNivel
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error al obtener datos para crear clase: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json(['error' => 'Error al obtener datos: ' . $e->getMessage()], 500);
+        }
     }
 }

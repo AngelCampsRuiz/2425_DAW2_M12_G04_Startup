@@ -22,18 +22,7 @@
     <!-- Tailwind CSS -->
     <!-- Use production CDN version of Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio,line-clamp"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#7705B6',
-                        'primary-dark': '#5E0490'
-                    }
-                }
-            }
-        }
-    </script>
+    <script src="{{ asset('js/tailwind-config.js') }}"></script>
 
     <!-- Swiper.js para sliders -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />

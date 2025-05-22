@@ -30,6 +30,11 @@ class InstitucionController extends BaseController
         $solicitudesPendientes = $institucion->solicitudesPendientes()->count();
         $departamentos = $institucion->departamentos()->get();
         $docentes = $institucion->docentes()->with('user')->get();
+        
+        // Obtener el conteo de convenios pendientes de firma
+        $conveniosPendientes = \App\Models\Convenio::where('estado', 'activo')
+            ->where('firmado_institucion', false)
+            ->count();
 
         return view('institucion.dashboard', compact(
             'institucion',
@@ -39,7 +44,8 @@ class InstitucionController extends BaseController
             'totalClases',
             'solicitudesPendientes',
             'departamentos',
-            'docentes'
+            'docentes',
+            'conveniosPendientes'
         ));
     }
 

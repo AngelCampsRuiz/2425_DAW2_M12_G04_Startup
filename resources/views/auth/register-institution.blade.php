@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Registro de Institución - PickJob')
+@section('title', 'Registro de Institución - NextGen')
 
 @section('content')
 <div class="min-h-screen flex items-center justify-center bg-gradient-to-r from-primary/20 to-primary p-4">

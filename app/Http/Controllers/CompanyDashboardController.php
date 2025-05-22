@@ -503,31 +503,46 @@ class CompanyDashboardController extends Controller
         return view('empresa.inactive-offers', compact('inactivePublications', 'categorias'));
     }
 
+    /**
+     * Show all the candidates accepted by the company.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Contracts\Support\Renderable
+     */
+    public function acceptedCandidates(Request $request)
+    {
+        $company = Auth::user();
+        
+        // Obtener todas las solicitudes aceptadas de las ofertas de la empresa
+        $solicitudes = Solicitud::whereHas('publicacion', function($query) use ($company) {
+                $query->where('empresa_id', $company->id);
+            })
+            ->where('estado', 'aceptada')
+            ->with(['estudiante.user', 'publicacion'])
+            ->orderBy('updated_at', 'desc')
+            ->paginate(10);
+            
+        return view('empresa.accepted-candidates', compact('solicitudes'));
+    }
+
     public function getDashboardStats()
     {
         $company = Auth::user();
-
-        // Obtener las solicitudes aceptadas y rechazadas
-        $solicitudesAceptadas = Solicitud::whereHas('publicacion', function($query) use ($company) {
-            $query->where('empresa_id', $company->id);
-        })->where('estado', 'aceptada')->count();
-
-        $solicitudesRechazadas = Solicitud::whereHas('publicacion', function($query) use ($company) {
-            $query->where('empresa_id', $company->id);
-        })->where('estado', 'rechazada')->count();
-
-        $stats = [
+        
+        return response()->json([
             'activePublications' => Publicacion::where('empresa_id', $company->id)
                 ->where('activa', true)
                 ->count(),
             'inactivePublications' => Publicacion::where('empresa_id', $company->id)
                 ->where('activa', false)
                 ->count(),
-            'activeSolicitudes' => $solicitudesAceptadas,
-            'inactiveSolicitudes' => $solicitudesRechazadas
-        ];
-
-        return response()->json($stats);
+            'activeSolicitudes' => Solicitud::whereHas('publicacion', function($query) use($company) {
+                $query->where('empresa_id', $company->id);
+            })->where('estado', 'aceptada')->count(),
+            'inactiveSolicitudes' => Solicitud::whereHas('publicacion', function($query) use($company) {
+                $query->where('empresa_id', $company->id);
+            })->where('estado', 'rechazada')->count()
+        ]);
     }
 
     public function editOffer($id)
@@ -590,6 +605,59 @@ class CompanyDashboardController extends Controller
                 'message' => 'Error al actualizar la oferta: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Obtiene las ofertas activas para la vista de ofertas activas
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\View\View
+     */
+    public function getActiveOffers(Request $request)
+    {
+        $query = Publicacion::where('activa', true)
+            ->where('empresa_id', Auth::user()->id);
+
+        // Aplicar filtros
+        if ($request->titulo) {
+            $query->where('titulo', 'like', '%' . $request->titulo . '%');
+        }
+
+        if ($request->horario) {
+            $query->where('horario', $request->horario);
+        }
+
+        if ($request->categoria_id) {
+            $query->where('categoria_id', $request->categoria_id);
+        }
+
+        // Ordenar
+        $sortField = $request->sort_field ?? 'created_at';
+        $sortDirection = $request->sort_direction ?? 'desc';
+        $query->orderBy($sortField, $sortDirection);
+
+        // Paginar
+        $perPage = $request->per_page ?? 4;
+        $publications = $query->with('categoria')
+            ->withCount('solicitudes')
+            ->paginate($perPage);
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'data' => $publications->items(),
+                'pagination' => [
+                    'total' => $publications->total(),
+                    'per_page' => $publications->perPage(),
+                    'current_page' => $publications->currentPage(),
+                    'last_page' => $publications->lastPage(),
+                    'from' => $publications->firstItem(),
+                    'to' => $publications->lastItem()
+                ]
+            ]);
+        }
+
+        return view('empresa.active-offers', compact('publications'));
     }
 }
 
