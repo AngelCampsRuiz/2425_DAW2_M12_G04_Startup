@@ -469,24 +469,12 @@
             
             <div class="signature">
                 <div class="signature-role">Firma de la Empresa</div>
-                <div class="signature-name">{{ $convenio->oferta->empresa->nombre }}</div>
+                <div class="signature-name">{{ $convenio->oferta->empresa->nombre ?? ($convenio->empresa_id ? User::find($convenio->empresa_id)->nombre : 'Empresa') }}</div>
                 <div class="signature-date">Fecha: {{ $convenio->fecha_creacion ? $convenio->fecha_creacion->format('d/m/Y') : '' }}</div>
             </div>
         </div>
 
         <div class="signature-section">
-            <!-- Firma del docente -->
-            @if($convenio->estado === 'activo' && $convenio->aprobado_por)
-                @php
-                    $docente = User::find($convenio->aprobado_por);
-                @endphp
-                <div class="signature">
-                    <div class="signature-role">Firma del Docente</div>
-                    <div class="signature-name">{{ $docente ? $docente->nombre : 'Docente' }}</div>
-                    <div class="signature-date">Fecha de aprobación: {{ $convenio->fecha_aprobacion ? $convenio->fecha_aprobacion->format('d/m/Y') : '' }}</div>
-                </div>
-            @endif
-
             <!-- Firma de la institución -->
             @if($convenio->firmado_institucion && $convenio->firmado_por_institucion)
                 @php
