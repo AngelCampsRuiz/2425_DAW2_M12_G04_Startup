@@ -45,7 +45,7 @@
                 <span class="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-[#5e0490] to-purple-300 rounded-full transform translate-y-1"></span>
             </span>
         </h1>
-        
+
         {{-- ESTADÍSTICAS --}}
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <div class="bg-white rounded-xl shadow-sm p-5 transform hover:scale-105 transition-transform duration-300 border-t-4 border-[#5e0490] hover:shadow-lg group">
@@ -61,7 +61,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="bg-white rounded-xl shadow-sm p-5 transform hover:scale-105 transition-transform duration-300 border-t-4 border-yellow-400 hover:shadow-lg group">
                 <div class="flex items-center">
                     <div class="rounded-full bg-yellow-100 p-4 mr-4 group-hover:bg-yellow-200 transition-colors duration-300">
@@ -75,7 +75,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="bg-white rounded-xl shadow-sm p-5 transform hover:scale-105 transition-transform duration-300 border-t-4 border-green-500 hover:shadow-lg group">
                 <div class="flex items-center">
                     <div class="rounded-full bg-green-100 p-4 mr-4 group-hover:bg-green-200 transition-colors duration-300">
@@ -89,7 +89,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="bg-white rounded-xl shadow-sm p-5 transform hover:scale-105 transition-transform duration-300 border-t-4 border-red-500 hover:shadow-lg group">
                 <div class="flex items-center">
                     <div class="rounded-full bg-red-100 p-4 mr-4 group-hover:bg-red-200 transition-colors duration-300">
@@ -104,7 +104,7 @@
                 </div>
             </div>
         </div>
-        
+
         {{-- FILTROS --}}
         <div class="bg-white rounded-xl shadow-sm p-6 mb-8 border border-gray-100 hover:shadow-md transition-all duration-300">
             <div class="flex flex-col md:flex-row justify-between items-center">
@@ -140,7 +140,7 @@
                 </div>
             </div>
         </div>
-        
+
         {{-- TABLA DE SOLICITUDES CON AJAX --}}
         <div id="solicitudes-table" class="overflow-x-auto hidden">
             <div id="solicitudes-data-container" class="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 hover:shadow-md transition-all duration-300">
@@ -214,7 +214,7 @@
                 </div>
             </div>
         </div>
-        
+
         {{-- MENSAJE DE NO SOLICITUDES --}}
         <div id="no-solicitudes" class="text-center py-16 hidden">
             <div class="bg-white rounded-xl shadow-sm p-10 max-w-lg mx-auto border border-gray-100">
@@ -283,7 +283,7 @@
                 }
             });
         @endif
-        
+
         @if(session('error'))
             Swal.fire({
                 html: `
@@ -453,7 +453,7 @@ function renderizarFilaSolicitud(solicitud) {
     const fecha = new Date(solicitud.created_at);
     const fechaFormateada = fecha.toLocaleDateString('es-ES');
     const horaFormateada = fecha.toLocaleTimeString('es-ES', {hour: '2-digit', minute:'2-digit'});
-    
+
     return `
         <tr class="solicitud-row hover:bg-purple-50 transition-all duration-300">
             <td class="px-6 py-4">
@@ -461,10 +461,10 @@ function renderizarFilaSolicitud(solicitud) {
                     <div class="flex-shrink-0 relative">
                         <div class="h-12 w-12 rounded-xl object-cover border-2 border-white shadow-lg overflow-hidden group">
                             <div class="absolute inset-0 bg-gradient-to-br from-[#5e0490]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                            <img class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110" 
-                                src="${solicitud.publicacion?.empresa?.user?.imagen ? 
-                                    '/profile_images/' + solicitud.publicacion.empresa.user.imagen : 
-                                    '/img/company-default.png'}" 
+                            <img class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
+                                src="${solicitud.publicacion?.empresa?.user?.imagen ?
+                                    '/profile_images/' + solicitud.publicacion.empresa.user.imagen :
+                                    '/img/company-default.png'}"
                                 alt="Logo empresa">
                         </div>
                         <div class="absolute -bottom-1 -right-1 bg-white rounded-full p-1 shadow-md">
@@ -514,7 +514,7 @@ function renderizarFilaSolicitud(solicitud) {
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                 <div class="flex items-center justify-end space-x-3">
-                    <a href="/estudiante/solicitudes/${solicitud.id}" 
+                    <a href="/estudiante/solicitudes/${solicitud.id}"
                        class="action-button inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-lg text-[#5e0490] bg-purple-50 hover:bg-purple-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-200">
                         <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -523,7 +523,7 @@ function renderizarFilaSolicitud(solicitud) {
                         Ver
                     </a>
                     ${solicitud.estado === 'pendiente' ? `
-                        <button onclick="cancelarSolicitud(${solicitud.id})" 
+                        <button onclick="cancelarSolicitud(${solicitud.id})"
                                 class="action-button inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-lg text-red-600 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200">
                             <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
@@ -564,7 +564,7 @@ function getEstadoBadge(estado) {
     };
 
     const estadoInfo = estados[estado] || estados.pendiente;
-    
+
     return `
         <span class="estado-badge inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium ${estadoInfo.clase}">
             ${estadoInfo.icono}
@@ -578,26 +578,26 @@ function formatTimeSince(dateString) {
     const date = new Date(dateString);
     const now = new Date();
     const diffInSeconds = Math.floor((now - date) / 1000);
-    
+
     if (diffInSeconds < 60) {
         return 'Hace un momento';
     }
-    
+
     const diffInMinutes = Math.floor(diffInSeconds / 60);
     if (diffInMinutes < 60) {
         return `Hace ${diffInMinutes} ${diffInMinutes === 1 ? 'minuto' : 'minutos'}`;
     }
-    
+
     const diffInHours = Math.floor(diffInMinutes / 60);
     if (diffInHours < 24) {
         return `Hace ${diffInHours} ${diffInHours === 1 ? 'hora' : 'horas'}`;
     }
-    
+
     const diffInDays = Math.floor(diffInHours / 24);
     if (diffInDays < 30) {
         return `Hace ${diffInDays} ${diffInDays === 1 ? 'día' : 'días'}`;
     }
-    
+
     return date.toLocaleDateString('es-ES');
 }
 
@@ -608,7 +608,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (solicitudesTable) {
         solicitudesTable.classList.remove('hidden');
         const tbody = document.getElementById('solicitudes-tbody');
-        
+
         // Mostrar shimmer de carga
         for (let i = 0; i < 5; i++) {
             const shimmerRow = document.createElement('tr');
@@ -644,7 +644,7 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
             tbody.appendChild(shimmerRow);
         }
-        
+
         // Simular tiempo de carga
         setTimeout(() => {
             const shimmerRows = document.querySelectorAll('.shimmer-row');
@@ -654,4 +654,4 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
-@endsection 
+@endsection

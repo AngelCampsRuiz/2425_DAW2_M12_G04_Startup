@@ -37,11 +37,11 @@ class ExperienciaSeeder extends Seeder
             for ($i = 0; $i < $numExperiencias; $i++) {
                 $fechaInicio = fake()->dateTimeBetween('-2 years', '-6 months');
                 $fechaFin = fake()->dateTimeBetween($fechaInicio, 'now');
-                
+
                 // Seleccionar un puesto y especialización aleatorios
                 $puesto = $puestos[array_rand($puestos)];
                 $especializacion = $especializaciones[array_rand($especializaciones)];
-                
+
                 // Generar un nombre de empresa realista
                 $empresa = fake()->randomElement([
                     'TechSolutions', 'DigitalWorks', 'WebCrafters', 'CodeMasters', 'DevPro', 'ByteLogic',
@@ -56,10 +56,11 @@ class ExperienciaSeeder extends Seeder
                     'puesto' => $puesto,
                     'fecha_inicio' => $fechaInicio,
                     'fecha_fin' => $fechaFin,
-                    'especializacion' => $especializacion,
+                    'descripcion' => $especializacion,
                     'user_id' => $estudiante->id,
                     'created_at' => now(),
-                    'updated_at' => now()
+                    'updated_at' => now(),
+                    'oculto' => false,
                 ]);
             }
         }
