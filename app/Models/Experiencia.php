@@ -11,11 +11,27 @@ class Experiencia extends Model
 
     protected $table = 'experiencias';
 
-    protected $fillable = ['titulo', 'empresa_nombre', 'especializacion', 'fecha_inicio', 'fecha_fin', 'alumno_id'];
+    protected $fillable = [
+        'puesto',
+        'empresa_nombre',
+        'fecha_inicio',
+        'fecha_fin',
+        'descripcion',
+        'user_id'
+    ];
+
+    protected $casts = [
+        'fecha_inicio' => 'date',
+        'fecha_fin' => 'date',
+    ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function estudiante()
     {
-        return $this->belongsTo(Estudiante::class, 'alumno_id');
+        return $this->belongsTo(Estudiante::class, 'user_id', 'id');
     }
-
 }

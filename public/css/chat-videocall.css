@@ -1,0 +1,232 @@
+/* Estilos para la funcionalidad de videollamada */
+
+/* Animaciones */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* Clases de animación */
+.animate-fadeIn {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.animate-fadeOut {
+    animation: fadeOut 0.3s ease-in-out;
+}
+
+.animate-slideUp {
+    animation: slideUp 0.3s ease-in-out;
+}
+
+.animate-pulse {
+    animation: pulse 2s infinite;
+}
+
+/* Contenedor de videollamada */
+#video-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 50;
+    background-color: rgba(0, 0, 0, 0.85);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(5px);
+    transition: all 0.3s ease;
+}
+
+#video-container.hidden {
+    display: none !important;
+}
+
+#video-container.minimized {
+    top: auto;
+    left: auto;
+    right: 20px;
+    bottom: 20px;
+    width: 300px;
+    height: 180px;
+    border-radius: 10px;
+    overflow: hidden;
+    backdrop-filter: none;
+}
+
+/* Videos */
+#local-video-container,
+#remote-video-container {
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+#local-video,
+#remote-video {
+    width: 100%;
+    height: 100%;
+    background-color: #000;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+/* Botones de control */
+.video-controls {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 15px;
+}
+
+.video-control-btn {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.video-control-btn:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+.video-control-btn.danger {
+    background-color: #ff4d4f;
+}
+
+.video-control-btn.danger:hover {
+    background-color: #ff7875;
+}
+
+/* Notificación de llamada entrante */
+#incoming-call {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    z-index: 50;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+#incoming-call.hidden {
+    display: none !important;
+}
+
+#incoming-call button {
+    margin-left: 10px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#accept-call {
+    background-color: #52c41a;
+    color: white;
+}
+
+#accept-call:hover {
+    background-color: #73d13d;
+    transform: scale(1.1);
+}
+
+#reject-call {
+    background-color: #ff4d4f;
+    color: white;
+}
+
+#reject-call:hover {
+    background-color: #ff7875;
+    transform: scale(1.1);
+}
+
+/* Estado de conexión */
+#connection-status {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #faad14; /* Amarillo por defecto (conectando) */
+    margin-right: 8px;
+}
+
+#connection-status.connected {
+    background-color: #52c41a; /* Verde (conectado) */
+}
+
+#connection-status.error {
+    background-color: #ff4d4f; /* Rojo (error) */
+}
+
+/* Notificaciones */
+.notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    border-radius: 8px;
+    color: white;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.notification.error {
+    background-color: #ff4d4f;
+}
+
+.notification.success {
+    background-color: #52c41a;
+}
+
+.notification.info {
+    background-color: #1890ff;
+}
+
+/* Ajustes responsive */
+@media (max-width: 768px) {
+    #video-container:not(.minimized) .video-grid {
+        flex-direction: column;
+    }
+    
+    #video-container.minimized {
+        width: 200px;
+        height: 120px;
+    }
+}

@@ -32,7 +32,7 @@ if (userIdMeta) {
         if (document.visibilityState === 'visible' && 
             !isLoadingNotifications && 
             (Date.now() - lastLoadTimestamp > MIN_LOAD_INTERVAL)) {
-            loadNotifications();
+        loadNotifications();
         }
     });
 }
@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Manejador de clic para el botón de notificaciones
     notificationButton.addEventListener('click', function (e) {
         e.stopPropagation(); // Evitar propagación del evento
-        notificationDropdown.classList.toggle('hidden');
+            notificationDropdown.classList.toggle('hidden');
         
         // Solo cargar notificaciones si se está abriendo el dropdown
         // y ha pasado suficiente tiempo desde la última carga
@@ -64,11 +64,11 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Cerrar dropdown al hacer clic fuera
-    document.addEventListener('click', function (event) {
-        if (!notificationButton.contains(event.target) && !notificationDropdown.contains(event.target)) {
-            notificationDropdown.classList.add('hidden');
-        }
-    });
+        document.addEventListener('click', function (event) {
+            if (!notificationButton.contains(event.target) && !notificationDropdown.contains(event.target)) {
+                notificationDropdown.classList.add('hidden');
+            }
+        });
 
     // Función optimizada para cargar notificaciones
     window.loadNotifications = function() {
@@ -92,101 +92,101 @@ document.addEventListener('DOMContentLoaded', function () {
         notificationList.innerHTML = '<div class="p-4 text-center"><div class="inline-block animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div> <span class="ml-2 text-gray-500">Cargando...</span></div>';
         
         // Realizar la petición con caché desactivada
-        fetch('/notifications/unread', {
-            credentials: 'same-origin',
-            headers: {
+            fetch('/notifications/unread', {
+                credentials: 'same-origin',
+                headers: {
                 'Accept': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest',
                 'Cache-Control': 'no-cache, no-store, must-revalidate',
                 'Pragma': 'no-cache',
                 'Expires': '0'
-            }
-        })
+                }
+            })
         .then(response => {
             if (!response.ok) {
                 throw new Error('Error en la respuesta del servidor: ' + response.status);
             }
             return response.json();
         })
-        .then(data => {
+                .then(data => {
             // Limpiar el contenedor
-            notificationList.innerHTML = '';
+                    notificationList.innerHTML = '';
             
             // Mostrar mensaje si no hay notificaciones
-            if (!Array.isArray(data) || data.length === 0) {
+                    if (!Array.isArray(data) || data.length === 0) {
                 notificationList.innerHTML = '<div class="p-4 text-gray-500 text-center">No tienes notificaciones nuevas.</div>';
-                notificationCount.style.display = 'none';
-            } else {
+                        notificationCount.style.display = 'none';
+                    } else {
                 // Mostrar contador y actualizar la lista
-                notificationCount.textContent = data.length;
-                notificationCount.style.display = 'inline-flex';
+                        notificationCount.textContent = data.length;
+                        notificationCount.style.display = 'inline-flex';
                 
                 // Renderizar cada notificación
-                data.forEach(notification => {
-                    // Determina el icono y color según el tipo
-                    let icon = '';
-                    let iconColor = '';
+                        data.forEach(notification => {
+                            // Determina el icono y color según el tipo
+                            let icon = '';
+                            let iconColor = '';
                     
-                    switch (notification.type) {
-                        case 'mensaje_no_leido':
-                        case 'App\\Notifications\\MensajeNoLeidoNotification':
-                            icon = '<i class="fas fa-envelope fa-xs"></i>';
-                            iconColor = 'text-purple-600 bg-purple-100';
-                            break;
-                        case 'nueva_solicitud':
-                        case 'App\\Notifications\\AlumnoSuscritoNotification':
-                            icon = '<i class="fas fa-user-plus fa-xs"></i>';
-                            iconColor = 'text-blue-600 bg-blue-100';
-                            break;
-                        case 'respuesta_publicacion':
-                        case 'App\\Notifications\\SolicitudEstadoNotification':
-                        case 'solicitud_estado':
-                            if (notification.estado === 'rechazada') {
-                                icon = '<i class="fas fa-times-circle fa-xs"></i>';
-                                iconColor = 'text-red-600 bg-red-100';
-                            } else {
-                                icon = '<i class="fas fa-check-circle fa-xs"></i>';
-                                iconColor = 'text-green-600 bg-green-100';
+                            switch (notification.type) {
+                                case 'mensaje_no_leido':
+                                case 'App\\Notifications\\MensajeNoLeidoNotification':
+                                    icon = '<i class="fas fa-envelope fa-xs"></i>';
+                                    iconColor = 'text-purple-600 bg-purple-100';
+                                    break;
+                                case 'nueva_solicitud':
+                                case 'App\\Notifications\\AlumnoSuscritoNotification':
+                                    icon = '<i class="fas fa-user-plus fa-xs"></i>';
+                                    iconColor = 'text-blue-600 bg-blue-100';
+                                    break;
+                                case 'respuesta_publicacion':
+                                case 'App\\Notifications\\SolicitudEstadoNotification':
+                                case 'solicitud_estado':
+                                    if (notification.estado === 'rechazada') {
+                                        icon = '<i class="fas fa-times-circle fa-xs"></i>';
+                                        iconColor = 'text-red-600 bg-red-100';
+                                    } else {
+                                        icon = '<i class="fas fa-check-circle fa-xs"></i>';
+                                        iconColor = 'text-green-600 bg-green-100';
+                                    }
+                                    break;
+                                default:
+                                    icon = '<i class="fas fa-info-circle fa-xs"></i>';
+                                    iconColor = 'text-gray-600 bg-gray-100';
                             }
-                            break;
-                        default:
-                            icon = '<i class="fas fa-info-circle fa-xs"></i>';
-                            iconColor = 'text-gray-600 bg-gray-100';
-                    }
 
                     // Agregar la notificación al DOM
-                    notificationList.innerHTML += `
-                        <div class="p-3 border-b hover:bg-gray-100 cursor-pointer flex items-start space-x-2"
-                             onclick="markAsReadAndRedirect('${notification.id}', '${notification.url}')">
-                            <div class="flex-shrink-0 rounded-full p-1.5 ${iconColor} flex items-center justify-center" style="width:28px;height:28px;">
-                                ${icon}
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <div class="font-semibold text-sm">${notification.title}</div>
-                                <div class="text-xs text-gray-600">${notification.message}</div>
-                                <div class="text-xs text-gray-400">${new Date(notification.created_at).toLocaleString()}</div>
-                            </div>
-                        </div>
-                    `;
-                });
-            }
+                            notificationList.innerHTML += `
+                                <div class="p-3 border-b hover:bg-gray-100 cursor-pointer flex items-start space-x-2"
+                                     onclick="markAsReadAndRedirect('${notification.id}', '${notification.url}')">
+                                    <div class="flex-shrink-0 rounded-full p-1.5 ${iconColor} flex items-center justify-center" style="width:28px;height:28px;">
+                                        ${icon}
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="font-semibold text-sm">${notification.title}</div>
+                                        <div class="text-xs text-gray-600">${notification.message}</div>
+                                        <div class="text-xs text-gray-400">${new Date(notification.created_at).toLocaleString()}</div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    }
             
             // Restablecer flag de carga
             notificationsLoaded = true;
             isLoadingNotifications = false;
-        })
-        .catch(error => {
+                })
+                .catch(error => {
             console.error('Error al cargar notificaciones:', error);
-            notificationList.innerHTML = '<div class="p-4 text-red-500">Error al cargar notificaciones.</div>';
-            notificationCount.style.display = 'none';
+                    notificationList.innerHTML = '<div class="p-4 text-red-500">Error al cargar notificaciones.</div>';
+                    notificationCount.style.display = 'none';
             
             // Restablecer flags en caso de error
             isLoadingNotifications = false;
-        });
-    }
+                });
+        }
 
     // Función para marcar una notificación como leída
-    window.markAsRead = function(id) {
+        window.markAsRead = function(id) {
         // No procesar en la página de solicitudes
         if (isSolicitudesPage) return;
         
@@ -210,7 +210,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 !isLoadingNotifications && 
                 (Date.now() - lastLoadTimestamp > MIN_LOAD_INTERVAL)) {
                 loadNotifications();
-            }
+        }
         })
         .catch(error => {
             console.error('Error al marcar notificación como leída:', error);
@@ -263,8 +263,8 @@ document.addEventListener('DOMContentLoaded', function () {
             // Configurar el intervalo inicial
             notificationInterval = setInterval(function() {
                 if (!isLoadingNotifications && (Date.now() - lastLoadTimestamp > MIN_LOAD_INTERVAL)) {
-                    loadNotifications();
-                }
+        loadNotifications();
+    }
             }, 120000); // 2 minutos entre verificaciones
             
             // Hacer disponible globalmente

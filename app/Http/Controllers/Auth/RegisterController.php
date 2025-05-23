@@ -226,7 +226,7 @@ class RegisterController extends Controller
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'cif' => ['required', 'string', 'max:15'],
             'direccion' => ['required', 'string', 'max:255'],
-            'provincia' => ['required', 'string', 'max:100'],
+            'ciudad' => ['required', 'string', 'max:100'],
         ]);
 
         // Crear usuario
@@ -236,7 +236,7 @@ class RegisterController extends Controller
             'password' => Hash::make($request->password),
             'role_id' => Rol::where('nombre_rol', 'Empresa')->first()->id,
             'fecha_nacimiento' => now()->subYears(rand(25, 65)),
-            'ciudad' => 'Madrid',
+            'ciudad' => $request->ciudad,
             'dni' => 'DNI' . rand(10000000, 99999999),
             'activo' => true,
             'telefono' => '6' . rand(100000000, 999999999),
@@ -249,7 +249,6 @@ class RegisterController extends Controller
             'id' => $user->id,
             'cif' => $request->cif,
             'direccion' => $request->direccion,
-            'provincia' => $request->provincia,
             'latitud' => 0, // Se actualizará después con geocodificación
             'longitud' => 0, // Se actualizará después con geocodificación
         ]);
@@ -258,8 +257,9 @@ class RegisterController extends Controller
         $request->session()->forget('registration_data');
 
         event(new Registered($user));
-        Auth::login($user);
-        return redirect()->route('empresa.dashboard');
+        // Auth::login($user);
+        return redirect()->route('login')
+            ->with('success', 'Registro completado correctamente. Tu cuenta debe ser activada por el administrador antes de poder acceder.');
     }
 
     // Registro de institución
@@ -311,7 +311,7 @@ class RegisterController extends Controller
             'fecha_nacimiento' => now()->subYears(rand(25, 50)),
             'ciudad' => $request->ciudad,
             'dni' => 'INST' . rand(10000000, 99999999),
-            'activo' => true,
+            'activo' => false,
             'telefono' => '9' . rand(10000000, 99999999),
             'descripcion' => 'Institución Educativa',
             'imagen' => null

@@ -17,7 +17,7 @@ class CheckEstudianteActivo
     {
         if (auth()->check() && auth()->user()->rol === 'Estudiante') {
             $estudiante = auth()->user()->estudiante;
-            
+
             if ($estudiante && $estudiante->estado !== 'activo') {
                 auth()->logout();
                 return redirect()->route('login')->with('error', 'Tu cuenta está pendiente de activación. Por favor, contacta con tu institución.');
@@ -26,4 +26,4 @@ class CheckEstudianteActivo
 
         return $next($request);
     }
-} 
+}

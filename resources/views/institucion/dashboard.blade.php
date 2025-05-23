@@ -97,6 +97,29 @@
                 </div>
             </div>
         </div>
+        
+        <!-- Tarjeta: Convenios Pendientes de Firma -->
+        <div class="bg-gradient-to-br from-teal-50 to-teal-100 p-5 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border border-teal-100 transform hover:-translate-y-1">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="font-medium text-teal-800 mb-1">Convenios</h3>
+                    <p class="text-3xl font-bold text-teal-900">{{ $conveniosPendientes ?? 0 }}</p>
+                </div>
+                <div class="bg-white p-3 rounded-lg shadow-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-teal-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                </div>
+            </div>
+            <div class="mt-4 text-sm text-teal-700">
+                <div class="flex items-center">
+                    <span class="font-medium">Pendientes de firma</span>
+                    <a href="{{ route('institucion.convenios.index') }}" class="ml-auto bg-white text-teal-600 hover:text-teal-800 text-xs font-medium px-2 py-1 rounded-full shadow-sm transition-colors duration-200">
+                        Ver todos
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Accesos Rápidos -->
@@ -170,6 +193,19 @@
                 <div>
                     <h3 class="font-semibold text-base text-gray-800">Estudiantes Pendientes</h3>
                     <p class="text-sm text-gray-600 mt-1">Activar nuevos estudiantes</p>
+                </div>
+            </a>
+            
+            <!-- Convenios Pendientes -->
+            <a href="{{ route('institucion.convenios.index') }}" class="flex items-center p-5 rounded-xl shadow-sm hover:shadow-md border border-teal-100 hover:border-teal-300 transition-all duration-300 bg-gradient-to-br from-white to-teal-50 group">
+                <div class="bg-teal-100 group-hover:bg-teal-200 rounded-full p-3 mr-4 transition-colors duration-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-base text-gray-800">Convenios Pendientes</h3>
+                    <p class="text-sm text-gray-600 mt-1">Firmar convenios de prácticas</p>
                 </div>
             </a>
         </div>

@@ -6,45 +6,45 @@
 <div class="space-y-6">
     <!-- Encabezado con buscador -->
     <div class="bg-white p-5 rounded-xl shadow-md border border-gray-100">
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
-            <div>
-                <h2 class="text-xl font-bold text-gray-800 flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                    </svg>
-                    Listado de Alumnos
-                </h2>
-                <p class="mt-1 text-sm text-gray-600">Gestiona los alumnos asignados a tus clases</p>
-            </div>
-            
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+        <div>
+            <h2 class="text-xl font-bold text-gray-800 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                Listado de Alumnos
+            </h2>
+            <p class="mt-1 text-sm text-gray-600">Gestiona los alumnos asignados a tus clases</p>
+        </div>
+        
             <div class="flex flex-col sm:flex-row items-center gap-3">
-                <!-- Buscador -->
+            <!-- Buscador -->
                 <form action="{{ route('docente.alumnos.index') }}" method="GET" class="flex w-full sm:w-auto">
                     <div class="relative flex-grow">
-                        <input type="text" name="search" placeholder="Buscar alumno..." value="{{ request('search') }}"
-                               class="pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-purple-500 focus:border-purple-500 block w-full">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                            </svg>
-                        </div>
+                    <input type="text" name="search" placeholder="Buscar alumno..." value="{{ request('search') }}"
+                           class="pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-purple-500 focus:border-purple-500 block w-full">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
                     </div>
+                </div>
                     <button type="submit" class="ml-2 bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50 transition-colors shadow-sm">
-                        Buscar
-                    </button>
-                </form>
-                
-                <!-- Filtro por clase -->
-                <select onchange="window.location.href=this.value" 
+                    Buscar
+                </button>
+            </form>
+            
+            <!-- Filtro por clase -->
+            <select onchange="window.location.href=this.value" 
                         class="rounded-lg border border-gray-300 focus:ring-purple-500 focus:border-purple-500 py-2 pl-3 pr-10 text-sm shadow-sm">
-                    <option value="{{ route('docente.alumnos.index') }}">Todas las clases</option>
-                    @foreach($clases as $clase)
-                        <option value="{{ route('docente.alumnos.index', ['clase' => $clase->id]) }}" 
-                                {{ request('clase') == $clase->id ? 'selected' : '' }}>
-                            {{ $clase->nombre }}
-                        </option>
-                    @endforeach
-                </select>
+                <option value="{{ route('docente.alumnos.index') }}">Todas las clases</option>
+                @foreach($clases as $clase)
+                    <option value="{{ route('docente.alumnos.index', ['clase' => $clase->id]) }}" 
+                            {{ request('clase') == $clase->id ? 'selected' : '' }}>
+                        {{ $clase->nombre }}
+                    </option>
+                @endforeach
+            </select>
             </div>
         </div>
     </div>

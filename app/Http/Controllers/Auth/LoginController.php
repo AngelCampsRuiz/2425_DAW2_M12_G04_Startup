@@ -23,7 +23,7 @@ class LoginController extends Controller
 
         if (Auth::attempt($credentials, $request->remember)) {
             $user = Auth::user();
-            
+
             // Verificar si el usuario está activo
             if (!$user->activo) {
                 Auth::logout();
@@ -31,9 +31,9 @@ class LoginController extends Controller
                     'email' => 'Tu cuenta no está activada. Por favor, contacta con tu institución para activar tu cuenta.',
                 ]);
             }
-            
+
             $request->session()->regenerate();
-            
+
             // Comprobamos el nombre del rol en lugar del ID para mayor seguridad
             $roleName = $user->role ? $user->role->nombre_rol : null;
 
@@ -85,13 +85,15 @@ class LoginController extends Controller
     protected function redirectPath()
     {
         $user = auth()->user();
-        
+
         if ($user->rol === 'Estudiante') {
             return route('estudiante.dashboard');
         } elseif ($user->rol === 'Institucion') {
             return route('institucion.dashboard');
         } elseif ($user->rol === 'Admin') {
             return route('admin.dashboard');
+        } elseif ($user->rol === 'Empresa') {
+            return route('empresa.dashboard');
         }
 
         return '/';

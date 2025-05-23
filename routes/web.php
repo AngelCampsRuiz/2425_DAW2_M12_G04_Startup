@@ -202,15 +202,27 @@
                 // PUBLICACIONES VISIBLES PARA TODOS LOS USUARIOS
                     Route::get('/publication/{id}', [PublicationController::class, 'show'])->name('publication.show');
 
-                // RUTAS PARA EL CHAT
-                    Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
-                    Route::get('/chat/{chat}', [ChatController::class, 'showChat'])->name('chat.show');
-                    Route::post('/chat/{chat}/message', [ChatController::class, 'sendMessage'])->name('chat.message');
-                    Route::get('/chat/{chat}/messages', [ChatController::class, 'getMessages'])->name('chat.messages');
-                    Route::post('/chat/create/{solicitud}', [ChatController::class, 'createChat'])->name('chat.create');
-                    Route::post('/chat/create-docente', [ChatController::class, 'createDocenteChat'])->name('chat.create.docente');
-                    Route::get('/chat/check-new', [ChatController::class, 'checkNewMessages'])->name('chat.check_new');
-                    Route::get('/chat/refresh', [ChatController::class, 'refreshChats'])->name('chat.refresh');
+                // RUTAS PARA EL CHAT - Accesibles para todos los usuarios autenticados
+                    Route::get('/chat', [ChatController::class, 'index'])
+                        ->name('chat.index');
+                    Route::get('/chat/{chat}', [ChatController::class, 'showChat'])
+                        ->name('chat.show');
+                    Route::post('/chat/{chat}/message', [ChatController::class, 'sendMessage'])
+                        ->name('chat.message');
+                    Route::get('/chat/{chat}/messages', [ChatController::class, 'getMessages'])
+                        ->name('chat.messages');
+                    Route::post('/chat/create/{solicitud}', [ChatController::class, 'createChat'])
+                        ->name('chat.create');
+                    Route::post('/chat/create-docente', [ChatController::class, 'createDocenteChat'])
+                        ->name('chat.create.docente');
+                    Route::post('/chat/create-docente-empresa', [ChatController::class, 'createDocenteEmpresaChat'])
+                        ->name('chat.create.docente.empresa');
+                    Route::get('/chat/check-new', [ChatController::class, 'checkNewMessages'])
+                        ->name('chat.check_new');
+                    Route::get('/chat/refresh', [ChatController::class, 'refreshChats'])
+                        ->name('chat.refresh');
+                    Route::post('/chat/{messageId}/read', [ChatController::class, 'markMessageAsRead'])
+                        ->name('chat.mark_read');
 
                 // RUTAS PARA VALORACIONES
                     Route::post('/valoraciones', [ValoracionController::class, 'store'])->name('valoraciones.store');
@@ -231,13 +243,17 @@
                     Route::get('/saved-publications/partial', [ProfileController::class, 'savedPartial'])->name('saved.publications.partial');
                     Route::post('/saved-publications/{id}', [ProfileController::class, 'savedPublication'])->name('saved.publications.store');
                     Route::delete('/favorite/{id}', [ProfileController::class, 'deleteSavedPublication']);
+
+  
             });
 
         // RUTAS PROTEGIDAS PARA ESTUDIANTES
-                Route::middleware(['auth', \App\Http\Middleware\CheckRole::class.':student'])->group(function () {
-                    Route::get('/student/dashboard', [StudentDashboardController::class, 'index'])->name('student.dashboard');
-                    Route::get('/estudiante/solicitudes', [App\Http\Controllers\Estudiante\SolicitudController::class, 'index'])->name('estudiante.solicitudes.index');
-                });
+            Route::middleware(['auth', \App\Http\Middleware\CheckRole::class.':student'])->group(function () {
+                Route::get('/student/dashboard', [StudentDashboardController::class, 'index'])->name('student.dashboard');
+                Route::get('/estudiante/solicitudes', [App\Http\Controllers\Estudiante\SolicitudController::class, 'index'])->name('estudiante.solicitudes.index');
+                
+               
+            });
 
         // RUTAS PROTEGIDAS PARA EMPRESAS
             Route::middleware(['auth', \App\Http\Middleware\CheckRole::class.':empresa'])->group(function () {
@@ -268,7 +284,8 @@
                     Route::get('/empresa/ofertas/activas', [CompanyDashboardController::class, 'activeOffers'])->name('empresa.offers.active');
                 // RUTA OFERTAS INACTIVAS
                     Route::get('/empresa/ofertas/inactivas', [CompanyDashboardController::class, 'inactiveOffers'])->name('empresa.offers.inactive');
-                    Route::get('/empresa/ofertas/activas/data', [App\Http\Controllers\Admin\EmpresaController::class, 'getActiveOffers'])->name('empresa.offers.active.data');
+                    Route::get('/empresa/ofertas/candidatos-aceptados', [CompanyDashboardController::class, 'acceptedCandidates'])->name('empresa.offers.accepted-candidates');
+                    Route::get('/empresa/ofertas/activas/data', [CompanyDashboardController::class, 'getActiveOffers'])->name('empresa.offers.active.data');
                     Route::prefix('empresa/calendar')->group(function () {
                         Route::get('/reminders', [CalendarController::class, 'getReminders']);
                         Route::post('/reminders', [CalendarController::class, 'store']);
@@ -383,9 +400,17 @@ Route::prefix('institucion')->middleware(['auth', \App\Http\Middleware\CheckRole
 
     // RUTAS PARA ESTUDIANTES PENDIENTES
     Route::prefix('estudiantes')->name('estudiantes.')->group(function() {
+        Route::get('/', [App\Http\Controllers\Institucion\EstudianteController::class, 'index'])->name('index');
+        Route::get('/pendientes', [App\Http\Controllers\Institucion\EstudianteController::class, 'pendientes'])->name('pendientes');
+        Route::get('/{id}', [App\Http\Controllers\Institucion\EstudianteController::class, 'show'])->name('show');
+        Route::get('/{id}/edit', [App\Http\Controllers\Institucion\EstudianteController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [App\Http\Controllers\Institucion\EstudianteController::class, 'update'])->name('update');
+        Route::post('/{id}/asignar-clase', [App\Http\Controllers\Institucion\EstudianteController::class, 'asignarClase'])->name('asignar-clase');
+        Route::delete('/{id}/clase/{claseId}', [App\Http\Controllers\Institucion\EstudianteController::class, 'eliminarClase'])->name('eliminar-clase');
         Route::post('/{id}/activar', [App\Http\Controllers\Institucion\EstudiantePendienteController::class, 'activar'])->name('activar');
-        Route::delete('/{id}', [App\Http\Controllers\Institucion\EstudiantePendienteController::class, 'eliminar'])->name('eliminar');
+        Route::delete('/pendiente/{id}', [App\Http\Controllers\Institucion\EstudiantePendienteController::class, 'eliminar'])->name('eliminar');
         Route::put('/{id}/actualizar', [App\Http\Controllers\Institucion\EstudiantePendienteController::class, 'actualizar'])->name('actualizar');
+        Route::put('/update-modal', [App\Http\Controllers\Institucion\EstudianteController::class, 'updateModal'])->name('update-modal');
     });
 
     // RUTAS PARA SOLICITUDES
@@ -431,38 +456,23 @@ Route::prefix('institucion')->middleware(['auth', \App\Http\Middleware\CheckRole
         Route::get('/departamentos/{id}/get-data', [App\Http\Controllers\DepartamentoController::class, 'getData'])->name('departamentos.get-data');
 
         // Clases
-        Route::get('/clases', [App\Http\Controllers\ClaseController::class, 'index'])->name('clases.index');
-        Route::get('/clases/create', [App\Http\Controllers\ClaseController::class, 'create'])->name('clases.create');
-        Route::post('/clases', [App\Http\Controllers\ClaseController::class, 'store'])->name('clases.store');
-        Route::get('/clases/{id}', [App\Http\Controllers\ClaseController::class, 'show'])->name('clases.show');
-        Route::get('/clases/{id}/edit', [App\Http\Controllers\ClaseController::class, 'edit'])->name('clases.edit');
-        Route::put('/clases/{id}', [App\Http\Controllers\ClaseController::class, 'update'])->name('clases.update');
-        Route::delete('/clases/{id}', [App\Http\Controllers\ClaseController::class, 'destroy'])->name('clases.destroy');
-        Route::post('/clases/{id}/toggle-active', [App\Http\Controllers\ClaseController::class, 'toggleActive'])->name('clases.toggle-active');
-        Route::get('/clases/{id}/asignar-estudiantes', [App\Http\Controllers\ClaseController::class, 'asignarEstudiantes'])->name('clases.asignar-estudiantes');
-        Route::post('/clases/{id}/asignar-estudiantes', [App\Http\Controllers\ClaseController::class, 'guardarAsignacionEstudiantes'])->name('clases.guardar-asignacion-estudiantes');
-        Route::get('/clases/{id}/getData', [App\Http\Controllers\ClaseController::class, 'getData'])->name('clases.getData');
-
-        // Estudiantes
-        Route::prefix('estudiantes')->name('estudiantes.')->group(function () {
-            Route::get('/', [App\Http\Controllers\Institucion\EstudianteController::class, 'index'])->name('index');
-            Route::get('/pendientes', [App\Http\Controllers\Institucion\EstudianteController::class, 'pendientes'])->name('pendientes');
-            Route::get('/{id}', [App\Http\Controllers\Institucion\EstudianteController::class, 'show'])->name('show');
-            Route::get('/{id}/edit', [App\Http\Controllers\Institucion\EstudianteController::class, 'edit'])->name('edit');
-            Route::put('/{id}', [App\Http\Controllers\Institucion\EstudianteController::class, 'update'])->name('update');
-            Route::post('/{id}/asignar-clase', [App\Http\Controllers\Institucion\EstudianteController::class, 'asignarClase'])->name('asignar-clase');
-            Route::delete('/{id}/eliminar-clase/{claseId}', [App\Http\Controllers\Institucion\EstudianteController::class, 'eliminarClase'])->name('eliminar-clase');
-        });
-
-        // Clases
         Route::prefix('clases')->name('clases.')->group(function () {
             Route::get('/', [App\Http\Controllers\Institucion\ClaseController::class, 'index'])->name('index');
             Route::get('/create', [App\Http\Controllers\Institucion\ClaseController::class, 'create'])->name('create');
             Route::post('/', [App\Http\Controllers\Institucion\ClaseController::class, 'store'])->name('store');
+            
+            // Rutas específicas SIN parámetros (estas deben ir ANTES de las rutas con {id})
+            Route::get('/get-nivel-categorias', [App\Http\Controllers\Institucion\ClaseController::class, 'getNivelCategorias'])->name('get-nivel-categorias');
+            Route::get('/test-route', function() {
+                return response()->json(['message' => 'Ruta de prueba funcionando correctamente']);
+            })->name('test-route');
+            
+            // Rutas con {id} (estas deben ir DESPUÉS de las rutas específicas)
             Route::get('/{id}', [App\Http\Controllers\Institucion\ClaseController::class, 'show'])->name('show');
             Route::get('/{id}/edit', [App\Http\Controllers\Institucion\ClaseController::class, 'edit'])->name('edit');
             Route::put('/{id}', [App\Http\Controllers\Institucion\ClaseController::class, 'update'])->name('update');
             Route::delete('/{id}', [App\Http\Controllers\Institucion\ClaseController::class, 'destroy'])->name('destroy');
+            Route::post('/{id}/toggle-active', [App\Http\Controllers\Institucion\ClaseController::class, 'toggleActive'])->name('toggle-active');
 
             // Asignación de estudiantes
             Route::get('/{id}/asignar-estudiantes', [App\Http\Controllers\Institucion\ClaseController::class, 'asignarEstudiantes'])->name('asignar-estudiantes');
@@ -529,16 +539,25 @@ Route::prefix('institucion')->middleware(['auth', \App\Http\Middleware\CheckRole
     }
 });
 
+// Ruta temporal para verificar la estructura de la tabla chats
+Route::get('/test/table-structure', [App\Http\Controllers\TestController::class, 'showTableStructure']);
+
     // Ruta para actualizar estudiantes desde modal
     Route::put('/estudiantes/update-modal', [App\Http\Controllers\Institucion\EstudianteController::class, 'updateModal']);
-
-    // Rutas de chat
+    
+    // Rutas de chat - Accesibles para todos los usuarios
     Route::middleware(['auth'])->prefix('chat')->name('chat.')->group(function () {
         Route::get('/', [App\Http\Controllers\ChatController::class, 'index'])->name('index');
         Route::get('/create/{receiver_id}', [App\Http\Controllers\ChatController::class, 'create'])->name('create');
         Route::post('/send', [App\Http\Controllers\ChatController::class, 'send'])->name('send');
     });
 
+    // Rutas para la institución
+    Route::get('/convenios', [App\Http\Controllers\Institucion\ConvenioController::class, 'index'])->name('convenios.index');
+    Route::get('/convenios/{convenio}', [App\Http\Controllers\Institucion\ConvenioController::class, 'show'])->name('convenios.show');
+    Route::post('/convenios/{convenio}/firmar', [App\Http\Controllers\Institucion\ConvenioController::class, 'firmar'])->name('convenios.firmar');
+    Route::get('/convenios/{convenio}/download', [App\Http\Controllers\Institucion\ConvenioController::class, 'download'])->name('convenios.download');
+    Route::get('/convenios/firmados/lista', [App\Http\Controllers\Institucion\ConvenioController::class, 'firmados'])->name('convenios.firmados');
 });
 
 // RUTAS PARA DOCENTES
@@ -582,6 +601,5 @@ Route::get('/ranking', [App\Http\Controllers\GameScoreController::class, 'showRa
 
 // Ruta para crear la sesión de pago
 Route::post('/institucion/pago', [InstitucionPaymentController::class, 'createSession'])->name('institucion.payment');
-Route::get('/institucion/pago-cancelado', function() {
-    return view('institucion.payment-cancel');
-})->name('institucion.payment.cancel');
+Route::get('/institucion/pago-exitoso', [InstitucionPaymentController::class, 'handleSuccess'])->name('institucion.payment.success');
+Route::get('/institucion/pago-cancelado', [InstitucionPaymentController::class, 'handleCancel'])->name('institucion.payment.cancel');

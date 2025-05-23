@@ -87,13 +87,13 @@
                                         <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
                                     </svg>
-                                </div>
-                                <div>
+                            </div>
+                            <div>
                                     <h3 class="text-blue-800 font-medium mb-1">Clase asignada</h3>
                                     <p>El estudiante ha sido asignado a la clase <span class="font-medium">{{ $solicitud->clase->nombre }}</span></p>
-                                </div>
                             </div>
                         </div>
+                    </div>
                     @elseif($solicitud->estado == 'aprobada')
                         <div class="bg-yellow-50 border-l-4 border-yellow-400 text-yellow-700 p-4 rounded-md mb-6">
                             <div class="flex">
@@ -101,13 +101,13 @@
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                                     </svg>
-                                </div>
-                                <div>
+                            </div>
+                            <div>
                                     <h3 class="text-yellow-800 font-medium mb-1">Pendiente de asignación</h3>
                                     <p>Esta solicitud ha sido aprobada pero aún no se ha asignado una clase al estudiante.</p>
-                                </div>
                             </div>
                         </div>
+                    </div>
                     @endif
                     
                     @if($solicitud->respuesta && $solicitud->estado == 'rechazada')
@@ -117,13 +117,13 @@
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                                     </svg>
-                                </div>
-                                <div>
+                            </div>
+                            <div>
                                     <h3 class="text-red-800 font-medium mb-1">Motivo del rechazo</h3>
                                     <p>{{ $solicitud->respuesta }}</p>
-                                </div>
                             </div>
                         </div>
+                    </div>
                     @endif
 
                     <div class="flex flex-wrap gap-3 mt-6">
@@ -230,8 +230,8 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
                 <span class="font-medium">Detalles de la Solicitud</span>
-            </div>
-        </div>
+                </div>
+                            </div>
         <div class="p-5">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
@@ -240,21 +240,21 @@
                         <div>
                             <h4 class="text-sm font-medium text-gray-500 mb-1">Nombre completo</h4>
                             <p class="text-gray-900">{{ $solicitud->estudiante->user->nombre }}</p>
-                        </div>
+                            </div>
                         <div>
                             <h4 class="text-sm font-medium text-gray-500 mb-1">Email</h4>
                             <p class="text-gray-900">{{ $solicitud->estudiante->user->email }}</p>
-                        </div>
+                            </div>
                         <div>
                             <h4 class="text-sm font-medium text-gray-500 mb-1">Teléfono</h4>
                             <p class="text-gray-900">{{ $solicitud->estudiante->user->telefono ?: 'No proporcionado' }}</p>
-                        </div>
+                            </div>
                         <div>
                             <h4 class="text-sm font-medium text-gray-500 mb-1">Edad</h4>
                             <p class="text-gray-900">{{ $solicitud->estudiante->edad ?: 'No proporcionada' }}</p>
                         </div>
-                    </div>
-                </div>
+                            </div>
+                            </div>
                 <div>
                     <h3 class="text-lg font-semibold text-gray-800 mb-4">Detalles Adicionales</h3>
                     <div class="space-y-4">

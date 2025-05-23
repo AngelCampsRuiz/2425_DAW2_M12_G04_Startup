@@ -119,6 +119,12 @@ class ConvenioController extends Controller
         $convenio->fecha_aprobacion = now();
         $convenio->save();
         
+        // Regenerar el PDF con el nuevo estado y la firma del docente
+        $convenioController = new \App\Http\Controllers\ConvenioController();
+        $pdfFileName = $convenioController->generarPDF($convenio);
+        $convenio->documento_pdf = $pdfFileName;
+        $convenio->save();
+        
         return redirect()->route('docente.convenios.show', $convenio)
             ->with('success', 'El convenio ha sido aprobado correctamente');
     }

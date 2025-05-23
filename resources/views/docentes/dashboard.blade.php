@@ -173,7 +173,7 @@
         
         <!-- Clases en formato de tarjetas -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            @forelse($clases as $clase)
+                    @forelse($clases as $clase)
                 <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-6 border-t-4 border-blue-500">
                     <div class="flex justify-between items-start mb-4">
                         <h3 class="text-lg font-bold text-gray-800">{{ $clase->nombre }}</h3>
@@ -223,7 +223,7 @@
                         </a>
                     </div>
                 </div>
-            @empty
+                    @empty
                 <div class="col-span-full">
                     <div class="text-center py-10 px-4 bg-white rounded-xl shadow-sm">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-300 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -233,7 +233,7 @@
                         <p class="text-gray-500 max-w-md mx-auto mb-6">Actualmente no tienes clases asignadas. Contacta con la institución para que te asignen clases.</p>
                     </div>
                 </div>
-            @endforelse
+                    @endforelse
         </div>
         
         @if(count($clases) > 0)
@@ -262,14 +262,14 @@
         
         <!-- Convenios en formato de tarjetas -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            @forelse($conveniosPendientes ?? [] as $convenio)
+                    @forelse($conveniosPendientes ?? [] as $convenio)
                 <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow p-6 border-l-4 border-amber-400">
                     <div class="flex justify-between items-start mb-4">
                         <h3 class="text-base font-bold text-gray-800">{{ $convenio->estudiante->nombre }}</h3>
                         <span class="px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
                             Pendiente
                         </span>
-                    </div>
+                                        </div>
                     
                     <div class="space-y-3 mb-5">
                         <div class="flex items-start">
@@ -299,53 +299,53 @@
                     <div class="border-t pt-4 flex flex-wrap gap-2">
                         <a href="{{ route('docente.convenios.show', $convenio->id) }}" class="inline-flex items-center px-3 py-1.5 border border-transparent rounded-md text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                            </svg>
-                            Ver
-                        </a>
-                        <form action="{{ route('docente.convenios.aprobar', $convenio->id) }}" method="POST" class="inline">
-                            @csrf
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                    Ver
+                                </a>
+                                <form action="{{ route('docente.convenios.aprobar', $convenio->id) }}" method="POST" class="inline">
+                                    @csrf
                             <button type="submit" class="inline-flex items-center px-3 py-1.5 border border-transparent rounded-md text-xs font-medium text-white bg-green-600 hover:bg-green-700 transition-colors">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                                </svg>
-                                Aprobar
-                            </button>
-                        </form>
-                        <form action="{{ route('docente.convenios.rechazar', $convenio->id) }}" method="POST" class="inline">
-                            @csrf
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        Aprobar
+                                    </button>
+                                </form>
+                                <form action="{{ route('docente.convenios.rechazar', $convenio->id) }}" method="POST" class="inline">
+                                    @csrf
                             <button type="submit" class="inline-flex items-center px-3 py-1.5 border border-transparent rounded-md text-xs font-medium text-white bg-red-600 hover:bg-red-700 transition-colors">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                                Rechazar
-                            </button>
-                        </form>
-                    </div>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                        Rechazar
+                                    </button>
+                                </form>
+                            </div>
                 </div>
-            @empty
+                    @empty
                 <div class="col-span-full">
                     <div class="text-center py-10 px-4 bg-white rounded-xl shadow-sm">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-300 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
                         <h3 class="text-lg font-medium text-gray-900 mb-1">No hay convenios pendientes</h3>
                         <p class="text-gray-500 max-w-md mx-auto mb-6">Actualmente no hay convenios pendientes de aprobación.</p>
                     </div>
-                </div>
-            @endforelse
+                            </div>
+                    @endforelse
         </div>
         
         @if(count($conveniosPendientes ?? []) > 0)
-            <div class="mt-4 flex justify-end">
+        <div class="mt-4 flex justify-end">
                 <a href="{{ route('docente.convenios.index') }}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                    </svg>
-                    Ver todos los convenios
-                </a>
-            </div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+                Ver todos los convenios
+            </a>
+        </div>
         @endif
     </div>
 </div>
