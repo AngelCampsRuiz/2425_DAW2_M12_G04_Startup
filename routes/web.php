@@ -244,15 +244,15 @@
                     Route::post('/saved-publications/{id}', [ProfileController::class, 'savedPublication'])->name('saved.publications.store');
                     Route::delete('/favorite/{id}', [ProfileController::class, 'deleteSavedPublication']);
 
-  
+
             });
 
         // RUTAS PROTEGIDAS PARA ESTUDIANTES
             Route::middleware(['auth', \App\Http\Middleware\CheckRole::class.':student'])->group(function () {
                 Route::get('/student/dashboard', [StudentDashboardController::class, 'index'])->name('student.dashboard');
                 Route::get('/estudiante/solicitudes', [App\Http\Controllers\Estudiante\SolicitudController::class, 'index'])->name('estudiante.solicitudes.index');
-                
-               
+
+
             });
 
         // RUTAS PROTEGIDAS PARA EMPRESAS
@@ -460,13 +460,13 @@ Route::prefix('institucion')->middleware(['auth', \App\Http\Middleware\CheckRole
             Route::get('/', [App\Http\Controllers\Institucion\ClaseController::class, 'index'])->name('index');
             Route::get('/create', [App\Http\Controllers\Institucion\ClaseController::class, 'create'])->name('create');
             Route::post('/', [App\Http\Controllers\Institucion\ClaseController::class, 'store'])->name('store');
-            
+
             // Rutas específicas SIN parámetros (estas deben ir ANTES de las rutas con {id})
             Route::get('/get-nivel-categorias', [App\Http\Controllers\Institucion\ClaseController::class, 'getNivelCategorias'])->name('get-nivel-categorias');
             Route::get('/test-route', function() {
                 return response()->json(['message' => 'Ruta de prueba funcionando correctamente']);
             })->name('test-route');
-            
+
             // Rutas con {id} (estas deben ir DESPUÉS de las rutas específicas)
             Route::get('/{id}', [App\Http\Controllers\Institucion\ClaseController::class, 'show'])->name('show');
             Route::get('/{id}/edit', [App\Http\Controllers\Institucion\ClaseController::class, 'edit'])->name('edit');
@@ -544,7 +544,7 @@ Route::get('/test/table-structure', [App\Http\Controllers\TestController::class,
 
     // Ruta para actualizar estudiantes desde modal
     Route::put('/estudiantes/update-modal', [App\Http\Controllers\Institucion\EstudianteController::class, 'updateModal']);
-    
+
     // Rutas de chat - Accesibles para todos los usuarios
     Route::middleware(['auth'])->prefix('chat')->name('chat.')->group(function () {
         Route::get('/', [App\Http\Controllers\ChatController::class, 'index'])->name('index');

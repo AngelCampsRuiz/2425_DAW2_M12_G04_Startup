@@ -125,7 +125,7 @@
                     <label for="provincia" class="block text-gray-700 text-sm font-medium mb-2">Provincia</label>
                     <select id="provincia" name="provincia"
                         class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary @error('provincia') border-red-500 @enderror">
-                        <option value="">Selecciona una provincia</option>
+                        <option value="">Primero selecciona una provincia</option>
                     </select>
                     <input type="hidden" id="provincia_anterior" value="{{ old('provincia') }}">
                     @error('provincia')
@@ -139,7 +139,7 @@
                     <label for="ciudad" class="block text-gray-700 text-sm font-medium mb-2">Ciudad</label>
                     <select id="ciudad" name="ciudad"
                         class="w-full px-4 py-2 border rounded-lg focus:ring-primary focus:border-primary @error('ciudad') border-red-500 @enderror">
-                        <option value="">Primero selecciona una provincia</option>
+                        <option value="">Primero selecciona una ciudad</option>
                     </select>
                     <input type="hidden" id="ciudad_anterior" value="{{ old('ciudad') }}">
                     @error('ciudad')
@@ -858,7 +858,22 @@ function cargarCategoriasPorNivel() {
     });
 }
 
-// Cargar provincias y ciudades
+window.loadProvincias();
+
+// Eventos para selección en cascada
+if (provincia) {
+        provincia.addEventListener('change', function() {
+            if (this.value) {
+                window.loadCiudades(this.value);
+                window.validateProvincia();
+
+                // Reiniciar campos dependientes
+                ciudad.innerHTML = '<option value="">Selecciona una ciudad</option>';
+            }
+        });
+    }
+
+// Cargar provincias, ciudades, instituciones y niveles educativos
 window.loadProvincias = function() {
     fetch('/api/provincias')
         .then(response => response.json())
@@ -868,31 +883,18 @@ window.loadProvincias = function() {
 
             data.forEach(provincia => {
                 const option = document.createElement('option');
-                option.value = provincia.nombre;
+                option.value = provincia.id;
                 option.textContent = provincia.nombre;
                 select.appendChild(option);
             });
-
-            // Restaurar provincia si hay un valor anterior
-            const provinciaAnterior = document.getElementById('provincia_anterior').value;
-            if (provinciaAnterior) {
-                select.value = provinciaAnterior;
-                // Cargar ciudades de esta provincia
-                window.loadCiudades(provinciaAnterior);
-            }
         })
         .catch(error => console.error('Error cargando provincias:', error));
 };
 
-window.loadCiudades = function(provincia, callback) {
-    console.log('Cargando ciudades para provincia:', provincia);
-    fetch(`/api/ciudades?provincia=${encodeURIComponent(provincia)}`)
-        .then(response => {
-            console.log('Respuesta status:', response.status);
-            return response.json();
-        })
+window.loadCiudades = function(provinciaId) {
+    fetch(`/api/ciudades/${provinciaId}`)
+        .then(response => response.json())
         .then(data => {
-            console.log('Ciudades recibidas:', data);
             const select = document.getElementById('ciudad');
             select.innerHTML = '<option value="">Selecciona una ciudad</option>';
 
@@ -902,20 +904,10 @@ window.loadCiudades = function(provincia, callback) {
                 option.textContent = ciudad.nombre;
                 select.appendChild(option);
             });
-
-            // Restaurar ciudad si hay un valor anterior
-            const ciudadAnterior = document.getElementById('ciudad_anterior').value;
-            if (ciudadAnterior) {
-                select.value = ciudadAnterior;
-            }
-
-            // Si hay un callback, ejecutarlo
-            if (typeof callback === 'function') {
-                callback();
-            }
         })
         .catch(error => console.error('Error cargando ciudades:', error));
 };
+
 
 // Validación de ciudad
 window.validateCiudad = function() {
