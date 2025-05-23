@@ -81,7 +81,7 @@ class User extends Authenticatable
 
     public function experiencias()
     {
-        return $this->hasManyThrough(Experiencia::class, Estudiante::class, 'id', 'alumno_id', 'id', 'id');
+        return $this->hasManyThrough(Experiencia::class, Estudiante::class, 'id', 'user_id', 'id', 'id');
     }
 
     public function tutor()
@@ -156,5 +156,10 @@ class User extends Authenticatable
             'user_id',                    // Foreign key de este modelo en la tabla pivote
             'publicacion_id'              // Foreign key del modelo relacionado en la tabla pivote
         );
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id', 'id');
     }
 }

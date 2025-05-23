@@ -79,7 +79,7 @@ class Estudiante extends Model
 
     public function experiencias()
     {
-        return $this->hasMany(Experiencia::class, 'alumno_id');
+        return $this->hasMany(Experiencia::class, 'user_id', 'id');
     }
 
     public function solicitudes()

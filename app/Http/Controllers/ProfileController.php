@@ -51,9 +51,9 @@ class ProfileController extends Controller
     {
         try {
             DB::beginTransaction();
-            
+
             $user = Auth::user();
-            
+
             $rules = [
                 'nombre' => 'required|string|max:255',
                 'email' => 'required|email|unique:user,email,' . $user->id,
@@ -123,12 +123,12 @@ class ProfileController extends Controller
             // Manejar la subida del CV para estudiantes
             if ($user->role_id == 3 && $request->hasFile('cv_pdf')) {
                 $cvName = time() . '_' . $request->file('cv_pdf')->getClientOriginalName();
-                
+
                 // Asegurarse de que la carpeta cv existe
                 if (!file_exists(public_path('cv'))) {
                     mkdir(public_path('cv'), 0777, true);
                 }
-                
+
                 // Mover el CV a la carpeta public/cv
                 $request->file('cv_pdf')->move(public_path('cv'), $cvName);
 
@@ -181,7 +181,7 @@ class ProfileController extends Controller
 
             // Remover show_cif del updateData si existe
             unset($updateData['show_cif']);
-            
+
             $user->update($updateData);
 
             // Calcular el progreso del perfil
@@ -233,7 +233,7 @@ class ProfileController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Error al actualizar el perfil: ' . $e->getMessage()
@@ -252,7 +252,7 @@ class ProfileController extends Controller
             ]);
 
             $user = auth()->user();
-            
+
             // Actualizar los campos de ubicación
             $user->update([
                 'lat' => $validated['lat'],
