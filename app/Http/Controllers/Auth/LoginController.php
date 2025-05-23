@@ -71,10 +71,10 @@ class LoginController extends Controller
 
     protected function authenticated(Request $request, $user)
     {
-        if ($user->rol === 'Estudiante') {
+        if ($user->role->nombre_rol === 'Estudiante') {
             $estudiante = $user->estudiante;
             if ($estudiante && $estudiante->estado === 'pendiente') {
-                return redirect()->route('estudiante.dashboard')
+                return redirect()->route('student.dashboard')
                     ->with('warning', 'Tu cuenta está pendiente de activación. Por favor, contacta con tu institución.');
             }
         }
@@ -84,18 +84,22 @@ class LoginController extends Controller
 
     protected function redirectPath()
     {
-        $user = auth()->user();
+        $user = Auth::user();
+        $roleName = $user->role ? $user->role->nombre_rol : null;
 
-        if ($user->rol === 'Estudiante') {
-            return route('estudiante.dashboard');
-        } elseif ($user->rol === 'Institucion') {
-            return route('institucion.dashboard');
-        } elseif ($user->rol === 'Admin') {
-            return route('admin.dashboard');
-        } elseif ($user->rol === 'Empresa') {
-            return route('empresa.dashboard');
+        switch($roleName) {
+            case 'Estudiante':
+                return route('student.dashboard');
+            case 'Administrador':
+                return route('admin.dashboard');
+            case 'Empresa':
+                return route('empresa.dashboard');
+            case 'Institución':
+                return route('institucion.dashboard');
+            case 'Docente':
+                return route('docente.dashboard');
+            default:
+                return '/';
         }
-
-        return '/';
     }
 }
