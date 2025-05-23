@@ -57,7 +57,7 @@ class ExperienciaSeeder extends Seeder
                     'fecha_inicio' => $fechaInicio,
                     'fecha_fin' => $fechaFin,
                     'especializacion' => $especializacion,
-                    'alumno_id' => $estudiante->id,
+                    'user_id' => $estudiante->id,
                     'created_at' => now(),
                     'updated_at' => now()
                 ]);
