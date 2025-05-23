@@ -94,12 +94,12 @@
                                 </svg>
                                 Calendario
                             </a></li>
-                            <li><a href="javascript:void(0)" onclick="openSearchCandidatesModal()" class="flex items-center p-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
+                            <!-- <li><a href="javascript:void(0)" onclick="openSearchCandidatesModal()" class="flex items-center p-2 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                 </svg>
                                 Buscar candidatos
-                            </a></li>
+                            </a></li> -->
                             <li><a href="javascript:void(0)" onclick="openModal()" class="flex items-center p-2 {{ Route::currentRouteName() == 'empresa.offers.create' ? 'bg-gradient-to-r from-purple-50 to-purple-100 text-purple-700 border-l-4 border-purple-600' : 'text-gray-700 hover:bg-gray-50' }} rounded-lg transition-colors">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3 {{ Route::currentRouteName() == 'empresa.offers.create' ? 'text-purple-600' : 'text-gray-500' }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -1170,12 +1170,12 @@
                     const searchInput = document.getElementById('searchCandidatesInput');
                     if (searchInput) searchInput.focus();
                 }, 300);
-                
+
                 // Cargar automáticamente todos los candidatos al abrir el modal
                 buscarCandidatos();
             }
         };
-        
+
         // Función para cerrar el modal de búsqueda de candidatos
         window.closeSearchCandidatesModal = function() {
             const modalSearchCandidates = document.getElementById('modalSearchCandidates');
@@ -1197,7 +1197,7 @@
                 }, 200);
             }
         };
-        
+
         // Nueva función para buscar candidatos
         function buscarCandidatos(page = 1) {
             // Ocultar mensaje inicial
@@ -1300,7 +1300,7 @@
                                         </div>
                                     </div>
                                     <div class="ml-4">
-                                        <button class="px-3 py-1 bg-purple-600 text-white text-sm rounded hover:bg-purple-700 transition-colors" 
+                                        <button class="px-3 py-1 bg-purple-600 text-white text-sm rounded hover:bg-purple-700 transition-colors"
                                                 onclick="verPerfilEstudiante(${estudiante.id})">
                                             Ver perfil
                                         </button>
@@ -1310,12 +1310,12 @@
 
                             candidatesList.appendChild(estudianteElement);
                         });
-                        
+
                         // Añadir paginación si existe
                         if (data.last_page && data.last_page > 1) {
                             const paginationContainer = document.createElement('div');
                             paginationContainer.className = 'flex justify-center items-center mt-6 mb-4 space-x-1';
-                            
+
                             // Botón anterior
                             if (data.current_page > 1) {
                                 const prevButton = document.createElement('button');
@@ -1326,7 +1326,7 @@
                                 };
                                 paginationContainer.appendChild(prevButton);
                             }
-                            
+
                             // Números de página
                             for (let i = 1; i <= data.last_page; i++) {
                                 const pageButton = document.createElement('button');
@@ -1341,7 +1341,7 @@
                                 };
                                 paginationContainer.appendChild(pageButton);
                             }
-                            
+
                             // Botón siguiente
                             if (data.current_page < data.last_page) {
                                 const nextButton = document.createElement('button');
@@ -1352,7 +1352,7 @@
                                 };
                                 paginationContainer.appendChild(nextButton);
                             }
-                            
+
                             candidatesList.appendChild(paginationContainer);
                         }
 
@@ -1363,22 +1363,22 @@
             })
             .catch(error => {
                 console.error('Error en la búsqueda de estudiantes:', error);
-                
+
                 // Ocultar spinner
                 if (loadingResults) loadingResults.classList.add('hidden');
-                
+
                 // Mostrar mensaje de error
                 if (noResults) {
                     noResults.classList.remove('hidden');
-                    
+
                     // Actualizar el mensaje para indicar que hubo un error
                     const errorTitle = noResults.querySelector('h3');
                     const errorMsg = noResults.querySelector('p');
-                    
+
                     if (errorTitle) errorTitle.textContent = '¡Ha ocurrido un error!';
                     if (errorMsg) errorMsg.textContent = 'No se pudo completar la búsqueda. Intente de nuevo más tarde.';
                 }
-                
+
                 // Mostrar una alerta al usuario
                 if (window.Swal) {
                     Swal.fire({
