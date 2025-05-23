@@ -68,6 +68,6 @@ class Kernel extends HttpKernel
         'registration.step' => \App\Http\Middleware\VerifyRegistrationSteps::class,
         'admin' => \App\Http\Middleware\AdminMiddleware::class,
         'estudiante.activo' => \App\Http\Middleware\CheckEstudianteActivo::class,
-        'institucion.activa' => \App\Http\Middleware\CheckInstitucionActiva::class,
+        // 'institucion.activa' => \App\Http\Middleware\CheckInstitucionActiva::class,
     ];
 }
