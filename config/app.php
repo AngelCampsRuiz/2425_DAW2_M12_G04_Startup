@@ -165,6 +165,7 @@ return [
          * Application Service Providers...
          */
         App\Providers\AppServiceProvider::class,
+        App\Providers\AuthServiceProvider::class,
         App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
@@ -181,5 +182,8 @@ return [
     |
     */
 
-    'aliases' => [],
+    'aliases' => [
+        'Auth' => Illuminate\Support\Facades\Auth::class,
+        'Route' => Illuminate\Support\Facades\Route::class,
+    ],
 ];

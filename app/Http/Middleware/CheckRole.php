@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpFoundation\Response;
 
 class CheckRole
 {
@@ -23,14 +24,14 @@ class CheckRole
         }
 
         $roles = [
-            'admin' => 1,
-            'institucion' => 2,
-            'student' => 3,
-            'empresa' => 4,
-            'docente' => 5
+            'admin' => 'Administrador',
+            'empresa' => 'Empresa',
+            'student' => 'Estudiante',
+            'docente' => 'Docente',
+            'institucion' => 'Institución'
         ];
 
-        if (!isset($roles[$role]) || Auth::user()->role_id !== $roles[$role]) {
+        if (!isset($roles[$role]) || Auth::user()->role->nombre_rol !== $roles[$role]) {
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => false,
