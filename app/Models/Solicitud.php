@@ -33,4 +33,9 @@ class Solicitud extends Model
     {
         return $this->hasOne(Chat::class);
     }
+
+    public function institucion()
+    {
+        return $this->belongsTo(Institucion::class, 'institucion_id');
+    }
 }

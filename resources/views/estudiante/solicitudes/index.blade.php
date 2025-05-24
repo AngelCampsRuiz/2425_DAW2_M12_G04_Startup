@@ -47,7 +47,7 @@
         </h1>
 
         {{-- ESTADÍSTICAS --}}
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             <div class="bg-white rounded-xl shadow-sm p-5 transform hover:scale-105 transition-transform duration-300 border-t-4 border-[#5e0490] hover:shadow-lg group">
                 <div class="flex items-center">
                     <div class="rounded-full bg-purple-100 p-4 mr-4 group-hover:bg-purple-200 transition-colors duration-300">

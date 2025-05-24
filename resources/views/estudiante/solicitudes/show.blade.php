@@ -63,10 +63,10 @@
                 <svg class="w-5 h-5 mr-2 text-gray-600 group-hover:text-[#5e0490] transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                 </svg>
-                <span class="font-medium group-hover:text-[#5e0490] transition-colors duration-300">Volver a la lista</span>
+                <span class="font-medium md:block hidden group-hover:text-[#5e0490] transition-colors duration-300">Volver a la lista</span>
             </a>
         </div>
-        
+
         {{-- TARJETA DE DETALLES --}}
         <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 hover:shadow-md transition-all duration-300">
             {{-- CABECERA --}}
@@ -113,7 +113,7 @@
                                 $badgeIcon = '';
                                 $badgeDot = '';
                                 $badgeBg = '';
-                                
+
                                 switch($solicitud->estado) {
                                     case 'pendiente':
                                         $badgeClass = 'border-yellow-300 group-hover:border-yellow-400';
@@ -144,7 +144,7 @@
                     </div>
                 </div>
             </div>
-            
+
             {{-- CONTENIDO --}}
             <div class="p-8 space-y-8">
                 {{-- DETALLES DE LA SOLICITUD --}}
@@ -224,7 +224,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 {{-- MENSAJE DE LA SOLICITUD --}}
                 @if($solicitud->mensaje)
                 <div>
@@ -249,7 +249,7 @@
                     </div>
                 </div>
                 @endif
-                
+
                 {{-- RESPUESTA DE LA EMPRESA --}}
                 @if($solicitud->respuesta_empresa)
                 <div>
@@ -274,7 +274,7 @@
                     </div>
                 </div>
                 @endif
-                
+
                 {{-- DETALLES DE LA PUBLICACIÓN --}}
                 @if($solicitud->publicacion)
                 <div>
@@ -335,7 +335,7 @@
                 </div>
                 @endif
             </div>
-            
+
             {{-- ACCIONES --}}
             @if($solicitud->estado === 'pendiente')
             <div class="px-8 py-6 bg-gradient-to-r from-gray-50 to-white border-t border-gray-200">
@@ -343,12 +343,6 @@
                     <form id="cancelar-form" action="{{ route('estudiante.solicitudes.cancelar', $solicitud->id) }}" method="POST" class="inline">
                         @csrf
                         <button type="button" id="btn-cancelar" class="group relative inline-flex items-center px-8 py-3 overflow-hidden text-lg font-medium text-white bg-gradient-to-r from-red-600 to-red-500 rounded-xl hover:from-red-700 hover:to-red-600 transition-all duration-300 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
-                            <span class="absolute left-0 block w-full h-0 transition-all bg-red-800 opacity-100 group-hover:h-full top-1/2 group-hover:top-0 duration-300 ease"></span>
-                            <span class="absolute right-0 flex items-center justify-start w-10 h-10 duration-300 transform translate-x-full group-hover:translate-x-0 ease">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                </svg>
-                            </span>
                             <span class="relative flex items-center">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
@@ -576,4 +570,4 @@
     }
 }
 </style>
-@endsection 
+@endsection

@@ -91,18 +91,20 @@ document.addEventListener('DOMContentLoaded', function() {
      * Renderiza la tabla de solicitudes
      */
     function renderizarTablaSolicitudes(solicitudes) {
+        // TABLA PARA DESKTOP
         let html = `
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Empresa</th>
-                        <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Publicación</th>
-                        <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
-                        <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-                        <th scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
+            <div class="hidden md:block">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Empresa</th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Publicación</th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                            <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
         `;
 
         solicitudes.forEach((solicitud, index) => {
@@ -181,9 +183,48 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         html += `
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+            </div>
         `;
+
+        // CARDS PARA MÓVIL
+        html += `<div class="block md:hidden space-y-4">`;
+        solicitudes.forEach((solicitud) => {
+            html += `
+                <div class="bg-white rounded-xl shadow p-4 flex items-center">
+                    <img class="h-12 w-12 rounded-full object-cover border-2 border-white shadow mr-4"
+                        src="${solicitud.publicacion?.empresa?.user?.imagen ?
+                            '/profile_images/' + solicitud.publicacion.empresa.user.imagen :
+                            '/img/company-default.png'}"
+                        alt="Logo empresa">
+                    <div class="flex-1">
+                        <div class="font-bold text-gray-800">${solicitud.publicacion?.empresa?.user?.nombre || 'Empresa'}</div>
+                        <div class="text-sm text-gray-500">${solicitud.publicacion?.titulo || 'Sin título'}</div>
+                        <div class="text-xs text-gray-400">${formatTimeSince(solicitud.created_at)}</div>
+                        <div class="mt-2">
+                            ${getEstadoBadge(solicitud.estado)}
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-end space-y-2 ml-2">
+                        <a href="/estudiante/solicitudes/${solicitud.id}" class="text-[#5e0490] p-2 rounded-lg hover:bg-purple-50">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                            </svg>
+                        </a>
+                        ${solicitud.estado === 'pendiente' ? `
+                            <button data-id="${solicitud.id}" class="cancelar-solicitud text-red-600 p-2 rounded-lg hover:bg-red-50">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        });
+        html += `</div>`;
 
         return html;
     }
@@ -396,15 +437,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
                         // Mostrar mensaje de éxito con animación y diseño personalizado
                         Swal.fire({
-                            icon: 'success',
-                            title: '<span class="text-green-600">¡Solicitud cancelada!</span>',
                             html: `
                                 <div class="flex flex-col items-center">
-                                    <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                                        <svg class="w-12 h-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <div class="w-24 h-24 mb-4 text-green-500">
+                                        <svg class="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <circle cx="12" cy="12" r="10" stroke-width="2" stroke="currentColor" fill="none"/>
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                                         </svg>
                                     </div>
+                                    <h2 class="text-2xl font-bold text-green-600 mb-2">¡Solicitud cancelada!</h2>
                                     <p class="text-gray-700">La solicitud ha sido cancelada correctamente.</p>
                                 </div>
                             `,
@@ -412,19 +453,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             confirmButtonText: 'Entendido',
                             confirmButtonColor: '#5e0490',
                             timer: 3000,
-                            timerProgressBar: true,
-                            customClass: {
-                                title: 'text-xl font-bold',
-                                htmlContainer: 'py-4',
-                                confirmButton: 'rounded-xl px-6 py-2.5 font-medium text-white shadow-lg hover:shadow-purple-500/30 transition-all duration-200',
-                                timerProgressBar: 'bg-[#5e0490]'
-                            },
-                            showClass: {
-                                popup: 'animate__animated animate__zoomIn animate__faster'
-                            },
-                            hideClass: {
-                                popup: 'animate__animated animate__zoomOut animate__faster'
-                            }
+                            timerProgressBar: true
                         });
                     } else {
                         // Mostrar mensaje de error con diseño personalizado

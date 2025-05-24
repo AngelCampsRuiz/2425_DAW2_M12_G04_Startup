@@ -78,7 +78,7 @@ class SolicitudAjaxController extends Controller
 
             $solicitud = Solicitud::where('id', $id)
             ->where('estudiante_id', $estudiante->id)
-                                      ->with(['institucion.user', 'clase'])
+                                      ->with(['institucion'])
             ->first();
 
         if (!$solicitud) {
