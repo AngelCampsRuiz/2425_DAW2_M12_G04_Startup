@@ -83,7 +83,7 @@ class SolicitudEstudiante extends Model
         }
 
         $estudiante->save();
-        
+
         // Activar el usuario asociado
         if ($estudiante->user) {
             $estudiante->user->activo = true;
@@ -121,12 +121,12 @@ class SolicitudEstudiante extends Model
         // Actualizar estudiante con la clase
         $estudiante = $this->estudiante;
         $estudiante->clase_id = $this->clase_id;
-        
+
         $clase = Clase::find($this->clase_id);
         if ($clase && $clase->docente_id) {
             $estudiante->docente_id = $clase->docente_id;
         }
-        
+
         $estudiante->save();
 
         // Crear registro en la tabla pivote estudiante_clase si no existe ya

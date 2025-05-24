@@ -296,7 +296,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function actualizarEstadisticas(stats) {
         if (statsTotal) statsTotal.textContent = stats.total;
         if (statsPendientes) statsPendientes.textContent = stats.pendientes;
-        if (statsAprobadas) statsAprobadas.textContent = stats.aprobadas;
+        if (statsAprobadas) statsAprobadas.textContent = stats.aceptadas;
         if (statsRechazadas) statsRechazadas.textContent = stats.rechazadas;
     }
 

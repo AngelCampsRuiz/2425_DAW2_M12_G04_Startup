@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Estudiante;
 
 use App\Http\Controllers\Controller;
-use App\Models\SolicitudEstudiante;
+use App\Models\Solicitud;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -12,10 +12,10 @@ class SolicitudAjaxController extends Controller
     /**
      * Método para obtener todas las solicitudes del estudiante actual
      */
-    public function getSolicitudes()
+    public function getSolicitudes(Request $request)
     {
         try {
-        $estudiante = Auth::user()->estudiante;
+            $estudiante = Auth::user()->estudiante;
 
             if (!$estudiante) {
                 return response()->json([
@@ -24,13 +24,29 @@ class SolicitudAjaxController extends Controller
                 ], 404);
             }
 
-            $solicitudes = SolicitudEstudiante::where('estudiante_id', $estudiante->id)->get();
+            $estado = $request->query('estado', 'todos');
 
+            $query = Solicitud::where('estudiante_id', $estudiante->id)
+                ->with(['publicacion.empresa.user']);
+
+            if ($estado !== 'todos') {
+                // Si el filtro es "rechazada", incluye también "cancelada"
+                if ($estado === 'rechazada') {
+                    $query->whereIn('estado', ['rechazada', 'cancelada']);
+                } else {
+                    $query->where('estado', $estado);
+                }
+            }
+
+            $solicitudes = $query->get();
+
+            // Estadísticas (siempre sobre todas las solicitudes)
+            $todas = Solicitud::where('estudiante_id', $estudiante->id)->get();
             $stats = [
-                'total' => $solicitudes->count(),
-                'pendientes' => $solicitudes->where('estado', 'pendiente')->count(),
-                'aprobadas' => $solicitudes->where('estado', 'aprobada')->count(),
-                'rechazadas' => $solicitudes->where('estado', 'rechazada')->count(),
+                'total' => $todas->count(),
+                'pendientes' => $todas->where('estado', 'pendiente')->count(),
+                'aceptadas' => $todas->where('estado', 'aceptada')->count(),
+                'rechazadas' => $todas->whereIn('estado', ['rechazada', 'cancelada'])->count(),
             ];
 
             return response()->json([
@@ -60,7 +76,7 @@ class SolicitudAjaxController extends Controller
                 ], 404);
             }
 
-            $solicitud = SolicitudEstudiante::where('id', $id)
+            $solicitud = Solicitud::where('id', $id)
             ->where('estudiante_id', $estudiante->id)
                                       ->with(['institucion.user', 'clase'])
             ->first();
@@ -99,7 +115,7 @@ class SolicitudAjaxController extends Controller
                 ], 404);
             }
 
-            $solicitud = SolicitudEstudiante::where('id', $id)
+            $solicitud = Solicitud::where('id', $id)
             ->where('estudiante_id', $estudiante->id)
             ->first();
 
@@ -119,8 +135,7 @@ class SolicitudAjaxController extends Controller
         }
 
             // Cambiar estado de la solicitud
-            $solicitud->estado = 'cancelada';
-            $solicitud->fecha_respuesta = now();
+            $solicitud->estado = 'rechazada';
             $solicitud->save();
 
         return response()->json([
