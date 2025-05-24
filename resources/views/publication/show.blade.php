@@ -1,5 +1,7 @@
 @extends('layouts.app')
-
+@php
+    use Illuminate\Support\Str;
+@endphp
 @section('content')
     <link rel="stylesheet" href="{{ asset('css/publication.css') }}">
     <div class="min-h-screen bg-gray-50">

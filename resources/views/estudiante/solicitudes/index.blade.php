@@ -207,7 +207,7 @@
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200" id="solicitudes-tbody">
-                                {{-- Las filas se cargarán dinámicamente mediante AJAX --}}
+                                <!-- Aquí se insertarán las filas dinámicamente -->
                             </tbody>
                         </table>
                     </div>
@@ -608,49 +608,50 @@ document.addEventListener('DOMContentLoaded', function() {
     if (solicitudesTable) {
         solicitudesTable.classList.remove('hidden');
         const tbody = document.getElementById('solicitudes-tbody');
-
-        // Mostrar shimmer de carga
-        for (let i = 0; i < 5; i++) {
-            const shimmerRow = document.createElement('tr');
-            shimmerRow.className = 'animate-pulse shimmer-row';
-            shimmerRow.innerHTML = `
-                <td class="px-6 py-4">
-                    <div class="flex items-center space-x-4">
-                        <div class="h-12 w-12 rounded-xl bg-gray-200"></div>
-                        <div class="space-y-2">
-                            <div class="h-4 w-32 bg-gray-200 rounded"></div>
-                            <div class="h-3 w-24 bg-gray-200 rounded"></div>
+        if (tbody) {
+            // Mostrar shimmer de carga
+            for (let i = 0; i < 5; i++) {
+                const shimmerRow = document.createElement('tr');
+                shimmerRow.className = 'animate-pulse shimmer-row';
+                shimmerRow.innerHTML = `
+                    <td class="px-6 py-4">
+                        <div class="flex items-center space-x-4">
+                            <div class="h-12 w-12 rounded-xl bg-gray-200"></div>
+                            <div class="space-y-2">
+                                <div class="h-4 w-32 bg-gray-200 rounded"></div>
+                                <div class="h-3 w-24 bg-gray-200 rounded"></div>
+                            </div>
                         </div>
-                    </div>
-                </td>
-                <td class="px-6 py-4">
-                    <div class="space-y-2">
-                        <div class="h-4 w-48 bg-gray-200 rounded"></div>
-                        <div class="h-3 w-64 bg-gray-200 rounded"></div>
-                    </div>
-                </td>
-                <td class="px-6 py-4">
-                    <div class="h-8 w-20 bg-gray-200 rounded"></div>
-                </td>
-                <td class="px-6 py-4">
-                    <div class="h-6 w-24 bg-gray-200 rounded-full"></div>
-                </td>
-                <td class="px-6 py-4 text-right">
-                    <div class="flex justify-end space-x-2">
-                        <div class="h-8 w-16 bg-gray-200 rounded"></div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="space-y-2">
+                            <div class="h-4 w-48 bg-gray-200 rounded"></div>
+                            <div class="h-3 w-64 bg-gray-200 rounded"></div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
                         <div class="h-8 w-20 bg-gray-200 rounded"></div>
-                    </div>
-                </td>
-            `;
-            tbody.appendChild(shimmerRow);
-        }
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="h-6 w-24 bg-gray-200 rounded-full"></div>
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        <div class="flex justify-end space-x-2">
+                            <div class="h-8 w-16 bg-gray-200 rounded"></div>
+                            <div class="h-8 w-20 bg-gray-200 rounded"></div>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(shimmerRow);
+            }
 
-        // Simular tiempo de carga
-        setTimeout(() => {
-            const shimmerRows = document.querySelectorAll('.shimmer-row');
-            shimmerRows.forEach(row => row.remove());
-            // Aquí normalmente se cargarían los datos reales
-        }, 1500);
+            // Simular tiempo de carga
+            setTimeout(() => {
+                const shimmerRows = document.querySelectorAll('.shimmer-row');
+                shimmerRows.forEach(row => row.remove());
+                // Aquí normalmente se cargarían los datos reales
+            }, 1500);
+        }
     }
 });
 </script>

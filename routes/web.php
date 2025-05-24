@@ -482,17 +482,19 @@ Route::prefix('institucion')->middleware(['auth', \App\Http\Middleware\CheckRole
         });
 
     // RUTAS PARA ESTUDIANTES
-    Route::prefix('estudiante')->middleware(['auth', 'role:Estudiante', 'estudiante.activo'])->name('estudiante.')->group(function () {
-        // Solicitudes del estudiante
-        Route::get('/solicitudes', [App\Http\Controllers\Estudiante\SolicitudController::class, 'index'])->name('solicitudes.index');
-        Route::get('/solicitudes/{id}', [App\Http\Controllers\Estudiante\SolicitudController::class, 'show'])->name('solicitudes.show');
-        Route::post('/solicitudes/{id}/cancelar', [App\Http\Controllers\Estudiante\SolicitudController::class, 'cancelar'])->name('solicitudes.cancelar');
+    // Route::prefix('estudiante')->middleware([
+    //     'auth'
+    // ])->name('estudiante.')->group(function () {
+    //     // Solicitudes del estudiante
+    //     Route::get('/solicitudes', [App\Http\Controllers\Estudiante\SolicitudController::class, 'index'])->name('solicitudes.index');
+    //     Route::get('/solicitudes/{id}', [App\Http\Controllers\Estudiante\SolicitudController::class, 'show'])->name('solicitudes.show');
+    //     Route::post('/solicitudes/{id}/cancelar', [App\Http\Controllers\Estudiante\SolicitudController::class, 'cancelar'])->name('solicitudes.cancelar');
 
-        // Rutas AJAX para solicitudes
-        Route::get('/api/solicitudes', [App\Http\Controllers\Estudiante\SolicitudAjaxController::class, 'getSolicitudes'])->name('api.solicitudes');
-        Route::get('/api/solicitudes/{id}', [App\Http\Controllers\Estudiante\SolicitudAjaxController::class, 'getSolicitud'])->name('api.solicitudes.show');
-        Route::post('/api/solicitudes/{id}/cancelar', [App\Http\Controllers\Estudiante\SolicitudAjaxController::class, 'cancelarSolicitud'])->name('api.solicitudes.cancelar');
-    });
+    //     // Rutas AJAX para solicitudes
+    //     Route::get('/api/solicitudes', [App\Http\Controllers\Estudiante\SolicitudAjaxController::class, 'getSolicitudes'])->name('api.solicitudes');
+    //     Route::get('/api/solicitudes/{id}', [App\Http\Controllers\Estudiante\SolicitudAjaxController::class, 'getSolicitud'])->name('api.solicitudes.show');
+    //     Route::post('/api/solicitudes/{id}/cancelar', [App\Http\Controllers\Estudiante\SolicitudAjaxController::class, 'cancelarSolicitud'])->name('api.solicitudes.cancelar');
+    // });
 
     // RUTAS PARA DOCENTES
     Route::prefix('docente')->middleware(['auth', \App\Http\Middleware\CheckRole::class.':docente'])->name('docente.')->group(function () {
@@ -603,3 +605,18 @@ Route::get('/ranking', [App\Http\Controllers\GameScoreController::class, 'showRa
 Route::post('/institucion/pago', [InstitucionPaymentController::class, 'createSession'])->name('institucion.payment');
 Route::get('/institucion/pago-exitoso', [InstitucionPaymentController::class, 'handleSuccess'])->name('institucion.payment.success');
 Route::get('/institucion/pago-cancelado', [InstitucionPaymentController::class, 'handleCancel'])->name('institucion.payment.cancel');
+
+// RUTAS PARA ESTUDIANTES
+    Route::prefix('estudiante')->middleware([
+        'auth'
+    ])->name('estudiante.')->group(function () {
+        // Solicitudes del estudiante
+        Route::get('/solicitudes', [App\Http\Controllers\Estudiante\SolicitudController::class, 'index'])->name('solicitudes.index');
+        Route::get('/solicitudes/{id}', [App\Http\Controllers\Estudiante\SolicitudController::class, 'show'])->name('solicitudes.show');
+        Route::post('/solicitudes/{id}/cancelar', [App\Http\Controllers\Estudiante\SolicitudController::class, 'cancelar'])->name('solicitudes.cancelar');
+
+        // Rutas AJAX para solicitudes
+        Route::get('/api/solicitudes', [App\Http\Controllers\Estudiante\SolicitudAjaxController::class, 'getSolicitudes'])->name('api.solicitudes');
+        Route::get('/api/solicitudes/{id}', [App\Http\Controllers\Estudiante\SolicitudAjaxController::class, 'getSolicitud'])->name('api.solicitudes.show');
+        Route::post('/api/solicitudes/{id}/cancelar', [App\Http\Controllers\Estudiante\SolicitudAjaxController::class, 'cancelarSolicitud'])->name('api.solicitudes.cancelar');
+    });

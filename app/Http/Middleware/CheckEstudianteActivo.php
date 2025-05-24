@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Auth;
 
 class CheckEstudianteActivo
 {
@@ -15,11 +16,11 @@ class CheckEstudianteActivo
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (auth()->check() && auth()->user()->rol === 'Estudiante') {
-            $estudiante = auth()->user()->estudiante;
+        if (Auth::check() && Auth::user()->role_id === 3) {
+            $estudiante = Auth::user()->estudiante;
 
             if ($estudiante && $estudiante->estado !== 'activo') {
-                auth()->logout();
+                Auth::logout();
                 return redirect()->route('login')->with('error', 'Tu cuenta está pendiente de activación. Por favor, contacta con tu institución.');
             }
         }

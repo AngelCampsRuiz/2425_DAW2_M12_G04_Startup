@@ -16,21 +16,25 @@ class SolicitudAjaxController extends Controller
     {
         try {
         $estudiante = Auth::user()->estudiante;
-        
+
             if (!$estudiante) {
                 return response()->json([
                     'success' => false,
                     'error' => 'No se encontró el estudiante'
                 ], 404);
             }
-            
-            $solicitudes = SolicitudEstudiante::where('estudiante_id', $estudiante->id)
-                                        ->with(['institucion.user', 'clase'])
-                                        ->latest()
-                                        ->get();
-        
-        return response()->json([
-            'success' => true,
+
+            $solicitudes = SolicitudEstudiante::where('estudiante_id', $estudiante->id)->get();
+
+            $stats = [
+                'total' => $solicitudes->count(),
+                'pendientes' => $solicitudes->where('estado', 'pendiente')->count(),
+                'aprobadas' => $solicitudes->where('estado', 'aprobada')->count(),
+                'rechazadas' => $solicitudes->where('estado', 'rechazada')->count(),
+            ];
+
+            return response()->json([
+                'stats' => $stats,
                 'solicitudes' => $solicitudes
             ]);
         } catch (\Exception $e) {
@@ -40,7 +44,7 @@ class SolicitudAjaxController extends Controller
             ], 500);
         }
     }
-    
+
     /**
      * Método para obtener una solicitud específica
      */
@@ -48,26 +52,26 @@ class SolicitudAjaxController extends Controller
     {
         try {
         $estudiante = Auth::user()->estudiante;
-        
+
             if (!$estudiante) {
                 return response()->json([
                     'success' => false,
                     'error' => 'No se encontró el estudiante'
                 ], 404);
             }
-            
+
             $solicitud = SolicitudEstudiante::where('id', $id)
             ->where('estudiante_id', $estudiante->id)
                                       ->with(['institucion.user', 'clase'])
             ->first();
-        
+
         if (!$solicitud) {
             return response()->json([
                 'success' => false,
                     'error' => 'No se encontró la solicitud'
             ], 404);
         }
-        
+
         return response()->json([
             'success' => true,
             'solicitud' => $solicitud
@@ -79,7 +83,7 @@ class SolicitudAjaxController extends Controller
             ], 500);
         }
     }
-    
+
     /**
      * Método para cancelar una solicitud (versión AJAX)
      */
@@ -87,25 +91,25 @@ class SolicitudAjaxController extends Controller
     {
         try {
         $estudiante = Auth::user()->estudiante;
-        
+
             if (!$estudiante) {
                 return response()->json([
                     'success' => false,
                     'error' => 'No se encontró el estudiante'
                 ], 404);
             }
-            
+
             $solicitud = SolicitudEstudiante::where('id', $id)
             ->where('estudiante_id', $estudiante->id)
             ->first();
-        
+
         if (!$solicitud) {
             return response()->json([
                 'success' => false,
                     'error' => 'No se encontró la solicitud'
             ], 404);
         }
-        
+
         // Solo se pueden cancelar solicitudes pendientes
         if ($solicitud->estado !== 'pendiente') {
             return response()->json([
@@ -113,12 +117,12 @@ class SolicitudAjaxController extends Controller
                     'error' => 'Solo se pueden cancelar solicitudes pendientes'
             ], 400);
         }
-        
+
             // Cambiar estado de la solicitud
             $solicitud->estado = 'cancelada';
             $solicitud->fecha_respuesta = now();
             $solicitud->save();
-        
+
         return response()->json([
             'success' => true,
             'message' => 'Solicitud cancelada correctamente'
@@ -130,4 +134,4 @@ class SolicitudAjaxController extends Controller
             ], 500);
         }
     }
-} 
+}

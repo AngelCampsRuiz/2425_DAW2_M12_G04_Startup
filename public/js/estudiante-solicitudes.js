@@ -8,16 +8,16 @@ document.addEventListener('DOMContentLoaded', function() {
     const solicitudesTable = document.getElementById('solicitudes-table');
     const noSolicitudes = document.getElementById('no-solicitudes');
     const estadoLinks = document.querySelectorAll('.estado-link');
-    
+
     // Contadores de estadísticas
     const statsTotal = document.getElementById('stats-total');
     const statsPendientes = document.getElementById('stats-pendientes');
     const statsAprobadas = document.getElementById('stats-aprobadas');
     const statsRechazadas = document.getElementById('stats-rechazadas');
-    
+
     // Estado actual del filtro
     let estadoActual = 'todos';
-    
+
     /**
      * Carga las solicitudes mediante AJAX
      */
@@ -27,10 +27,10 @@ document.addEventListener('DOMContentLoaded', function() {
         if (noSolicitudes) noSolicitudes.classList.add('hidden');
         if (solicitudesTable) solicitudesTable.classList.add('hidden');
         if (solicitudesDataContainer) solicitudesDataContainer.innerHTML = '';
-        
+
         // Actualizar el estado activo en los enlaces
         actualizarEstadoActivo(estado);
-        
+
         // Realizar petición AJAX
         fetch(`/estudiante/api/solicitudes?estado=${estado}`, {
             method: 'GET',
@@ -44,17 +44,17 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             // Ocultar indicador de carga
             if (loadingIndicator) loadingIndicator.classList.add('hidden');
-            
+
             // Actualizar estadísticas
             actualizarEstadisticas(data.stats);
-            
+
             // Verificar si hay solicitudes
             if (data.solicitudes && data.solicitudes.length > 0) {
                 if (solicitudesTable) solicitudesTable.classList.remove('hidden');
                 if (solicitudesDataContainer) {
                     // Generar HTML de la tabla
                     solicitudesDataContainer.innerHTML = renderizarTablaSolicitudes(data.solicitudes);
-                    
+
                     // Agregar eventos a los botones de cancelar
                     document.querySelectorAll('.cancelar-solicitud').forEach(btn => {
                         btn.addEventListener('click', function() {
@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(error => {
             console.error('Error al cargar solicitudes:', error);
             if (loadingIndicator) loadingIndicator.classList.add('hidden');
-            
+
             // Mostrar error con SweetAlert2
             Swal.fire({
                 icon: 'error',
@@ -80,13 +80,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 confirmButtonColor: '#5e0490',
                 confirmButtonText: 'Entendido'
             });
-            
+
             if (solicitudesDataContainer) {
                 solicitudesDataContainer.innerHTML = '<div class="text-center py-8 text-red-500 flex flex-col items-center"><svg class="w-12 h-12 mb-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>Error al cargar solicitudes. Intenta de nuevo.</div>';
             }
         });
     }
-    
+
     /**
      * Renderiza la tabla de solicitudes
      */
@@ -104,25 +104,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
         `;
-        
+
         solicitudes.forEach((solicitud, index) => {
             // Formatear fecha
             const fecha = new Date(solicitud.created_at);
             const fechaFormateada = fecha.toLocaleDateString('es-ES');
             const horaFormateada = fecha.toLocaleTimeString('es-ES', {hour: '2-digit', minute:'2-digit'});
-            
+
             // Alternar colores de fila para mejor legibilidad
             const rowClass = index % 2 === 0 ? '' : 'bg-gray-50';
-            
+
             html += `
                 <tr class="${rowClass} hover:bg-purple-50 transition-colors duration-150">
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
                             <div class="flex-shrink-0 h-12 w-12 relative">
-                                <img class="h-12 w-12 rounded-full object-cover border-2 border-white shadow" 
-                                    src="${solicitud.publicacion?.empresa?.user?.imagen ? 
-                                        '/profile_images/' + solicitud.publicacion.empresa.user.imagen : 
-                                        '/img/company-default.png'}" 
+                                <img class="h-12 w-12 rounded-full object-cover border-2 border-white shadow"
+                                    src="${solicitud.publicacion?.empresa?.user?.imagen ?
+                                        '/profile_images/' + solicitud.publicacion.empresa.user.imagen :
+                                        '/img/company-default.png'}"
                                     alt="Logo empresa">
                                 <div class="absolute bottom-0 right-0 rounded-full bg-white p-0.5 shadow">
                                     <svg class="w-4 h-4 text-[#5e0490]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -167,7 +167,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 </svg>
                                 <span class="sr-only">Ver detalles</span>
                             </a>
-                            ${solicitud.estado === 'pendiente' ? 
+                            ${solicitud.estado === 'pendiente' ?
                                 `<button data-id="${solicitud.id}" class="cancelar-solicitud bg-red-50 hover:bg-red-100 text-red-600 p-2 rounded-lg transition-colors group">
                                     <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
@@ -179,15 +179,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 </tr>
             `;
         });
-        
+
         html += `
                 </tbody>
             </table>
         `;
-        
+
         return html;
     }
-    
+
     /**
      * Genera el HTML para el badge de estado
      */
@@ -233,7 +233,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>`;
         }
     }
-    
+
     /**
      * Formatea el tiempo transcurrido desde una fecha
      */
@@ -241,47 +241,47 @@ document.addEventListener('DOMContentLoaded', function() {
         const date = new Date(dateString);
         const now = new Date();
         const seconds = Math.floor((now - date) / 1000);
-        
+
         let interval = Math.floor(seconds / 31536000);
         if (interval >= 1) {
             return interval === 1 ? 'hace 1 año' : `hace ${interval} años`;
         }
-        
+
         interval = Math.floor(seconds / 2592000);
         if (interval >= 1) {
             return interval === 1 ? 'hace 1 mes' : `hace ${interval} meses`;
         }
-        
+
         interval = Math.floor(seconds / 86400);
         if (interval >= 1) {
             return interval === 1 ? 'hace 1 día' : `hace ${interval} días`;
         }
-        
+
         interval = Math.floor(seconds / 3600);
         if (interval >= 1) {
             return interval === 1 ? 'hace 1 hora' : `hace ${interval} horas`;
         }
-        
+
         interval = Math.floor(seconds / 60);
         if (interval >= 1) {
             return interval === 1 ? 'hace 1 minuto' : `hace ${interval} minutos`;
         }
-        
+
         return seconds < 10 ? 'ahora mismo' : `hace ${Math.floor(seconds)} segundos`;
     }
-    
+
     /**
      * Actualiza el estado activo en los enlaces de filtro
      */
     function actualizarEstadoActivo(estado) {
         estadoActual = estado;
-        
+
         // Eliminar clase activa de todos los enlaces
         estadoLinks.forEach(link => {
             link.classList.remove('bg-purple-100', 'text-[#5e0490]');
             link.classList.add('bg-gray-100', 'text-gray-700', 'hover:bg-gray-200');
         });
-        
+
         // Agregar clase activa al enlace seleccionado
         const linkActivo = document.querySelector(`.estado-link[data-estado="${estado}"]`);
         if (linkActivo) {
@@ -289,7 +289,7 @@ document.addEventListener('DOMContentLoaded', function() {
             linkActivo.classList.add('bg-purple-100', 'text-[#5e0490]');
         }
     }
-    
+
     /**
      * Actualiza los contadores de estadísticas
      */
@@ -299,7 +299,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (statsAprobadas) statsAprobadas.textContent = stats.aprobadas;
         if (statsRechazadas) statsRechazadas.textContent = stats.rechazadas;
     }
-    
+
     /**
      * Cancela una solicitud mediante AJAX
      */
@@ -378,7 +378,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         htmlContainer: 'py-4'
                     }
                 });
-                
+
                 // Realizar petición AJAX para cancelar
                 fetch(`/estudiante/api/solicitudes/${solicitudId}/cancelar`, {
                     method: 'POST',
@@ -393,7 +393,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (data.success) {
                         // Recargar las solicitudes con el filtro actual
                         cargarSolicitudes(estadoActual);
-                        
+
                         // Mostrar mensaje de éxito con animación y diseño personalizado
                         Swal.fire({
                             icon: 'success',
@@ -456,7 +456,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 })
                 .catch(error => {
                     console.error('Error al cancelar solicitud:', error);
-                    
+
                     // Mostrar mensaje de error con diseño personalizado
                     Swal.fire({
                         icon: 'error',
@@ -487,7 +487,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    
+
     // Agregar eventos a los enlaces de filtro
     estadoLinks.forEach(link => {
         link.addEventListener('click', function(e) {
@@ -496,7 +496,7 @@ document.addEventListener('DOMContentLoaded', function() {
             cargarSolicitudes(estado);
         });
     });
-    
+
     // Cargar todas las solicitudes al cargar la página
     cargarSolicitudes();
-}); 
+});
