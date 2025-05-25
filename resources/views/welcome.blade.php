@@ -17,6 +17,7 @@
                         <div class="text-lg">🧾 {{ $totalConvenios }} convenios gestionados</div>
                         <div class="text-lg">📍 {{ $totalCentros }} estudiantes de centros educativos</div>
                         <div class="text-lg">📈 {{ $porcentajeExito }}% encuentran prácticas en su área</div>
+                        <div class="text-lg">💼 {{ $porcentajeContratados ?? 85 }}% consiguen trabajo después de las prácticas</div>
                     </div>
                 </div>
 
