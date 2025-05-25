@@ -1056,15 +1056,18 @@ use Illuminate\Support\Str;
     function actualizarFilaDepartamento(departamento) {
         const fila = document.querySelector(`tr[data-departamento-id="${departamento.id}"]`);
         if (fila) {
-            const jefeDepartamento = departamento.jefe_departamento ? 
-                `<a href="/institucion/docentes/${departamento.jefe_departamento.id}" class="text-primary hover:underline flex items-center">
-                    <span class="w-8 h-8 rounded-full overflow-hidden inline-block mr-2">
-                        <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(departamento.jefe_departamento.user.nombre)}&background=7705B6&color=fff" 
-                             alt="${departamento.jefe_departamento.user.nombre}" class="w-full h-full object-cover">
-                    </span>
-                    ${departamento.jefe_departamento.user.nombre}
-                </a>` : 
-                '<span class="text-gray-400">No asignado</span>';
+            // Preparar la información del jefe de departamento
+            let jefeDepartamentoHTML = '<span class="text-gray-400">No asignado</span>';
+            if (departamento.jefe_departamento && departamento.jefe_departamento.user) {
+                jefeDepartamentoHTML = `
+                    <a href="/institucion/docentes/${departamento.jefe_departamento.id}" class="text-primary hover:underline flex items-center">
+                        <span class="w-8 h-8 rounded-full overflow-hidden inline-block mr-2">
+                            <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(departamento.jefe_departamento.user.nombre)}&background=7705B6&color=fff" 
+                                 alt="${departamento.jefe_departamento.user.nombre}" class="w-full h-full object-cover">
+                        </span>
+                        ${departamento.jefe_departamento.user.nombre}
+                    </a>`;
+            }
 
             fila.innerHTML = `
                 <td class="px-6 py-4 whitespace-nowrap">
@@ -1075,27 +1078,29 @@ use Illuminate\Support\Str;
                         <div class="ml-4">
                             <div class="text-sm font-medium text-gray-900">${departamento.nombre}</div>
                             <div class="text-xs text-gray-500">
-                                <span class="truncate">${departamento.descripcion || ''}</span>
+                                <span class="truncate">
+                                    ${departamento.descripcion || 'Sin descripción'}
+                                </span>
                             </div>
                         </div>
                     </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm text-gray-900">
-                        ${jefeDepartamento}
+                        ${jefeDepartamentoHTML}
                     </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm text-gray-900">
                         <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
-                            ${departamento.docentes_count || 0} docentes
+                            ${departamento.docentes ? departamento.docentes.length : 0} docentes
                         </span>
                     </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm text-gray-900">
                         <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">
-                            ${departamento.clases_count || 0} clases
+                            ${departamento.clases ? departamento.clases.length : 0} clases
                         </span>
                     </div>
                 </td>

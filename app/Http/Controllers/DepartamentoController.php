@@ -126,8 +126,12 @@ class DepartamentoController extends Controller
                 'jefe_departamento_id' => $request->jefe_departamento_id,
             ]);
 
-            // Recargar las relaciones
-            $departamento->load(['jefeDepartamento.user', 'docentes', 'clases']);
+            // Recargar el departamento con todas sus relaciones
+            $departamento->load([
+                'jefeDepartamento.user',
+                'docentes.user',
+                'clases'
+            ]);
             
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
