@@ -4,15 +4,15 @@
             <div class="flex items-center">
                 <!-- Logo de la empresa -->
                 @if($empresa->user->imagen)
-                    <div class="flex-shrink-0 h-10 w-10 mr-3">
-                        <img class="h-10 w-10 rounded-full object-cover" 
+                    <div class="flex-shrink-0 h-12 w-12 mr-3 rounded-full bg-white overflow-hidden border border-gray-200">
+                        <img class="h-12 w-12 p-1.5 object-contain" 
                              src="{{ asset('profile_images/' . $empresa->user->imagen) }}" 
                              alt="Logo de {{ $empresa->user->nombre }}"
-                             onerror="this.onerror=null; this.src='{{ asset('img/default-logo.png') }}';">
+                             onerror="this.onerror=null; this.src='{{ asset('img/default-logo.png') }}'">
                     </div>
                 @else
-                    <div class="flex-shrink-0 h-10 w-10 bg-purple-100 rounded-full flex items-center justify-center mr-3">
-                        <span class="text-purple-800 font-medium">{{ substr($empresa->user->nombre, 0, 2) }}</span>
+                    <div class="flex-shrink-0 h-12 w-12 bg-purple-100 rounded-full flex items-center justify-center mr-3 border border-gray-200">
+                        <span class="text-purple-800 text-base font-medium">{{ substr($empresa->user->nombre, 0, 2) }}</span>
                     </div>
                 @endif
                 <div>

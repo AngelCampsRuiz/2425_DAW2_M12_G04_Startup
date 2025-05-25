@@ -10,6 +10,8 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
         <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+        <!-- Incluir los nuevos archivos CSS y JS -->
+        <link rel="stylesheet" href="{{ asset('css/student-dashboard.css') }}">
     </head>
     <div class="min-h-screen bg-gray-50">
         @if(isset($is_demo) && $is_demo)
@@ -965,5 +967,6 @@
             }
         });
     </script>
+    <script src="{{ asset('js/student-dashboard.js') }}"></script>
     <script src="{{ asset('js/distance-filter.js') }}"></script>
 @endsection

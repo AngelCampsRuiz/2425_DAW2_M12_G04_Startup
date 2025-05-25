@@ -271,6 +271,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const fechaFinValue = fechaFin.value;
         const horasTotalesMinValue = horasTotalesMin.value;
         const horasTotalesMaxValue = horasTotalesMax.value;
+        const favoritosValue = 'off';
 
         const params = new URLSearchParams();
         if (searchTerm) params.append('search', searchTerm);
@@ -284,6 +285,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (fechaFinValue) params.append('fecha_fin', fechaFinValue);
         params.append('horas_totales_min', horasTotalesMinValue);
         params.append('horas_totales_max', horasTotalesMaxValue);
+        params.append('favoritos', favoritosValue);
 
         fetch(`${route}?${params.toString()}`, {
             headers: {
