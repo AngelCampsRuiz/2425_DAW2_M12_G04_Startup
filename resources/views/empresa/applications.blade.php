@@ -100,10 +100,19 @@
                                 <div class="flex flex-col sm:flex-row sm:items-start sm:space-x-6 gap-3">
                                     <!-- Avatar y estado arriba en móvil -->
                                     <div class="flex flex-row items-center gap-3 sm:flex-col sm:items-start">
-                                        <div class="w-16 h-16 rounded-full bg-purple-100 flex items-center justify-center">
-                                            <span class="text-xl font-bold text-purple-700">
-                                                {{ strtoupper(substr(optional(optional($solicitud->estudiante)->user)->nombre ?? '--', 0, 2)) }}
-                                            </span>
+                                        <div class="w-16 h-16 rounded-full bg-white overflow-hidden border border-gray-200">
+                                            @if(optional(optional($solicitud->estudiante)->user)->imagen)
+                                                <img class="h-16 w-16 p-1.5 object-contain" 
+                                                     src="{{ asset('profile_images/' . optional(optional($solicitud->estudiante)->user)->imagen) }}" 
+                                                     alt="Foto de {{ optional(optional($solicitud->estudiante)->user)->nombre }}"
+                                                     onerror="this.onerror=null; this.src='{{ asset('img/default-avatar.png') }}'">
+                                            @else
+                                                <div class="w-full h-full bg-purple-100 flex items-center justify-center">
+                                                    <span class="text-xl font-bold text-purple-700">
+                                                        {{ strtoupper(substr(optional(optional($solicitud->estudiante)->user)->nombre ?? '--', 0, 2)) }}
+                                                    </span>
+                                                </div>
+                                            @endif
                                         </div>
                                         <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium
                                             @if($solicitud->estado === 'pendiente') bg-yellow-100 text-yellow-800
