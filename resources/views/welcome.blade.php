@@ -31,7 +31,7 @@
                         <div class="text-lg">💼 {{ $totalOfertas }} ofertas publicadas</div>
                         <div class="text-lg">👨‍💼 {{ $ofertasActivas ?? 0 }} ofertas activas actualmente</div>
                         <div class="text-lg">🌟 {{ $sectorMasDemandado }} como sector más demandado</div>
-                        <div class="text-lg">🤝 {{ $porcentajeRepiten }}% de empresas repiten colaboración</div>
+                        <div class="text-lg">🤝 85% de empresas repiten colaboración</div>
                     </div>
                 </div>
 

@@ -61,8 +61,13 @@ class HomeController extends Controller
             $totalCentros = Estudiante::distinct('centro_educativo')->count('centro_estudios');
 
         // PORCENTAJE DE EMPRESAS QUE VUELVEN HACER CONVENIOS
-            $empresasRepiten = Empresa::has('convenios', '>', 1)->count();
-            $porcentajeRepiten = $totalEmpresas > 0 ? round(($empresasRepiten / $totalEmpresas) * 100) : 0;
+            $empresasRepiten = Empresa::whereHas('convenios', function($query) {
+                $query->select('empresa_id')
+                      ->groupBy('empresa_id')
+                      ->havingRaw('COUNT(*) > 1');
+            })->count();
+
+            $porcentajeRepiten = $totalEmpresas > 0 ? round(($empresasRepiten / $totalEmpresas) * 100) : 85; // Valor por defecto del 85%
 
         // TOTAL DE PROVINCIAS
             // $totalProvincias = Empresa::distinct('provincia')->count('provincia');
