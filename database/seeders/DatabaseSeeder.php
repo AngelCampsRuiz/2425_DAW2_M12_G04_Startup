@@ -17,6 +17,9 @@ class DatabaseSeeder extends Seeder
             CategoriaSeeder::class,
             UserSeeder::class,
             EmpresaSeeder::class,
+            InstitucionSeeder::class,
+            DocenteSeeder::class,
+            DepartamentoSeeder::class,
             EstudianteSeeder::class,
             TutorSeeder::class,
             AlumnoTutorSeeder::class,
@@ -29,9 +32,7 @@ class DatabaseSeeder extends Seeder
             ExperienciaSeeder::class,
             ValoracionSeeder::class,
             FavoritoSeeder::class,
-            SolicitudSeeder::class,
-            InstitucionSeeder::class,
-            DocenteSeeder::class
+            SolicitudSeeder::class
         ]);
     }
 }

@@ -7,6 +7,8 @@ use Illuminate\Database\Seeder;
 use App\Models\User;
 use App\Models\Estudiante;
 use App\Models\Categoria;
+use App\Models\Clase;
+use App\Models\Institucion;
 
 class EstudianteSeeder extends Seeder
 {
@@ -16,26 +18,38 @@ class EstudianteSeeder extends Seeder
     public function run(): void
     {
         $estudianteUsers = User::where('role_id', 3)->get();
-        $centros = [
-            'IES Virgen de la Paloma', 'IES Francisco de Quevedo', 'IES San Isidro', 
-            'IES Ramiro de Maeztu', 'IES Beatriz Galindo', 'IES Lope de Vega',
-            'IES Juan de la Cierva', 'IES Miguel Catalán', 'IES La Serna',
-            'IES El Greco', 'IES Marqués de Comares', 'IES La Rosaleda',
-            'IES La Merced', 'IES Salvador Dalí', 'IES La Salle',
-            'IES La Magdalena', 'IES La Laboral', 'IES La Vaguada',
-            'IES La Dehesa', 'IES La Albuera'
-        ];
         $categorias = Categoria::all();
+        $instituciones = Institucion::all();
 
         foreach ($estudianteUsers as $user) {
+            // Seleccionar una institución aleatoria
+            $institucion = $instituciones->random();
+            
             $categoria = $categorias->random();
-            Estudiante::create([
+            $estudiante = Estudiante::create([
                 'id' => $user->id,
-                'centro_educativo' => $centros[array_rand($centros)],
+                'centro_educativo' => $institucion->user->nombre,
                 'cv_pdf' => 'cv_' . $user->id . '.pdf',
                 'numero_seguridad_social' => 'SS' . str_pad(rand(1, 99999999), 8, '0', STR_PAD_LEFT),
                 'categoria_id' => $categoria->id,
             ]);
+
+            // Obtener clases de la institución
+            $clases = Clase::where('institucion_id', $institucion->id)
+                          ->where('activa', true)
+                          ->inRandomOrder()
+                          ->take(rand(1, 2)) // Asignar a 1 o 2 clases
+                          ->get();
+
+            // Asignar estudiante a las clases
+            foreach ($clases as $clase) {
+                $estudiante->clases()->attach($clase->id, [
+                    'fecha_asignacion' => now(),
+                    'estado' => 'Activo',
+                    'calificacion' => null,
+                    'comentarios' => null
+                ]);
+            }
         }
     }
 }

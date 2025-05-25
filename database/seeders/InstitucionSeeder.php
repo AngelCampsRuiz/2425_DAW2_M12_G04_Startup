@@ -158,34 +158,34 @@ class InstitucionSeeder extends Seeder
         ];
 
         foreach ($instituciones as $inst) {
-            // Crear usuario de institución
-            $user = User::create([
+        // Crear usuario de institución
+        $user = User::create([
                 'nombre' => $inst['nombre'],
                 'email' => $inst['email'],
-                'password' => Hash::make('password'),
-                'fecha_nacimiento' => null,
+            'password' => Hash::make('password'),
+            'fecha_nacimiento' => null,
                 'ciudad' => $inst['ciudad'],
                 'dni' => $inst['dni'],
-                'activo' => true,
+            'activo' => true,
                 'sitio_web' => $inst['sitio_web'],
                 'telefono' => $inst['telefono'],
                 'descripcion' => $inst['descripcion'],
                 'imagen' => strtolower(str_replace(' ', '_', $inst['nombre'])) . '.jpg',
-                'visibilidad' => true,
+            'visibilidad' => true,
                 'role_id' => 4,
-            ]);
+        ]);
 
-            // Crear la institución
-            Institucion::create([
-                'user_id' => $user->id,
+        // Crear la institución
+        Institucion::create([
+            'user_id' => $user->id,
                 'codigo_centro' => $inst['codigo_centro'],
                 'direccion' => $inst['direccion'],
                 'ciudad' => $inst['ciudad'],
                 'codigo_postal' => $inst['codigo_postal'],
                 'representante_legal' => $inst['representante_legal'],
                 'cargo_representante' => $inst['cargo_representante'],
-                'verificada' => true,
-            ]);
+            'verificada' => true,
+        ]);
         }
     }
 } 

@@ -149,14 +149,17 @@
                     <div>
                             <p class="text-xs text-gray-500">Docente</p>
                             <p class="text-sm font-medium text-gray-700">
-                                @if($clase->docente)
-                                    {{ $clase->docente->user->nombre }}
+                                @if($clase->docentes->isNotEmpty())
+                                    {{ $clase->docentes->first()->user->nombre }}
+                                    @if($clase->docentes->count() > 1)
+                                        <span class="text-xs text-gray-500">(+{{ $clase->docentes->count() - 1 }} más)</span>
+                                    @endif
                                 @else
                                     <span class="text-red-500">Sin asignar</span>
                                 @endif
                             </p>
                         </div>
-                                </div>
+                    </div>
 
                     <div class="flex items-start">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
