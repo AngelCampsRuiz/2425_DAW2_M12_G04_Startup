@@ -130,13 +130,9 @@ use Illuminate\Support\Str;
                                 <a href="{{ route('institucion.departamentos.asignar-docentes', $departamento->id) }}" class="text-green-600 hover:text-green-900" title="Asignar Docentes">
                                     <i class="fas fa-user-plus"></i>
                                 </a>
-                                <form action="{{ route('institucion.departamentos.destroy', $departamento->id) }}" method="POST" class="inline-block delete-form">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="button" onclick="eliminarDepartamento({{ $departamento->id }}, '{{ $departamento->nombre }}')" class="text-red-600 hover:text-red-900" title="Eliminar">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </button>
-                                </form>
+                                <button type="button" onclick="eliminarDepartamento({{ $departamento->id }}, '{{ $departamento->nombre }}')" class="text-red-600 hover:text-red-900" title="Eliminar">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
                             </div>
                         </td>
                     </tr>
@@ -774,7 +770,7 @@ use Illuminate\Support\Str;
                     <a href="/institucion/departamentos/${departamento.id}/asignar-docentes" class="text-green-600 hover:text-green-900" title="Asignar Docentes">
                         <i class="fas fa-user-plus"></i>
                     </a>
-                    <button onclick="eliminarDepartamento(${departamento.id}, '${departamento.nombre}')" class="text-red-600 hover:text-red-900" title="Eliminar">
+                    <button type="button" onclick="eliminarDepartamento(${departamento.id}, '${departamento.nombre}')" class="text-red-600 hover:text-red-900" title="Eliminar">
                         <i class="fas fa-trash-alt"></i>
                     </button>
                 </div>
@@ -940,21 +936,34 @@ use Illuminate\Support\Str;
                                 const currentTotal = parseInt(contador.textContent);
                                 contador.textContent = (currentTotal - 1).toString();
                             }
+
+                            // Si no hay más departamentos, mostrar mensaje
+                            const tabla = document.getElementById('departamentosTable');
+                            if (tabla.querySelectorAll('tr').length === 0) {
+                                const emptyRow = document.createElement('tr');
+                                emptyRow.innerHTML = `
+                                    <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+                                        No hay departamentos registrados en esta institución.
+                                        <a href="javascript:void(0)" onclick="openModalDepartamento()" class="text-primary font-medium">Crear uno ahora</a>
+                                    </td>
+                                `;
+                                tabla.appendChild(emptyRow);
+                            }
+
+                            Swal.fire({
+                                title: '¡Eliminado!',
+                                text: data.message || 'El departamento ha sido eliminado correctamente',
+                                icon: 'success',
+                                confirmButtonColor: '#5e0490'
+                            });
                         }
-                        
-                        Swal.fire({
-                            title: '¡Eliminado!',
-                            text: data.message,
-                            icon: 'success',
-                            confirmButtonColor: '#5e0490'
-                        });
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
                     Swal.fire({
                         title: 'Error',
-                        text: error.message,
+                        text: error.message || 'Ha ocurrido un error al eliminar el departamento',
                         icon: 'error',
                         confirmButtonColor: '#5e0490'
                     });
@@ -1007,24 +1016,85 @@ use Illuminate\Support\Str;
             body: formData,
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json'
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
             }
         })
-        .then(response => {
-            if (!response.ok) {
-                return response.json().then(data => {
-                    throw new Error(data.message || 'Ha ocurrido un error al actualizar el departamento.');
-                });
-            }
-            return response.json();
-        })
+        .then(response => response.json())
         .then(data => {
             if (data.success) {
                 // Cerrar modal
                 closeEditModal();
                 
                 // Actualizar la fila en la tabla
-                actualizarFilaDepartamento(data.departamento);
+                const fila = document.querySelector(`tr[data-departamento-id="${departamentoId}"]`);
+                if (fila) {
+                    // Preparar la información del jefe de departamento
+                    let jefeDepartamentoHTML = '<span class="text-gray-400">No asignado</span>';
+                    if (data.departamento.jefe_departamento && data.departamento.jefe_departamento.user) {
+                        jefeDepartamentoHTML = `
+                            <a href="/institucion/docentes/${data.departamento.jefe_departamento.id}" class="text-primary hover:underline flex items-center">
+                                <span class="w-8 h-8 rounded-full overflow-hidden inline-block mr-2">
+                                    <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(data.departamento.jefe_departamento.user.nombre)}&background=7705B6&color=fff" 
+                                         alt="${data.departamento.jefe_departamento.user.nombre}" class="w-full h-full object-cover">
+                                </span>
+                                ${data.departamento.jefe_departamento.user.nombre}
+                            </a>`;
+                    }
+
+                    fila.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 h-10 w-10 flex items-center justify-center rounded-md bg-purple-100 text-purple-500">
+                                    <i class="fas fa-building"></i>
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-sm font-medium text-gray-900">${data.departamento.nombre}</div>
+                                    <div class="text-xs text-gray-500">
+                                        <span class="truncate">
+                                            ${data.departamento.descripcion || 'Sin descripción'}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">
+                                ${jefeDepartamentoHTML}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">
+                                <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
+                                    ${data.departamento.docentes ? data.departamento.docentes.length : 0} docentes
+                                </span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">
+                                <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">
+                                    ${data.departamento.clases ? data.departamento.clases.length : 0} clases
+                                </span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div class="flex justify-end space-x-2">
+                                <a href="/institucion/departamentos/${data.departamento.id}" class="text-blue-600 hover:text-blue-900" title="Ver">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="javascript:void(0)" onclick="openEditModal(${data.departamento.id})" class="text-yellow-600 hover:text-yellow-900" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="/institucion/departamentos/${data.departamento.id}/asignar-docentes" class="text-green-600 hover:text-green-900" title="Asignar Docentes">
+                                    <i class="fas fa-user-plus"></i>
+                                </a>
+                                <button type="button" onclick="eliminarDepartamento(${data.departamento.id}, '${data.departamento.nombre}')" class="text-red-600 hover:text-red-900" title="Eliminar">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </td>
+                    `;
+                }
                 
                 Swal.fire({
                     title: '¡Éxito!',
@@ -1033,13 +1103,15 @@ use Illuminate\Support\Str;
                     confirmButtonText: 'Ok',
                     confirmButtonColor: '#5e0490'
                 });
+            } else {
+                throw new Error(data.message || 'Ha ocurrido un error al actualizar el departamento.');
             }
         })
         .catch(error => {
             console.error('Error:', error);
             Swal.fire({
                 title: 'Error',
-                text: error.message,
+                text: error.message || 'Ha ocurrido un error al actualizar el departamento.',
                 icon: 'error',
                 confirmButtonText: 'Ok',
                 confirmButtonColor: '#5e0490'
@@ -1055,73 +1127,73 @@ use Illuminate\Support\Str;
     // Función para actualizar una fila existente en la tabla
     function actualizarFilaDepartamento(departamento) {
         const fila = document.querySelector(`tr[data-departamento-id="${departamento.id}"]`);
-        if (fila) {
-            // Preparar la información del jefe de departamento
-            let jefeDepartamentoHTML = '<span class="text-gray-400">No asignado</span>';
-            if (departamento.jefe_departamento && departamento.jefe_departamento.user) {
-                jefeDepartamentoHTML = `
-                    <a href="/institucion/docentes/${departamento.jefe_departamento.id}" class="text-primary hover:underline flex items-center">
-                        <span class="w-8 h-8 rounded-full overflow-hidden inline-block mr-2">
-                            <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(departamento.jefe_departamento.user.nombre)}&background=7705B6&color=fff" 
-                                 alt="${departamento.jefe_departamento.user.nombre}" class="w-full h-full object-cover">
-                        </span>
-                        ${departamento.jefe_departamento.user.nombre}
-                    </a>`;
-            }
+        if (!fila) return;
 
-            fila.innerHTML = `
-                <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0 h-10 w-10 flex items-center justify-center rounded-md bg-purple-100 text-purple-500">
-                            <i class="fas fa-building"></i>
-                        </div>
-                        <div class="ml-4">
-                            <div class="text-sm font-medium text-gray-900">${departamento.nombre}</div>
-                            <div class="text-xs text-gray-500">
-                                <span class="truncate">
-                                    ${departamento.descripcion || 'Sin descripción'}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm text-gray-900">
-                        ${jefeDepartamentoHTML}
-                    </div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm text-gray-900">
-                        <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
-                            ${departamento.docentes ? departamento.docentes.length : 0} docentes
-                        </span>
-                    </div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm text-gray-900">
-                        <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">
-                            ${departamento.clases ? departamento.clases.length : 0} clases
-                        </span>
-                    </div>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div class="flex justify-end space-x-2">
-                        <a href="/institucion/departamentos/${departamento.id}" class="text-blue-600 hover:text-blue-900" title="Ver">
-                            <i class="fas fa-eye"></i>
-                        </a>
-                        <a href="javascript:void(0)" onclick="openEditModal(${departamento.id})" class="text-yellow-600 hover:text-yellow-900" title="Editar">
-                            <i class="fas fa-edit"></i>
-                        </a>
-                        <a href="/institucion/departamentos/${departamento.id}/asignar-docentes" class="text-green-600 hover:text-green-900" title="Asignar Docentes">
-                            <i class="fas fa-user-plus"></i>
-                        </a>
-                        <button onclick="eliminarDepartamento(${departamento.id}, '${departamento.nombre}')" class="text-red-600 hover:text-red-900" title="Eliminar">
-                            <i class="fas fa-trash-alt"></i>
-                        </button>
-                    </div>
-                </td>
-            `;
+        // Preparar la información del jefe de departamento
+        let jefeDepartamentoHTML = '<span class="text-gray-400">No asignado</span>';
+        if (departamento.jefe_departamento && departamento.jefe_departamento.user) {
+            jefeDepartamentoHTML = `
+                <a href="/institucion/docentes/${departamento.jefe_departamento.id}" class="text-primary hover:underline flex items-center">
+                    <span class="w-8 h-8 rounded-full overflow-hidden inline-block mr-2">
+                        <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(departamento.jefe_departamento.user.nombre)}&background=7705B6&color=fff" 
+                             alt="${departamento.jefe_departamento.user.nombre}" class="w-full h-full object-cover">
+                    </span>
+                    ${departamento.jefe_departamento.user.nombre}
+                </a>`;
         }
+
+        fila.innerHTML = `
+            <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 h-10 w-10 flex items-center justify-center rounded-md bg-purple-100 text-purple-500">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <div class="ml-4">
+                        <div class="text-sm font-medium text-gray-900">${departamento.nombre}</div>
+                        <div class="text-xs text-gray-500">
+                            <span class="truncate">
+                                ${departamento.descripcion || 'Sin descripción'}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-900">
+                    ${jefeDepartamentoHTML}
+                </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-900">
+                    <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
+                        ${departamento.docentes ? departamento.docentes.length : 0} docentes
+                    </span>
+                </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-900">
+                    <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">
+                        ${departamento.clases ? departamento.clases.length : 0} clases
+                    </span>
+                </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <div class="flex justify-end space-x-2">
+                    <a href="/institucion/departamentos/${departamento.id}" class="text-blue-600 hover:text-blue-900" title="Ver">
+                        <i class="fas fa-eye"></i>
+                    </a>
+                    <a href="javascript:void(0)" onclick="openEditModal(${departamento.id})" class="text-yellow-600 hover:text-yellow-900" title="Editar">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    <a href="/institucion/departamentos/${departamento.id}/asignar-docentes" class="text-green-600 hover:text-green-900" title="Asignar Docentes">
+                        <i class="fas fa-user-plus"></i>
+                    </a>
+                    <button type="button" onclick="eliminarDepartamento(${departamento.id}, '${departamento.nombre}')" class="text-red-600 hover:text-red-900" title="Eliminar">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+            </td>
+        `;
     }
 </script>
 @endpush 
