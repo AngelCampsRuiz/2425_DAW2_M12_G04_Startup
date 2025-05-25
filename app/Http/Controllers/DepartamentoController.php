@@ -110,23 +110,58 @@ class DepartamentoController extends Controller
         $institucion = Auth::user()->institucion;
         $departamento = $institucion->departamentos()->findOrFail($id);
         
-        $request->validate([
-            'nombre' => 'required|string|max:255',
-            'codigo' => 'required|string|max:50|unique:departamentos,codigo,' . $departamento->id,
-            'descripcion' => 'nullable|string',
-            'jefe_departamento_id' => 'nullable|exists:docentes,id',
-        ]);
+        try {
+            $request->validate([
+                'nombre' => 'required|string|max:255',
+                'codigo' => 'required|string|max:50|unique:departamentos,codigo,' . $departamento->id,
+                'descripcion' => 'nullable|string',
+                'jefe_departamento_id' => 'nullable|exists:docentes,id',
+            ]);
 
-        // Actualizar departamento
-        $departamento->update([
-            'nombre' => $request->nombre,
-            'codigo' => $request->codigo,
-            'descripcion' => $request->descripcion,
-            'jefe_departamento_id' => $request->jefe_departamento_id,
-        ]);
+            // Actualizar departamento
+            $departamento->update([
+                'nombre' => $request->nombre,
+                'codigo' => $request->codigo,
+                'descripcion' => $request->descripcion,
+                'jefe_departamento_id' => $request->jefe_departamento_id,
+            ]);
 
-        return redirect()->route('institucion.departamentos.index')
-            ->with('success', 'Departamento actualizado correctamente');
+            // Recargar las relaciones
+            $departamento->load(['jefeDepartamento.user', 'docentes', 'clases']);
+            
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Departamento actualizado correctamente',
+                    'departamento' => $departamento
+                ], 200, ['Content-Type' => 'application/json']);
+            }
+
+            return redirect()->route('institucion.departamentos.index')
+                ->with('success', 'Departamento actualizado correctamente');
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error de validación',
+                    'errors' => $e->errors()
+                ], 422, ['Content-Type' => 'application/json']);
+            }
+            throw $e;
+        } catch (\Exception $e) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error al actualizar el departamento',
+                    'error' => $e->getMessage()
+                ], 500, ['Content-Type' => 'application/json']);
+            }
+
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Error al actualizar el departamento: ' . $e->getMessage());
+        }
     }
 
     // Eliminar departamento
@@ -135,23 +170,41 @@ class DepartamentoController extends Controller
         $institucion = Auth::user()->institucion;
         $departamento = $institucion->departamentos()->findOrFail($id);
         
-        // Verificar si tiene docentes asignados
-        if ($departamento->docentes()->count() > 0) {
+        try {
+            // Verificar si tiene docentes asignados
+            if ($departamento->docentes()->count() > 0) {
+                throw new \Exception('No se puede eliminar el departamento porque tiene docentes asignados');
+            }
+            
+            // Verificar si tiene clases asignadas
+            if ($departamento->clases()->count() > 0) {
+                throw new \Exception('No se puede eliminar el departamento porque tiene clases asignadas');
+            }
+            
+            // Eliminar departamento
+            $departamento->delete();
+            
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Departamento eliminado correctamente'
+                ], 200, ['Content-Type' => 'application/json']);
+            }
+
             return redirect()->route('institucion.departamentos.index')
-                ->with('error', 'No se puede eliminar el departamento porque tiene docentes asignados');
-        }
-        
-        // Verificar si tiene clases asignadas
-        if ($departamento->clases()->count() > 0) {
+                ->with('success', 'Departamento eliminado correctamente');
+
+        } catch (\Exception $e) {
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage()
+                ], 422, ['Content-Type' => 'application/json']);
+            }
+
             return redirect()->route('institucion.departamentos.index')
-                ->with('error', 'No se puede eliminar el departamento porque tiene clases asignadas');
+                ->with('error', $e->getMessage());
         }
-        
-        // Eliminar departamento
-        $departamento->delete();
-        
-        return redirect()->route('institucion.departamentos.index')
-            ->with('success', 'Departamento eliminado correctamente');
     }
 
     // Asignar docentes al departamento

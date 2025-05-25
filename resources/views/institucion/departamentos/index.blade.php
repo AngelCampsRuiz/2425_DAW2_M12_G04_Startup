@@ -75,7 +75,7 @@ use Illuminate\Support\Str;
             </thead>
             <tbody class="bg-white divide-y divide-gray-200" id="departamentosTable">
                 @forelse ($departamentos as $departamento)
-                    <tr class="hover:bg-gray-50 transition">
+                    <tr class="hover:bg-gray-50 transition" data-departamento-id="{{ $departamento->id }}">
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center">
                                 <div class="flex-shrink-0 h-10 w-10 flex items-center justify-center rounded-md bg-purple-100 text-purple-500">
@@ -133,7 +133,7 @@ use Illuminate\Support\Str;
                                 <form action="{{ route('institucion.departamentos.destroy', $departamento->id) }}" method="POST" class="inline-block delete-form">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="text-red-600 hover:text-red-900" title="Eliminar">
+                                    <button type="button" onclick="eliminarDepartamento({{ $departamento->id }}, '{{ $departamento->nombre }}')" class="text-red-600 hover:text-red-900" title="Eliminar">
                                         <i class="fas fa-trash-alt"></i>
                                     </button>
                                 </form>
@@ -336,9 +336,9 @@ use Illuminate\Support\Str;
             </button>
         </div>
 
-            <form id="formEditarDepartamento" method="POST" class="p-6">
+            <form id="formEditarDepartamento" onsubmit="submitFormEditarDepartamento(event)" class="p-6">
                 @csrf
-                @method('PUT')
+                <input type="hidden" name="_method" value="PUT">
                 <input type="hidden" id="edit_departamento_id" name="departamento_id">
                 
                 <!-- Mensajes de error -->
@@ -774,13 +774,9 @@ use Illuminate\Support\Str;
                     <a href="/institucion/departamentos/${departamento.id}/asignar-docentes" class="text-green-600 hover:text-green-900" title="Asignar Docentes">
                         <i class="fas fa-user-plus"></i>
                     </a>
-                    <form action="/institucion/departamentos/${departamento.id}" method="POST" class="inline-block delete-form">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="text-red-600 hover:text-red-900" title="Eliminar">
-                            <i class="fas fa-trash-alt"></i>
-                        </button>
-                    </form>
+                    <button onclick="eliminarDepartamento(${departamento.id}, '${departamento.nombre}')" class="text-red-600 hover:text-red-900" title="Eliminar">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
                 </div>
             </td>
         `;
@@ -896,6 +892,231 @@ use Illuminate\Support\Str;
             submitButton.disabled = false;
             submitButton.innerHTML = originalButtonContent;
         });
+    }
+
+    // Función para eliminar departamento
+    function eliminarDepartamento(id, nombre) {
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: `¿Deseas eliminar el departamento "${nombre}"? Esta acción no se puede deshacer.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const formData = new FormData();
+                formData.append('_method', 'DELETE');
+                formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
+
+                fetch(`/institucion/departamentos/${id}`, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(data => {
+                            throw new Error(data.message || 'Ha ocurrido un error al eliminar el departamento.');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        // Eliminar la fila de la tabla
+                        const fila = document.querySelector(`tr[data-departamento-id="${id}"]`);
+                        if (fila) {
+                            fila.remove();
+                            
+                            // Actualizar contador
+                            const contador = document.querySelector('.text-xl.font-semibold');
+                            if (contador) {
+                                const currentTotal = parseInt(contador.textContent);
+                                contador.textContent = (currentTotal - 1).toString();
+                            }
+                        }
+                        
+                        Swal.fire({
+                            title: '¡Eliminado!',
+                            text: data.message,
+                            icon: 'success',
+                            confirmButtonColor: '#5e0490'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        title: 'Error',
+                        text: error.message,
+                        icon: 'error',
+                        confirmButtonColor: '#5e0490'
+                    });
+                });
+            }
+        });
+    }
+
+    // Función para actualizar departamento
+    function submitFormEditarDepartamento(event) {
+        event.preventDefault();
+        
+        // Validar el formulario antes de enviar
+        const fieldsToValidate = [
+            { validate: () => validateNombre('edit') },
+            { validate: () => validateCodigo('edit') },
+            { validate: () => validateDescripcion('edit') }
+        ];
+        
+        const isValid = fieldsToValidate.map(field => field.validate()).every(Boolean);
+        if (!isValid) {
+            Swal.fire({
+                title: 'Error',
+                text: 'Por favor, corrija los errores en el formulario antes de continuar.',
+                icon: 'error',
+                confirmButtonText: 'Ok',
+                confirmButtonColor: '#5e0490'
+            });
+            return;
+        }
+
+        const form = document.getElementById('formEditarDepartamento');
+        const departamentoId = document.getElementById('edit_departamento_id').value;
+        const formData = new FormData(form);
+
+        // Mostrar indicador de carga
+        const submitButton = form.querySelector('button[type="submit"]');
+        const originalButtonContent = submitButton.innerHTML;
+        submitButton.disabled = true;
+        submitButton.innerHTML = `
+            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Actualizando...
+        `;
+
+        fetch(`/institucion/departamentos/${departamentoId}`, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => {
+                    throw new Error(data.message || 'Ha ocurrido un error al actualizar el departamento.');
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Cerrar modal
+                closeEditModal();
+                
+                // Actualizar la fila en la tabla
+                actualizarFilaDepartamento(data.departamento);
+                
+                Swal.fire({
+                    title: '¡Éxito!',
+                    text: data.message,
+                    icon: 'success',
+                    confirmButtonText: 'Ok',
+                    confirmButtonColor: '#5e0490'
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                title: 'Error',
+                text: error.message,
+                icon: 'error',
+                confirmButtonText: 'Ok',
+                confirmButtonColor: '#5e0490'
+            });
+        })
+        .finally(() => {
+            // Restaurar el botón
+            submitButton.disabled = false;
+            submitButton.innerHTML = originalButtonContent;
+        });
+    }
+
+    // Función para actualizar una fila existente en la tabla
+    function actualizarFilaDepartamento(departamento) {
+        const fila = document.querySelector(`tr[data-departamento-id="${departamento.id}"]`);
+        if (fila) {
+            const jefeDepartamento = departamento.jefe_departamento ? 
+                `<a href="/institucion/docentes/${departamento.jefe_departamento.id}" class="text-primary hover:underline flex items-center">
+                    <span class="w-8 h-8 rounded-full overflow-hidden inline-block mr-2">
+                        <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(departamento.jefe_departamento.user.nombre)}&background=7705B6&color=fff" 
+                             alt="${departamento.jefe_departamento.user.nombre}" class="w-full h-full object-cover">
+                    </span>
+                    ${departamento.jefe_departamento.user.nombre}
+                </a>` : 
+                '<span class="text-gray-400">No asignado</span>';
+
+            fila.innerHTML = `
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 h-10 w-10 flex items-center justify-center rounded-md bg-purple-100 text-purple-500">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        <div class="ml-4">
+                            <div class="text-sm font-medium text-gray-900">${departamento.nombre}</div>
+                            <div class="text-xs text-gray-500">
+                                <span class="truncate">${departamento.descripcion || ''}</span>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm text-gray-900">
+                        ${jefeDepartamento}
+                    </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm text-gray-900">
+                        <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
+                            ${departamento.docentes_count || 0} docentes
+                        </span>
+                    </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm text-gray-900">
+                        <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">
+                            ${departamento.clases_count || 0} clases
+                        </span>
+                    </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <div class="flex justify-end space-x-2">
+                        <a href="/institucion/departamentos/${departamento.id}" class="text-blue-600 hover:text-blue-900" title="Ver">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        <a href="javascript:void(0)" onclick="openEditModal(${departamento.id})" class="text-yellow-600 hover:text-yellow-900" title="Editar">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="/institucion/departamentos/${departamento.id}/asignar-docentes" class="text-green-600 hover:text-green-900" title="Asignar Docentes">
+                            <i class="fas fa-user-plus"></i>
+                        </a>
+                        <button onclick="eliminarDepartamento(${departamento.id}, '${departamento.nombre}')" class="text-red-600 hover:text-red-900" title="Eliminar">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </td>
+            `;
+        }
     }
 </script>
 @endpush 
