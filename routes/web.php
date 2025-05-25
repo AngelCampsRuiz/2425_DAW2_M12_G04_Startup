@@ -53,6 +53,8 @@
                 use Illuminate\Http\Response;
             // CONTROLADOR DE PAGO DE INSTITUCIONES
                 use App\Http\Controllers\InstitucionPaymentController;
+            // CONTROLADOR DE EXPERIENCIAS
+                use App\Http\Controllers\ExperienciaController;
 
     // RUTAS DE LA APLICACIÓN
         // RUTA PRINCIPAL HOME
@@ -191,6 +193,11 @@
             Route::middleware(['auth'])->group(function () {
                 // RUTA ACTUALIZAR VISIBILIDAD
                     Route::post('/update-visibility', [HomeController::class, 'updateVisibility']);
+
+                // RUTAS DE EXPERIENCIAS
+                    Route::post('/experiencias', [ExperienciaController::class, 'store'])->name('experiencias.store');
+                    Route::put('/experiencias/{experiencia}', [ExperienciaController::class, 'update'])->name('experiencias.update');
+                    Route::delete('/experiencias/{experiencia}', [ExperienciaController::class, 'destroy'])->name('experiencias.destroy');
 
                 // RUTAS DE PERFIL
                     Route::get('/profile', [HomeController::class, 'profile'])->name('profile');

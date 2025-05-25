@@ -39,6 +39,7 @@
 
     <!-- Styles -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+    @yield('styles')
 </head>
 <body class="font-sans antialiased min-h-full bg-gray-100">
     <div class="min-h-screen flex flex-col">
