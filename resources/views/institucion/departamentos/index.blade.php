@@ -2,6 +2,10 @@
 
 @section('title', 'Gestión de Departamentos')
 
+@php
+use Illuminate\Support\Str;
+@endphp
+
 @section('content')
 <div class="bg-gray-50 p-6 rounded-xl shadow-sm">
 <div class="flex justify-between items-center mb-6">
