@@ -217,7 +217,7 @@ use Illuminate\Support\Str;
             </button>
         </div>
 
-            <form id="formNuevoDepartamento" action="{{ route('institucion.departamentos.store') }}" method="POST" class="p-6">
+            <form id="formNuevoDepartamento" onsubmit="submitFormDepartamento(event)" class="p-6">
             @csrf
                 <!-- Mensajes de error -->
                 @if ($errors->any())
@@ -721,5 +721,181 @@ use Illuminate\Support\Str;
             }
         };
     });
+
+    // Función para actualizar la tabla de departamentos
+    function actualizarTablaDepartamentos(departamento) {
+        const tabla = document.getElementById('departamentosTable');
+        const nuevaFila = document.createElement('tr');
+        nuevaFila.className = 'hover:bg-gray-50 transition';
+        
+        nuevaFila.innerHTML = `
+            <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 h-10 w-10 flex items-center justify-center rounded-md bg-purple-100 text-purple-500">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <div class="ml-4">
+                        <div class="text-sm font-medium text-gray-900">${departamento.nombre}</div>
+                        <div class="text-xs text-gray-500">
+                            <span class="truncate">
+                                ${departamento.descripcion || 'Sin descripción'}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-900">
+                    <span class="text-gray-400">No asignado</span>
+                </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-900">
+                    <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
+                        0 docentes
+                    </span>
+                </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-900">
+                    <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">
+                        0 clases
+                    </span>
+                </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <div class="flex justify-end space-x-2">
+                    <a href="/institucion/departamentos/${departamento.id}" class="text-blue-600 hover:text-blue-900" title="Ver">
+                        <i class="fas fa-eye"></i>
+                    </a>
+                    <a href="javascript:void(0)" onclick="openEditModal(${departamento.id})" class="text-yellow-600 hover:text-yellow-900" title="Editar">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    <a href="/institucion/departamentos/${departamento.id}/asignar-docentes" class="text-green-600 hover:text-green-900" title="Asignar Docentes">
+                        <i class="fas fa-user-plus"></i>
+                    </a>
+                    <form action="/institucion/departamentos/${departamento.id}" method="POST" class="inline-block delete-form">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="text-red-600 hover:text-red-900" title="Eliminar">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </form>
+                </div>
+            </td>
+        `;
+        
+        // Si no hay departamentos, eliminar la fila de "no hay departamentos"
+        const emptyRow = tabla.querySelector('tr td[colspan="5"]');
+        if (emptyRow) {
+            emptyRow.closest('tr').remove();
+        }
+        
+        // Añadir la nueva fila al principio de la tabla
+        tabla.insertBefore(nuevaFila, tabla.firstChild);
+        
+        // Actualizar los contadores en el resumen
+        const totalDepartamentosElement = document.querySelector('.text-xl.font-semibold');
+        if (totalDepartamentosElement) {
+            const currentTotal = parseInt(totalDepartamentosElement.textContent);
+            totalDepartamentosElement.textContent = (currentTotal + 1).toString();
+        }
+    }
+
+    // Función para enviar el formulario de nuevo departamento mediante AJAX
+    function submitFormDepartamento(event) {
+        event.preventDefault();
+        
+        // Validar el formulario antes de enviar
+        const fieldsToValidate = [
+            { validate: () => validateNombre() },
+            { validate: () => validateCodigo() },
+            { validate: () => validateDescripcion() }
+        ];
+        
+        const isValid = fieldsToValidate.map(field => field.validate()).every(Boolean);
+        if (!isValid) {
+            Swal.fire({
+                title: 'Error',
+                text: 'Por favor, corrija los errores en el formulario antes de continuar.',
+                icon: 'error',
+                confirmButtonText: 'Ok',
+                confirmButtonColor: '#5e0490'
+            });
+            return;
+        }
+
+        // Obtener los datos del formulario
+        const form = document.getElementById('formNuevoDepartamento');
+        const formData = new FormData(form);
+
+        // Mostrar indicador de carga
+        const submitButton = form.querySelector('button[type="submit"]');
+        const originalButtonContent = submitButton.innerHTML;
+        submitButton.disabled = true;
+        submitButton.innerHTML = `
+            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Guardando...
+        `;
+
+        // Realizar la petición AJAX
+        fetch('{{ route('institucion.departamentos.store') }}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => {
+                    throw new Error(data.message || 'Ha ocurrido un error al procesar la solicitud.');
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Cerrar el modal
+                closeModalDepartamento();
+                
+                // Limpiar el formulario
+                form.reset();
+                
+                // Actualizar la tabla
+                actualizarTablaDepartamentos(data.departamento);
+                
+                // Mostrar mensaje de éxito
+                Swal.fire({
+                    title: '¡Éxito!',
+                    text: data.message,
+                    icon: 'success',
+                    confirmButtonText: 'Ok',
+                    confirmButtonColor: '#5e0490'
+                });
+            } else {
+                throw new Error(data.message || 'Ha ocurrido un error al crear el departamento.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                title: 'Error',
+                text: error.message || 'Ha ocurrido un error al procesar la solicitud.',
+                icon: 'error',
+                confirmButtonText: 'Ok',
+                confirmButtonColor: '#5e0490'
+            });
+        })
+        .finally(() => {
+            // Restaurar el botón
+            submitButton.disabled = false;
+            submitButton.innerHTML = originalButtonContent;
+        });
+    }
 </script>
 @endpush 

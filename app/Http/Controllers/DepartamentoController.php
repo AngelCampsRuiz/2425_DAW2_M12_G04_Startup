@@ -33,24 +33,56 @@ class DepartamentoController extends Controller
     {
         $institucion = Auth::user()->institucion;
         
-        $request->validate([
-            'nombre' => 'required|string|max:255',
-            'codigo' => 'required|string|max:50|unique:departamentos,codigo',
-            'descripcion' => 'nullable|string',
-            'jefe_departamento_id' => 'nullable|exists:docentes,id',
-        ]);
+        try {
+            $validated = $request->validate([
+                'nombre' => 'required|string|max:255',
+                'codigo' => 'required|string|max:50|unique:departamentos,codigo',
+                'descripcion' => 'nullable|string',
+                'jefe_departamento_id' => 'nullable|exists:docentes,id',
+            ]);
 
-        // Crear departamento
-        $departamento = Departamento::create([
-            'institucion_id' => $institucion->id,
-            'nombre' => $request->nombre,
-            'codigo' => $request->codigo,
-            'descripcion' => $request->descripcion,
-            'jefe_departamento_id' => $request->jefe_departamento_id,
-        ]);
+            // Crear departamento
+            $departamento = Departamento::create([
+                'institucion_id' => $institucion->id,
+                'nombre' => $request->nombre,
+                'codigo' => $request->codigo,
+                'descripcion' => $request->descripcion,
+                'jefe_departamento_id' => $request->jefe_departamento_id,
+            ]);
 
-        return redirect()->route('institucion.departamentos.index')
-            ->with('success', 'Departamento creado correctamente');
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Departamento creado correctamente',
+                    'departamento' => $departamento
+                ], 200, ['Content-Type' => 'application/json']);
+            }
+
+            return redirect()->route('institucion.departamentos.index')
+                ->with('success', 'Departamento creado correctamente');
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error de validación',
+                    'errors' => $e->errors()
+                ], 422, ['Content-Type' => 'application/json']);
+            }
+            throw $e;
+        } catch (\Exception $e) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error al crear el departamento',
+                    'error' => $e->getMessage()
+                ], 500, ['Content-Type' => 'application/json']);
+            }
+
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Error al crear el departamento: ' . $e->getMessage());
+        }
     }
 
     // Ver departamento
