@@ -93,8 +93,8 @@ let messageForm;
 let messageInput;
 let chatId;
 let lastMessageId;
-let isTyping = false;
-let typingTimeout;
+    let isTyping = false;
+    let typingTimeout;
 let unreadIndicator;
 
 // Función para recargar completamente el contenedor de mensajes - FUERA DEL DOM CONTENT LOADED
@@ -116,19 +116,19 @@ function updateMessages() {
     
     // Solo obtenemos mensajes más recientes que el último que tenemos
     const url = `${window.routeGetMessages}?after=${lastMessageId}`;
-    
-    fetch(url)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Error al obtener mensajes: ' + response.status);
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (!data.messages || !Array.isArray(data.messages)) {
-                console.error('Formato de respuesta incorrecto:', data);
-                return;
-            }
+        
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al obtener mensajes: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!data.messages || !Array.isArray(data.messages)) {
+                    console.error('Formato de respuesta incorrecto:', data);
+                    return;
+                }
             
             // Si no hay mensajes nuevos, terminamos
             if (data.messages.length === 0) {
@@ -136,15 +136,15 @@ function updateMessages() {
             }
             
             console.log(`Recibidos ${data.messages.length} mensajes nuevos`);
-            
-            const wasAtBottom = isAtBottom();
-            let hasNewMessages = false;
-            
-            // Ordenar mensajes por fecha de creación para asegurar el orden correcto
+                
+                const wasAtBottom = isAtBottom();
+                let hasNewMessages = false;
+                
+                // Ordenar mensajes por fecha de creación para asegurar el orden correcto
             const nuevos = data.messages.sort((a, b) => {
-                return new Date(a.created_at) - new Date(b.created_at);
-            });
-            
+                    return new Date(a.created_at) - new Date(b.created_at);
+                });
+                
             // Añadir cada mensaje nuevo al chat
             nuevos.forEach(mensaje => {
                 // Verificar si el mensaje ya existe
@@ -168,12 +168,12 @@ function updateMessages() {
                     markMessageAsRead(mensaje.id);
                 }
             });
-            
-            // Si había nuevos mensajes y estábamos al final, hacer scroll
-            if (hasNewMessages && wasAtBottom) {
-                smoothScrollToBottom();
-            } else if (hasNewMessages) {
-                showNewMessageIndicator();
+                
+                // Si había nuevos mensajes y estábamos al final, hacer scroll
+                if (hasNewMessages && wasAtBottom) {
+                    smoothScrollToBottom();
+                } else if (hasNewMessages) {
+                    showNewMessageIndicator();
                 
                 // Mostrar notificación para el último mensaje si no es nuestro
                 const currentUserId = parseInt(document.querySelector('meta[name="user-id"]')?.content || '0');
@@ -181,9 +181,9 @@ function updateMessages() {
                 if (ultimoMensaje.user_id !== currentUserId) {
                     showMessageNotification(ultimoMensaje);
                 }
-            }
-        })
-        .catch(error => {
+                }
+            })
+            .catch(error => {
             console.error('Error al actualizar mensajes:', error);
         });
 }
@@ -557,24 +557,24 @@ document.addEventListener('DOMContentLoaded', function() {
             const lengthIndicator = document.querySelector('.message-length');
             
             if (lengthIndicator) {
-                if (currentLength > 0) {
-                    lengthIndicator.classList.remove('hidden');
+            if (currentLength > 0) {
+                lengthIndicator.classList.remove('hidden');
                     const currentLengthElement = document.getElementById('current-length');
                     if (currentLengthElement) {
                         currentLengthElement.textContent = currentLength;
                     }
                 
-                    if (currentLength > maxLength * 0.8) {
-                        lengthIndicator.classList.add('text-orange-500');
-                    } else {
-                        lengthIndicator.classList.remove('text-orange-500', 'text-red-500');
-                    }
-                
-                    if (currentLength > maxLength * 0.95) {
-                        lengthIndicator.classList.add('text-red-500');
-                    }
+                if (currentLength > maxLength * 0.8) {
+                    lengthIndicator.classList.add('text-orange-500');
                 } else {
-                    lengthIndicator.classList.add('hidden');
+                    lengthIndicator.classList.remove('text-orange-500', 'text-red-500');
+                }
+                
+                if (currentLength > maxLength * 0.95) {
+                    lengthIndicator.classList.add('text-red-500');
+                }
+            } else {
+                lengthIndicator.classList.add('hidden');
                 }
             }
             
@@ -648,7 +648,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Crear FormData para enviar el contenido
             const formData = new FormData();
-            formData.append('contenido', content);
+                formData.append('contenido', content);
             
             console.log('Enviando mensaje a:', window.routeSendMessage);
             
