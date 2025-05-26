@@ -1,4 +1,67 @@
+// Función para crear el HTML de un mensaje
+function createMessageHtml(message) {
+    const isCurrentUser = message.user_id === parseInt(document.querySelector('meta[name="user-id"]').content);
+    return `
+        <div class="flex items-start message ${isCurrentUser ? 'justify-end' : ''} mb-4" data-message-id="${message.id}">
+            ${!isCurrentUser ? `
+                <div class="flex-shrink-0 mr-3">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center overflow-hidden shadow-md">
+                        ${message.user.imagen ? `
+                            <img src="/profile_images/${message.user.imagen}"
+                                alt="Foto de perfil"
+                                class="w-full h-full object-cover">
+                        ` : `
+                            <span class="text-base font-bold text-gray-700">
+                                ${message.user.nombre.substring(0, 2).toUpperCase()}
+                            </span>
+                        `}
+                    </div>
+                </div>
+            ` : ''}
+            <div class="flex-1 ${isCurrentUser ? 'text-right' : ''}">
+                <div class="${isCurrentUser 
+                    ? 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white' 
+                    : 'bg-white'} rounded-2xl p-4 shadow-md inline-block max-w-[85%] relative message-bubble">
+                    <p class="text-sm ${isCurrentUser ? 'text-white' : 'text-gray-800'} message-content">
+                        ${message.contenido}
+                    </p>
+                    ${message.archivo_adjunto ? `
+                        <div class="mt-2">
+                            ${message.tipo_archivo && message.tipo_archivo.startsWith('image/') ? `
+                                <a href="/chat_files/${message.archivo_adjunto}" target="_blank" class="block">
+                                    <img src="/chat_files/${message.archivo_adjunto}" 
+                                        alt="Imagen adjunta" 
+                                        class="max-w-full max-h-60 rounded-lg shadow-sm">
+                                </a>
+                            ` : `
+                                <a href="/chat_files/${message.archivo_adjunto}" 
+                                   target="_blank"
+                                   class="flex items-center p-3 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors duration-200">
+                                    <div class="mr-3 bg-gray-200 w-10 h-10 rounded-lg flex items-center justify-center text-gray-500">
+                                        <i class="fas fa-file-alt text-lg"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-medium text-gray-900 truncate">
+                                            ${message.nombre_archivo || 'Archivo adjunto'}
+                                        </p>
+                                        <p class="text-xs text-gray-500">Descargar archivo</p>
+                                    </div>
+                                    <i class="fas fa-download text-purple-600"></i>
+                                </a>
+                            `}
+                        </div>
+                    ` : ''}
+                    <div class="text-xs ${isCurrentUser ? 'text-white/80' : 'text-gray-500'} mt-1 flex items-center justify-between">
+                        <span>${new Date(message.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+    // Obtener elementos del DOM con verificación de existencia
     const chatMessages = document.getElementById('chat-messages');
     const messageForm = document.getElementById('message-form');
     const messageInput = document.getElementById('message-input');
@@ -10,9 +73,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const imagePreview = document.getElementById('image-preview');
     const emojiButton = document.getElementById('emoji-button');
     const chatId = window.chatId;
-    let lastMessageId = window.lastMessageId;
+    let lastMessageId = window.lastMessageId || 0;
     let isTyping = false;
     let typingTimeout;
+    
+    // Verificar que los elementos necesarios existen
+    if (!chatMessages || !messageForm || !messageInput) {
+        console.warn('Elementos esenciales del chat no encontrados');
+        return;
+    }
     
     // Crear el indicador de mensajes no leídos
     const unreadIndicator = document.createElement('div');
@@ -85,9 +154,61 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Inicializar textarea autoexpandible
-    if (messageInput) {
-        initAutoExpandTextarea();
+    function initAutoExpandTextarea() {
+        messageInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+            
+            // Mostrar contador de caracteres cuando se escribe
+            const currentLength = this.value.length;
+            const maxLength = 500;
+            const lengthIndicator = document.querySelector('.message-length');
+            
+            if (lengthIndicator) {
+                if (currentLength > 0) {
+                    lengthIndicator.classList.remove('hidden');
+                    const currentLengthElement = document.getElementById('current-length');
+                    if (currentLengthElement) {
+                        currentLengthElement.textContent = currentLength;
+                    }
+                    
+                    if (currentLength > maxLength * 0.8) {
+                        lengthIndicator.classList.add('text-orange-500');
+                    } else {
+                        lengthIndicator.classList.remove('text-orange-500', 'text-red-500');
+                    }
+                    
+                    if (currentLength > maxLength * 0.95) {
+                        lengthIndicator.classList.add('text-red-500');
+                    }
+                } else {
+                    lengthIndicator.classList.add('hidden');
+                }
+            }
+            
+            // Emitir evento de "está escribiendo"
+            if (!isTyping) {
+                isTyping = true;
+            }
+            
+            // Reiniciar timeout de escritura
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(() => {
+                isTyping = false;
+            }, 2000);
+        });
+        
+        // Escuchar Enter para enviar (Shift+Enter para nueva línea)
+        messageInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                messageForm.dispatchEvent(new Event('submit'));
+            }
+        });
     }
+    
+    // Inicializar funcionalidades
+    initAutoExpandTextarea();
     
     // Función para desplazamiento suave
     function smoothScrollToBottom() {
@@ -112,266 +233,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         window.requestAnimationFrame(animateScroll);
-    }
-    
-    // Función para inicializar textarea autoexpandible
-    function initAutoExpandTextarea() {
-        messageInput.addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = (this.scrollHeight) + 'px';
-            
-            // Mostrar contador de caracteres cuando se escribe
-            const currentLength = this.value.length;
-            const maxLength = 500;
-            const lengthIndicator = document.querySelector('.message-length');
-            
-            if (currentLength > 0) {
-                lengthIndicator.classList.remove('hidden');
-                document.getElementById('current-length').textContent = currentLength;
-                
-                if (currentLength > maxLength * 0.8) {
-                    lengthIndicator.classList.add('text-orange-500');
-                } else {
-                    lengthIndicator.classList.remove('text-orange-500', 'text-red-500');
-                }
-                
-                if (currentLength > maxLength * 0.95) {
-                    lengthIndicator.classList.add('text-red-500');
-                }
-            } else {
-                lengthIndicator.classList.add('hidden');
-            }
-            
-            // Emitir evento de "está escribiendo"
-            if (!isTyping) {
-                isTyping = true;
-                // Aquí se podría emitir un evento al servidor
-            }
-            
-            // Reiniciar timeout de escritura
-            clearTimeout(typingTimeout);
-            typingTimeout = setTimeout(() => {
-                isTyping = false;
-                // Aquí se podría emitir un evento al servidor
-            }, 2000);
-        });
-        
-        // Escuchar Enter para enviar (Shift+Enter para nueva línea)
-        messageInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                messageForm.dispatchEvent(new Event('submit'));
-            }
-        });
-    }
-    
-    // Manejar la previsualización de archivos con animación
-    fileInput.addEventListener('change', function() {
-        if (this.files.length > 0) {
-            const file = this.files[0];
-            fileName.textContent = file.name;
-            
-            // Añadir información de tamaño
-            const fileSizeKB = Math.round(file.size / 1024);
-            const fileSizeText = fileSizeKB < 1024 ? 
-                `${fileSizeKB} KB` : 
-                `${(fileSizeKB / 1024).toFixed(1)} MB`;
-                
-            fileName.textContent = `${file.name} (${fileSizeText})`;
-            
-            filePreview.classList.remove('hidden');
-            filePreview.classList.add('animate-slideUp');
-            
-            // Si es imagen, mostrar una previsualización
-            if (file.type.startsWith('image/')) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    imagePreview.src = e.target.result;
-                    imagePreviewContainer.classList.remove('hidden');
-                };
-                reader.readAsDataURL(file);
-            } else {
-                imagePreviewContainer.classList.add('hidden');
-            }
-        } else {
-            clearFileInput();
-        }
-    });
-    
-    // Eliminar archivo seleccionado con animación
-    removeFile.addEventListener('click', function() {
-        filePreview.classList.add('animate-fadeOut');
-        setTimeout(() => clearFileInput(), 300);
-    });
-    
-    function clearFileInput() {
-        fileInput.value = '';
-        filePreview.classList.add('hidden');
-        filePreview.classList.remove('animate-slideUp', 'animate-fadeOut');
-        fileName.textContent = '';
-        imagePreviewContainer.classList.add('hidden');
-    }
-    
-    // Actualizar los indicadores de lectura
-    function updateReadStatus(messages) {
-        messages.forEach(message => {
-            if (message.user_id === window.authId) {
-                const statusElement = document.querySelector(`.message-status[data-message-id="${message.id}"] i`);
-                if (statusElement && message.leido) {
-                    statusElement.classList.remove('opacity-60', 'fa-check');
-                    statusElement.classList.add('fa-check-double');
-                }
-            }
-        });
-    }
-    
-    // Función para crear el HTML de un mensaje con animaciones
-    function createMessageHtml(mensaje) {
-        const isMine = mensaje.user_id === window.authId;
-        let messageContent = '';
-        
-        if (mensaje.contenido) {
-            messageContent += `<p class="text-sm leading-relaxed">${mensaje.contenido}</p>`;
-        }
-        
-        if (mensaje.archivo_adjunto) {
-            messageContent += '<div class="mt-2">';
-            
-            if (mensaje.tipo_archivo && mensaje.tipo_archivo.startsWith('image/')) {
-                messageContent += `
-                    <div class="mt-2 relative group overflow-hidden rounded-lg shadow-sm">
-                        <img src="${mensaje.archivo_adjunto}" 
-                             alt="Imagen adjunta" 
-                             class="max-w-full h-auto rounded-lg max-h-64 cursor-pointer transition-transform duration-500 transform hover:scale-105"
-                             onclick="window.open('${mensaje.archivo_adjunto}', '_blank')">
-                        <div class="absolute inset-0 bg-black bg-opacity-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                            <a href="${mensaje.archivo_adjunto}" 
-                               download="${mensaje.nombre_archivo}"
-                               class="bg-white p-2 rounded-full shadow-md text-[#5e0490] transform transition-all duration-300 hover:rotate-12 hover:scale-110">
-                                <i class="fas fa-download"></i>
-                            </a>
-                        </div>
-                    </div>
-                `;
-            } else {
-                // Calcular tamaño aproximado del archivo
-                const fileSizeKB = Math.round(mensaje.nombre_archivo.length * 10);
-                
-                messageContent += `
-                    <div class="flex items-center gap-3 p-3 rounded-xl ${isMine ? 'bg-purple-200 bg-opacity-20' : 'bg-purple-50'} backdrop-blur-sm transition-transform duration-300 transform hover:scale-102">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-file-alt text-2xl ${isMine ? 'text-purple-100' : 'text-[#5e0490]'}"></i>
-                        </div>
-                        <div class="flex-grow overflow-hidden text-sm ${isMine ? 'text-purple-100' : 'text-gray-700'}">
-                            <p class="truncate font-medium">${mensaje.nombre_archivo}</p>
-                            <p class="text-xs ${isMine ? 'text-purple-200' : 'text-gray-500'}">
-                                ${fileSizeKB} KB
-                            </p>
-                        </div>
-                        <div class="flex-shrink-0">
-                            <a href="${mensaje.archivo_adjunto}" 
-                               download="${mensaje.nombre_archivo}"
-                               class="${isMine ? 'bg-purple-300 bg-opacity-30 text-white' : 'bg-purple-100 text-[#5e0490]'} p-2 rounded-full hover:bg-opacity-100 transition-all duration-300 block">
-                                <i class="fas fa-download"></i>
-                            </a>
-                        </div>
-                    </div>
-                `;
-            }
-            
-            messageContent += '</div>';
-        }
-        
-        // Estado de lectura
-        let readStatus = '';
-        if (isMine) {
-            const readIcon = mensaje.leido ? 
-                '<i class="fas fa-check-double text-xs text-purple-200"></i>' : 
-                '<i class="fas fa-check text-xs text-purple-200 opacity-60"></i>';
-            
-            readStatus = `
-                <span class="message-status flex items-center" data-message-id="${mensaje.id}">
-                    ${readIcon}
-                </span>
-            `;
-        }
-        
-        messageContent += `
-            <div class="flex justify-between items-center mt-2">
-                <p class="text-xs ${isMine ? 'text-purple-200' : 'text-gray-500'} flex items-center">
-                    <span>${new Date(mensaje.fecha_envio).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                </p>
-                ${isMine ? readStatus : ''}
-            </div>
-        `;
-        
-        return `
-            <div class="flex ${isMine ? 'justify-end' : 'justify-start'} animate-fadeIn">
-                <div class="group max-w-xs md:max-w-md lg:max-w-lg ${isMine ? 'bg-gradient-to-r from-[#5e0490] to-[#4a0370] text-white' : 'bg-white text-gray-800 border border-gray-200'} rounded-2xl px-4 py-3 shadow-md transform transition-all duration-300 hover:shadow-lg ${isMine ? 'hover:-translate-y-1 hover:scale-102' : 'hover:-translate-y-1 hover:scale-102'}">
-                    ${messageContent}
-                </div>
-            </div>
-        `;
-    }
-    
-    // Función para actualizar los mensajes con animaciones
-    function updateMessages() {
-        if (!window.routeGetMessages) {
-            console.error('Error: No se encontró la URL para obtener mensajes');
-            return;
-        }
-        
-        console.log('Solicitando mensajes de:', window.routeGetMessages);
-        
-        fetch(window.routeGetMessages)
-            .then(response => {
-                if (!response.ok) {
-                    console.error('Error en la respuesta del servidor:', response.status, response.statusText);
-                    throw new Error('El servidor respondió con un error: ' + response.status);
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log('Mensajes recibidos:', data);
-                
-                if (!data.error && data.mensajes && data.mensajes.length > 0) {
-                    // Actualizar el estado de lectura de los mensajes existentes
-                    updateReadStatus(data.mensajes);
-                    
-                    const newMessages = data.mensajes.filter(mensaje => mensaje.id > lastMessageId);
-                    console.log('Nuevos mensajes:', newMessages.length);
-                    
-                    if (newMessages.length > 0) {
-                        const wasAtBottom = isAtBottom();
-                        
-                        newMessages.forEach(mensaje => {
-                            if (chatMessages) {
-                                chatMessages.insertAdjacentHTML('beforeend', createMessageHtml(mensaje));
-                            }
-                        });
-                        
-                        lastMessageId = newMessages[newMessages.length - 1].id;
-                        
-                        // Solo hacer scroll si ya estaba en el fondo
-                        if (wasAtBottom && chatMessages) {
-                            smoothScrollToBottom();
-                        } else {
-                            // Mostrar indicador de nuevos mensajes
-                            showNewMessageIndicator();
-                            
-                            // Mostrar notificación temporal
-                            if (newMessages[0].user_id !== window.authId) {
-                                showMessageNotification(newMessages[0]);
-                            }
-                        }
-                    }
-                } else if (data.error) {
-                    console.error('Error al obtener mensajes:', data.error);
-                }
-            })
-            .catch(error => {
-                console.error('Error al actualizar mensajes:', error);
-            });
     }
     
     // Verificar si el scroll está al final
@@ -439,7 +300,7 @@ document.addEventListener('DOMContentLoaded', function() {
         messageForm.addEventListener('submit', function(e) {
             e.preventDefault();
             
-            const content = messageInput ? messageInput.value.trim() : '';
+            const content = messageInput.value.trim();
             const hasFile = fileInput && fileInput.files.length > 0;
             
             if (!content && !hasFile) return;
@@ -499,7 +360,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         messageInput.value = '';
                         messageInput.style.height = 'auto';
                     }
-                    clearFileInput();
+                    if (fileInput) fileInput.value = '';
+                    if (filePreview) filePreview.classList.add('hidden');
                     
                     // Añadir mensaje a la vista con animación
                     if (chatMessages && data.mensaje) {

@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Notifications\MensajeNoLeidoNotification;
 use App\Events\NotificacionPusher;
 use App\Events\MessageSent;
+use App\Events\MessageRead;
 use Illuminate\Support\Facades\Log;
 
 class ChatController extends Controller
@@ -43,7 +44,8 @@ class ChatController extends Controller
         // Crear nuevo chat
         $chat = Chat::create([
             'empresa_id' => $empresa_id,
-            'solicitud_id' => $solicitud->id
+            'solicitud_id' => $solicitud->id,
+            'tipo' => 'empresa_estudiante'
         ]);
 
         return redirect()->route('chat.show', $chat->id)
@@ -56,166 +58,66 @@ class ChatController extends Controller
     public function sendMessage(Request $request, Chat $chat)
     {
         try {
-            // Verificar que el usuario tiene acceso al chat
             $user = Auth::user();
-            $hasAccess = false;
-
-            // Si es empresa en chat empresa-estudiante
-            if ($user->empresa && $chat->tipo == 'empresa_estudiante' && $user->empresa->id == $chat->empresa_id) {
-                $hasAccess = true;
-            }
-
-            // Si es empresa en chat docente-empresa
-            if ($user->empresa && $chat->tipo == 'docente_empresa' && $user->empresa->id == $chat->empresa_id) {
-                $hasAccess = true;
-            }
-
-            // Si es estudiante en chat empresa-estudiante
-            if ($user->estudiante && $chat->tipo == 'empresa_estudiante' && $chat->solicitud && $chat->solicitud->estudiante_id == $user->estudiante->id) {
-                $hasAccess = true;
-            }
-
-            // Si es docente en chat docente-estudiante
-            if ($user->role_id == 4 && $chat->tipo == 'docente_estudiante') {
-                $docente = \App\Models\Docente::where('user_id', $user->id)->first();
-                if ($docente && $chat->docente_id == $docente->id) {
-                    $hasAccess = true;
-                }
-            }
             
-            // Si es docente en chat docente-empresa
-            if ($user->role_id == 4 && $chat->tipo == 'docente_empresa') {
-                $docente = \App\Models\Docente::where('user_id', $user->id)->first();
-                if ($docente && $chat->docente_id == $docente->id) {
-                    $hasAccess = true;
-                }
-            }
-            
-            // Si es estudiante en chat docente-estudiante
-            if ($user->estudiante && $chat->tipo == 'docente_estudiante' && $chat->estudiante_id == $user->estudiante->id) {
-                $hasAccess = true;
-            }
-            
-            // Si es institución en chat institución-docente o institución-empresa
-            if ($user->role_id == 5 && $chat->institucion_id == $user->institucion->id) {
-                $hasAccess = true;
-            }
-
-            if (!$hasAccess) {
-                return response()->json([
-                    'error' => true,
-                    'message' => 'No tienes permiso para enviar mensajes en este chat'
-                ], 403);
-            }
-
             // Validar el mensaje
             $request->validate([
                 'contenido' => 'required_without:archivo|string|max:1000',
-                'archivo' => 'required_without:contenido|file|max:10240', // 10MB máximo
+                'archivo' => 'nullable|file|max:10240' // máximo 10MB
             ]);
 
-            // Crear datos base del mensaje
-            $mensajeData = [
-                'contenido' => $request->contenido ?? '',
-                'chat_id' => $chat->id,
-                'user_id' => $user->id,
-                'fecha_envio' => now()
-            ];
-
-            // Manejar archivo adjunto si existe
+            // Crear el mensaje
+            $mensaje = new Mensaje();
+            $mensaje->chat_id = $chat->id;
+            $mensaje->user_id = $user->id;
+            $mensaje->contenido = $request->contenido;
+            $mensaje->fecha_envio = now();
+            
+            // Procesar archivo adjunto si existe
             if ($request->hasFile('archivo')) {
                 $file = $request->file('archivo');
                 $fileName = time() . '_' . $file->getClientOriginalName();
-                $fileType = $file->getClientMimeType();
-
-                // Determinar la carpeta según el tipo de archivo
-                $folder = 'chat_files';
-
-                // Si es imagen, guardar en una carpeta específica
-                if (strpos($fileType, 'image/') === 0) {
-                    $folder = 'chat_images';
-                }
-
-                // Mover el archivo a la carpeta pública
-                $file->move(public_path($folder), $fileName);
-
-                // Añadir información del archivo al mensaje
-                $mensajeData['archivo_adjunto'] = $folder . '/' . $fileName;
-                $mensajeData['tipo_archivo'] = $fileType;
-                $mensajeData['nombre_archivo'] = $file->getClientOriginalName();
+                $file->move(public_path('chat_files'), $fileName);
+                
+                $mensaje->archivo_adjunto = 'chat_files/' . $fileName;
+                $mensaje->nombre_archivo = $file->getClientOriginalName();
+                $mensaje->tipo_archivo = $file->getMimeType();
             }
-
-            // Crear el mensaje
-            $mensaje = Mensaje::create($mensajeData);
+            
+            $mensaje->save();
 
             // Cargar relación de usuario para el evento
             $mensaje->load('user');
 
-            // Transmitir el mensaje a través de Pusher usando el evento MessageSent
+            // Transmitir el mensaje a través de Pusher
             broadcast(new MessageSent($mensaje, $user))->toOthers();
             
-            // Guardar un registro de actividad para fines de depuración
-            Log::info('Mensaje enviado por broadcast', [
-                'mensaje_id' => $mensaje->id,
-                'chat_id' => $chat->id,
-                'user_id' => $user->id,
-                'timestamp' => now()->toDateTimeString()
-            ]);
-
             // Determinar destinatario según el usuario autenticado y tipo de chat
             $destinatario = null;
             
             if ($chat->tipo == 'empresa_estudiante') {
                 if ($user->empresa) {
-                    // Si el que envía es empresa, destinatario es el estudiante
                     $destinatario = $chat->solicitud->estudiante->user ?? null;
                 } else {
-                    // Si el que envía es estudiante, destinatario es la empresa
                     $destinatario = $chat->solicitud->publicacion->empresa->user ?? null;
                 }
             } else if ($chat->tipo == 'docente_estudiante') {
                 if ($user->role_id == 4) {
-                    // Si el que envía es docente, destinatario es el estudiante
                     $destinatario = $chat->estudiante->user ?? null;
                 } else {
-                    // Si el que envía es estudiante, destinatario es el docente
                     $destinatario = $chat->docente->user ?? null;
                 }
             } else if ($chat->tipo == 'docente_empresa') {
                 if ($user->role_id == 4) {
-                    // Si el que envía es docente, destinatario es la empresa
                     $destinatario = $chat->empresa->user ?? null;
                 } else {
-                    // Si el que envía es empresa, destinatario es el docente
                     $destinatario = $chat->docente->user ?? null;
-                }
-            } else if ($chat->tipo == 'institucion_docente') {
-                if ($user->role_id == 5) {
-                    // Si el que envía es institución, destinatario es el docente
-                    $destinatario = $chat->docente->user ?? null;
-                } else {
-                    // Si el que envía es docente, destinatario es la institución
-                    $destinatario = $chat->institucion->user ?? null;
-                }
-            } else if ($chat->tipo == 'institucion_empresa') {
-                if ($user->role_id == 5) {
-                    // Si el que envía es institución, destinatario es la empresa
-                    $destinatario = $chat->empresa->user ?? null;
-                } else {
-                    // Si el que envía es empresa, destinatario es la institución
-                    $destinatario = $chat->institucion->user ?? null;
                 }
             }
 
+            // Enviar notificación al destinatario
             if ($destinatario) {
-                $remitente = Auth::user();
-                $destinatario->notify(new MensajeNoLeidoNotification($chat, $remitente));
-                event(new NotificacionPusher($destinatario->id));
-            }
-
-            // Si tiene archivo adjunto, generar la URL completa para la respuesta
-            if (!empty($mensaje->archivo_adjunto)) {
-                $mensaje->archivo_adjunto = url($mensaje->archivo_adjunto);
+                $destinatario->notify(new MensajeNoLeidoNotification($chat, $user));
             }
 
             return response()->json([
@@ -223,16 +125,16 @@ class ChatController extends Controller
                 'message' => 'Mensaje enviado correctamente',
                 'mensaje' => $mensaje
             ]);
+
         } catch (\Exception $e) {
-            Log::error('Error al hacer broadcast del mensaje', [
-                'mensaje_id' => $mensaje->id,
+            Log::error('Error al enviar mensaje', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
+            
             return response()->json([
                 'error' => true,
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'message' => 'Error al enviar el mensaje: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -877,50 +779,25 @@ class ChatController extends Controller
     /**
      * Marcar un mensaje como leído
      */
-    public function markMessageAsRead($messageId)
+    public function markAsRead(Request $request, Mensaje $mensaje)
     {
-        $mensaje = Mensaje::findOrFail($messageId);
-        $user = Auth::user();
-        
-        // Verificar que el usuario tenga acceso al mensaje
-        $chat = $mensaje->chat;
-        $hasAccess = false;
-        
-        // Si es empresa en chat empresa-estudiante
-        if ($user->empresa && $chat->tipo == 'empresa_estudiante' && $user->empresa->id == $chat->empresa_id) {
-            $hasAccess = true;
-        }
-        
-        // Si es estudiante en chat empresa-estudiante
-        if ($user->estudiante && $chat->tipo == 'empresa_estudiante' && $chat->solicitud && $chat->solicitud->estudiante_id == $user->estudiante->id) {
-            $hasAccess = true;
-        }
-        
-        // Si es docente en chat docente-estudiante
-        if ($user->role_id == 4 && $chat->tipo == 'docente_estudiante') {
-            $docente = \App\Models\Docente::where('user_id', $user->id)->first();
-            if ($docente && $chat->docente_id == $docente->id) {
-                $hasAccess = true;
-            }
-        }
-        
-        // Si es estudiante en chat docente-estudiante
-        if ($user->estudiante && $chat->tipo == 'docente_estudiante' && $chat->estudiante_id == $user->estudiante->id) {
-            $hasAccess = true;
-        }
-        
-        if (!$hasAccess) {
-            return response()->json(['error' => true, 'message' => 'No tienes acceso a este mensaje'], 403);
-        }
-        
-        // Solo marcar como leído si no soy yo quien lo envió
-        if ($mensaje->user_id != $user->id) {
+        try {
             $mensaje->leido = true;
-            $mensaje->read_at = now();
             $mensaje->save();
+
+            // Emitir evento de mensaje leído
+            broadcast(new MessageRead($mensaje))->toOthers();
+
+            return response()->json([
+                'error' => false,
+                'message' => 'Mensaje marcado como leído'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => true,
+                'message' => 'Error al marcar el mensaje como leído'
+            ], 500);
         }
-        
-        return response()->json(['success' => true]);
     }
 
     /**

@@ -6,6 +6,21 @@ use Illuminate\Support\Facades\Auth;
 
 @section('title', 'Chat con ' . $otherUser->nombre)
 
+@section('meta')
+    <meta name="chat-id" content="{{ $chat->id }}">
+    <meta name="user-id" content="{{ auth()->id() }}">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="pusher-key" content="{{ config('broadcasting.connections.pusher.key') }}">
+    <meta name="pusher-cluster" content="{{ config('broadcasting.connections.pusher.options.cluster') }}">
+@endsection
+
+@push('scripts')
+    <!-- Pusher -->
+    <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
+    <!-- Chat JavaScript -->
+    <script src="{{ asset('js/chat.js') }}"></script>
+@endpush
+
 @section('content')
 <div class="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 transition-colors duration-500">
 
@@ -194,79 +209,66 @@ use Illuminate\Support\Facades\Auth;
                     @foreach($mensajes as $mensaje)
                         @php
                             $isCurrentUser = $mensaje->user_id == auth()->id();
-                            $userName = $mensaje->user->nombre;
-                            $userRole = '';
-                            
-                            if ($mensaje->user->role_id == 2) {
-                                $userRole = 'Empresa';
-                            } elseif ($mensaje->user->role_id == 3) {
-                                $userRole = 'Estudiante';
-                            } elseif ($mensaje->user->role_id == 4) {
-                                $userRole = 'Docente';
-                            }
-                            
-                            // Determinar la imagen o iniciales para mostrar
-                            $userImage = null;
-                            if ($mensaje->user->imagen) {
-                                $userImage = asset('profile_images/' . $mensaje->user->imagen);
-                            }
                         @endphp
-                        <div class="flex {{ $isCurrentUser ? 'justify-end' : 'justify-start' }} animate-fadeIn">
-                            <div class="group max-w-xs md:max-w-md lg:max-w-lg {{ $isCurrentUser ? 'bg-gradient-to-r from-[#5e0490] to-[#4a0370] text-white' : 'bg-white text-gray-800 border border-gray-200' }} rounded-2xl px-4 py-3 shadow-md transform transition-all duration-300 hover:shadow-lg {{ $isCurrentUser ? 'hover:-translate-y-1 hover:scale-102' : 'hover:-translate-y-1 hover:scale-102' }}">
-                                @if($mensaje->contenido)
-                                    <p class="text-sm leading-relaxed">{{ $mensaje->contenido }}</p>
-                                @endif
-
-                                @if($mensaje->archivo_adjunto)
-                                    <div class="mt-2">
-                                        @if(strpos($mensaje->tipo_archivo, 'image/') === 0)
-                                            <!-- Mostrar imagen -->
-                                            <div class="mt-2 relative group overflow-hidden rounded-lg shadow-sm">
-                                                <img src="{{ $mensaje->archivo_adjunto }}"
-                                                    alt="Imagen adjunta"
-                                                    class="max-w-full h-auto rounded-lg max-h-64 cursor-pointer transition-transform duration-500 transform hover:scale-105"
-                                                    onclick="window.open('{{ $mensaje->archivo_adjunto }}', '_blank')">
-                                                <div class="absolute inset-0 bg-black bg-opacity-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                                                    <a href="{{ $mensaje->archivo_adjunto }}"
-                                                        download="{{ $mensaje->nombre_archivo }}"
-                                                        class="bg-white p-2 rounded-full shadow-md text-[#5e0490] transform transition-all duration-300 hover:rotate-12 hover:scale-110">
-                                                        <i class="fas fa-download"></i>
-                                                    </a>
-                                                </div>
-                                            </div>
+                        <div class="flex items-start message {{ $isCurrentUser ? 'justify-end' : '' }} mb-4" data-message-id="{{ $mensaje->id }}">
+                            @if(!$isCurrentUser)
+                                <div class="flex-shrink-0 mr-3">
+                                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center overflow-hidden shadow-md">
+                                        @if($mensaje->user->imagen)
+                                            <img src="{{ asset('profile_images/' . $mensaje->user->imagen) }}"
+                                                alt="Foto de perfil"
+                                                class="w-full h-full object-cover">
                                         @else
-                                            <!-- Mostrar documento -->
-                                            <div class="flex items-center gap-3 p-3 rounded-xl {{ $isCurrentUser ? 'bg-purple-200 bg-opacity-20' : 'bg-purple-50' }} backdrop-blur-sm transition-transform duration-300 transform hover:scale-102">
-                                                <div class="flex-shrink-0">
-                                                    <i class="fas fa-file-alt text-2xl {{ $isCurrentUser ? 'text-purple-100' : 'text-[#5e0490]' }}"></i>
-                                                </div>
-                                                <div class="flex-grow overflow-hidden text-sm {{ $isCurrentUser ? 'text-purple-100' : 'text-gray-700' }}">
-                                                    <p class="truncate font-medium">{{ $mensaje->nombre_archivo }}</p>
-                                                    <p class="text-xs {{ $isCurrentUser ? 'text-purple-200' : 'text-gray-500' }}">
-                                                        {{ number_format(strlen($mensaje->archivo_adjunto) / 1024, 0) }} KB
-                                                    </p>
-                                                </div>
-                                                <div class="flex-shrink-0">
-                                                    <a href="{{ $mensaje->archivo_adjunto }}"
-                                                    download="{{ $mensaje->nombre_archivo }}"
-                                                    class="{{ $isCurrentUser ? 'bg-purple-300 bg-opacity-30 text-white' : 'bg-purple-100 text-[#5e0490]' }} p-2 rounded-full hover:bg-opacity-100 transition-all duration-300 block">
-                                                        <i class="fas fa-download"></i>
-                                                    </a>
-                                                </div>
-                                            </div>
+                                            <span class="text-base font-bold text-gray-700">
+                                                {{ strtoupper(substr($mensaje->user->nombre, 0, 2)) }}
+                                            </span>
                                         @endif
                                     </div>
-                                @endif
-
-                                <div class="flex justify-between items-center mt-2">
-                                    <p class="text-xs {{ $isCurrentUser ? 'text-purple-200' : 'text-gray-500' }} flex items-center">
-                                        <span>{{ \Carbon\Carbon::parse($mensaje->fecha_envio)->format('H:i') }}</span>
+                                </div>
+                            @endif
+                            <div class="flex-1 {{ $isCurrentUser ? 'text-right' : '' }}">
+                                <div class="{{ $isCurrentUser 
+                                    ? 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white' 
+                                    : 'bg-white'}} rounded-2xl p-4 shadow-md inline-block max-w-[85%] relative message-bubble">
+                                    <p class="text-sm {{ $isCurrentUser ? 'text-white' : 'text-gray-800' }} message-content">
+                                        {{ $mensaje->contenido }}
                                     </p>
-                                    @if($isCurrentUser)
-                                        <span class="message-status flex items-center" data-message-id="{{ $mensaje->id }}">
-                                            <i class="fas fa-check {{ $mensaje->leido ? 'fa-check-double text-purple-200' : 'text-purple-200 opacity-60' }} ml-1 text-xs"></i>
-                                        </span>
+                                    @if($mensaje->archivo_adjunto)
+                                        @if(Str::startsWith($mensaje->tipo_archivo, 'image/'))
+                                            <div class="mt-2 relative group">
+                                                <a href="{{ asset('chat_files/' . $mensaje->archivo_adjunto) }}" target="_blank" class="block">
+                                                    <img src="{{ asset('chat_files/' . $mensaje->archivo_adjunto) }}" 
+                                                        alt="Imagen adjunta" 
+                                                        class="max-w-full max-h-60 rounded-lg shadow-sm">
+                                                    <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
+                                                        <span class="bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded-full">
+                                                            <i class="fas fa-search-plus mr-1"></i> Ver imagen
+                                                        </span>
+                                                    </div>
+                                                </a>
+                                            </div>
+                                        @else
+                                            <div class="mt-2">
+                                                <a href="{{ asset('chat_files/' . $mensaje->archivo_adjunto) }}" 
+                                                   target="_blank"
+                                                   class="flex items-center p-3 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors duration-200">
+                                                    <div class="mr-3 bg-gray-200 w-10 h-10 rounded-lg flex items-center justify-center text-gray-500">
+                                                        <i class="fas fa-file-alt text-lg"></i>
+                                                    </div>
+                                                    <div class="flex-1 min-w-0">
+                                                        <p class="text-sm font-medium text-gray-900 truncate">
+                                                            {{ $mensaje->nombre_archivo ?: 'Archivo adjunto' }}
+                                                        </p>
+                                                        <p class="text-xs text-gray-500">Descargar archivo</p>
+                                                    </div>
+                                                    <i class="fas fa-download text-purple-600"></i>
+                                                </a>
+                                            </div>
+                                        @endif
                                     @endif
+                                    <div class="text-xs {{ $isCurrentUser ? 'text-white/80' : 'text-gray-500' }} mt-1 flex items-center justify-between">
+                                        <span>{{ \Carbon\Carbon::parse($mensaje->created_at)->format('H:i') }}</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -274,42 +276,29 @@ use Illuminate\Support\Facades\Auth;
                 @endif
             </div>
 
-            <!-- Formulario para enviar un nuevo mensaje -->
-            <div id="chat-form" class="p-5 border-t border-gray-100 bg-white rounded-b-2xl">
-                <form id="message-form" class="space-y-4" data-chat-id="{{ $chat->id }}">
-                    @csrf
-                    <div class="relative">
-                        <textarea
-                            id="message-input"
-                            name="contenido"
-                            rows="3"
-                            placeholder="Escribe tu mensaje aquí..."
-                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-purple-500 focus:border-purple-500 resize-none transition-all duration-300"
-                        ></textarea>
-                        <button type="button" id="emoji-button" class="absolute bottom-3 right-4 text-gray-500 hover:text-purple-600 transition-colors">
-                            <i class="far fa-smile-beam text-xl"></i>
-                        </button>
+            <!-- Formulario de mensajes -->
+            <div class="border-t border-gray-100 p-4 bg-white">
+                <form id="message-form" class="flex items-end gap-2">
+                    <div class="flex-1">
+                        <div class="relative">
+                            <textarea id="message-input" 
+                                    rows="1"
+                                    class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-200 focus:border-purple-400 transition-all duration-200 resize-none"
+                                    placeholder="Escribe un mensaje..."
+                                    required></textarea>
+                            <div class="absolute right-2 bottom-2 flex items-center space-x-2">
+                                <label for="file-input" class="cursor-pointer text-gray-500 hover:text-purple-600 transition-colors">
+                                    <i class="fas fa-paperclip"></i>
+                                    <input type="file" id="file-input" class="hidden" accept="image/*,.pdf,.doc,.docx">
+                                </label>
+                            </div>
+                        </div>
                     </div>
-
-                            <div class="flex items-center justify-between">
-                        <div class="flex items-center space-x-2">
-                            <label for="file-upload" class="p-2 bg-purple-50 text-purple-700 rounded-lg cursor-pointer hover:bg-purple-100 transition-colors">
-                                <span class="flex items-center">
-                                    <i class="fas fa-paperclip mr-2"></i>
-                                    <span>Adjuntar</span>
-                                </span>
-                                <input id="file-upload" name="archivo" type="file" class="hidden" />
-                        </label>
-                            <span id="file-name" class="text-sm text-gray-500"></span>
-                </div>
-
-                        <button type="submit" id="send-button" class="px-5 py-2 bg-gradient-to-r from-[#5e0490] to-[#4a0370] text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed">
-                            <span class="flex items-center">
-                                <span class="mr-2">Enviar</span>
-                                <i class="fas fa-paper-plane"></i>
-                    </span>
+                    <button type="submit" 
+                            class="px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-xl hover:shadow-lg transition-all duration-200 flex items-center gap-2">
+                        <span>Enviar</span>
+                        <i class="fas fa-paper-plane"></i>
                     </button>
-                </div>
                 </form>
             </div>
 

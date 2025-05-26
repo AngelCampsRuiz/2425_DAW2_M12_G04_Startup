@@ -308,7 +308,8 @@ class CompanyDashboardController extends Controller
             // Crear un chat entre la empresa y el estudiante
             $chat = \App\Models\Chat::create([
                 'empresa_id' => Auth::id(),
-                'solicitud_id' => $solicitud->id
+                'solicitud_id' => $solicitud->id,
+                'tipo' => 'empresa_estudiante'
             ]);
 
             // Si es AJAX, responde con JSON, si no, redirige

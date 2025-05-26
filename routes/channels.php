@@ -15,7 +15,7 @@ use App\Models\Chat;
 */
 
 // Canal para mensajes de chat
-Broadcast::channel('chat.{chatId}', function ($user, $chatId) {
+Broadcast::channel('private-chat.{chatId}', function ($user, $chatId) {
     $chat = Chat::find($chatId);
     
     if (!$chat) {

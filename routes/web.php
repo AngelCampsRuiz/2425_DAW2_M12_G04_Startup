@@ -210,26 +210,13 @@
                     Route::get('/publication/{id}', [PublicationController::class, 'show'])->name('publication.show');
 
                 // RUTAS PARA EL CHAT - Accesibles para todos los usuarios autenticados
-                    Route::get('/chat', [ChatController::class, 'index'])
-                        ->name('chat.index');
-                    Route::get('/chat/{chat}', [ChatController::class, 'showChat'])
-                        ->name('chat.show');
-                    Route::post('/chat/{chat}/message', [ChatController::class, 'sendMessage'])
-                        ->name('chat.message');
-                    Route::get('/chat/{chat}/messages', [ChatController::class, 'getMessages'])
-                        ->name('chat.messages');
-                    Route::post('/chat/create/{solicitud}', [ChatController::class, 'createChat'])
-                        ->name('chat.create');
-                    Route::post('/chat/create-docente', [ChatController::class, 'createDocenteChat'])
-                        ->name('chat.create.docente');
-                    Route::post('/chat/create-docente-empresa', [ChatController::class, 'createDocenteEmpresaChat'])
-                        ->name('chat.create.docente.empresa');
-                    Route::get('/chat/check-new', [ChatController::class, 'checkNewMessages'])
-                        ->name('chat.check_new');
-                    Route::get('/chat/refresh', [ChatController::class, 'refreshChats'])
-                        ->name('chat.refresh');
-                    Route::post('/chat/{messageId}/read', [ChatController::class, 'markMessageAsRead'])
-                        ->name('chat.mark_read');
+                    Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
+                    Route::get('/chat/check-new', [ChatController::class, 'checkNewMessages'])->name('chat.check_new');
+                    Route::get('/chat/{chat}/messages', [ChatController::class, 'getMessages'])->name('chat.messages');
+                    Route::get('/chat/{chat}', [ChatController::class, 'showChat'])->name('chat.show');
+                    Route::post('/chat/{chat}/message', [ChatController::class, 'sendMessage'])->name('chat.message');
+                    Route::post('/chat/{mensaje}/read', [ChatController::class, 'markAsRead'])->name('chat.read');
+                    Route::post('/chat/{chat}/upload', [ChatController::class, 'uploadFile'])->name('chat.upload');
 
                 // RUTAS PARA VALORACIONES
                     Route::post('/valoraciones', [ValoracionController::class, 'store'])->name('valoraciones.store');

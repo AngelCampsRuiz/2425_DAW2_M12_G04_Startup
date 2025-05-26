@@ -20,8 +20,6 @@ class MessageRead implements ShouldBroadcast
 
     /**
      * Create a new event instance.
-     *
-     * @return void
      */
     public function __construct(Mensaje $mensaje)
     {
@@ -31,36 +29,33 @@ class MessageRead implements ShouldBroadcast
     /**
      * Get the channels the event should broadcast on.
      *
-     * @return \Illuminate\Broadcasting\Channel|array
+     * @return array<int, \Illuminate\Broadcasting\Channel>
      */
-    public function broadcastOn()
+    public function broadcastOn(): array
     {
-        return new PrivateChannel('chat.' . $this->mensaje->chat_id);
+        return [
+            new PrivateChannel('chat.' . $this->mensaje->chat_id)
+        ];
     }
 
     /**
      * Get the data to broadcast.
-     *
-     * @return array
      */
-    public function broadcastWith()
+    public function broadcastWith(): array
     {
-        // Datos a enviar en el evento
         return [
             'message_id' => $this->mensaje->id,
             'chat_id' => $this->mensaje->chat_id,
             'user_id' => $this->mensaje->user_id,
-            'read_at' => $this->mensaje->read_at->toDateTimeString(),
-            'read_by' => Auth::check() ? Auth::id() : null
+            'read_at' => now()->toDateTimeString(),
+            'read_by' => Auth::id()
         ];
     }
 
     /**
      * The event's broadcast name.
-     *
-     * @return string
      */
-    public function broadcastAs()
+    public function broadcastAs(): string
     {
         return 'message.read';
     }
