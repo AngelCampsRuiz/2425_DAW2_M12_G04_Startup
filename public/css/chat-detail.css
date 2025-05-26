@@ -167,30 +167,170 @@ textarea.expand {
     transform: scale(1.2);
 }
 
-/* Indicador de mensaje no leído */
-.unread-indicator {
-    background: #5e0490;
-    color: white;
-    font-size: 12px;
-    padding: 4px 8px;
-    border-radius: 12px;
-    position: fixed;
-    bottom: 80px;
-    left: 50%;
-    transform: translateX(-50%);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    z-index: 20;
-    cursor: pointer;
-    display: none;
+/* Estilos para el chat */
+.message-bubble {
+    position: relative;
+    transition: all 0.3s ease;
 }
 
-.unread-indicator.show {
+.message-bubble:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.message-content {
+    word-break: break-word;
+}
+
+/* Indicador de mensajes no leídos */
+.unread-indicator {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background-color: #5e0490;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    box-shadow: 0 4px 12px rgba(94, 4, 144, 0.3);
     display: flex;
     align-items: center;
-    animation: fadeIn 0.3s ease-in-out;
+    justify-content: center;
+    font-size: 14px;
+    z-index: 50;
+    cursor: pointer;
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.unread-indicator.active {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
+.unread-indicator:hover {
+    background-color: #4a0370;
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fadeIn {
+    animation: fadeIn 0.3s ease forwards;
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.animate-bounce {
+    animation: bounce 1s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.animate-pulse {
+    animation: pulse 2s infinite;
+}
+
+/* Estilos para dispositivos móviles */
+@media (max-width: 640px) {
+    .unread-indicator {
+        font-size: 12px;
+        padding: 6px 12px;
+    }
+    
+    #chat-messages {
+        height: 250px !important;
+    }
+}
+
+/* Estilos para el estado de conexión */
+.connection-status {
+    display: inline-flex;
+    align-items: center;
+    font-size: 12px;
+    margin-right: 8px;
+}
+
+.connection-status .indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 4px;
+}
+
+.connection-status.connected .indicator {
+    background-color: #10b981;
+}
+
+.connection-status.connecting .indicator {
+    background-color: #f59e0b;
+    animation: pulse 1s infinite;
+}
+
+.connection-status.disconnected .indicator,
+.connection-status.failed .indicator {
+    background-color: #ef4444;
 }
 
 /* Transiciones suaves para todos los elementos */
 * {
     transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s, opacity 0.3s;
+}
+
+/* Estilos para mensajes leídos */
+.message-read .message-bubble {
+    position: relative;
+}
+
+.message-read .message-bubble::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    right: 8px;
+    width: 12px;
+    height: 12px;
+    background-color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.read-status {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 4px;
+    font-size: 10px;
+}
+
+.message-read .read-status i {
+    color: #3b82f6 !important;
 } 

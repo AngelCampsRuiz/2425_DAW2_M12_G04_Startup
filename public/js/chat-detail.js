@@ -114,19 +114,123 @@ document.addEventListener('DOMContentLoaded', function() {
         smoothScrollToBottom();
     }
     
+    // Configuración de Pusher
+    const pusherKey = document.querySelector('meta[name="pusher-key"]')?.content;
+    const pusherCluster = document.querySelector('meta[name="pusher-cluster"]')?.content;
+    
+    if (pusherKey && pusherCluster && chatId) {
+        console.log('Configurando Pusher para recibir mensajes en tiempo real');
+        
+        // Inicializar Pusher
+        const pusher = new Pusher(pusherKey, {
+            cluster: pusherCluster,
+            forceTLS: true,
+            authEndpoint: '/broadcasting/auth'
+        });
+        
+        // Suscribirse al canal privado del chat
+        const channel = pusher.subscribe(`private-chat.${chatId}`);
+        
+        // Escuchar eventos de nuevos mensajes
+        channel.bind('App\\Events\\MessageSent', function(data) {
+            console.log('Nuevo mensaje recibido por Pusher:', data);
+            
+            // Si el mensaje ya existe en el chat, no lo agregamos
+            const existingMessage = document.querySelector(`.message[data-message-id="${data.id}"]`);
+            if (existingMessage) {
+                console.log('El mensaje ya existe en el DOM, no se añade:', data.id);
+                return;
+            }
+            
+            // Agregamos el mensaje al chat
+            const wasAtBottom = isAtBottom();
+            const html = createMessageHtml(data);
+            chatMessages.insertAdjacentHTML('beforeend', html);
+            
+            // Actualizamos el último ID de mensaje
+            if (data.id > lastMessageId) {
+                lastMessageId = data.id;
+            }
+            
+            // Si estábamos al final, hacemos scroll automático
+            if (wasAtBottom) {
+                smoothScrollToBottom();
+            } else {
+                showNewMessageIndicator();
+                // Reproducir sonido de notificación
+                showMessageNotification(data);
+            }
+            
+            // Si no es nuestro mensaje, lo marcamos como leído
+            const currentUserId = parseInt(document.querySelector('meta[name="user-id"]').content);
+            if (data.user_id !== currentUserId) {
+                markMessageAsRead(data.id);
+            }
+        });
+        
+        // Escuchar eventos de mensajes leídos
+        channel.bind('message.read', function(data) {
+            console.log('Mensaje marcado como leído:', data);
+            
+            // Actualizar la interfaz para mostrar que el mensaje ha sido leído
+            const messageElement = document.querySelector(`.message[data-message-id="${data.message_id}"]`);
+            if (messageElement) {
+                // Añadir clase o indicador visual de que el mensaje ha sido leído
+                messageElement.classList.add('message-read');
+                
+                // Si existe un indicador de estado de lectura, actualizarlo
+                const readStatus = messageElement.querySelector('.read-status');
+                if (readStatus) {
+                    readStatus.innerHTML = '<i class="fas fa-check-double text-blue-500"></i>';
+                    readStatus.setAttribute('title', 'Leído ' + new Date(data.read_at).toLocaleString());
+                }
+            }
+        });
+        
+        // Registramos el estado de conexión de Pusher
+        pusher.connection.bind('connected', function() {
+            console.log('✅ Conectado a Pusher correctamente');
+            updateConnectionStatus('connected');
+        });
+        
+        pusher.connection.bind('connecting', function() {
+            console.log('⏳ Conectando a Pusher...');
+            updateConnectionStatus('connecting');
+        });
+        
+        pusher.connection.bind('disconnected', function() {
+            console.log('❌ Desconectado de Pusher');
+            updateConnectionStatus('disconnected');
+        });
+        
+        pusher.connection.bind('failed', function() {
+            console.log('⚠️ La conexión a Pusher ha fallado');
+            updateConnectionStatus('failed');
+            
+            // Intentar reconectar cada 5 segundos
+            setTimeout(function() {
+                pusher.connect();
+            }, 5000);
+        });
+    } else {
+        console.warn('No se pudo inicializar Pusher: faltan datos de configuración');
+    }
+    
     // ----------------------
-    // SOLUCIÓN DIRECTA DE RECARGA PERIÓDICA
+    // FUNCIONES DE MENSAJES
     // ----------------------
     
     // Función para recargar completamente el contenedor de mensajes
-    function reloadChatContent() {
+    function updateMessages() {
         if (!window.routeGetMessages) {
             console.error('No se encontró la ruta para obtener mensajes');
             return;
         }
         
-        console.log('Recargando contenido del chat...');
-        const url = `${window.routeGetMessages}?full=true`; // Parámetro para solicitar todos los mensajes
+        console.log('Actualizando mensajes del chat...');
+        
+        // Solo obtenemos mensajes más recientes que el último que tenemos
+        const url = `${window.routeGetMessages}?after=${lastMessageId}`;
         
         fetch(url)
             .then(response => {
@@ -141,64 +245,66 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
                 
+                // Si no hay mensajes nuevos, terminamos
+                if (data.messages.length === 0) {
+                    return;
+                }
+                
+                console.log(`Recibidos ${data.messages.length} mensajes nuevos`);
+                
                 const wasAtBottom = isAtBottom();
                 let hasNewMessages = false;
                 
                 // Ordenar mensajes por fecha de creación para asegurar el orden correcto
-                const mensajes = data.messages.sort((a, b) => {
+                const nuevos = data.messages.sort((a, b) => {
                     return new Date(a.created_at) - new Date(b.created_at);
                 });
                 
-                // Verificar si hay mensajes más recientes que el último que tenemos
-                if (mensajes.length > 0 && mensajes[mensajes.length - 1].id > lastMessageId) {
+                // Añadir cada mensaje nuevo al chat
+                nuevos.forEach(mensaje => {
+                    // Verificar si el mensaje ya existe
+                    const existingMessage = document.querySelector(`.message[data-message-id="${mensaje.id}"]`);
+                    if (existingMessage) {
+                        return;
+                    }
+                    
                     hasNewMessages = true;
-                    lastMessageId = mensajes[mensajes.length - 1].id;
-                }
-                
-                // Construir todo el HTML de mensajes
-                let htmlContent = '';
-                
-                if (mensajes.length === 0) {
-                    // Mostrar mensaje de "no hay mensajes" si está vacío
-                    htmlContent = `
-                        <div class="text-center py-12 animate-fadeIn flex flex-col items-center justify-center h-full">
-                            <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-purple-200 to-indigo-200 mb-4 shadow-md">
-                                <i class="fas fa-comments text-3xl text-[#5e0490]"></i>
-                            </div>
-                            <p class="text-gray-600 text-lg font-medium">No hay mensajes aún</p>
-                            <p class="text-gray-400 text-sm mt-2 max-w-sm text-center">Envía un mensaje para empezar a chatear</p>
-                            <div class="mt-6 animate-bounce">
-                                <i class="fas fa-arrow-down text-purple-300 text-xl"></i>
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    // Construir HTML para cada mensaje
-                    mensajes.forEach(mensaje => {
-                        htmlContent += createMessageHtml(mensaje);
-                    });
-                }
-                
-                // Reemplazar todo el contenido del contenedor de mensajes
-                chatMessages.innerHTML = htmlContent;
+                    const html = createMessageHtml(mensaje);
+                    chatMessages.insertAdjacentHTML('beforeend', html);
+                    
+                    // Actualizamos el último ID
+                    if (mensaje.id > lastMessageId) {
+                        lastMessageId = mensaje.id;
+                    }
+                    
+                    // Si no es nuestro mensaje, lo marcamos como leído
+                    const currentUserId = parseInt(document.querySelector('meta[name="user-id"]').content);
+                    if (mensaje.user_id !== currentUserId) {
+                        markMessageAsRead(mensaje.id);
+                    }
+                });
                 
                 // Si había nuevos mensajes y estábamos al final, hacer scroll
                 if (hasNewMessages && wasAtBottom) {
                     smoothScrollToBottom();
                 } else if (hasNewMessages) {
                     showNewMessageIndicator();
+                    
+                    // Mostrar notificación para el último mensaje si no es nuestro
+                    const currentUserId = parseInt(document.querySelector('meta[name="user-id"]').content);
+                    const ultimoMensaje = nuevos[nuevos.length - 1];
+                    if (ultimoMensaje.user_id !== currentUserId) {
+                        showMessageNotification(ultimoMensaje);
+                    }
                 }
             })
             .catch(error => {
-                console.error('Error al recargar mensajes:', error);
+                console.error('Error al actualizar mensajes:', error);
             });
     }
     
-    // Recargar mensajes inicialmente después de 1 segundo
-    setTimeout(reloadChatContent, 1000);
-    
-    // Recargar mensajes cada 3 segundos
-    setInterval(reloadChatContent, 3000);
+    // Actualizar mensajes cada 5 segundos como respaldo a Pusher
+    setInterval(updateMessages, 5000);
     
     // ----------------------
     // RESTO DEL CÓDIGO
@@ -258,59 +364,135 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Inicializar funcionalidades
+    // Inicializar el textarea autoexpandible
     initAutoExpandTextarea();
-    
-    // Función para desplazamiento suave
+
+    // Función para desplazarse suavemente al final del chat
     function smoothScrollToBottom() {
-        const scrollHeight = chatMessages.scrollHeight;
-        const duration = 300; // ms
         const start = chatMessages.scrollTop;
-        const end = scrollHeight - chatMessages.clientHeight;
-        const change = end - start;
-        let startTime = null;
+        const end = chatMessages.scrollHeight - chatMessages.clientHeight;
+        const duration = 300; // milisegundos
+        const startTime = performance.now();
         
         function animateScroll(timestamp) {
-            if (!startTime) startTime = timestamp;
             const elapsed = timestamp - startTime;
             const progress = Math.min(elapsed / duration, 1);
-            const easeProgress = 0.5 - Math.cos(progress * Math.PI) / 2; // Función de aceleración
+            const easeProgress = 0.5 - Math.cos(progress * Math.PI) / 2;
             
-            chatMessages.scrollTop = start + change * easeProgress;
+            chatMessages.scrollTop = start + (end - start) * easeProgress;
             
             if (progress < 1) {
-                window.requestAnimationFrame(animateScroll);
+                requestAnimationFrame(animateScroll);
             }
         }
         
-        window.requestAnimationFrame(animateScroll);
+        requestAnimationFrame(animateScroll);
     }
     
-    // Verificar si el scroll está al final
+    // Función para verificar si el scroll está al final
     function isAtBottom() {
-        const tolerance = 50; // pixels
+        const tolerance = 50;
         return (chatMessages.scrollHeight - chatMessages.scrollTop - chatMessages.clientHeight) < tolerance;
     }
     
-    // Mostrar indicador de nuevo mensaje
+    // Función para mostrar el indicador de nuevos mensajes
     function showNewMessageIndicator() {
-        if (document.querySelectorAll('.animate-fadeIn').length > 0) {
-            unreadIndicator.classList.add('show');
+        // Mostrar el indicador
+        unreadIndicator.classList.add('active');
+        
+        // Ocultar automáticamente después de 5 segundos
+        setTimeout(() => {
+            unreadIndicator.classList.remove('active');
+        }, 5000);
+        
+        // Si se hace clic, desplazarse al final
+        unreadIndicator.onclick = function() {
+            smoothScrollToBottom();
+            unreadIndicator.classList.remove('active');
+        };
+    }
+    
+    // Observador para cuando se hace scroll
+    chatMessages.addEventListener('scroll', function() {
+        if (isAtBottom()) {
+            unreadIndicator.classList.remove('active');
+        }
+    });
+    
+    // Función para mostrar notificación de mensaje
+    function showMessageNotification(mensaje) {
+        // Solo mostramos notificación si no es un mensaje propio
+        const currentUserId = parseInt(document.querySelector('meta[name="user-id"]').content);
+        if (mensaje.user_id === currentUserId) return;
+        
+        // Crear un sonido de notificación simple con la API Audio
+        try {
+            // Creamos un contexto de audio
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            
+            // Creamos un oscilador (para el sonido)
+            const oscillator = audioContext.createOscillator();
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(880, audioContext.currentTime); // Nota A5
+            
+            // Creamos un controlador de ganancia (para el volumen)
+            const gainNode = audioContext.createGain();
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+            
+            // Conectamos el oscilador a la ganancia y luego a la salida
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            // Reproducimos el sonido
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 0.3);
+        } catch (e) {
+            console.log('No se pudo reproducir sonido:', e);
+        }
+        
+        // Mostrar notificación visual (Sweet Alert si está disponible, o notificación nativa)
+        if (window.Swal) {
+            Swal.fire({
+                title: mensaje.user.nombre || 'Nuevo mensaje',
+                text: mensaje.contenido || 'Has recibido un nuevo mensaje',
+                icon: 'info',
+                toast: true,
+                position: 'bottom-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer);
+                    toast.addEventListener('mouseleave', Swal.resumeTimer);
+                    toast.addEventListener('click', () => {
+                        smoothScrollToBottom();
+                        Swal.close();
+                    });
+                }
+            });
+        } else if ('Notification' in window && Notification.permission === 'granted') {
+            // Notificación nativa del navegador como respaldo
+            const notification = new Notification('Nuevo mensaje de ' + (mensaje.user.nombre || 'Usuario'), {
+                body: mensaje.contenido || 'Has recibido un nuevo mensaje',
+                icon: '/favicon.ico'
+            });
+            
+            notification.onclick = function() {
+                window.focus();
+                smoothScrollToBottom();
+            };
         }
     }
     
-    // Ocultar indicador de nuevo mensaje al hacer clic en él
-    unreadIndicator.addEventListener('click', function() {
-        smoothScrollToBottom();
-        this.classList.remove('show');
-    });
-    
-    // Ocultar indicador al hacer scroll manualmente al fondo
-    chatMessages.addEventListener('scroll', function() {
-        if (isAtBottom()) {
-            unreadIndicator.classList.remove('show');
-        }
-    });
+    // Solicitar permiso para notificaciones
+    if ('Notification' in window && Notification.permission !== 'granted' && Notification.permission !== 'denied') {
+        // Solicitamos permiso cuando el usuario interactúa con la página
+        document.addEventListener('click', function requestNotificationPermission() {
+            Notification.requestPermission();
+            document.removeEventListener('click', requestNotificationPermission);
+        }, { once: true });
+    }
     
     // Mostrar notificación de mensaje
     function showMessageNotification(mensaje) {
@@ -417,7 +599,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         showSentAnimation();
                         
                         // Forzar una recarga inmediata para sincronizar
-                        setTimeout(reloadChatContent, 500);
+                        setTimeout(updateMessages, 500);
                     } else {
                         console.error('Error: No se pudo añadir el mensaje a la vista', data);
                     }
@@ -488,14 +670,33 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Función para marcar un mensaje como leído
     function markMessageAsRead(messageId) {
+        // Verificar que tenemos el token CSRF
+        const csrfToken = window.csrfToken || document.querySelector('meta[name="csrf-token"]')?.content;
+        
+        if (!csrfToken) {
+            console.error('No se encontró el token CSRF para marcar el mensaje como leído');
+            return;
+        }
+        
+        // Enviar petición para marcar el mensaje como leído
         fetch(`/chat/${messageId}/read`, {
             method: 'POST',
             headers: {
+                'X-CSRF-TOKEN': csrfToken,
                 'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': window.csrfToken
-            },
-            body: JSON.stringify({})
-        }).catch(error => {
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error al marcar mensaje como leído: ' + response.status);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Mensaje marcado como leído:', messageId);
+        })
+        .catch(error => {
             console.error('Error al marcar mensaje como leído:', error);
         });
     }
@@ -659,22 +860,73 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Función para actualizar el estado de conexión visual
+    // Función para actualizar el estado de la conexión en la interfaz
     function updateConnectionStatus(status) {
-        if (!connectionStatus) return;
+        // Verificar si existe un elemento para mostrar el estado de la conexión
+        let statusElement = document.getElementById('connection-status');
         
-        switch(status) {
-            case 'connecting':
-                connectionStatus.className = 'w-2 h-2 rounded-full bg-yellow-500 mr-2';
-                break;
-            case 'connected':
-                connectionStatus.className = 'w-2 h-2 rounded-full bg-green-500 mr-2';
-                break;
-            case 'error':
-                connectionStatus.className = 'w-2 h-2 rounded-full bg-red-500 mr-2';
-                break;
-            default:
-                connectionStatus.className = 'w-2 h-2 rounded-full bg-gray-500 mr-2';
+        // Si no existe, lo creamos
+        if (!statusElement) {
+            // Crear el elemento
+            statusElement = document.createElement('div');
+            statusElement.id = 'connection-status';
+            statusElement.className = 'connection-status';
+            
+            // Añadir el indicador
+            const indicator = document.createElement('span');
+            indicator.className = 'indicator';
+            statusElement.appendChild(indicator);
+            
+            // Añadir el texto
+            const text = document.createElement('span');
+            text.className = 'status-text';
+            statusElement.appendChild(text);
+            
+            // Añadir a la interfaz (buscamos un lugar adecuado)
+            const container = document.querySelector('.container');
+            if (container) {
+                container.insertAdjacentElement('afterbegin', statusElement);
+            }
+        }
+        
+        // Eliminar clases anteriores
+        statusElement.classList.remove('connected', 'connecting', 'disconnected', 'failed');
+        
+        // Añadir la clase correspondiente al estado actual
+        statusElement.classList.add(status);
+        
+        // Actualizar el texto según el estado
+        const statusText = statusElement.querySelector('.status-text');
+        if (statusText) {
+            switch (status) {
+                case 'connected':
+                    statusText.textContent = 'Conectado';
+                    break;
+                case 'connecting':
+                    statusText.textContent = 'Conectando...';
+                    break;
+                case 'disconnected':
+                    statusText.textContent = 'Desconectado';
+                    break;
+                case 'failed':
+                    statusText.textContent = 'Error de conexión';
+                    break;
+                default:
+                    statusText.textContent = 'Estado desconocido';
+            }
+        }
+        
+        // Ocultar después de un tiempo si está conectado
+        if (status === 'connected') {
+            setTimeout(() => {
+                statusElement.style.opacity = '0';
+                setTimeout(() => {
+                    statusElement.style.display = 'none';
+                }, 300);
+            }, 3000);
+        } else {
+            statusElement.style.display = 'flex';
+            statusElement.style.opacity = '1';
         }
     }
     
