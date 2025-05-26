@@ -332,7 +332,7 @@ use Illuminate\Support\Facades\Auth;
                                     </div>
                 @endif
                 
-                <div class="flex items-center ml-auto gap-2">
+                <!-- <div class="flex items-center ml-auto gap-2">
                     <a href="{{ route('chat.index') }}" class="flex items-center justify-center px-4 py-2 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 text-gray-700 transition-colors duration-200">
                         <i class="fas fa-arrow-left mr-2"></i>
                         Volver a conversaciones
@@ -345,7 +345,7 @@ use Illuminate\Support\Facades\Auth;
                             </div>
                             </div>
                             </div>
-</div>
+</div> -->
 
 <!-- Añadir Font Awesome -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">

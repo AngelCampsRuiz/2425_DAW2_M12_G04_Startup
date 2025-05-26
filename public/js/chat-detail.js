@@ -73,24 +73,24 @@ document.addEventListener('DOMContentLoaded', function() {
             const lengthIndicator = document.querySelector('.message-length');
             
             if (lengthIndicator) {
-                if (currentLength > 0) {
-                    lengthIndicator.classList.remove('hidden');
+            if (currentLength > 0) {
+                lengthIndicator.classList.remove('hidden');
                     const currentLengthElement = document.getElementById('current-length');
                     if (currentLengthElement) {
                         currentLengthElement.textContent = currentLength;
                     }
-                    
-                    if (currentLength > maxLength * 0.8) {
-                        lengthIndicator.classList.add('text-orange-500');
-                    } else {
-                        lengthIndicator.classList.remove('text-orange-500', 'text-red-500');
-                    }
-                    
-                    if (currentLength > maxLength * 0.95) {
-                        lengthIndicator.classList.add('text-red-500');
-                    }
+                
+                if (currentLength > maxLength * 0.8) {
+                    lengthIndicator.classList.add('text-orange-500');
                 } else {
-                    lengthIndicator.classList.add('hidden');
+                    lengthIndicator.classList.remove('text-orange-500', 'text-red-500');
+                }
+                
+                if (currentLength > maxLength * 0.95) {
+                    lengthIndicator.classList.add('text-red-500');
+                }
+            } else {
+                lengthIndicator.classList.add('hidden');
                 }
             }
             
@@ -233,7 +233,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Crear FormData para enviar el contenido
             const formData = new FormData();
-            formData.append('contenido', content);
+                formData.append('contenido', content);
             
             console.log('Enviando mensaje a:', window.routeSendMessage);
             
