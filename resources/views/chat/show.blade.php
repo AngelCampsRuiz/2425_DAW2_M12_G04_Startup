@@ -572,6 +572,253 @@ use Illuminate\Support\Facades\Auth;
         console.log('Event listeners para videollamada inicializados correctamente');
     });
 
+    // Inicializar el cliente de Agora y configurar la conexión
+    async function initializeAgoraClient() {
+        try {
+            console.log('Inicializando cliente de Agora...');
+            
+            // Verificar si ya existe un cliente
+            if (agoraClient) {
+                console.log('Cliente de Agora ya inicializado');
+                return;
+            }
+            
+            // Crear cliente de Agora
+            agoraClient = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
+            
+            // Agregar event listeners
+            agoraClient.on('user-published', handleUserPublished);
+            agoraClient.on('user-unpublished', handleUserUnpublished);
+            agoraClient.on('user-joined', handleUserJoined);
+            agoraClient.on('user-left', handleUserLeft);
+            agoraClient.on('connection-state-change', handleConnectionStateChange);
+            
+            // Generar un token temporal para pruebas (en producción esto debería venir del servidor)
+            // App ID: reemplazar con tu App ID de Agora
+            const appId = '3b6e2a4e5bea4cd0bc5fca3d8e53f9b4';
+            const channelName = 'chat_' + chatId; // Usar chatId para que solo se conecten los usuarios del mismo chat
+            
+            // En producción, este token debe ser generado en el servidor
+            // Para pruebas, usamos un uid único basado en la fecha
+            const uid = Math.floor(Date.now() % 10000);
+            
+            console.log(`Intentando unirse al canal: ${channelName} con uid: ${uid}`);
+            
+            // Actualizar UI para mostrar estado de conexión
+            updateCallStatus('Conectando...');
+            
+            // Unirse al canal (en producción, el token debe venir del servidor)
+            await agoraClient.join(appId, channelName, null, uid);
+            console.log('Unido al canal de Agora exitosamente');
+            
+            // Actualizar UI
+            updateCallStatus('Conectado. Esperando participantes...');
+            
+            // Publicar audio y video local si hay stream disponible
+            if (localStream) {
+                console.log('Publicando stream local...');
+                
+                // Crear tracks de Agora desde el stream local
+                const videoTrack = localStream.getVideoTracks()[0];
+                const audioTrack = localStream.getAudioTracks()[0];
+                
+                if (videoTrack) {
+                    // Crear track de video de Agora
+                    const localVideoTrack = await AgoraRTC.createCustomVideoTrack({
+                        mediaStreamTrack: videoTrack
+                    });
+                    
+                    // Publicar track de video
+                    await agoraClient.publish(localVideoTrack);
+                    console.log('Video local publicado');
+                }
+                
+                if (audioTrack) {
+                    // Crear track de audio de Agora
+                    const localAudioTrack = await AgoraRTC.createCustomAudioTrack({
+                        mediaStreamTrack: audioTrack
+                    });
+                    
+                    // Publicar track de audio
+                    await agoraClient.publish(localAudioTrack);
+                    console.log('Audio local publicado');
+                }
+            } else {
+                console.warn('No hay stream local disponible para publicar');
+            }
+            
+            return true;
+        } catch (error) {
+            console.error('Error al inicializar Agora:', error);
+            updateCallStatus('Error de conexión: ' + error.message);
+            return false;
+        }
+    }
+    
+    // Manejar cuando un usuario publica su stream
+    async function handleUserPublished(user, mediaType) {
+        console.log(`Usuario ${user.uid} publicó ${mediaType}`);
+        
+        // Suscribirse al usuario remoto
+        await agoraClient.subscribe(user, mediaType);
+        console.log(`Suscrito a ${mediaType} de usuario ${user.uid}`);
+        
+        // Si es video, mostrar en el contenedor remoto
+        if (mediaType === 'video') {
+            // Obtener el contenedor de video remoto
+            const remoteContainer = document.getElementById('remote-video');
+            if (remoteContainer) {
+                // Reproducir el video remoto
+                user.videoTrack.play(remoteContainer);
+                console.log('Video remoto reproducido');
+                
+                // Ocultar mensaje de carga
+                const loadingElement = document.getElementById('remote-video-loading');
+                if (loadingElement) {
+                    loadingElement.style.display = 'none';
+                }
+                
+                // Actualizar UI
+                updateCallStatus('Llamada en curso');
+                startCallTimer();
+            } else {
+                console.error('No se encontró el contenedor de video remoto');
+            }
+        }
+        
+        // Si es audio, reproducir
+        if (mediaType === 'audio') {
+            user.audioTrack.play();
+            console.log('Audio remoto reproducido');
+        }
+    }
+    
+    // Manejar cuando un usuario deja de publicar su stream
+    function handleUserUnpublished(user, mediaType) {
+        console.log(`Usuario ${user.uid} dejó de publicar ${mediaType}`);
+        
+        // Si es video, mostrar mensaje
+        if (mediaType === 'video') {
+            // Obtener el contenedor de video remoto
+            const loadingElement = document.getElementById('remote-video-loading');
+            if (loadingElement) {
+                loadingElement.style.display = 'flex';
+                loadingElement.innerHTML = `
+                    <div class="text-center">
+                        <p class="text-white mt-4">${otherUserName} ha desactivado su cámara</p>
+                    </div>
+                `;
+            }
+        }
+    }
+    
+    // Manejar cuando un usuario se une
+    function handleUserJoined(user) {
+        console.log(`Usuario ${user.uid} se unió a la llamada`);
+        updateCallStatus(`${otherUserName} se ha unido a la llamada`);
+    }
+    
+    // Manejar cuando un usuario se va
+    function handleUserLeft(user) {
+        console.log(`Usuario ${user.uid} dejó la llamada`);
+        updateCallStatus(`${otherUserName} dejó la llamada`);
+        
+        // Mostrar mensaje en el contenedor remoto
+        const loadingElement = document.getElementById('remote-video-loading');
+        if (loadingElement) {
+            loadingElement.style.display = 'flex';
+            loadingElement.innerHTML = `
+                <div class="text-center">
+                    <p class="text-white mt-4">${otherUserName} ha abandonado la llamada</p>
+                </div>
+            `;
+        }
+        
+        // Detener el temporizador
+        stopCallTimer();
+    }
+    
+    // Manejar cambios en el estado de la conexión
+    function handleConnectionStateChange(curState, prevState) {
+        console.log(`Estado de conexión cambió de ${prevState} a ${curState}`);
+        
+        // Actualizar UI según el estado
+        const statusElement = document.getElementById('connection-status');
+        const statusTextElement = document.getElementById('call-status');
+        
+        if (statusElement && statusTextElement) {
+            switch (curState) {
+                case 'CONNECTING':
+                    statusElement.className = 'w-2 h-2 rounded-full bg-yellow-500 mr-2';
+                    statusTextElement.textContent = 'Conectando...';
+                    break;
+                case 'CONNECTED':
+                    statusElement.className = 'w-2 h-2 rounded-full bg-green-500 mr-2';
+                    statusTextElement.textContent = 'Conectado';
+                    break;
+                case 'DISCONNECTING':
+                    statusElement.className = 'w-2 h-2 rounded-full bg-yellow-500 mr-2';
+                    statusTextElement.textContent = 'Desconectando...';
+                    break;
+                case 'DISCONNECTED':
+                    statusElement.className = 'w-2 h-2 rounded-full bg-red-500 mr-2';
+                    statusTextElement.textContent = 'Desconectado';
+                    stopCallTimer();
+                    break;
+                default:
+                    statusElement.className = 'w-2 h-2 rounded-full bg-gray-500 mr-2';
+                    statusTextElement.textContent = curState;
+            }
+        }
+    }
+    
+    // Actualizar el estado de la llamada en la UI
+    function updateCallStatus(message) {
+        const statusElement = document.getElementById('call-status');
+        if (statusElement) {
+            statusElement.textContent = message;
+        }
+    }
+    
+    // Temporizador de llamada
+    let callTimerInterval;
+    let callStartTime;
+    
+    function startCallTimer() {
+        callStartTime = new Date();
+        
+        // Limpiar intervalo existente si hay
+        if (callTimerInterval) {
+            clearInterval(callTimerInterval);
+        }
+        
+        // Actualizar cada segundo
+        callTimerInterval = setInterval(() => {
+            const timerElement = document.getElementById('call-timer');
+            if (timerElement) {
+                const elapsedTime = new Date() - callStartTime;
+                const seconds = Math.floor(elapsedTime / 1000) % 60;
+                const minutes = Math.floor(elapsedTime / 60000) % 60;
+                const hours = Math.floor(elapsedTime / 3600000);
+                
+                timerElement.textContent = 
+                    `${hours > 0 ? hours + ':' : ''}${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+        }, 1000);
+    }
+    
+    function stopCallTimer() {
+        if (callTimerInterval) {
+            clearInterval(callTimerInterval);
+            callTimerInterval = null;
+        }
+        
+        const timerElement = document.getElementById('call-timer');
+        if (timerElement) {
+            timerElement.textContent = '';
+        }
+    }
+
     async function startVideoCall() {
         console.log('Botón de videollamada presionado');
         
@@ -647,6 +894,12 @@ use Illuminate\Support\Facades\Auth;
                 console.warn('Error al enumerar dispositivos:', deviceError);
                 // Continuar aunque falle la enumeración de dispositivos
             }
+            
+            // Inicializar la conexión de Agora para la videollamada
+            const connected = await initializeAgoraClient();
+            if (!connected) {
+                console.warn('No se pudo establecer la conexión para la videollamada');
+            }
 
             console.log('Cámara iniciada correctamente');
         } catch (error) {
@@ -713,21 +966,7 @@ use Illuminate\Support\Facades\Auth;
         // End call
         const endCallBtn = document.getElementById('end-call');
         if (endCallBtn) {
-            endCallBtn.addEventListener('click', function() {
-                if (stream) {
-                    stream.getTracks().forEach(track => track.stop());
-                }
-
-                // Si estamos compartiendo pantalla, detenerla
-                if (isScreenSharing && screenStream) {
-                    screenStream.getTracks().forEach(track => track.stop());
-                }
-
-                const videoContainer = document.getElementById('video-container');
-                if (videoContainer) {
-                    videoContainer.style.display = 'none';
-                }
-            });
+            endCallBtn.addEventListener('click', endCall);
         }
 
         // Toggle chat
@@ -741,12 +980,7 @@ use Illuminate\Support\Facades\Auth;
         // Close video container
         const closeVideoBtn = document.getElementById('close-video-container');
         if (closeVideoBtn) {
-            closeVideoBtn.addEventListener('click', function() {
-                const videoContainer = document.getElementById('video-container');
-                if (videoContainer) {
-                    videoContainer.style.display = 'none';
-                }
-            });
+            closeVideoBtn.addEventListener('click', endCall);
         }
 
         // Añadir manejador para el botón de pizarra
@@ -1429,6 +1663,12 @@ use Illuminate\Support\Facades\Auth;
         const speakerSelect = document.getElementById('speaker-select');
         const cameraSelect = document.getElementById('camera-select');
 
+        // Verificar que todos los selectores existen
+        if (!micSelect || !speakerSelect || !cameraSelect) {
+            console.warn('Algunos selectores de dispositivos no se encontraron en el DOM');
+            return; // Salir si alguno no existe
+        }
+
         // Limpiar selectores
         micSelect.innerHTML = '';
         speakerSelect.innerHTML = '';
@@ -2093,6 +2333,125 @@ use Illuminate\Support\Facades\Auth;
         }
         </style>
     `);
+
+    // Finalizar la llamada y limpiar recursos
+    async function endCall() {
+        try {
+            console.log('Finalizando llamada...');
+            
+            // Detener todas las pistas del stream local
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+            }
+            
+            // Detener pantalla compartida si está activa
+            if (isScreenSharing && screenStream) {
+                screenStream.getTracks().forEach(track => track.stop());
+            }
+            
+            // Salir del canal de Agora
+            if (agoraClient) {
+                await agoraClient.leave();
+                console.log('Salió del canal de Agora');
+                agoraClient = null;
+            }
+            
+            // Detener el temporizador de llamada
+            stopCallTimer();
+            
+            // Ocultar el contenedor de video
+            const videoContainer = document.getElementById('video-container');
+            if (videoContainer) {
+                videoContainer.style.display = 'none';
+            }
+            
+            // Reiniciar el estado
+            updateCallStatus('Llamada finalizada');
+            
+            console.log('Llamada finalizada correctamente');
+        } catch (error) {
+            console.error('Error al finalizar la llamada:', error);
+        }
+    }
+
+    function initializeControls(stream) {
+        if (!stream) {
+            console.error('No se proporcionó un stream para inicializar los controles');
+            return;
+        }
+        
+        // Mute/unmute audio
+        const toggleAudioBtn = document.getElementById('toggle-audio');
+        if (toggleAudioBtn) {
+            toggleAudioBtn.addEventListener('click', function() {
+                const audioTracks = stream.getAudioTracks();
+                if (audioTracks.length > 0) {
+                    audioTracks[0].enabled = !audioTracks[0].enabled;
+                    this.innerHTML = audioTracks[0].enabled ?
+                        '<i class="fas fa-microphone"></i>' :
+                        '<i class="fas fa-microphone-slash"></i>';
+                }
+            });
+        }
+
+        // Enable/disable video
+        const toggleVideoBtn = document.getElementById('toggle-video');
+        if (toggleVideoBtn) {
+            toggleVideoBtn.addEventListener('click', function() {
+                const videoTracks = stream.getVideoTracks();
+                if (videoTracks.length > 0) {
+                    videoTracks[0].enabled = !videoTracks[0].enabled;
+                    this.innerHTML = videoTracks[0].enabled ?
+                        '<i class="fas fa-video"></i>' :
+                        '<i class="fas fa-video-slash"></i>';
+                }
+            });
+        }
+
+        // Compartir pantalla - Asegurar que funcione correctamente
+        const shareScreenBtn = document.getElementById('share-screen');
+        if (shareScreenBtn) {
+            // Asegurarse que solo se añada un listener
+            shareScreenBtn.removeEventListener('click', toggleScreenSharing);
+            shareScreenBtn.addEventListener('click', toggleScreenSharing);
+
+            console.log('Evento de compartir pantalla asignado correctamente');
+
+            // Verificar si el navegador soporta compartir pantalla
+            if (!navigator.mediaDevices || typeof navigator.mediaDevices.getDisplayMedia !== 'function') {
+                console.warn('Este navegador no soporta compartir pantalla');
+                shareScreenBtn.style.display = 'none';
+            }
+        } else {
+            console.error('No se encontró el botón de compartir pantalla');
+        }
+
+        // End call
+        const endCallBtn = document.getElementById('end-call');
+        if (endCallBtn) {
+            endCallBtn.addEventListener('click', endCall);
+        }
+
+        // Toggle chat
+        const toggleChatBtn = document.getElementById('toggle-chat');
+        if (toggleChatBtn) {
+            toggleChatBtn.addEventListener('click', function() {
+                // Código para mostrar/ocultar el chat
+            });
+        }
+
+        // Close video container
+        const closeVideoBtn = document.getElementById('close-video-container');
+        if (closeVideoBtn) {
+            closeVideoBtn.addEventListener('click', endCall);
+        }
+
+        // Añadir manejador para el botón de pizarra
+        const openWhiteboardBtn = document.getElementById('open-whiteboard');
+        if (openWhiteboardBtn) {
+            openWhiteboardBtn.addEventListener('click', openWhiteboard);
+        }
+    }
 </script>
 
 <!-- Añadir soporte de Pusher para el chat en tiempo real -->
