@@ -86,7 +86,7 @@ use Illuminate\Support\Facades\Auth;
                     </div>
                 </div>
                 <div class="flex items-center gap-2 sm:space-x-3">
-                    <button id="video-call-btn" class="inline-flex items-center justify-center px-3 sm:px-4 py-2 rounded-full text-sm font-medium bg-gradient-to-r from-[#5e0490] to-[#4a0370] text-white hover:shadow-lg transition-all duration-300 transform hover:scale-105 group">
+                    <button id="video-call-btn" onclick="window.startVideoCall(); return false;" class="inline-flex items-center justify-center px-3 sm:px-4 py-2 rounded-full text-sm font-medium bg-gradient-to-r from-[#5e0490] to-[#4a0370] text-white hover:shadow-lg transition-all duration-300 transform hover:scale-105 group">
                         <i class="fas fa-video mr-0 sm:mr-2 group-hover:animate-pulse"></i>
                         <span class="hidden sm:inline">Videollamada</span>
                     </button>
@@ -378,6 +378,9 @@ use Illuminate\Support\Facades\Auth;
 
 <!-- Configuración para Socket.io -->
 <script>
+    // Añadir logs de depuración
+    console.log('Script de chat inicializándose...');
+    
     // Configurar la variable global para la URL del servidor Socket.io
     window.socketServerUrl = '{{ env('SOCKET_SERVER_URL', 'http://localhost:3000') }}';
 
@@ -404,6 +407,66 @@ use Illuminate\Support\Facades\Auth;
     let localUid = {{ auth()->id() }};
     const agoraAppId = document.querySelector('meta[name="agora-app-id"]').content;
     
+    console.log('Agora AppID configurado:', agoraAppId);
+    
+    // Función wrapper para el botón de videollamada (accesible globalmente)
+    function startVideoCallBtn() {
+        console.log('Función startVideoCallBtn llamada directamente desde onclick');
+        try {
+            startVideoCall();
+        } catch (error) {
+            console.error('Error al iniciar la videollamada:', error);
+            alert('Error al iniciar la videollamada: ' + error.message);
+        }
+    }
+    
+    // Versión simplificada para depuración
+    window.startVideoCall = function() {
+        console.log('Función startVideoCall llamada');
+        
+        // Mostrar el contenedor de video
+        const videoContainer = document.getElementById('video-container');
+        if (videoContainer) {
+            videoContainer.style.display = 'flex';
+            console.log('Contenedor de video mostrado');
+        } else {
+            console.error('No se encontró el contenedor de video');
+            alert('Error: No se encontró el contenedor de video');
+            return;
+        }
+        
+        // Intenta mostrar un mensaje de alerta para confirmar que la función se está ejecutando
+        alert('La función de videollamada se está ejecutando correctamente');
+    };
+    
+    // Asignar evento directamente al botón cuando el DOM esté listo
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM cargado, configurando eventos...');
+        
+        // Verificar si el botón existe
+        const videoCallBtn = document.getElementById('video-call-btn');
+        console.log('Botón de videollamada encontrado:', videoCallBtn);
+        
+        if (videoCallBtn) {
+            console.log('Asignando evento click al botón de videollamada');
+            
+            // Eliminar cualquier evento previo
+            videoCallBtn.removeEventListener('click', startVideoCall);
+            
+            // Agregar evento y verificar que se asignó correctamente
+            videoCallBtn.addEventListener('click', function(e) {
+                console.log('¡Botón de videollamada presionado!');
+                e.preventDefault();
+                startVideoCall();
+            });
+            
+            // También agregar evento directamente en el HTML para mayor seguridad
+            videoCallBtn.setAttribute('onclick', 'console.log("Botón presionado vía onclick"); startVideoCall(); return false;');
+        } else {
+            console.error('No se encontró el botón de videollamada');
+        }
+    });
+
     // Inicializar el cliente de Agora y configurar la conexión
     async function initializeAgoraClient() {
         try {
