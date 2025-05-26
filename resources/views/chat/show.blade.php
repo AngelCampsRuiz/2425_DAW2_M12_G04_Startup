@@ -447,27 +447,55 @@ use Illuminate\Support\Facades\Auth;
     // Event Listeners
     document.addEventListener('DOMContentLoaded', function() {
         // Botón de videollamada
-        document.getElementById('video-call-btn').addEventListener('click', startVideoCall);
+        const videoCallBtn = document.getElementById('video-call-btn');
+        if (videoCallBtn) {
+            videoCallBtn.addEventListener('click', startVideoCall);
+        }
 
         // Botón de configuración
-        document.getElementById('open-settings').addEventListener('click', openSettings);
-        document.getElementById('close-settings').addEventListener('click', closeSettings);
+        const openSettingsBtn = document.getElementById('open-settings');
+        if (openSettingsBtn) {
+            openSettingsBtn.addEventListener('click', openSettings);
+        }
+        
+        const closeSettingsBtn = document.getElementById('close-settings');
+        if (closeSettingsBtn) {
+            closeSettingsBtn.addEventListener('click', closeSettings);
+        }
 
         // Botón de pizarra virtual
-        document.getElementById('open-whiteboard').addEventListener('click', openWhiteboard);
-        document.getElementById('close-whiteboard').addEventListener('click', closeWhiteboard);
+        const openWhiteboardBtn = document.getElementById('open-whiteboard');
+        if (openWhiteboardBtn) {
+            openWhiteboardBtn.addEventListener('click', openWhiteboard);
+        }
+        
+        const closeWhiteboardBtn = document.getElementById('close-whiteboard');
+        if (closeWhiteboardBtn) {
+            closeWhiteboardBtn.addEventListener('click', closeWhiteboard);
+        }
 
         // Botones de la pizarra
-        document.getElementById('undo-whiteboard').addEventListener('click', undoWhiteboard);
-        document.getElementById('clear-whiteboard').addEventListener('click', clearWhiteboard);
-        document.getElementById('save-whiteboard').addEventListener('click', saveWhiteboard);
+        const undoWhiteboardBtn = document.getElementById('undo-whiteboard');
+        if (undoWhiteboardBtn) {
+            undoWhiteboardBtn.addEventListener('click', undoWhiteboard);
+        }
+        
+        const clearWhiteboardBtn = document.getElementById('clear-whiteboard');
+        if (clearWhiteboardBtn) {
+            clearWhiteboardBtn.addEventListener('click', clearWhiteboard);
+        }
+        
+        const saveWhiteboardBtn = document.getElementById('save-whiteboard');
+        if (saveWhiteboardBtn) {
+            saveWhiteboardBtn.addEventListener('click', saveWhiteboard);
+        }
 
         // Herramientas de la pizarra
         const toolButtons = document.querySelectorAll('.whiteboard-tool');
         toolButtons.forEach(button => {
             button.addEventListener('click', () => {
                 const tool = button.getAttribute('data-tool');
-                selectTool(tool);
+                if (tool) selectTool(tool);
             });
         });
 
@@ -476,7 +504,7 @@ use Illuminate\Support\Facades\Auth;
         colorButtons.forEach(button => {
             button.addEventListener('click', () => {
                 const color = button.getAttribute('data-color');
-                selectColor(color);
+                if (color) selectColor(color);
             });
         });
 
@@ -485,7 +513,7 @@ use Illuminate\Support\Facades\Auth;
         lineWidthButtons.forEach(button => {
             button.addEventListener('click', () => {
                 const width = button.getAttribute('data-width');
-                selectLineWidth(parseInt(width));
+                if (width) selectLineWidth(parseInt(width));
             });
         });
 
@@ -494,28 +522,68 @@ use Illuminate\Support\Facades\Auth;
         tabButtons.forEach(button => {
             button.addEventListener('click', () => {
                 const tabName = button.getAttribute('data-tab');
-                switchTab(tabName);
+                if (tabName) switchTab(tabName);
             });
         });
 
         // Botones de acción de configuración
-        document.getElementById('save-settings').addEventListener('click', saveSettings);
-        document.getElementById('reset-settings').addEventListener('click', resetSettings);
-        document.getElementById('test-audio').addEventListener('click', testAudio);
+        const saveSettingsBtn = document.getElementById('save-settings');
+        if (saveSettingsBtn) {
+            saveSettingsBtn.addEventListener('click', saveSettings);
+        }
+        
+        const resetSettingsBtn = document.getElementById('reset-settings');
+        if (resetSettingsBtn) {
+            resetSettingsBtn.addEventListener('click', resetSettings);
+        }
+        
+        const testAudioBtn = document.getElementById('test-audio');
+        if (testAudioBtn) {
+            testAudioBtn.addEventListener('click', testAudio);
+        }
 
         // Cambio de dispositivos
-        document.getElementById('microphone-select').addEventListener('change', changeMicrophone);
-        document.getElementById('speaker-select').addEventListener('change', changeSpeaker);
-        document.getElementById('camera-select').addEventListener('change', changeCamera);
+        const microphoneSelect = document.getElementById('microphone-select');
+        if (microphoneSelect) {
+            microphoneSelect.addEventListener('change', changeMicrophone);
+        }
+        
+        const speakerSelect = document.getElementById('speaker-select');
+        if (speakerSelect) {
+            speakerSelect.addEventListener('change', changeSpeaker);
+        }
+        
+        const cameraSelect = document.getElementById('camera-select');
+        if (cameraSelect) {
+            cameraSelect.addEventListener('change', changeCamera);
+        }
 
         // Configuración de sonido
-        document.getElementById('echo-cancellation').addEventListener('change', updateAudioConstraints);
-        document.getElementById('noise-suppression').addEventListener('change', updateAudioConstraints);
+        const echoCancellationCheckbox = document.getElementById('echo-cancellation');
+        if (echoCancellationCheckbox) {
+            echoCancellationCheckbox.addEventListener('change', updateAudioConstraints);
+        }
+        
+        const noiseSuppressionCheckbox = document.getElementById('noise-suppression');
+        if (noiseSuppressionCheckbox) {
+            noiseSuppressionCheckbox.addEventListener('change', updateAudioConstraints);
+        }
+
+        console.log('Event listeners para videollamada inicializados correctamente');
     });
 
     async function startVideoCall() {
         console.log('Botón de videollamada presionado');
-        document.getElementById('video-container').style.display = 'flex';
+        
+        // Verificar que el contenedor de video existe
+        const videoContainer = document.getElementById('video-container');
+        if (!videoContainer) {
+            console.error('No se encontró el contenedor de video');
+            alert('Error: No se encontró el contenedor de video en la página');
+            return;
+        }
+        
+        videoContainer.style.display = 'flex';
 
         try {
             // Verificar si la API de mediaDevices está disponible
@@ -523,11 +591,23 @@ use Illuminate\Support\Facades\Auth;
                 throw new Error('La API de cámara no está disponible en este navegador o contexto. Intente usar HTTPS o un navegador más moderno.');
             }
             
-            // Solicitar permisos explícitamente con las restricciones guardadas
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: getVideoConstraints(),
-                audio: getAudioConstraints()
-            });
+            // Configuración predeterminada para audio y video
+            const constraints = {
+                video: true, // Comenzar con configuración simple
+                audio: true
+            };
+            
+            // Intentar usar configuraciones más detalladas si es posible
+            try {
+                constraints.video = getVideoConstraints();
+                constraints.audio = getAudioConstraints();
+            } catch (configError) {
+                console.warn('Error al obtener configuración avanzada, usando configuración básica', configError);
+                // Mantener la configuración simple definida anteriormente
+            }
+            
+            // Solicitar permisos de la cámara/micrófono
+            const stream = await navigator.mediaDevices.getUserMedia(constraints);
 
             localStream = stream;
 
@@ -554,43 +634,63 @@ use Illuminate\Support\Facades\Auth;
             } else {
                 console.error('No se encontró el elemento de video local');
                 alert('Error: No se pudo encontrar el elemento de video en la página');
+                return;
             }
 
             // Inicializar los controles
             initializeControls(stream);
 
             // Enumerar dispositivos para configuración
-            await enumerateDevices();
+            try {
+                await enumerateDevices();
+            } catch (deviceError) {
+                console.warn('Error al enumerar dispositivos:', deviceError);
+                // Continuar aunque falle la enumeración de dispositivos
+            }
 
             console.log('Cámara iniciada correctamente');
         } catch (error) {
             console.error('Error al acceder a la cámara:', error);
             alert('No se pudo acceder a la cámara o micrófono. Por favor, verifica los permisos: ' + error.message);
+            
+            // Ocultar el contenedor de video en caso de error
+            videoContainer.style.display = 'none';
         }
     }
 
     function initializeControls(stream) {
+        if (!stream) {
+            console.error('No se proporcionó un stream para inicializar los controles');
+            return;
+        }
+        
         // Mute/unmute audio
-        document.getElementById('toggle-audio').addEventListener('click', function() {
-            const audioTracks = stream.getAudioTracks();
-            if (audioTracks.length > 0) {
-                audioTracks[0].enabled = !audioTracks[0].enabled;
-                this.innerHTML = audioTracks[0].enabled ?
-                    '<i class="fas fa-microphone"></i>' :
-                    '<i class="fas fa-microphone-slash"></i>';
-            }
-        });
+        const toggleAudioBtn = document.getElementById('toggle-audio');
+        if (toggleAudioBtn) {
+            toggleAudioBtn.addEventListener('click', function() {
+                const audioTracks = stream.getAudioTracks();
+                if (audioTracks.length > 0) {
+                    audioTracks[0].enabled = !audioTracks[0].enabled;
+                    this.innerHTML = audioTracks[0].enabled ?
+                        '<i class="fas fa-microphone"></i>' :
+                        '<i class="fas fa-microphone-slash"></i>';
+                }
+            });
+        }
 
         // Enable/disable video
-        document.getElementById('toggle-video').addEventListener('click', function() {
-            const videoTracks = stream.getVideoTracks();
-            if (videoTracks.length > 0) {
-                videoTracks[0].enabled = !videoTracks[0].enabled;
-                this.innerHTML = videoTracks[0].enabled ?
-                    '<i class="fas fa-video"></i>' :
-                    '<i class="fas fa-video-slash"></i>';
-            }
-        });
+        const toggleVideoBtn = document.getElementById('toggle-video');
+        if (toggleVideoBtn) {
+            toggleVideoBtn.addEventListener('click', function() {
+                const videoTracks = stream.getVideoTracks();
+                if (videoTracks.length > 0) {
+                    videoTracks[0].enabled = !videoTracks[0].enabled;
+                    this.innerHTML = videoTracks[0].enabled ?
+                        '<i class="fas fa-video"></i>' :
+                        '<i class="fas fa-video-slash"></i>';
+                }
+            });
+        }
 
         // Compartir pantalla - Asegurar que funcione correctamente
         const shareScreenBtn = document.getElementById('share-screen');
@@ -611,29 +711,49 @@ use Illuminate\Support\Facades\Auth;
         }
 
         // End call
-        document.getElementById('end-call').addEventListener('click', function() {
-            stream.getTracks().forEach(track => track.stop());
+        const endCallBtn = document.getElementById('end-call');
+        if (endCallBtn) {
+            endCallBtn.addEventListener('click', function() {
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                }
 
-            // Si estamos compartiendo pantalla, detenerla
-            if (isScreenSharing && screenStream) {
-                screenStream.getTracks().forEach(track => track.stop());
-            }
+                // Si estamos compartiendo pantalla, detenerla
+                if (isScreenSharing && screenStream) {
+                    screenStream.getTracks().forEach(track => track.stop());
+                }
 
-            document.getElementById('video-container').style.display = 'none';
-        });
+                const videoContainer = document.getElementById('video-container');
+                if (videoContainer) {
+                    videoContainer.style.display = 'none';
+                }
+            });
+        }
 
         // Toggle chat
-        document.getElementById('toggle-chat').addEventListener('click', function() {
-            // Código para mostrar/ocultar el chat
-        });
+        const toggleChatBtn = document.getElementById('toggle-chat');
+        if (toggleChatBtn) {
+            toggleChatBtn.addEventListener('click', function() {
+                // Código para mostrar/ocultar el chat
+            });
+        }
 
         // Close video container
-        document.getElementById('close-video-container').addEventListener('click', function() {
-            document.getElementById('video-container').style.display = 'none';
-        });
+        const closeVideoBtn = document.getElementById('close-video-container');
+        if (closeVideoBtn) {
+            closeVideoBtn.addEventListener('click', function() {
+                const videoContainer = document.getElementById('video-container');
+                if (videoContainer) {
+                    videoContainer.style.display = 'none';
+                }
+            });
+        }
 
         // Añadir manejador para el botón de pizarra
-        document.getElementById('open-whiteboard').addEventListener('click', openWhiteboard);
+        const openWhiteboardBtn = document.getElementById('open-whiteboard');
+        if (openWhiteboardBtn) {
+            openWhiteboardBtn.addEventListener('click', openWhiteboard);
+        }
     }
 
     // ---- FUNCIONES PARA LA PIZARRA VIRTUAL ----
@@ -1478,21 +1598,39 @@ use Illuminate\Support\Facades\Auth;
 
     // Obtener restricciones de audio basadas en configuración
     function getAudioConstraints() {
+        // Usar valores predeterminados si los elementos no existen
+        const echoElement = document.getElementById('echo-cancellation');
+        const noiseElement = document.getElementById('noise-suppression');
+        
         return {
             deviceId: selectedAudioInput ? { exact: selectedAudioInput } : undefined,
-            echoCancellation: document.getElementById('echo-cancellation').checked,
-            noiseSuppression: document.getElementById('noise-suppression').checked,
+            echoCancellation: echoElement ? echoElement.checked : true,
+            noiseSuppression: noiseElement ? noiseElement.checked : true,
             autoGainControl: true
         };
     }
 
     // Obtener restricciones de video basadas en configuración
     function getVideoConstraints() {
+        // Usar valores predeterminados si los elementos no existen
         const qualitySelect = document.getElementById('video-quality');
         const fpsSelect = document.getElementById('video-fps');
+        
+        // Valores por defecto
+        let quality = 'standard';
+        let fps = '24';
+        
+        // Obtener valores de los elementos si existen
+        if (qualitySelect && qualitySelect.value) {
+            quality = qualitySelect.value;
+        }
+        
+        if (fpsSelect && fpsSelect.value) {
+            fps = fpsSelect.value;
+        }
 
         let width, height;
-        switch (qualitySelect.value) {
+        switch (quality) {
             case 'low':
                 width = 320;
                 height = 240;
@@ -1518,7 +1656,7 @@ use Illuminate\Support\Facades\Auth;
             deviceId: selectedVideoInput ? { exact: selectedVideoInput } : undefined,
             width: { ideal: width },
             height: { ideal: height },
-            frameRate: { ideal: parseInt(fpsSelect.value) }
+            frameRate: { ideal: parseInt(fps) }
         };
     }
 
