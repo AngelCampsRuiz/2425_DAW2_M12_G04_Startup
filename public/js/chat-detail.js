@@ -25,32 +25,6 @@ function createMessageHtml(message) {
                     <p class="text-sm ${isCurrentUser ? 'text-white' : 'text-gray-800'} message-content">
                         ${message.contenido}
                     </p>
-                    ${message.archivo_adjunto ? `
-                        <div class="mt-2">
-                            ${message.tipo_archivo && message.tipo_archivo.startsWith('image/') ? `
-                                <a href="/chat_files/${message.archivo_adjunto}" target="_blank" class="block">
-                                    <img src="/chat_files/${message.archivo_adjunto}" 
-                                        alt="Imagen adjunta" 
-                                        class="max-w-full max-h-60 rounded-lg shadow-sm">
-                                </a>
-                            ` : `
-                                <a href="/chat_files/${message.archivo_adjunto}" 
-                                   target="_blank"
-                                   class="flex items-center p-3 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors duration-200">
-                                    <div class="mr-3 bg-gray-200 w-10 h-10 rounded-lg flex items-center justify-center text-gray-500">
-                                        <i class="fas fa-file-alt text-lg"></i>
-                                    </div>
-                                    <div class="flex-1 min-w-0">
-                                        <p class="text-sm font-medium text-gray-900 truncate">
-                                            ${message.nombre_archivo || 'Archivo adjunto'}
-                                        </p>
-                                        <p class="text-xs text-gray-500">Descargar archivo</p>
-                                    </div>
-                                    <i class="fas fa-download text-purple-600"></i>
-                                </a>
-                            `}
-                        </div>
-                    ` : ''}
                     <div class="text-xs ${isCurrentUser ? 'text-white/80' : 'text-gray-500'} mt-1 flex items-center justify-between">
                         <span>${new Date(message.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                     </div>
@@ -65,13 +39,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const chatMessages = document.getElementById('chat-messages');
     const messageForm = document.getElementById('message-form');
     const messageInput = document.getElementById('message-input');
-    const fileInput = document.getElementById('file-input');
-    const filePreview = document.getElementById('file-preview');
-    const fileName = document.getElementById('file-name');
-    const removeFile = document.getElementById('remove-file');
-    const imagePreviewContainer = document.getElementById('image-preview-container');
-    const imagePreview = document.getElementById('image-preview');
-    const emojiButton = document.getElementById('emoji-button');
     const chatId = window.chatId;
     let lastMessageId = window.lastMessageId || 0;
     let isTyping = false;
@@ -88,65 +55,6 @@ document.addEventListener('DOMContentLoaded', function() {
     unreadIndicator.className = 'unread-indicator';
     unreadIndicator.innerHTML = '<i class="fas fa-arrow-down mr-2"></i> Nuevos mensajes';
     document.body.appendChild(unreadIndicator);
-    
-    // Crear el contenedor del selector de emojis
-    const emojiPicker = document.createElement('div');
-    emojiPicker.className = 'emoji-picker';
-    emojiPicker.innerHTML = `
-        <div class="emoji-grid">
-            <div class="emoji-item">😊</div>
-            <div class="emoji-item">😂</div>
-            <div class="emoji-item">❤️</div>
-            <div class="emoji-item">👍</div>
-            <div class="emoji-item">🎉</div>
-            <div class="emoji-item">🔥</div>
-            <div class="emoji-item">😍</div>
-            <div class="emoji-item">🤔</div>
-            <div class="emoji-item">😎</div>
-            <div class="emoji-item">👋</div>
-            <div class="emoji-item">🙏</div>
-            <div class="emoji-item">👏</div>
-            <div class="emoji-item">🤝</div>
-            <div class="emoji-item">💯</div>
-            <div class="emoji-item">⭐</div>
-            <div class="emoji-item">💪</div>
-            <div class="emoji-item">🤣</div>
-            <div class="emoji-item">😢</div>
-        </div>
-    `;
-    
-    // Verificar que exista el contenedor antes de añadir el selector de emojis
-    const relativeContainer = document.querySelector('.relative');
-    if (relativeContainer) {
-        relativeContainer.appendChild(emojiPicker);
-        
-        // Toggle del selector de emojis
-        if (emojiButton) {
-            emojiButton.addEventListener('click', function() {
-                emojiPicker.classList.toggle('show');
-            });
-        }
-        
-        // Cerrar el selector de emojis al hacer clic fuera
-        document.addEventListener('click', function(e) {
-            if (emojiButton && !emojiButton.contains(e.target) && !emojiPicker.contains(e.target)) {
-                emojiPicker.classList.remove('show');
-            }
-        });
-        
-        // Insertar emoji seleccionado
-        document.querySelectorAll('.emoji-item').forEach(item => {
-            item.addEventListener('click', function() {
-                messageInput.value += this.textContent;
-                messageInput.focus();
-                // Disparar evento input para activar autoexpand
-                messageInput.dispatchEvent(new Event('input'));
-                emojiPicker.classList.remove('show');
-            });
-        });
-    } else {
-        console.warn('No se encontró el contenedor para el selector de emojis');
-    }
     
     // Hacer scroll al último mensaje con animación
     if (chatMessages) {
@@ -301,9 +209,8 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             
             const content = messageInput.value.trim();
-            const hasFile = fileInput && fileInput.files.length > 0;
             
-            if (!content && !hasFile) return;
+            if (!content) return;
             
             // Desactivar botones durante el envío
             const submitButton = this.querySelector('button[type="submit"]');
@@ -324,15 +231,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            // Crear FormData para enviar el contenido y archivo
+            // Crear FormData para enviar el contenido
             const formData = new FormData();
-            if (content) {
-                formData.append('contenido', content);
-            }
-            
-            if (hasFile) {
-                formData.append('archivo', fileInput.files[0]);
-            }
+            formData.append('contenido', content);
             
             console.log('Enviando mensaje a:', window.routeSendMessage);
             
@@ -360,8 +261,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         messageInput.value = '';
                         messageInput.style.height = 'auto';
                     }
-                    if (fileInput) fileInput.value = '';
-                    if (filePreview) filePreview.classList.add('hidden');
                     
                     // Añadir mensaje a la vista con animación
                     if (chatMessages && data.mensaje) {

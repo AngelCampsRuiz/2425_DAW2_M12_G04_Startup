@@ -277,30 +277,30 @@ use Illuminate\Support\Facades\Auth;
             </div>
 
             <!-- Formulario de mensajes -->
-            <div class="border-t border-gray-100 p-4 bg-white">
-                <form id="message-form" class="flex items-end gap-2">
-                    <div class="flex-1">
-                        <div class="relative">
-                            <textarea id="message-input" 
-                                    rows="1"
-                                    class="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-200 focus:border-purple-400 transition-all duration-200 resize-none"
-                                    placeholder="Escribe un mensaje..."
-                                    required></textarea>
-                            <div class="absolute right-2 bottom-2 flex items-center space-x-2">
-                                <label for="file-input" class="cursor-pointer text-gray-500 hover:text-purple-600 transition-colors">
-                                    <i class="fas fa-paperclip"></i>
-                                    <input type="file" id="file-input" class="hidden" accept="image/*,.pdf,.doc,.docx">
-                                </label>
-                            </div>
-                        </div>
+            <form id="message-form" class="flex items-end gap-2 bg-white p-4 rounded-xl shadow-lg border border-purple-100">
+                <div class="flex-1 relative">
+                    <textarea
+                        id="message-input"
+                        name="message"
+                        rows="1"
+                        class="w-full resize-none rounded-xl border-gray-200 bg-gray-50 p-3 text-sm placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400"
+                        placeholder="Escribe un mensaje..."
+                        maxlength="500"
+                    ></textarea>
+                    
+                    <div class="message-length hidden absolute -top-6 right-0 text-xs text-gray-500">
+                        <span id="current-length">0</span>/500
                     </div>
-                    <button type="submit" 
-                            class="px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-xl hover:shadow-lg transition-all duration-200 flex items-center gap-2">
-                        <span>Enviar</span>
-                        <i class="fas fa-paper-plane"></i>
-                    </button>
-                </form>
-            </div>
+                </div>
+                
+                <button
+                    type="submit"
+                    class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-purple-500 to-indigo-600 px-4 py-3 text-white hover:from-purple-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed h-[42px]"
+                >
+                    <i class="fas fa-paper-plane"></i>
+                    <span class="sr-only">Enviar mensaje</span>
+                </button>
+            </form>
 
             <div class="flex flex-col sm:flex-row gap-3 border-t border-gray-200 p-4 bg-white">
                 @if(isset($solicitud) && $solicitud)
