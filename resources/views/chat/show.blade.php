@@ -2240,4 +2240,182 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
+<!-- Panel de configuración de videollamada -->
+<div id="settings-panel" class="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-xl w-full max-w-lg mx-4 p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-bold text-gray-800">Configuración de videollamada</h3>
+            <button id="close-settings" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="space-y-6">
+            <!-- Configuración de audio -->
+            <div>
+                <h4 class="font-semibold text-gray-700 mb-3">Audio</h4>
+                <div class="space-y-3">
+                    <label class="flex items-center space-x-3">
+                        <input type="checkbox" id="echo-cancellation" class="form-checkbox text-[#5e0490]">
+                        <span>Cancelación de eco</span>
+                    </label>
+                    <label class="flex items-center space-x-3">
+                        <input type="checkbox" id="noise-suppression" class="form-checkbox text-[#5e0490]">
+                        <span>Supresión de ruido</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Configuración de video -->
+            <div>
+                <h4 class="font-semibold text-gray-700 mb-3">Video</h4>
+                <div class="space-y-3">
+                    <div>
+                        <label for="video-quality" class="block text-sm font-medium text-gray-700">Calidad de video</label>
+                        <select id="video-quality" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#5e0490] focus:ring-[#5e0490]">
+                            <option value="high">Alta (720p)</option>
+                            <option value="medium">Media (480p)</option>
+                            <option value="low">Baja (360p)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="video-fps" class="block text-sm font-medium text-gray-700">FPS</label>
+                        <select id="video-fps" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#5e0490] focus:ring-[#5e0490]">
+                            <option value="30">30 FPS</option>
+                            <option value="24">24 FPS</option>
+                            <option value="15">15 FPS</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configuración de rendimiento -->
+            <div>
+                <h4 class="font-semibold text-gray-700 mb-3">Rendimiento</h4>
+                <div class="space-y-3">
+                    <label class="flex items-center space-x-3">
+                        <input type="checkbox" id="hardware-acceleration" class="form-checkbox text-[#5e0490]">
+                        <span>Aceleración por hardware</span>
+                    </label>
+                    <label class="flex items-center space-x-3">
+                        <input type="checkbox" id="low-bandwidth-mode" class="form-checkbox text-[#5e0490]">
+                        <span>Modo de bajo ancho de banda</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-6 flex justify-end space-x-3">
+            <button id="save-settings" class="px-4 py-2 bg-[#5e0490] text-white rounded-md hover:bg-[#4a0370] transition-colors">
+                Guardar cambios
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Inicialización de variables y configuraciones
+let localStream = null;
+let remoteStream = null;
+let isCallActive = false;
+let currentSettings = {
+    echoCancellation: true,
+    noiseSuppression: true,
+    videoQuality: 'high',
+    videoBitrate: 1000,
+    videoFps: 30,
+    hardwareAcceleration: true,
+    lowBandwidthMode: false
+};
+
+// Función para obtener las restricciones de video basadas en la configuración
+function getVideoConstraints() {
+    const quality = document.getElementById('video-quality')?.value || currentSettings.videoQuality;
+    let constraints = {
+        width: { ideal: 1280 },
+        height: { ideal: 720 },
+        frameRate: { ideal: parseInt(document.getElementById('video-fps')?.value || currentSettings.videoFps) }
+    };
+
+    switch (quality) {
+        case 'low':
+            constraints.width.ideal = 640;
+            constraints.height.ideal = 360;
+            break;
+        case 'medium':
+            constraints.width.ideal = 854;
+            constraints.height.ideal = 480;
+            break;
+        case 'high':
+            constraints.width.ideal = 1280;
+            constraints.height.ideal = 720;
+            break;
+    }
+
+    return constraints;
+}
+
+// Función para iniciar la videollamada
+async function startVideoCall() {
+    try {
+        console.log('Botón de videollamada presionado');
+        
+        // Obtener las restricciones de audio y video
+        const constraints = {
+            audio: {
+                echoCancellation: currentSettings.echoCancellation,
+                noiseSuppression: currentSettings.noiseSuppression
+            },
+            video: getVideoConstraints()
+        };
+
+        // Solicitar acceso a la cámara y micrófono
+        localStream = await navigator.mediaDevices.getUserMedia(constraints);
+        
+        // Mostrar el video local
+        const localVideo = document.getElementById('local-video');
+        if (localVideo) {
+            localVideo.srcObject = localStream;
+        }
+
+        // Mostrar el contenedor de video
+        const videoContainer = document.getElementById('video-container');
+        if (videoContainer) {
+            videoContainer.classList.remove('hidden');
+        }
+
+        // Inicializar la conexión WebRTC aquí
+        // ... código de conexión WebRTC ...
+
+    } catch (error) {
+        console.error('Error al acceder a la cámara:', error);
+        Swal.fire({
+            title: 'Error',
+            text: 'No se pudo acceder a la cámara o micrófono. Por favor, verifica los permisos.',
+            icon: 'error',
+            confirmButtonColor: '#5e0490'
+        });
+    }
+}
+
+// Event Listeners
+document.getElementById('video-call-btn')?.addEventListener('click', startVideoCall);
+
+document.getElementById('open-settings')?.addEventListener('click', function() {
+    const settingsPanel = document.getElementById('settings-panel');
+    if (settingsPanel) {
+        settingsPanel.classList.remove('hidden');
+    }
+});
+
+document.getElementById('close-settings')?.addEventListener('click', function() {
+    const settingsPanel = document.getElementById('settings-panel');
+    if (settingsPanel) {
+        settingsPanel.classList.add('hidden');
+    }
+});
+
+// ... existing code ...
+</script>
+
 @endsection
