@@ -15,10 +15,23 @@ use Illuminate\Support\Facades\Auth;
 @endsection
 
 @push('scripts')
+    <!-- Definimos las variables globales que utilizará chat-detail.js -->
+    <script>
+    window.chatId = '{{ $chat->id }}';
+    window.authId = {{ auth()->id() }};
+    window.otherUserId = '{{ $otherUser->id }}';
+    window.otherUserName = '{{ $otherUser->nombre }}';
+    window.lastMessageId = {{ $mensajes->last() ? $mensajes->last()->id : 0 }};
+    window.csrfToken = '{{ csrf_token() }}';
+    window.routeGetMessages = '{{ route('chat.messages', ['chat' => $chat->id]) }}';
+    window.routeSendMessage = '{{ route('chat.message', ['chat' => $chat->id]) }}';
+    </script>
     <!-- Pusher -->
     <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
     <!-- Chat JavaScript -->
     <script src="{{ asset('js/chat.js') }}"></script>
+    <!-- Chat Detail JavaScript -->
+    <script src="{{ asset('js/chat-detail.js') }}"></script>
 @endpush
 
 @section('content')
@@ -1946,21 +1959,5 @@ use Illuminate\Support\Facades\Auth;
 
 <!-- Añadir soporte de Pusher para el chat en tiempo real -->
 <script src="https://js.pusher.com/7.2/pusher.min.js"></script>
-
-<!-- Definimos las variables globales antes de cargar chat-detail.js -->
-<script>
-// Definimos las variables globales que utilizará chat-detail.js
-window.chatId = '{{ $chat->id }}';
-window.authId = {{ auth()->id() }};
-window.otherUserId = '{{ $otherUser->id }}';
-window.otherUserName = '{{ $otherUser->nombre }}';
-window.lastMessageId = {{ $mensajes->last() ? $mensajes->last()->id : 0 }};
-window.csrfToken = '{{ csrf_token() }}';
-window.routeGetMessages = '{{ route('chat.messages', ['chat' => $chat->id]) }}';
-window.routeSendMessage = '{{ route('chat.message', ['chat' => $chat->id]) }}';
-</script>
-
-<!-- Cargamos el archivo JS después de definir las variables -->
-<script src="{{ asset('js/chat-detail.js') }}"></script>
 
 @endsection

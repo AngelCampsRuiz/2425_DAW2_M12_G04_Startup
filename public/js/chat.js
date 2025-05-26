@@ -1,4 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Verificar si estamos en la página de chat
+    const isChatPage = document.querySelector('#chat-messages') !== null;
+    
     // Funcionalidad de búsqueda
     const searchInput = document.getElementById('search-chats');
     const chatItems = document.querySelectorAll('.chat-item');
@@ -124,6 +127,9 @@ document.addEventListener('DOMContentLoaded', function() {
             item.style.transform = 'translateY(0)';
         }, 100 + index * 50);
     });
+
+    // Solo continuar con Pusher si estamos en una página de chat
+    if (!isChatPage) return;
 
     // Obtener configuración de Pusher desde meta tags
     const pusherKey = document.querySelector('meta[name="pusher-key"]')?.content;
@@ -251,8 +257,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 messageForm.addEventListener('submit', function(e) {
                     e.preventDefault();
                     
-                    const content = messageInput.value.trim();
-                    const hasFile = fileInput && fileInput.files.length > 0;
+                    const content = messageInput?.value.trim() || '';
+                    const hasFile = fileInput && fileInput.files && fileInput.files.length > 0;
                     
                     if (!content && !hasFile) return;
                     
@@ -265,25 +271,27 @@ document.addEventListener('DOMContentLoaded', function() {
                         formData.append('archivo', fileInput.files[0]);
                     }
                     
-                    fetch(window.routeSendMessage, {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRF-TOKEN': window.csrfToken
-                        },
-                        body: formData
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (!data.error) {
-                            messageInput.value = '';
-                            if (fileInput) fileInput.value = '';
-                            
-                            // El mensaje se añadirá automáticamente a través del evento de Pusher
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error al enviar mensaje:', error);
-                    });
+                    if (window.routeSendMessage && window.csrfToken) {
+                        fetch(window.routeSendMessage, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': window.csrfToken
+                            },
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (!data.error) {
+                                if (messageInput) messageInput.value = '';
+                                if (fileInput) fileInput.value = '';
+                                
+                                // El mensaje se añadirá automáticamente a través del evento de Pusher
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error al enviar mensaje:', error);
+                        });
+                    }
                 });
             }
 
