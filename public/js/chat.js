@@ -126,161 +126,172 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Obtener configuración de Pusher desde meta tags
-    const pusherKey = document.querySelector('meta[name="pusher-key"]').content;
-    const pusherCluster = document.querySelector('meta[name="pusher-cluster"]').content;
+    const pusherKey = document.querySelector('meta[name="pusher-key"]')?.content;
+    const pusherCluster = document.querySelector('meta[name="pusher-cluster"]')?.content;
 
-    // Configuración de Pusher
-    const pusher = new Pusher(pusherKey, {
-        cluster: pusherCluster,
-        forceTLS: true,
-        authEndpoint: '/broadcasting/auth'
-    });
+    // Solo configurar Pusher si tenemos las claves necesarias
+    if (pusherKey && pusherCluster) {
+        // Configuración de Pusher
+        const pusher = new Pusher(pusherKey, {
+            cluster: pusherCluster,
+            forceTLS: true,
+            authEndpoint: '/broadcasting/auth'
+        });
 
-    // Suscribirse al canal del chat
-    const chatId = document.querySelector('meta[name="chat-id"]').content;
-    const channel = pusher.subscribe(`private-chat.${chatId}`);
+        // Suscribirse al canal del chat si estamos en una página de chat
+        const chatId = document.querySelector('meta[name="chat-id"]')?.content;
+        if (chatId) {
+            const channel = pusher.subscribe(`private-chat.${chatId}`);
 
-    // Elementos del DOM
-    const chatMessages = document.getElementById('chat-messages');
-    const messageForm = document.getElementById('message-form');
-    const messageInput = document.getElementById('message-input');
-    const fileInput = document.getElementById('file-input');
+            // Elementos del DOM
+            const chatMessages = document.getElementById('chat-messages');
+            const messageForm = document.getElementById('message-form');
+            const messageInput = document.getElementById('message-input');
+            const fileInput = document.getElementById('file-input');
 
-    // Variables de estado
-    let lastMessageId = window.lastMessageId || 0;
+            // Variables de estado
+            let lastMessageId = window.lastMessageId || 0;
 
-    // Escuchar eventos de nuevos mensajes
-    channel.bind('App\\Events\\MessageSent', function(data) {
-        appendMessage(data);
-        if (isAtBottom()) {
-            scrollToBottom();
-        }
-    });
+            // Escuchar eventos de nuevos mensajes
+            channel.bind('App\\Events\\MessageSent', function(data) {
+                if (chatMessages) {
+                    appendMessage(data);
+                    if (isAtBottom()) {
+                        scrollToBottom();
+                    }
+                }
+            });
 
-    // Función para verificar si el scroll está al final
-    function isAtBottom() {
-        const tolerance = 50;
-        return (chatMessages.scrollHeight - chatMessages.scrollTop - chatMessages.clientHeight) < tolerance;
-    }
+            // Función para verificar si el scroll está al final
+            function isAtBottom() {
+                if (!chatMessages) return false;
+                const tolerance = 50;
+                return (chatMessages.scrollHeight - chatMessages.scrollTop - chatMessages.clientHeight) < tolerance;
+            }
 
-    // Función para hacer scroll al final
-    function scrollToBottom() {
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
+            // Función para hacer scroll al final
+            function scrollToBottom() {
+                if (chatMessages) {
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+            }
 
-    // Función para añadir un mensaje al chat
-    function appendMessage(message) {
-        const isCurrentUser = message.user_id === parseInt(document.querySelector('meta[name="user-id"]').content);
-        const html = createMessageHtml(message, isCurrentUser);
-        chatMessages.insertAdjacentHTML('beforeend', html);
-        lastMessageId = message.id;
-    }
+            // Función para añadir un mensaje al chat
+            function appendMessage(message) {
+                if (!chatMessages) return;
+                const isCurrentUser = message.user_id === parseInt(document.querySelector('meta[name="user-id"]')?.content || '0');
+                const html = createMessageHtml(message, isCurrentUser);
+                chatMessages.insertAdjacentHTML('beforeend', html);
+                lastMessageId = message.id;
+            }
 
-    // Función para crear el HTML de un mensaje
-    function createMessageHtml(message, isCurrentUser) {
-        return `
-            <div class="flex items-start message ${isCurrentUser ? 'justify-end' : ''} mb-4" data-message-id="${message.id}">
-                ${!isCurrentUser ? `
-                    <div class="flex-shrink-0 mr-3">
-                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center overflow-hidden shadow-md">
-                            ${message.user.imagen ? `
-                                <img src="/profile_images/${message.user.imagen}"
-                                    alt="Foto de perfil"
-                                    class="w-full h-full object-cover">
-                            ` : `
-                                <span class="text-base font-bold text-gray-700">
-                                    ${message.user.nombre.substring(0, 2).toUpperCase()}
-                                </span>
-                            `}
-                        </div>
-                    </div>
-                ` : ''}
-                <div class="flex-1 ${isCurrentUser ? 'text-right' : ''}">
-                    <div class="${isCurrentUser 
-                        ? 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white' 
-                        : 'bg-white'} rounded-2xl p-4 shadow-md inline-block max-w-[85%] relative message-bubble">
-                        <p class="text-sm ${isCurrentUser ? 'text-white' : 'text-gray-800'} message-content">
-                            ${message.contenido}
-                        </p>
-                        ${message.archivo_adjunto ? `
-                            <div class="mt-2">
-                                ${message.tipo_archivo && message.tipo_archivo.startsWith('image/') ? `
-                                    <a href="/chat_files/${message.archivo_adjunto}" target="_blank" class="block">
-                                        <img src="/chat_files/${message.archivo_adjunto}" 
-                                            alt="Imagen adjunta" 
-                                            class="max-w-full max-h-60 rounded-lg shadow-sm">
-                                    </a>
-                                ` : `
-                                    <a href="/chat_files/${message.archivo_adjunto}" 
-                                       target="_blank"
-                                       class="flex items-center p-3 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors duration-200">
-                                        <div class="mr-3 bg-gray-200 w-10 h-10 rounded-lg flex items-center justify-center text-gray-500">
-                                            <i class="fas fa-file-alt text-lg"></i>
-                                        </div>
-                                        <div class="flex-1 min-w-0">
-                                            <p class="text-sm font-medium text-gray-900 truncate">
-                                                ${message.nombre_archivo || 'Archivo adjunto'}
-                                            </p>
-                                            <p class="text-xs text-gray-500">Descargar archivo</p>
-                                        </div>
-                                        <i class="fas fa-download text-purple-600"></i>
-                                    </a>
-                                `}
+            // Función para crear el HTML de un mensaje
+            function createMessageHtml(message, isCurrentUser) {
+                return `
+                    <div class="flex items-start message ${isCurrentUser ? 'justify-end' : ''} mb-4" data-message-id="${message.id}">
+                        ${!isCurrentUser ? `
+                            <div class="flex-shrink-0 mr-3">
+                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center overflow-hidden shadow-md">
+                                    ${message.user && message.user.imagen ? `
+                                        <img src="/profile_images/${message.user.imagen}"
+                                            alt="Foto de perfil"
+                                            class="w-full h-full object-cover">
+                                    ` : `
+                                        <span class="text-base font-bold text-gray-700">
+                                            ${message.user && message.user.nombre ? message.user.nombre.substring(0, 2).toUpperCase() : 'US'}
+                                        </span>
+                                    `}
+                                </div>
                             </div>
                         ` : ''}
-                        <div class="text-xs ${isCurrentUser ? 'text-white/80' : 'text-gray-500'} mt-1 flex items-center justify-between">
-                            <span>${new Date(message.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                        <div class="flex-1 ${isCurrentUser ? 'text-right' : ''}">
+                            <div class="${isCurrentUser 
+                                ? 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white' 
+                                : 'bg-white'} rounded-2xl p-4 shadow-md inline-block max-w-[85%] relative message-bubble">
+                                <p class="text-sm ${isCurrentUser ? 'text-white' : 'text-gray-800'} message-content">
+                                    ${message.contenido || ''}
+                                </p>
+                                ${message.archivo_adjunto ? `
+                                    <div class="mt-2">
+                                        ${message.tipo_archivo && message.tipo_archivo.startsWith('image/') ? `
+                                            <a href="/chat_files/${message.archivo_adjunto}" target="_blank" class="block">
+                                                <img src="/chat_files/${message.archivo_adjunto}" 
+                                                    alt="Imagen adjunta" 
+                                                    class="max-w-full max-h-60 rounded-lg shadow-sm">
+                                            </a>
+                                        ` : `
+                                            <a href="/chat_files/${message.archivo_adjunto}" 
+                                               target="_blank"
+                                               class="flex items-center p-3 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors duration-200">
+                                                <div class="mr-3 bg-gray-200 w-10 h-10 rounded-lg flex items-center justify-center text-gray-500">
+                                                    <i class="fas fa-file-alt text-lg"></i>
+                                                </div>
+                                                <div class="flex-1 min-w-0">
+                                                    <p class="text-sm font-medium text-gray-900 truncate">
+                                                        ${message.nombre_archivo || 'Archivo adjunto'}
+                                                    </p>
+                                                    <p class="text-xs text-gray-500">Descargar archivo</p>
+                                                </div>
+                                                <i class="fas fa-download text-purple-600"></i>
+                                            </a>
+                                        `}
+                                    </div>
+                                ` : ''}
+                                <div class="text-xs ${isCurrentUser ? 'text-white/80' : 'text-gray-500'} mt-1 flex items-center justify-between">
+                                    <span>${new Date(message.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        `;
-    }
+                `;
+            }
 
-    // Manejar el envío de mensajes
-    if (messageForm) {
-        messageForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const content = messageInput.value.trim();
-            const hasFile = fileInput && fileInput.files.length > 0;
-            
-            if (!content && !hasFile) return;
-            
-            const formData = new FormData();
-            if (content) {
-                formData.append('contenido', content);
-            }
-            
-            if (hasFile) {
-                formData.append('archivo', fileInput.files[0]);
-            }
-            
-            fetch(window.routeSendMessage, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': window.csrfToken
-                },
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (!data.error) {
-                    messageInput.value = '';
-                    if (fileInput) fileInput.value = '';
+            // Manejar el envío de mensajes
+            if (messageForm) {
+                messageForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
                     
-                    // El mensaje se añadirá automáticamente a través del evento de Pusher
-                }
-            })
-            .catch(error => {
-                console.error('Error al enviar mensaje:', error);
-            });
-        });
-    }
+                    const content = messageInput.value.trim();
+                    const hasFile = fileInput && fileInput.files.length > 0;
+                    
+                    if (!content && !hasFile) return;
+                    
+                    const formData = new FormData();
+                    if (content) {
+                        formData.append('contenido', content);
+                    }
+                    
+                    if (hasFile) {
+                        formData.append('archivo', fileInput.files[0]);
+                    }
+                    
+                    fetch(window.routeSendMessage, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': window.csrfToken
+                        },
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.error) {
+                            messageInput.value = '';
+                            if (fileInput) fileInput.value = '';
+                            
+                            // El mensaje se añadirá automáticamente a través del evento de Pusher
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error al enviar mensaje:', error);
+                    });
+                });
+            }
 
-    // Hacer scroll al último mensaje al cargar la página
-    if (chatMessages) {
-        scrollToBottom();
+            // Hacer scroll al último mensaje al cargar la página
+            if (chatMessages) {
+                scrollToBottom();
+            }
+        }
     }
 });
 

@@ -1943,11 +1943,11 @@ use Illuminate\Support\Facades\Auth;
         </style>
     `);
 </script>
-<!-- Cargamos el archivo JS después de definir las variables -->
-<script src="{{ asset('js/chat-detail.js') }}"></script>
 
 <!-- Añadir soporte de Pusher para el chat en tiempo real -->
 <script src="https://js.pusher.com/7.2/pusher.min.js"></script>
+
+<!-- Definimos las variables globales antes de cargar chat-detail.js -->
 <script>
 // Definimos las variables globales que utilizará chat-detail.js
 window.chatId = '{{ $chat->id }}';
@@ -1958,9 +1958,9 @@ window.lastMessageId = {{ $mensajes->last() ? $mensajes->last()->id : 0 }};
 window.csrfToken = '{{ csrf_token() }}';
 window.routeGetMessages = '{{ route('chat.messages', ['chat' => $chat->id]) }}';
 window.routeSendMessage = '{{ route('chat.message', ['chat' => $chat->id]) }}';
-
-// La implementación principal de Pusher está en chat-detail.js
-// Esta sección se ha eliminado para evitar duplicidades
 </script>
+
+<!-- Cargamos el archivo JS después de definir las variables -->
+<script src="{{ asset('js/chat-detail.js') }}"></script>
 
 @endsection

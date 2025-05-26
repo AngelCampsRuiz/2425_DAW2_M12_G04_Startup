@@ -114,6 +114,96 @@ document.addEventListener('DOMContentLoaded', function() {
         smoothScrollToBottom();
     }
     
+    // ----------------------
+    // FUNCIONES DE MENSAJES
+    // ----------------------
+    
+    // Función para recargar completamente el contenedor de mensajes
+    function updateMessages() {
+        if (!window.routeGetMessages) {
+            console.error('No se encontró la ruta para obtener mensajes');
+            return;
+        }
+        
+        console.log('Actualizando mensajes del chat...');
+        
+        // Solo obtenemos mensajes más recientes que el último que tenemos
+        const url = `${window.routeGetMessages}?after=${lastMessageId}`;
+        
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al obtener mensajes: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!data.messages || !Array.isArray(data.messages)) {
+                    console.error('Formato de respuesta incorrecto:', data);
+                    return;
+                }
+                
+                // Si no hay mensajes nuevos, terminamos
+                if (data.messages.length === 0) {
+                    return;
+                }
+                
+                console.log(`Recibidos ${data.messages.length} mensajes nuevos`);
+                
+                const wasAtBottom = isAtBottom();
+                let hasNewMessages = false;
+                
+                // Ordenar mensajes por fecha de creación para asegurar el orden correcto
+                const nuevos = data.messages.sort((a, b) => {
+                    return new Date(a.created_at) - new Date(b.created_at);
+                });
+                
+                // Añadir cada mensaje nuevo al chat
+                nuevos.forEach(mensaje => {
+                    // Verificar si el mensaje ya existe
+                    const existingMessage = document.querySelector(`.message[data-message-id="${mensaje.id}"]`);
+                    if (existingMessage) {
+                        return;
+                    }
+                    
+                    hasNewMessages = true;
+                    const html = createMessageHtml(mensaje);
+                    chatMessages.insertAdjacentHTML('beforeend', html);
+                    
+                    // Actualizamos el último ID
+                    if (mensaje.id > lastMessageId) {
+                        lastMessageId = mensaje.id;
+                    }
+                    
+                    // Si no es nuestro mensaje, lo marcamos como leído
+                    const currentUserId = parseInt(document.querySelector('meta[name="user-id"]').content);
+                    if (mensaje.user_id !== currentUserId) {
+                        markMessageAsRead(mensaje.id);
+                    }
+                });
+                
+                // Si había nuevos mensajes y estábamos al final, hacer scroll
+                if (hasNewMessages && wasAtBottom) {
+                    smoothScrollToBottom();
+                } else if (hasNewMessages) {
+                    showNewMessageIndicator();
+                    
+                    // Mostrar notificación para el último mensaje si no es nuestro
+                    const currentUserId = parseInt(document.querySelector('meta[name="user-id"]').content);
+                    const ultimoMensaje = nuevos[nuevos.length - 1];
+                    if (ultimoMensaje.user_id !== currentUserId) {
+                        showMessageNotification(ultimoMensaje);
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error al actualizar mensajes:', error);
+            });
+    }
+    
+    // Actualizar mensajes cada 5 segundos como respaldo a Pusher
+    setInterval(updateMessages, 5000);
+    
     // Configuración de Pusher
     const pusherKey = document.querySelector('meta[name="pusher-key"]')?.content;
     const pusherCluster = document.querySelector('meta[name="pusher-cluster"]')?.content;
@@ -215,96 +305,6 @@ document.addEventListener('DOMContentLoaded', function() {
     } else {
         console.warn('No se pudo inicializar Pusher: faltan datos de configuración');
     }
-    
-    // ----------------------
-    // FUNCIONES DE MENSAJES
-    // ----------------------
-    
-    // Función para recargar completamente el contenedor de mensajes
-    function updateMessages() {
-        if (!window.routeGetMessages) {
-            console.error('No se encontró la ruta para obtener mensajes');
-            return;
-        }
-        
-        console.log('Actualizando mensajes del chat...');
-        
-        // Solo obtenemos mensajes más recientes que el último que tenemos
-        const url = `${window.routeGetMessages}?after=${lastMessageId}`;
-        
-        fetch(url)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Error al obtener mensajes: ' + response.status);
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (!data.messages || !Array.isArray(data.messages)) {
-                    console.error('Formato de respuesta incorrecto:', data);
-                    return;
-                }
-                
-                // Si no hay mensajes nuevos, terminamos
-                if (data.messages.length === 0) {
-                    return;
-                }
-                
-                console.log(`Recibidos ${data.messages.length} mensajes nuevos`);
-                
-                const wasAtBottom = isAtBottom();
-                let hasNewMessages = false;
-                
-                // Ordenar mensajes por fecha de creación para asegurar el orden correcto
-                const nuevos = data.messages.sort((a, b) => {
-                    return new Date(a.created_at) - new Date(b.created_at);
-                });
-                
-                // Añadir cada mensaje nuevo al chat
-                nuevos.forEach(mensaje => {
-                    // Verificar si el mensaje ya existe
-                    const existingMessage = document.querySelector(`.message[data-message-id="${mensaje.id}"]`);
-                    if (existingMessage) {
-                        return;
-                    }
-                    
-                    hasNewMessages = true;
-                    const html = createMessageHtml(mensaje);
-                    chatMessages.insertAdjacentHTML('beforeend', html);
-                    
-                    // Actualizamos el último ID
-                    if (mensaje.id > lastMessageId) {
-                        lastMessageId = mensaje.id;
-                    }
-                    
-                    // Si no es nuestro mensaje, lo marcamos como leído
-                    const currentUserId = parseInt(document.querySelector('meta[name="user-id"]').content);
-                    if (mensaje.user_id !== currentUserId) {
-                        markMessageAsRead(mensaje.id);
-                    }
-                });
-                
-                // Si había nuevos mensajes y estábamos al final, hacer scroll
-                if (hasNewMessages && wasAtBottom) {
-                    smoothScrollToBottom();
-                } else if (hasNewMessages) {
-                    showNewMessageIndicator();
-                    
-                    // Mostrar notificación para el último mensaje si no es nuestro
-                    const currentUserId = parseInt(document.querySelector('meta[name="user-id"]').content);
-                    const ultimoMensaje = nuevos[nuevos.length - 1];
-                    if (ultimoMensaje.user_id !== currentUserId) {
-                        showMessageNotification(ultimoMensaje);
-                    }
-                }
-            })
-            .catch(error => {
-                console.error('Error al actualizar mensajes:', error);
-            });
-    }
-    
-    // Actualizar mensajes cada 5 segundos como respaldo a Pusher
-    setInterval(updateMessages, 5000);
     
     // ----------------------
     // RESTO DEL CÓDIGO
@@ -494,40 +494,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }, { once: true });
     }
     
-    // Mostrar notificación de mensaje
-    function showMessageNotification(mensaje) {
-        // Crear notificación
-        const notification = document.createElement('div');
-        notification.className = 'message-notification';
-        
-        // Contenido de la notificación
-        notification.innerHTML = `
-            <div class="flex items-center">
-                <div class="w-8 h-8 rounded-full bg-purple-200 flex items-center justify-center mr-3">
-                    <span class="text-sm font-bold text-[#5e0490]">
-                        ${mensaje.user ? mensaje.user.nombre.substring(0, 2).toUpperCase() : window.otherUserName.substring(0, 2).toUpperCase()}
-                    </span>
-                </div>
-                <div>
-                    <p class="font-medium text-sm">${mensaje.user ? mensaje.user.nombre : window.otherUserName}</p>
-                    <p class="text-xs text-purple-100 truncate">${mensaje.contenido || 'Ha enviado un archivo'}</p>
-                </div>
-            </div>
-        `;
-        
-        // Añadir a DOM
-        document.body.appendChild(notification);
-        
-        // Mostrar con delay
-        setTimeout(() => notification.classList.add('show'), 100);
-        
-        // Ocultar después de 4 segundos
-        setTimeout(() => {
-            notification.classList.remove('show');
-            setTimeout(() => document.body.removeChild(notification), 300);
-        }, 4000);
-    }
-    
     // Enviar mensaje con animaciones
     if (messageForm) {
         messageForm.addEventListener('submit', function(e) {
@@ -541,7 +507,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const submitButton = this.querySelector('button[type="submit"]');
             if (submitButton) {
                 submitButton.disabled = true;
-                submitButton.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i><span>Enviando...</span>';
+                submitButton.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
             }
             
             // Verificar si tenemos la URL y el token CSRF
@@ -551,14 +517,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 if (submitButton) {
                     submitButton.disabled = false;
-                    submitButton.innerHTML = '<i class="fas fa-paper-plane mr-2"></i><span>Enviar</span>';
+                    submitButton.innerHTML = '<i class="fas fa-paper-plane"></i>';
                 }
                 return;
             }
             
             // Crear FormData para enviar el contenido
             const formData = new FormData();
-                formData.append('contenido', content);
+            formData.append('contenido', content);
             
             console.log('Enviando mensaje a:', window.routeSendMessage);
             
@@ -597,9 +563,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         
                         // Mostrar pequeña animación de "enviado"
                         showSentAnimation();
-                        
-                        // Forzar una recarga inmediata para sincronizar
-                        setTimeout(updateMessages, 500);
                     } else {
                         console.error('Error: No se pudo añadir el mensaje a la vista', data);
                     }
@@ -618,7 +581,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Reactivar botón
                 if (submitButton) {
                     submitButton.disabled = false;
-                    submitButton.innerHTML = '<i class="fas fa-paper-plane mr-2"></i><span>Enviar</span>';
+                    submitButton.innerHTML = '<i class="fas fa-paper-plane"></i>';
                 }
             })
             .catch(error => {
@@ -630,7 +593,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Reactivar botón
                 if (submitButton) {
                     submitButton.disabled = false;
-                    submitButton.innerHTML = '<i class="fas fa-paper-plane mr-2"></i><span>Enviar</span>';
+                    submitButton.innerHTML = '<i class="fas fa-paper-plane"></i>';
                 }
             });
         });
@@ -700,165 +663,6 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Error al marcar mensaje como leído:', error);
         });
     }
-    
-    //--------------------------------------------------------------
-    // FUNCIONALIDAD DE VIDEOLLAMADA MEJORADA - Segunda parte del archivo
-    //--------------------------------------------------------------
-    
-    // Implementación de videollamada en un archivo separado
-    // O se puede reducir esta sección para mantener el archivo más pequeño
-    
-    // Configuración de Agora
-    const APP_ID = "ff42e2de41ee4ec7b9bfe51d3d9b4edd"; // App ID de Agora
-    const CHANNEL_NAME = "chat_" + window.chatId;
-    const TOKEN = null; // Para producción, debes generar tokens en tu servidor
-    
-    // Elementos del DOM para videollamada
-    const videoCallBtn = document.getElementById('video-call-btn');
-    const videoContainer = document.getElementById('video-container');
-    const closeVideoContainer = document.getElementById('close-video-container');
-    const toggleAudio = document.getElementById('toggle-audio');
-    const toggleVideo = document.getElementById('toggle-video');
-    const endCall = document.getElementById('end-call');
-    const localVideoContainer = document.getElementById('local-video');
-    const remoteVideoContainer = document.getElementById('remote-video');
-    const remoteVideoLoading = document.getElementById('remote-video-loading');
-    const callStatus = document.getElementById('call-status');
-    const callTimer = document.getElementById('call-timer');
-    const connectionStatus = document.getElementById('connection-status');
-    const incomingCall = document.getElementById('incoming-call');
-    const acceptCall = document.getElementById('accept-call');
-    const rejectCall = document.getElementById('reject-call');
-    const localVideoStatus = document.getElementById('local-video-status');
-    const remoteVideoStatus = document.getElementById('remote-video-status');
-    const toggleChat = document.getElementById('toggle-chat');
-    
-    // Variables para la videollamada
-    let rtcClient;
-    let localTracks = {
-        videoTrack: null,
-        audioTrack: null
-    };
-    let remoteUsers = {};
-    let isCallActive = false;
-    let isMinimized = false;
-    let callStartTime;
-    let timerInterval;
-    let callStatistics = {
-        bytesReceived: 0,
-        bytesSent: 0,
-        packetsLost: 0,
-        roundTripTime: 0
-    };
-    
-    // Configuración de Socket.io - Usar configuración del servidor si está disponible
-    const socketServerUrl = window.socketServerUrl || 'http://localhost:3000';
-    console.log('Conectando a servidor Socket.io:', socketServerUrl);
-    
-    // Conexión con socket.io para señalización con mejor manejo de errores
-    let socket;
-    try {
-        socket = io(socketServerUrl, {
-            reconnectionAttempts: 8,
-            timeout: 15000,
-            transports: ['websocket', 'polling'],
-            autoConnect: true,
-            reconnection: true,
-            reconnectionDelay: 1000,
-            forceNew: true
-        });
-
-        // Manejo de eventos de conexión
-        socket.on('connect_error', (error) => {
-            console.warn('Error de conexión socket.io:', error.message);
-            updateConnectionStatus('error');
-        });
-        
-        socket.on('connect', () => {
-            console.log('Conectado al servidor de señalización');
-            updateConnectionStatus('connected');
-            if (window.authId) {
-                socket.emit('register', { userId: window.authId });
-            } else {
-                console.warn('No se encontró el ID de usuario para registrar en el socket');
-            }
-        });
-    } catch (e) {
-        console.error('Error al inicializar socket.io:', e);
-        socket = null;
-    }
-    
-    // Funcionalidad básica de videollamada
-    if (videoCallBtn) {
-        videoCallBtn.addEventListener('click', startCall);
-    }
-    
-    if (closeVideoContainer) {
-        closeVideoContainer.addEventListener('click', toggleMinimize);
-    }
-    
-    if (toggleAudio) {
-        toggleAudio.addEventListener('click', toggleMicrophone);
-    }
-    
-    if (toggleVideo) {
-        toggleVideo.addEventListener('click', toggleCamera);
-    }
-    
-    if (endCall) {
-        endCall.addEventListener('click', endActiveCall);
-    }
-    
-    if (acceptCall) {
-        acceptCall.addEventListener('click', acceptIncomingCall);
-    }
-    
-    if (rejectCall) {
-        rejectCall.addEventListener('click', rejectIncomingCall);
-    }
-    
-    if (toggleChat) {
-        toggleChat.addEventListener('click', function() {
-            // Implementación para mostrar/ocultar chat
-        });
-    }
-    
-    // Eventos de socket para videollamadas
-    socket.on('incoming-call', (data) => {
-        if (data.chatId === window.chatId) {
-            showIncomingCall();
-        }
-    });
-    
-    socket.on('call-accepted', (data) => {
-        if (data.chatId === window.chatId) {
-            console.log('Llamada aceptada por el otro usuario');
-            if (callStatus) {
-                callStatus.textContent = 'Conectado';
-            }
-            if (remoteVideoLoading) {
-                // Mantenemos el indicador de carga hasta que veamos el video remoto
-                // Se ocultará cuando se reciba el track de video en el evento user-published
-            }
-        }
-    });
-    
-    socket.on('call-rejected', (data) => {
-        if (data.chatId === window.chatId) {
-            endActiveCall();
-            callStatus.textContent = 'Llamada rechazada';
-            showErrorNotification(window.otherUserName + ' rechazó la llamada');
-        }
-    });
-    
-    socket.on('call-ended', (data) => {
-        if (data.chatId === window.chatId) {
-            if (isCallActive) {
-                callStatus.textContent = 'Llamada finalizada';
-                endActiveCall();
-            }
-        }
-    });
     
     // Función para actualizar el estado de la conexión en la interfaz
     function updateConnectionStatus(status) {
@@ -930,345 +734,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Configurar manualmente el contenedor de video remoto para Agora
-    function setupRemoteVideoContainer() {
-        // Asegurarse de que el contenedor esté vacío para evitar duplicados
-        if (remoteVideoContainer) {
-            remoteVideoContainer.innerHTML = '';
-            // Agregar un div con ID específico que Agora pueda usar
-            remoteVideoContainer.style.position = 'relative';
-            remoteVideoContainer.style.width = '100%';
-            remoteVideoContainer.style.height = '100%';
-            remoteVideoContainer.style.overflow = 'hidden';
-            remoteVideoContainer.style.backgroundColor = '#000';
-        }
-    }
-    
-    // Inicializar elementos de la interfaz de llamada
-    function initCallInterface() {
-        // Configurar contenedor de video remoto para Agora
-        setupRemoteVideoContainer();
-        
-        // Mostrar indicador de carga en remoto
-        if (remoteVideoLoading) {
-            remoteVideoLoading.classList.remove('hidden');
-        }
-        
-        // Mostrar interfaz de videollamada
-        if (videoContainer) {
-            videoContainer.style.display = 'flex';
-        }
-    }
-    
-    // Modificar startCall para usar las nuevas funciones
-    async function startCall() {
-        if (!isCallActive) {
-            console.log('Botón de videollamada presionado');
-            
-            // Inicializar interfaz
-            initCallInterface();
-            
-            try {
-                // Verificar si el navegador soporta getUserMedia
-                if (!AgoraRTC.checkSystemRequirements()) {
-                    throw new Error('Su navegador no cumple con los requisitos para videollamadas. Intente usar un navegador más moderno o acceder por HTTPS.');
-                }
-                
-                // Inicializar cliente Agora si es necesario
-                if (!rtcClient && typeof AgoraRTC !== 'undefined') {
-                    rtcClient = AgoraRTC.createClient({
-                        mode: 'rtc',
-                        codec: 'vp8'
-                    });
-                    
-                    // Configurar evento para manejar usuario remoto
-                    rtcClient.on('user-published', async (user, mediaType) => {
-                        // Suscribirse al usuario remoto
-                        await rtcClient.subscribe(user, mediaType);
-                        console.log('Suscrito a usuario remoto');
-                        
-                        // Manejar stream de video remoto
-                        if (mediaType === 'video') {
-                            remoteUsers[user.uid] = user;
-                            
-                            // Verificar si el elemento remoteVideoContainer existe
-                            if (remoteVideoContainer) {
-                                // Reproducir video remoto
-                                user.videoTrack.play(remoteVideoContainer);
-                                console.log('Video remoto reproducido correctamente');
-                                
-                                // Ocultar indicador de carga
-                                if (remoteVideoLoading) {
-                                    remoteVideoLoading.classList.add('hidden');
-                                }
-                            } else {
-                                console.error('Contenedor de video remoto no encontrado');
-                            }
-                        }
-                        
-                        // Manejar stream de audio remoto
-                        if (mediaType === 'audio') {
-                            user.audioTrack.play();
-                        }
-                    });
-                    
-                    // Manejar desconexión de usuario remoto
-                    rtcClient.on('user-unpublished', (user, mediaType) => {
-                        if (mediaType === 'video') {
-                            delete remoteUsers[user.uid];
-                        }
-                    });
-                }
-                
-                // Solicitar permisos de cámara y micrófono
-                try {
-                    // Si aún no tenemos tracks locales, crearlos
-                    if (!localTracks.videoTrack || !localTracks.audioTrack) {
-                        const [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
-                        localTracks.audioTrack = audioTrack;
-                        localTracks.videoTrack = videoTrack;
-                        
-                        // Mostrar video local
-                        if (localVideoContainer) {
-                            videoTrack.play(localVideoContainer);
-                        }
-                    }
-                    
-                    // Unirse al canal
-                    const uid = await rtcClient.join(APP_ID, CHANNEL_NAME, TOKEN, window.authId);
-                    console.log('Unido al canal con UID:', uid);
-                    
-                    // Publicar tracks locales
-                    await rtcClient.publish([localTracks.audioTrack, localTracks.videoTrack]);
-                    console.log('Tracks locales publicados');
-                    
-                    isCallActive = true;
-                    
-                    // Emitir evento para notificar al otro usuario
-                    if (socket) {
-                        socket.emit('call-user', {
-                            to: window.otherUserId,
-                            from: window.authId,
-                            chatId: window.chatId
-                        });
-                    } else {
-                        console.error('Error: Socket.io no está disponible para señalización');
-                        showErrorNotification('No se pudo iniciar la llamada: error de conexión');
-                    }
-                    
-                    if (callStatus) {
-                        callStatus.textContent = 'Llamando...';
-                    }
-                } catch (error) {
-                    console.error('Error al acceder a la cámara o micrófono:', error);
-                    showErrorNotification('No se pudo acceder a la cámara o micrófono. Por favor, verifica los permisos.');
-                    if (callStatus) {
-                        callStatus.textContent = 'Error al iniciar la cámara';
-                    }
-                }
-            } catch (error) {
-                console.error('Error al iniciar la videollamada:', error);
-                showErrorNotification('Error al iniciar la videollamada: ' + error.message);
-                if (callStatus) {
-                    callStatus.textContent = 'Error al iniciar la llamada';
-                }
-            }
-        }
-    }
-    
-    function showIncomingCall() {
-        if (incomingCall) {
-            incomingCall.classList.remove('hidden');
-        }
-    }
-    
-    // También actualizar aceptarIncomingCall para usar setup
-    async function acceptIncomingCall() {
-        if (incomingCall) {
-            incomingCall.classList.add('hidden');
-        }
-        
-        // Inicializar interfaz
-        initCallInterface();
-        
-        try {
-            // Inicializar cliente Agora si es necesario
-            if (!rtcClient && typeof AgoraRTC !== 'undefined') {
-                rtcClient = AgoraRTC.createClient({
-                    mode: 'rtc',
-                    codec: 'vp8'
-                });
-                
-                // Configurar evento para manejar usuario remoto
-                rtcClient.on('user-published', async (user, mediaType) => {
-                    // Suscribirse al usuario remoto
-                    await rtcClient.subscribe(user, mediaType);
-                    console.log('Suscrito a usuario remoto');
-                    
-                    // Manejar stream de video remoto
-                    if (mediaType === 'video') {
-                        remoteUsers[user.uid] = user;
-                        
-                        // Verificar si el elemento remoteVideoContainer existe
-                        if (remoteVideoContainer) {
-                            // Reproducir video remoto
-                            user.videoTrack.play(remoteVideoContainer);
-                            console.log('Video remoto reproducido correctamente');
-                            
-                            // Ocultar indicador de carga
-                            if (remoteVideoLoading) {
-                                remoteVideoLoading.classList.add('hidden');
-                            }
-                        } else {
-                            console.error('Contenedor de video remoto no encontrado');
-                        }
-                    }
-                    
-                    // Manejar stream de audio remoto
-                    if (mediaType === 'audio') {
-                        user.audioTrack.play();
-                    }
-                });
-                
-                // Manejar desconexión de usuario remoto
-                rtcClient.on('user-unpublished', (user, mediaType) => {
-                    if (mediaType === 'video') {
-                        delete remoteUsers[user.uid];
-                    }
-                });
-            }
-            
-            // Si aún no tenemos tracks locales, crearlos
-            if (!localTracks.videoTrack || !localTracks.audioTrack) {
-                const [audioTrack, videoTrack] = await AgoraRTC.createMicrophoneAndCameraTracks();
-                localTracks.audioTrack = audioTrack;
-                localTracks.videoTrack = videoTrack;
-                
-                // Mostrar video local
-                if (localVideoContainer) {
-                    videoTrack.play(localVideoContainer);
-                }
-            }
-            
-            // Unirse al canal
-            const uid = await rtcClient.join(APP_ID, CHANNEL_NAME, TOKEN, window.authId);
-            console.log('Unido al canal con UID:', uid);
-            
-            // Publicar tracks locales
-            await rtcClient.publish([localTracks.audioTrack, localTracks.videoTrack]);
-            console.log('Tracks locales publicados');
-            
-            isCallActive = true;
-            
-            // Responder a la llamada por socket
-            if (socket) {
-                socket.emit('accept-call', {
-                    to: window.otherUserId,
-                    from: window.authId,
-                    chatId: window.chatId
-                });
-            } else {
-                console.error('Error: Socket.io no está disponible para señalización');
-                showErrorNotification('No se pudo aceptar la llamada: error de conexión');
-            }
-            
-            if (callStatus) {
-                callStatus.textContent = 'Conectado';
-            }
-            
-        } catch (error) {
-            console.error('Error al aceptar la llamada:', error);
-            if (callStatus) {
-                callStatus.textContent = 'Error al conectar';
-            }
-        }
-    }
-    
-    function rejectIncomingCall() {
-        if (incomingCall) {
-            incomingCall.classList.add('hidden');
-        }
-        
-        if (socket) {
-            socket.emit('reject-call', {
-                to: window.otherUserId,
-                from: window.authId,
-                chatId: window.chatId
-            });
-        } else {
-            console.error('Error: Socket.io no está disponible para señalización');
-        }
-    }
-    
-    function toggleMicrophone() {
-        if (localTracks.audioTrack) {
-            const enabled = !localTracks.audioTrack.muted;
-            localTracks.audioTrack.setMuted(enabled);
-            
-            // Actualizar UI
-            if (toggleAudio) {
-                toggleAudio.innerHTML = enabled ? 
-                    '<i class="fas fa-microphone-slash"></i>' : 
-                    '<i class="fas fa-microphone"></i>';
-            }
-        }
-    }
-    
-    function toggleCamera() {
-        if (localTracks.videoTrack) {
-            const enabled = !localTracks.videoTrack.muted;
-            localTracks.videoTrack.setMuted(enabled);
-            
-            // Actualizar UI
-            if (toggleVideo) {
-                toggleVideo.innerHTML = enabled ? 
-                    '<i class="fas fa-video-slash"></i>' : 
-                    '<i class="fas fa-video"></i>';
-            }
-        }
-    }
-    
-    async function endActiveCall() {
-        // Notificar al otro usuario
-        if (socket) {
-            socket.emit('end-call', {
-                to: window.otherUserId,
-                from: window.authId,
-                chatId: window.chatId
-            });
-        }
-        
-        // Limpiar recursos
-        if (rtcClient) {
-            await rtcClient.leave();
-        }
-        
-        // Detener y liberar tracks locales
-        if (localTracks.audioTrack) {
-            localTracks.audioTrack.stop();
-            localTracks.audioTrack.close();
-        }
-        
-        if (localTracks.videoTrack) {
-            localTracks.videoTrack.stop();
-            localTracks.videoTrack.close();
-        }
-        
-        // Reiniciar variables
-        localTracks.audioTrack = null;
-        localTracks.videoTrack = null;
-        remoteUsers = {};
-        isCallActive = false;
-        
-        // Ocultar interfaz de videollamada
-        if (videoContainer) {
-            videoContainer.classList.add('hidden');
-        }
-    }
-    
-    function toggleMinimize() {
-        isMinimized = !isMinimized;
-        videoContainer.classList.toggle('minimized');
-        closeVideoContainer.textContent = isMinimized ? 'Maximizar' : 'Minimizar';
-    }
+    // Ejecutar updateMessages inmediatamente para cargar mensajes al iniciar
+    updateMessages();
 }); 
