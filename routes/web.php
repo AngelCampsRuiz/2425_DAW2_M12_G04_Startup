@@ -517,22 +517,6 @@ Route::prefix('institucion')->middleware(['auth', \App\Http\Middleware\CheckRole
         Route::post('/convenios/{convenio}/rechazar', [App\Http\Controllers\Docente\ConvenioController::class, 'rechazar'])->name('convenios.rechazar');
         Route::get('/convenios/{convenio}/download', [App\Http\Controllers\Docente\ConvenioController::class, 'download'])->name('convenios.download');
     });
-
-    Route::get('/run-migrations-safe', function () {
-    // Verifica la clave proporcionada
-    if (request('key') !== env('DEPLOY_KEY')) {
-        abort(403, 'Acceso no autorizado');
-    }
-
-    try {
-        // Llama a las migraciones si la clave es correcta
-        $result = Artisan::call('migrate:fresh --seed --force');
-        $output = Artisan::output();
-
-        return response()->json(['message' => 'Migraciones ejecutadas correctamente', 'output' => $output]);
-    } catch (\Exception $e) {
-        return response()->json(['error' => 'Error al ejecutar migraciones: ' . $e->getMessage()], 500);
-    }
 });
 
 // Ruta temporal para verificar la estructura de la tabla chats
@@ -554,7 +538,7 @@ Route::get('/test/table-structure', [App\Http\Controllers\TestController::class,
     Route::post('/convenios/{convenio}/firmar', [App\Http\Controllers\Institucion\ConvenioController::class, 'firmar'])->name('convenios.firmar');
     Route::get('/convenios/{convenio}/download', [App\Http\Controllers\Institucion\ConvenioController::class, 'download'])->name('convenios.download');
     Route::get('/convenios/firmados/lista', [App\Http\Controllers\Institucion\ConvenioController::class, 'firmados'])->name('convenios.firmados');
-});
+;
 
 // RUTAS PARA DOCENTES
 Route::prefix('docente')->middleware(['auth', \App\Http\Middleware\CheckRole::class.':docente'])->name('docente.')->group(function () {
@@ -614,3 +598,30 @@ Route::get('/institucion/pago-cancelado', [InstitucionPaymentController::class, 
         Route::get('/api/solicitudes/{id}', [App\Http\Controllers\Estudiante\SolicitudAjaxController::class, 'getSolicitud'])->name('api.solicitudes.show');
         Route::post('/api/solicitudes/{id}/cancelar', [App\Http\Controllers\Estudiante\SolicitudAjaxController::class, 'cancelarSolicitud'])->name('api.solicitudes.cancelar');
     });
+
+// Route::get('/run-migrations-safe', function () {
+//     $keyFromRequest = request('key');
+//     $keyFromEnv = env('DEPLOY_KEY');
+
+//     return response()->json([
+//         'key_from_request' => $keyFromRequest,
+//         'key_from_env' => $keyFromEnv,
+//         'equals' => $keyFromRequest === $keyFromEnv
+//     ]);
+// });
+
+Route::get('/run-migrations-safe', function () {
+    ini_set('max_execution_time', 600); // 10 minutos
+    if (request('key') !== env('DEPLOY_KEY')) {
+        abort(403, 'Acceso no autorizado');
+    }
+
+    try {
+        $result = Artisan::call('migrate:fresh --seed --force');
+        $output = Artisan::output();
+
+        return response()->json(['message' => 'Migraciones ejecutadas correctamente', 'output' => $output]);
+    } catch (\Exception $e) {
+        return response()->json(['error' => 'Error al ejecutar migraciones: ' . $e->getMessage()], 500);
+    }
+});

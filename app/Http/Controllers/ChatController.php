@@ -70,7 +70,7 @@ class ChatController extends Controller
             $mensaje = new Mensaje();
             $mensaje->chat_id = $chat->id;
             $mensaje->user_id = $user->id;
-            $mensaje->contenido = $request->contenido;
+            $mensaje->contenido = $request->contenido ?: '';
             $mensaje->fecha_envio = now();
             
             // Procesar archivo adjunto si existe
@@ -86,11 +86,11 @@ class ChatController extends Controller
             
             $mensaje->save();
 
-            // Cargar relación de usuario para el evento
+            // Cargar relación de usuario para el evento y la respuesta
             $mensaje->load('user');
 
             // Transmitir el mensaje a través de Pusher
-            broadcast(new MessageSent($mensaje, $user))->toOthers();
+            event(new MessageSent($mensaje, $user));
             
             // Determinar destinatario según el usuario autenticado y tipo de chat
             $destinatario = null;
@@ -120,10 +120,33 @@ class ChatController extends Controller
                 $destinatario->notify(new MensajeNoLeidoNotification($chat, $user));
             }
 
+            // Preparar respuesta incluyendo todos los datos necesarios para el frontend
+            $mensajeResponse = [
+                'id' => $mensaje->id,
+                'contenido' => $mensaje->contenido,
+                'user_id' => $mensaje->user_id,
+                'chat_id' => $mensaje->chat_id,
+                'created_at' => $mensaje->created_at,
+                'leido' => $mensaje->leido,
+                'user' => [
+                    'id' => $user->id,
+                    'nombre' => $user->nombre,
+                    'imagen' => $user->imagen,
+                    'role_id' => $user->role_id
+                ]
+            ];
+            
+            // Si hay archivo adjunto, añadir a la respuesta
+            if ($mensaje->archivo_adjunto) {
+                $mensajeResponse['archivo_adjunto'] = url($mensaje->archivo_adjunto);
+                $mensajeResponse['tipo_archivo'] = $mensaje->tipo_archivo;
+                $mensajeResponse['nombre_archivo'] = $mensaje->nombre_archivo;
+            }
+
             return response()->json([
                 'error' => false,
                 'message' => 'Mensaje enviado correctamente',
-                'mensaje' => $mensaje
+                'mensaje' => $mensajeResponse
             ]);
 
         } catch (\Exception $e) {
@@ -140,13 +163,15 @@ class ChatController extends Controller
     }
 
     /**
-     * Obtener los mensajes de un chat
+     * Obtener los mensajes de un chat específico
      */
-    public function getMessages(Chat $chat)
+    public function getMessages(Chat $chat, Request $request)
     {
         // Verificar que el usuario tiene acceso al chat
         $user = Auth::user();
         $solicitud = $chat->solicitud;
+        $lastId = $request->input('last_id', 0);
+        $full = $request->input('full', false);
 
         $hasAccess = false;
 
@@ -156,8 +181,16 @@ class ChatController extends Controller
         }
 
         // Si es estudiante
-        if ($user->estudiante && $user->estudiante->id == $solicitud->estudiante_id) {
+        if ($user->estudiante && $chat->solicitud && $user->estudiante->id == $chat->solicitud->estudiante_id) {
             $hasAccess = true;
+        }
+        
+        // Si es docente
+        if ($user->role_id == 4) {
+            $docente = \App\Models\Docente::where('user_id', $user->id)->first();
+            if ($docente && $chat->docente_id == $docente->id) {
+                $hasAccess = true;
+            }
         }
 
         if (!$hasAccess) {
@@ -174,8 +207,14 @@ class ChatController extends Controller
             ->update(['leido' => true]);
 
         // Obtener los mensajes
-        $mensajes = Mensaje::where('chat_id', $chat->id)
-            ->with('user')
+        $query = Mensaje::where('chat_id', $chat->id);
+        
+        // Si no se solicita la carga completa y hay un último ID, filtrar por ID
+        if (!$full && $lastId > 0) {
+            $query->where('id', '>', $lastId);
+        }
+        
+        $mensajes = $query->with('user')
             ->orderBy('created_at', 'asc')
             ->get()
             ->map(function ($mensaje) {
@@ -188,7 +227,7 @@ class ChatController extends Controller
 
         return response()->json([
             'error' => false,
-            'mensajes' => $mensajes
+            'messages' => $mensajes
         ]);
     }
 

@@ -1,13 +1,24 @@
 // Función para crear el HTML de un mensaje
 function createMessageHtml(message) {
     const isCurrentUser = message.user_id === parseInt(document.querySelector('meta[name="user-id"]').content);
+    
+    // Comprobar que el mensaje tenga la estructura necesaria
+    if (!message.user) {
+        console.error('Error: El mensaje no tiene la estructura esperada:', message);
+        // Si no tiene la información del usuario, no podemos mostrar el mensaje correctamente
+        return '';
+    }
+    
+    // Manejar posibles valores nulos o indefinidos
+    const contenido = message.contenido || '';
+    
     return `
         <div class="flex items-start message ${isCurrentUser ? 'justify-end' : ''} mb-4" data-message-id="${message.id}">
             ${!isCurrentUser ? `
                 <div class="flex-shrink-0 mr-3">
                     <div class="w-10 h-10 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center overflow-hidden shadow-md">
                         ${message.user.imagen ? `
-                            <img src="/profile_images/${message.user.imagen}"
+                            <img src="${message.user.imagen.includes('http') ? message.user.imagen : '/profile_images/' + message.user.imagen}"
                                 alt="Foto de perfil"
                                 class="w-full h-full object-cover">
                         ` : `
@@ -23,8 +34,11 @@ function createMessageHtml(message) {
                     ? 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white' 
                     : 'bg-white'} rounded-2xl p-4 shadow-md inline-block max-w-[85%] relative message-bubble">
                     <p class="text-sm ${isCurrentUser ? 'text-white' : 'text-gray-800'} message-content">
-                        ${message.contenido}
+                        ${contenido}
                     </p>
+                    
+                    ${message.archivo_adjunto ? generateAttachmentHTML(message, isCurrentUser) : ''}
+                    
                     <div class="text-xs ${isCurrentUser ? 'text-white/80' : 'text-gray-500'} mt-1 flex items-center justify-between">
                         <span>${new Date(message.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                     </div>
@@ -32,6 +46,45 @@ function createMessageHtml(message) {
             </div>
         </div>
     `;
+}
+
+// Función para generar HTML para archivos adjuntos
+function generateAttachmentHTML(message, isCurrentUser) {
+    if (!message.archivo_adjunto) return '';
+    
+    const isImage = message.tipo_archivo && message.tipo_archivo.startsWith('image/');
+    
+    if (isImage) {
+        return `
+            <div class="mt-2 relative group">
+                <a href="${message.archivo_adjunto}" target="_blank" class="block">
+                    <img src="${message.archivo_adjunto}" alt="Imagen adjunta" class="max-w-full max-h-60 rounded-lg shadow-sm">
+                    <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
+                        <span class="bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded-full">
+                            <i class="fas fa-search-plus mr-1"></i> Ver imagen
+                        </span>
+                    </div>
+                </a>
+            </div>
+        `;
+    } else {
+        return `
+            <div class="mt-2">
+                <a href="${message.archivo_adjunto}" target="_blank" class="flex items-center p-3 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors duration-200">
+                    <div class="mr-3 bg-gray-200 w-10 h-10 rounded-lg flex items-center justify-center text-gray-500">
+                        <i class="fas fa-file-alt text-lg"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium ${isCurrentUser ? 'text-gray-900' : 'text-gray-900'} truncate">
+                            ${message.nombre_archivo || 'Archivo adjunto'}
+                        </p>
+                        <p class="text-xs text-gray-500">Descargar archivo</p>
+                    </div>
+                    <i class="fas fa-download ${isCurrentUser ? 'text-purple-300' : 'text-purple-600'}"></i>
+                </a>
+            </div>
+        `;
+    }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -60,6 +113,96 @@ document.addEventListener('DOMContentLoaded', function() {
     if (chatMessages) {
         smoothScrollToBottom();
     }
+    
+    // ----------------------
+    // SOLUCIÓN DIRECTA DE RECARGA PERIÓDICA
+    // ----------------------
+    
+    // Función para recargar completamente el contenedor de mensajes
+    function reloadChatContent() {
+        if (!window.routeGetMessages) {
+            console.error('No se encontró la ruta para obtener mensajes');
+            return;
+        }
+        
+        console.log('Recargando contenido del chat...');
+        const url = `${window.routeGetMessages}?full=true`; // Parámetro para solicitar todos los mensajes
+        
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al obtener mensajes: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!data.messages || !Array.isArray(data.messages)) {
+                    console.error('Formato de respuesta incorrecto:', data);
+                    return;
+                }
+                
+                const wasAtBottom = isAtBottom();
+                let hasNewMessages = false;
+                
+                // Ordenar mensajes por fecha de creación para asegurar el orden correcto
+                const mensajes = data.messages.sort((a, b) => {
+                    return new Date(a.created_at) - new Date(b.created_at);
+                });
+                
+                // Verificar si hay mensajes más recientes que el último que tenemos
+                if (mensajes.length > 0 && mensajes[mensajes.length - 1].id > lastMessageId) {
+                    hasNewMessages = true;
+                    lastMessageId = mensajes[mensajes.length - 1].id;
+                }
+                
+                // Construir todo el HTML de mensajes
+                let htmlContent = '';
+                
+                if (mensajes.length === 0) {
+                    // Mostrar mensaje de "no hay mensajes" si está vacío
+                    htmlContent = `
+                        <div class="text-center py-12 animate-fadeIn flex flex-col items-center justify-center h-full">
+                            <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-purple-200 to-indigo-200 mb-4 shadow-md">
+                                <i class="fas fa-comments text-3xl text-[#5e0490]"></i>
+                            </div>
+                            <p class="text-gray-600 text-lg font-medium">No hay mensajes aún</p>
+                            <p class="text-gray-400 text-sm mt-2 max-w-sm text-center">Envía un mensaje para empezar a chatear</p>
+                            <div class="mt-6 animate-bounce">
+                                <i class="fas fa-arrow-down text-purple-300 text-xl"></i>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // Construir HTML para cada mensaje
+                    mensajes.forEach(mensaje => {
+                        htmlContent += createMessageHtml(mensaje);
+                    });
+                }
+                
+                // Reemplazar todo el contenido del contenedor de mensajes
+                chatMessages.innerHTML = htmlContent;
+                
+                // Si había nuevos mensajes y estábamos al final, hacer scroll
+                if (hasNewMessages && wasAtBottom) {
+                    smoothScrollToBottom();
+                } else if (hasNewMessages) {
+                    showNewMessageIndicator();
+                }
+            })
+            .catch(error => {
+                console.error('Error al recargar mensajes:', error);
+            });
+    }
+    
+    // Recargar mensajes inicialmente después de 1 segundo
+    setTimeout(reloadChatContent, 1000);
+    
+    // Recargar mensajes cada 3 segundos
+    setInterval(reloadChatContent, 3000);
+    
+    // ----------------------
+    // RESTO DEL CÓDIGO
+    // ----------------------
     
     // Inicializar textarea autoexpandible
     function initAutoExpandTextarea() {
@@ -262,7 +405,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         messageInput.style.height = 'auto';
                     }
                     
-                    // Añadir mensaje a la vista con animación
+                    // Añadir mensaje a la vista con animación inmediatamente
                     if (chatMessages && data.mensaje) {
                         chatMessages.insertAdjacentHTML('beforeend', createMessageHtml(data.mensaje));
                         lastMessageId = data.mensaje.id;
@@ -272,6 +415,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         
                         // Mostrar pequeña animación de "enviado"
                         showSentAnimation();
+                        
+                        // Forzar una recarga inmediata para sincronizar
+                        setTimeout(reloadChatContent, 500);
                     } else {
                         console.error('Error: No se pudo añadir el mensaje a la vista', data);
                     }
@@ -340,8 +486,19 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 3000);
     }
     
-    // Actualizar mensajes cada 3 segundos
-    setInterval(updateMessages, 3000);
+    // Función para marcar un mensaje como leído
+    function markMessageAsRead(messageId) {
+        fetch(`/chat/${messageId}/read`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': window.csrfToken
+            },
+            body: JSON.stringify({})
+        }).catch(error => {
+            console.error('Error al marcar mensaje como leído:', error);
+        });
+    }
     
     //--------------------------------------------------------------
     // FUNCIONALIDAD DE VIDEOLLAMADA MEJORADA - Segunda parte del archivo
