@@ -5,6 +5,7 @@
     use Illuminate\Support\Facades\Log;
     use Illuminate\Support\Facades\Http;
     use Illuminate\Support\Facades\Artisan;
+    use Illuminate\Support\Facades\Broadcast;
         // CONTROLADORES
             // CONTROLADOR HOME
                 use App\Http\Controllers\HomeController;
@@ -55,6 +56,9 @@
                 use App\Http\Controllers\InstitucionPaymentController;
             // CONTROLADOR DE EXPERIENCIAS
                 use App\Http\Controllers\ExperienciaController;
+
+    // Ruta de autenticación para Pusher Broadcasting
+    Broadcast::routes(['middleware' => ['auth:web']]);
 
     // RUTAS DE LA APLICACIÓN
         // RUTA PRINCIPAL HOME
