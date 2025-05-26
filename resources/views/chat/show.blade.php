@@ -403,11 +403,11 @@ use Illuminate\Support\Facades\Auth;
     let agoraClient = null;
     let isScreenSharing = false;
     let screenStream = null;
-    let channelName = 'chat_' + document.querySelector('meta[name="chat-id"]').content;
+    let channelName = 'chat_{{ $chat->id }}';
     let localUid = {{ auth()->id() }};
-    const agoraAppId = document.querySelector('meta[name="agora-app-id"]').content;
+    let agoraAppId = 'ff42e2de41ee4ec7b9bfe51d3d9b4edd';
     
-    console.log('Agora AppID configurado:', agoraAppId);
+    console.log('Agora AppID configurado directamente:', agoraAppId);
     
     // Función wrapper para el botón de videollamada (accesible globalmente)
     function startVideoCallBtn() {
@@ -424,48 +424,82 @@ use Illuminate\Support\Facades\Auth;
     window.startVideoCall = function() {
         console.log('Función startVideoCall llamada');
         
-        // Mostrar el contenedor de video
-        const videoContainer = document.getElementById('video-container');
-        if (videoContainer) {
+        try {
+            // Mostrar el contenedor de video
+            const videoContainer = document.getElementById('video-container');
+            if (!videoContainer) {
+                throw new Error('No se encontró el contenedor de video');
+            }
+            
             videoContainer.style.display = 'flex';
             console.log('Contenedor de video mostrado');
-        } else {
-            console.error('No se encontró el contenedor de video');
-            alert('Error: No se encontró el contenedor de video');
-            return;
-        }
-        
-        // Intenta mostrar un mensaje de alerta para confirmar que la función se está ejecutando
-        alert('La función de videollamada se está ejecutando correctamente');
-    };
-    
-    // Asignar evento directamente al botón cuando el DOM esté listo
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('DOM cargado, configurando eventos...');
-        
-        // Verificar si el botón existe
-        const videoCallBtn = document.getElementById('video-call-btn');
-        console.log('Botón de videollamada encontrado:', videoCallBtn);
-        
-        if (videoCallBtn) {
-            console.log('Asignando evento click al botón de videollamada');
             
-            // Eliminar cualquier evento previo
-            videoCallBtn.removeEventListener('click', startVideoCall);
+            // Verificar si la API de mediaDevices está disponible
+            if (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== 'function') {
+                throw new Error('La API de cámara no está disponible en este navegador');
+            }
             
-            // Agregar evento y verificar que se asignó correctamente
-            videoCallBtn.addEventListener('click', function(e) {
-                console.log('¡Botón de videollamada presionado!');
-                e.preventDefault();
-                startVideoCall();
+            // Solicitar acceso a la cámara y micrófono
+            navigator.mediaDevices.getUserMedia({
+                audio: true,
+                video: true
+            })
+            .then(function(stream) {
+                console.log('Acceso a la cámara concedido');
+                
+                // Guardar el stream
+                localStream = stream;
+                
+                // Mostrar el video local
+                const localVideoElement = document.getElementById('local-video');
+                if (localVideoElement) {
+                    localVideoElement.srcObject = stream;
+                    localVideoElement.onloadedmetadata = function() {
+                        localVideoElement.play()
+                        .then(() => {
+                            console.log('Video local reproduciendo');
+                            
+                            // Intentar inicializar Agora
+                            initializeAgoraClient()
+                            .then(success => {
+                                if (!success) {
+                                    console.error('No se pudo inicializar Agora');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error al inicializar Agora:', error);
+                            });
+                        })
+                        .catch(e => console.error('Error al reproducir video local:', e));
+                    };
+                } else {
+                    throw new Error('No se encontró el elemento de video local');
+                }
+            })
+            .catch(function(error) {
+                console.error('Error al acceder a la cámara:', error);
+                Swal.fire({
+                    title: 'Error de acceso',
+                    text: 'No se pudo acceder a la cámara o micrófono. Por favor, verifica los permisos.',
+                    icon: 'error',
+                    confirmButtonText: 'Entendido',
+                    confirmButtonColor: '#5e0490'
+                });
+                
+                // Ocultar el contenedor de video en caso de error
+                videoContainer.style.display = 'none';
             });
-            
-            // También agregar evento directamente en el HTML para mayor seguridad
-            videoCallBtn.setAttribute('onclick', 'console.log("Botón presionado vía onclick"); startVideoCall(); return false;');
-        } else {
-            console.error('No se encontró el botón de videollamada');
+        } catch (error) {
+            console.error('Error al iniciar la videollamada:', error);
+            Swal.fire({
+                title: 'Error',
+                text: 'Ocurrió un error al iniciar la videollamada: ' + error.message,
+                icon: 'error',
+                confirmButtonText: 'Entendido',
+                confirmButtonColor: '#5e0490'
+            });
         }
-    });
+    };
 
     // Inicializar el cliente de Agora y configurar la conexión
     async function initializeAgoraClient() {
@@ -475,23 +509,35 @@ use Illuminate\Support\Facades\Auth;
             // Verificar si ya existe un cliente
             if (agoraClient) {
                 console.log('Cliente de Agora ya inicializado');
-                return;
+                return true;
             }
             
             // Verificar que tenemos un AppID válido
             if (!agoraAppId || agoraAppId.trim() === '') {
+                console.error('AppID no válido:', agoraAppId);
                 throw new Error('No se ha configurado el AppID de Agora o es inválido');
             }
             
             console.log('Usando Agora AppID:', agoraAppId);
+            console.log('Canal a unirse:', channelName);
+            console.log('UID local:', localUid);
             
             // Crear cliente de Agora
             agoraClient = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
+            
+            if (!agoraClient) {
+                throw new Error('No se pudo crear el cliente de Agora');
+            }
             
             // Agregar event listeners
             agoraClient.on('user-published', handleUserPublished);
             agoraClient.on('user-unpublished', handleUserUnpublished);
             agoraClient.on('connection-state-change', handleConnectionStateChange);
+            
+            // Verificar que localStream existe antes de continuar
+            if (!localStream) {
+                throw new Error('No hay acceso a la cámara o micrófono');
+            }
             
             // Unirse al canal con un token nulo (para desarrollo)
             console.log('Intentando unirse al canal: ' + channelName + ' con uid: ' + localUid);
@@ -548,158 +594,6 @@ use Illuminate\Support\Facades\Auth;
             
             return false;
         }
-    }
-
-    // Función para iniciar la videollamada
-    async function startVideoCall() {
-        console.log('Botón de videollamada presionado');
-        
-        // Verificar que el contenedor de video existe
-        const videoContainer = document.getElementById('video-container');
-        if (!videoContainer) {
-            console.error('No se encontró el contenedor de video');
-            Swal.fire({
-                title: 'Error',
-                text: 'Error en la interfaz de video. Por favor, recarga la página.',
-                icon: 'error',
-                confirmButtonText: 'Entendido',
-                confirmButtonColor: '#5e0490'
-            });
-            return;
-        }
-        
-        videoContainer.style.display = 'flex';
-
-        try {
-            // Verificar si la API de mediaDevices está disponible
-            if (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== 'function') {
-                throw new Error('La API de cámara no está disponible en este navegador');
-            }
-            
-            // Obtener restricciones de video y audio
-            const constraints = {
-                audio: getAudioConstraints(),
-                video: getVideoConstraints()
-            };
-            
-            // Obtener acceso a la cámara y micrófono
-            const stream = await navigator.mediaDevices.getUserMedia(constraints);
-            
-            // Almacenar el stream para uso posterior
-            localStream = stream;
-            
-            // Mostrar el video local
-            const localVideoElement = document.getElementById('local-video');
-            console.log('Elemento de video local:', localVideoElement);
-            console.log('¿Es elemento de video?', localVideoElement instanceof HTMLVideoElement);
-            
-            if (localVideoElement) {
-                localVideoElement.srcObject = stream;
-                console.log('Tracks de video disponibles:', stream.getVideoTracks().length);
-                
-                // Esperar a que el video se cargue
-                await new Promise((resolve) => {
-                    localVideoElement.onloadedmetadata = () => {
-                        localVideoElement.play().catch(e => console.error('Error al reproducir video local:', e));
-                        resolve();
-                    };
-                    
-                    // Si ya está cargado, resolver inmediatamente
-                    if (localVideoElement.readyState >= 2) {
-                        resolve();
-                    }
-                    
-                    // Timeout como fallback
-                    setTimeout(resolve, 2000);
-                });
-                
-                // Agregar evento para compartir pantalla
-                const shareScreenBtn = document.getElementById('share-screen');
-                if (shareScreenBtn) {
-                    shareScreenBtn.addEventListener('click', toggleScreenSharing);
-                    console.log('Evento de compartir pantalla asignado correctamente');
-                }
-                
-                console.log('Video local cargado correctamente');
-                
-                // Inicializar los selectores de dispositivos
-                await enumerateDevices();
-                
-                // Inicializar los controles de la videollamada
-                initializeControls(stream);
-                
-                // Intentar inicializar Agora para la comunicación en tiempo real
-                const agoraInitialized = await initializeAgoraClient();
-                
-                if (!agoraInitialized) {
-                    console.log('No se pudo establecer la conexión para la videollamada');
-                    return;
-                }
-                
-                console.log('Cámara iniciada correctamente');
-            } else {
-                throw new Error('No se encontró el elemento de video local');
-            }
-        } catch (error) {
-            console.error('Error al acceder a la cámara:', error);
-            
-            // Mostrar mensaje de error
-            Swal.fire({
-                title: 'Error de acceso',
-                text: 'No se pudo acceder a la cámara o micrófono. Por favor, verifica los permisos: ' + error.message,
-                icon: 'error',
-                confirmButtonText: 'Entendido',
-                confirmButtonColor: '#5e0490'
-            });
-            
-            // Cerrar el contenedor de video en caso de error
-            videoContainer.style.display = 'none';
-        }
-    }
-
-    // Obtener restricciones de audio basadas en configuración
-    function getAudioConstraints() {
-        // Usar valores predeterminados si los elementos no existen
-        const echoElement = document.getElementById('echo-cancellation');
-        const noiseElement = document.getElementById('noise-suppression');
-        
-        return {
-            deviceId: selectedAudioInput ? { exact: selectedAudioInput } : undefined,
-            echoCancellation: echoElement ? echoElement.checked : true,
-            noiseSuppression: noiseElement ? noiseElement.checked : true,
-            autoGainControl: true
-        };
-    }
-
-    // Obtener restricciones de video basadas en configuración
-    function getVideoConstraints() {
-        // Usar valores predeterminados si los elementos no existen
-        const resolutionElement = document.getElementById('video-resolution');
-        const fpsElement = document.getElementById('video-fps');
-        
-        let resolution = { width: 640, height: 480 };
-        let frameRate = { max: 30 };
-        
-        // Si hay un selector de resolución, usarlo
-        if (resolutionElement && resolutionElement.value) {
-            const value = resolutionElement.value;
-            if (value === 'hd') {
-                resolution = { width: 1280, height: 720 };
-            } else if (value === 'full-hd') {
-                resolution = { width: 1920, height: 1080 };
-            }
-        }
-        
-        // Si hay un selector de FPS, usarlo
-        if (fpsElement && fpsElement.value) {
-            frameRate.max = parseInt(fpsElement.value, 10) || 30;
-        }
-        
-        return {
-            deviceId: selectedVideoInput ? { exact: selectedVideoInput } : undefined,
-            ...resolution,
-            frameRate
-        };
     }
 
     // Manejar la publicación de streams de otros usuarios
@@ -1096,99 +990,26 @@ use Illuminate\Support\Facades\Auth;
 
     // Inicializar eventos cuando el DOM esté cargado
     document.addEventListener('DOMContentLoaded', function() {
-        console.log('Event listeners para videollamada inicializados correctamente');
+        console.log('DOM completamente cargado, inicializando eventos...');
         
-        // Botón de videollamada
+        // Asignar evento al botón de videollamada
         const videoCallBtn = document.getElementById('video-call-btn');
         if (videoCallBtn) {
-            videoCallBtn.addEventListener('click', startVideoCall);
-        }
-
-        // Botón de configuración
-        const openSettingsBtn = document.getElementById('open-settings');
-        if (openSettingsBtn) {
-            openSettingsBtn.addEventListener('click', openSettings);
-        }
-        
-        const closeSettingsBtn = document.getElementById('close-settings');
-        if (closeSettingsBtn) {
-            closeSettingsBtn.addEventListener('click', closeSettings);
-        }
-        
-        // Función para abrir la configuración
-        function openSettings() {
-            const settingsPanel = document.getElementById('video-settings');
-            if (settingsPanel) {
-                settingsPanel.style.display = 'block';
-            }
-        }
-        
-        // Función para cerrar la configuración
-        function closeSettings() {
-            const settingsPanel = document.getElementById('video-settings');
-            if (settingsPanel) {
-                settingsPanel.style.display = 'none';
-            }
-        }
-        
-        // Actualizar selectores cuando se cambia de dispositivo
-        const micSelect = document.getElementById('microphone-select');
-        if (micSelect) {
-            micSelect.addEventListener('change', function() {
-                selectedAudioInput = this.value;
-                // Si ya hay un stream activo, actualizarlo
-                if (localStream) {
-                    navigator.mediaDevices.getUserMedia({
-                        audio: getAudioConstraints(),
-                        video: false
-                    }).then(newStream => {
-                        // Reemplazar la pista de audio
-                        const audioTrack = newStream.getAudioTracks()[0];
-                        if (audioTrack && agoraClient) {
-                            agoraClient.unpublish(localStream.getAudioTracks());
-                            localStream.removeTrack(localStream.getAudioTracks()[0]);
-                            localStream.addTrack(audioTrack);
-                            agoraClient.publish(audioTrack);
-                        }
-                    }).catch(error => {
-                        console.error('Error al cambiar de micrófono:', error);
-                    });
-                }
+            console.log('Botón de videollamada encontrado, asignando evento');
+            
+            // Limpiar cualquier event listener previo
+            const newBtn = videoCallBtn.cloneNode(true);
+            videoCallBtn.parentNode.replaceChild(newBtn, videoCallBtn);
+            
+            // Asignar nuevo event listener
+            newBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('Botón de videollamada presionado mediante event listener');
+                window.startVideoCall();
+                return false;
             });
-        }
-        
-        const cameraSelect = document.getElementById('camera-select');
-        if (cameraSelect) {
-            cameraSelect.addEventListener('change', function() {
-                selectedVideoInput = this.value;
-                // Si ya hay un stream activo, actualizarlo
-                if (localStream) {
-                    navigator.mediaDevices.getUserMedia({
-                        audio: false,
-                        video: getVideoConstraints()
-                    }).then(newStream => {
-                        // Reemplazar la pista de video
-                        const videoTrack = newStream.getVideoTracks()[0];
-                        if (videoTrack && agoraClient) {
-                            agoraClient.unpublish(localStream.getVideoTracks());
-                            const oldTrack = localStream.getVideoTracks()[0];
-                            localStream.removeTrack(oldTrack);
-                            oldTrack.stop();
-                            localStream.addTrack(videoTrack);
-                            
-                            // Actualizar el elemento de video local
-                            const localVideoElement = document.getElementById('local-video');
-                            if (localVideoElement) {
-                                localVideoElement.srcObject = localStream;
-                            }
-                            
-                            agoraClient.publish(videoTrack);
-                        }
-                    }).catch(error => {
-                        console.error('Error al cambiar de cámara:', error);
-                    });
-                }
-            });
+        } else {
+            console.error('No se encontró el botón de videollamada en el DOM');
         }
     });
 </script>
