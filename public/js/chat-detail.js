@@ -503,7 +503,9 @@ document.addEventListener('DOMContentLoaded', function() {
             // Agregamos el mensaje al chat
             const wasAtBottom = isAtBottom();
             const html = createMessageHtml(data);
-            chatMessages.insertAdjacentHTML('beforeend', html);
+            if (chatMessages) {
+                chatMessages.insertAdjacentHTML('beforeend', html);
+            }
             
             // Actualizamos el último ID de mensaje
             if (data.id > lastMessageId) {
@@ -513,7 +515,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Si estábamos al final, hacemos scroll automático
             if (wasAtBottom) {
                 smoothScrollToBottom();
-            } else {
+            } else if (unreadIndicator) {
                 showNewMessageIndicator();
                 // Reproducir sonido de notificación
                 showMessageNotification(data);
@@ -580,6 +582,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Inicializar textarea autoexpandible
     function initAutoExpandTextarea() {
+        if (!messageInput) return;
+        
         messageInput.addEventListener('input', function() {
             this.style.height = 'auto';
             this.style.height = (this.scrollHeight) + 'px';
@@ -590,24 +594,24 @@ document.addEventListener('DOMContentLoaded', function() {
             const lengthIndicator = document.querySelector('.message-length');
             
             if (lengthIndicator) {
-            if (currentLength > 0) {
-                lengthIndicator.classList.remove('hidden');
+                if (currentLength > 0) {
+                    lengthIndicator.classList.remove('hidden');
                     const currentLengthElement = document.getElementById('current-length');
                     if (currentLengthElement) {
                         currentLengthElement.textContent = currentLength;
                     }
-                
-                if (currentLength > maxLength * 0.8) {
-                    lengthIndicator.classList.add('text-orange-500');
+                    
+                    if (currentLength > maxLength * 0.8) {
+                        lengthIndicator.classList.add('text-orange-500');
+                    } else {
+                        lengthIndicator.classList.remove('text-orange-500', 'text-red-500');
+                    }
+                    
+                    if (currentLength > maxLength * 0.95) {
+                        lengthIndicator.classList.add('text-red-500');
+                    }
                 } else {
-                    lengthIndicator.classList.remove('text-orange-500', 'text-red-500');
-                }
-                
-                if (currentLength > maxLength * 0.95) {
-                    lengthIndicator.classList.add('text-red-500');
-                }
-            } else {
-                lengthIndicator.classList.add('hidden');
+                    lengthIndicator.classList.add('hidden');
                 }
             }
             
@@ -625,7 +629,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Escuchar Enter para enviar (Shift+Enter para nueva línea)
         messageInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
+            if (e.key === 'Enter' && !e.shiftKey && messageForm) {
                 e.preventDefault();
                 messageForm.dispatchEvent(new Event('submit'));
             }
@@ -636,11 +640,13 @@ document.addEventListener('DOMContentLoaded', function() {
     initAutoExpandTextarea();
     
     // Observador para cuando se hace scroll
-    chatMessages.addEventListener('scroll', function() {
-        if (isAtBottom()) {
-            unreadIndicator.classList.remove('active');
-        }
-    });
+    if (chatMessages) {
+        chatMessages.addEventListener('scroll', function() {
+            if (isAtBottom() && unreadIndicator) {
+                unreadIndicator.classList.remove('active');
+            }
+        });
+    }
     
     // Solicitar permiso para notificaciones
     if ('Notification' in window && Notification.permission !== 'granted' && Notification.permission !== 'denied') {
@@ -655,6 +661,8 @@ document.addEventListener('DOMContentLoaded', function() {
     if (messageForm) {
         messageForm.addEventListener('submit', function(e) {
             e.preventDefault();
+            
+            if (!messageInput) return;
             
             const content = messageInput.value.trim();
             
@@ -681,7 +689,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Crear FormData para enviar el contenido
             const formData = new FormData();
-                formData.append('contenido', content);
+            formData.append('contenido', content);
             
             console.log('Enviando mensaje a:', window.routeSendMessage);
             
@@ -689,7 +697,8 @@ document.addEventListener('DOMContentLoaded', function() {
             fetch(window.routeSendMessage, {
                 method: 'POST',
                 headers: {
-                    'X-CSRF-TOKEN': window.csrfToken
+                    'X-CSRF-TOKEN': window.csrfToken,
+                    'Accept': 'application/json'
                 },
                 body: formData
             })
@@ -697,6 +706,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!response.ok) {
                     console.error('Error en la respuesta del servidor:', response.status, response.statusText);
                     throw new Error('El servidor respondió con un error: ' + response.status);
+                }
+                // Verificar que la respuesta es JSON antes de procesarla
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('La respuesta no es JSON válido. Es posible que la sesión haya expirado.');
                 }
                 return response.json();
             })
@@ -744,8 +758,28 @@ document.addEventListener('DOMContentLoaded', function() {
             .catch(error => {
                 console.error('Error al enviar mensaje:', error);
                 
-                // Mostrar error genérico
-                showErrorNotification('Error al enviar el mensaje. Inténtalo de nuevo.');
+                // Si detectamos que la sesión ha expirado, mostrar mensaje y recargar
+                if (error.message && error.message.includes('sesión ha expirado')) {
+                    if (window.Swal) {
+                        Swal.fire({
+                            title: 'Sesión expirada',
+                            text: 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.',
+                            icon: 'warning',
+                            confirmButtonText: 'Recargar',
+                            confirmButtonColor: '#5e0490'
+                        }).then(() => {
+                            window.location.reload();
+                        });
+                    } else {
+                        // Alternativa sin SweetAlert
+                        if (confirm('Tu sesión ha expirado. ¿Deseas recargar la página para iniciar sesión nuevamente?')) {
+                            window.location.reload();
+                        }
+                    }
+                } else {
+                    // Mostrar error genérico
+                    showErrorNotification('Error al enviar el mensaje. Inténtalo de nuevo.');
+                }
                 
                 // Reactivar botón
                 if (submitButton) {
