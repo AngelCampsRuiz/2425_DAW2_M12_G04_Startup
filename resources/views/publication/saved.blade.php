@@ -3,6 +3,9 @@
     <meta name="user-id" content="{{ auth()->id() }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 @endauth
+@php
+    use Illuminate\Support\Str;
+@endphp
 @section('content')
 {{-- BREADCRUMBS --}}
 <div class="bg-white shadow-sm sticky top-0 z-10">
