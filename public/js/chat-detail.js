@@ -117,75 +117,108 @@ function updateMessages() {
     // Solo obtenemos mensajes más recientes que el último que tenemos
     const url = `${window.routeGetMessages}?after=${lastMessageId}`;
         
-        fetch(url)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Error al obtener mensajes: ' + response.status);
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (!data.messages || !Array.isArray(data.messages)) {
-                    console.error('Formato de respuesta incorrecto:', data);
-                    return;
-                }
+    fetch(url, {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': window.csrfToken || document.querySelector('meta[name="csrf-token"]')?.content
+        },
+        credentials: 'same-origin' // Incluir cookies para mantener la sesión
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Error al obtener mensajes: ' + response.status);
+        }
+        // Verificar que la respuesta es JSON antes de procesarla
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            throw new Error('La respuesta no es JSON válido. Es posible que la sesión haya expirado.');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (!data.messages || !Array.isArray(data.messages)) {
+            console.error('Formato de respuesta incorrecto:', data);
+            return;
+        }
+    
+        // Si no hay mensajes nuevos, terminamos
+        if (data.messages.length === 0) {
+            return;
+        }
+        
+        console.log(`Recibidos ${data.messages.length} mensajes nuevos`);
             
-            // Si no hay mensajes nuevos, terminamos
-            if (data.messages.length === 0) {
+        const wasAtBottom = isAtBottom();
+        let hasNewMessages = false;
+            
+        // Ordenar mensajes por fecha de creación para asegurar el orden correcto
+        const nuevos = data.messages.sort((a, b) => {
+            return new Date(a.created_at) - new Date(b.created_at);
+        });
+            
+        // Añadir cada mensaje nuevo al chat
+        nuevos.forEach(mensaje => {
+            // Verificar si el mensaje ya existe
+            const existingMessage = document.querySelector(`.message[data-message-id="${mensaje.id}"]`);
+            if (existingMessage) {
                 return;
             }
             
-            console.log(`Recibidos ${data.messages.length} mensajes nuevos`);
-                
-                const wasAtBottom = isAtBottom();
-                let hasNewMessages = false;
-                
-                // Ordenar mensajes por fecha de creación para asegurar el orden correcto
-            const nuevos = data.messages.sort((a, b) => {
-                    return new Date(a.created_at) - new Date(b.created_at);
-                });
-                
-            // Añadir cada mensaje nuevo al chat
-            nuevos.forEach(mensaje => {
-                // Verificar si el mensaje ya existe
-                const existingMessage = document.querySelector(`.message[data-message-id="${mensaje.id}"]`);
-                if (existingMessage) {
-                    return;
-                }
-                
-                hasNewMessages = true;
-                const html = createMessageHtml(mensaje);
-                chatMessages.insertAdjacentHTML('beforeend', html);
-                
-                // Actualizamos el último ID
-                if (mensaje.id > lastMessageId) {
-                    lastMessageId = mensaje.id;
-                }
-                
-                // Si no es nuestro mensaje, lo marcamos como leído
-                const currentUserId = parseInt(document.querySelector('meta[name="user-id"]')?.content || '0');
-                if (mensaje.user_id !== currentUserId) {
-                    markMessageAsRead(mensaje.id);
-                }
-            });
-                
-                // Si había nuevos mensajes y estábamos al final, hacer scroll
-                if (hasNewMessages && wasAtBottom) {
-                    smoothScrollToBottom();
-                } else if (hasNewMessages) {
-                    showNewMessageIndicator();
-                
-                // Mostrar notificación para el último mensaje si no es nuestro
-                const currentUserId = parseInt(document.querySelector('meta[name="user-id"]')?.content || '0');
-                const ultimoMensaje = nuevos[nuevos.length - 1];
-                if (ultimoMensaje.user_id !== currentUserId) {
-                    showMessageNotification(ultimoMensaje);
-                }
-                }
-            })
-            .catch(error => {
-            console.error('Error al actualizar mensajes:', error);
+            hasNewMessages = true;
+            const html = createMessageHtml(mensaje);
+            chatMessages.insertAdjacentHTML('beforeend', html);
+            
+            // Actualizamos el último ID
+            if (mensaje.id > lastMessageId) {
+                lastMessageId = mensaje.id;
+            }
+            
+            // Si no es nuestro mensaje, lo marcamos como leído
+            const currentUserId = parseInt(document.querySelector('meta[name="user-id"]')?.content || '0');
+            if (mensaje.user_id !== currentUserId) {
+                markMessageAsRead(mensaje.id);
+            }
         });
+            
+        // Si había nuevos mensajes y estábamos al final, hacer scroll
+        if (hasNewMessages && wasAtBottom) {
+            smoothScrollToBottom();
+        } else if (hasNewMessages) {
+            showNewMessageIndicator();
+        
+            // Mostrar notificación para el último mensaje si no es nuestro
+            const currentUserId = parseInt(document.querySelector('meta[name="user-id"]')?.content || '0');
+            const ultimoMensaje = nuevos[nuevos.length - 1];
+            if (ultimoMensaje.user_id !== currentUserId) {
+                showMessageNotification(ultimoMensaje);
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error al actualizar mensajes:', error);
+        
+        // Si detectamos que la sesión ha expirado, mostrar mensaje y recargar
+        if (error.message && error.message.includes('sesión ha expirado')) {
+            if (window.Swal) {
+                Swal.fire({
+                    title: 'Sesión expirada',
+                    text: 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.',
+                    icon: 'warning',
+                    confirmButtonText: 'Recargar',
+                    confirmButtonColor: '#5e0490'
+                }).then(() => {
+                    window.location.reload();
+                });
+            } else {
+                // Alternativa sin SweetAlert
+                if (confirm('Tu sesión ha expirado. ¿Deseas recargar la página para iniciar sesión nuevamente?')) {
+                    window.location.reload();
+                }
+            }
+        }
+    });
 }
 
 // Función para verificar si el scroll está al final
