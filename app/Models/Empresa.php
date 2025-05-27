@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Experiencia;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -42,13 +43,8 @@ class Empresa extends Model
 
     public function experiencias()
     {
-        return $this->hasManyThrough(
-            Experiencia::class,
-            Estudiante::class,
-            'id', // Clave foránea en estudiantes
-            'alumno_id', // Clave foránea en experiencias
-            'id', // Clave local en empresas
-            'id' // Clave local en estudiantes
-        )->where('empresa_nombre', 'like', '%' . $this->user->nombre . '%');
+        // Esta relación busca experiencias que mencionen el nombre de la empresa
+        // Más eficiente usar una relación más directa en lugar de hasManyThrough
+        return Experiencia::where('empresa_nombre', 'like', '%' . $this->user->nombre . '%');
     }
 }

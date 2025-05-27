@@ -137,7 +137,7 @@ class HomeController extends Controller
         ];
 
         if ($user->empresa) {
-            $data['experiencias'] = $user->empresa->experiencias()->with('alumno.user')->get();
+            $data['experiencias'] = $user->empresa->experiencias()->with('estudiante.user')->get();
         }
 
         return view('profile', $data);

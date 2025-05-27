@@ -434,13 +434,13 @@
                                         <tbody class="bg-white divide-y divide-gray-200">
                                             @foreach($experiencias as $experiencia)
                                                 <tr class="hover:bg-gray-50">
-                                                    <td class="px-6 py-4 whitespace-nowrap">
-                                                        <div class="flex items-center">
-                                                            <div class="text-sm font-medium text-gray-900">
-                                                                {{ $experiencia->alumno->user->name }}
-                                                            </div>
-                                                        </div>
-                                                    </td>
+                                                                                            <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <div class="text-sm font-medium text-gray-900">
+                                                    {{ $experiencia->estudiante->user->name }}
+                                                </div>
+                                            </div>
+                                        </td>
                                                     <td class="px-6 py-4 whitespace-nowrap">
                                                         <div class="text-sm text-gray-900">{{ $experiencia->puesto }}</div>
                                                     </td>
