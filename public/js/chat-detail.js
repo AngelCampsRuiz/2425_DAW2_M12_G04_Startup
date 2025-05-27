@@ -484,10 +484,17 @@ document.addEventListener('DOMContentLoaded', function() {
         const hasChatMessages = document.getElementById('chat-messages') !== null;
         const hasMessageForm = document.getElementById('message-form') !== null;
         const hasMessageInput = document.getElementById('message-input') !== null;
+        const hasSendButton = document.getElementById('send-message-btn') !== null;
         
-        const isValid = hasChatMessages && hasMessageForm && hasMessageInput;
+        const isValid = hasChatMessages && hasMessageForm && hasMessageInput && hasSendButton;
         if (!isValid) {
             console.warn('No estamos en una página de chat válida o faltan elementos esenciales');
+            console.log({
+                hasChatMessages,
+                hasMessageForm,
+                hasMessageInput,
+                hasSendButton
+            });
         } else {
             console.log('Página de chat válida detectada, todos los elementos encontrados');
         }
@@ -505,11 +512,12 @@ document.addEventListener('DOMContentLoaded', function() {
     chatMessages = document.getElementById('chat-messages');
     messageForm = document.getElementById('message-form');
     messageInput = document.getElementById('message-input');
+    const sendButton = document.getElementById('send-message-btn');
     chatId = window.chatId;
     lastMessageId = window.lastMessageId || 0;
     
     // Verificar que los elementos necesarios existen
-    if (!chatMessages || !messageForm || !messageInput) {
+    if (!chatMessages || !messageForm || !messageInput || !sendButton) {
         console.warn('Elementos esenciales del chat no encontrados');
         return;
     }
@@ -638,6 +646,120 @@ document.addEventListener('DOMContentLoaded', function() {
     // RESTO DEL CÓDIGO
     // ----------------------
     
+    // Función para enviar mensajes (la usaremos desde varios lugares)
+    function sendMessage() {
+        console.log('Función sendMessage() llamada');
+        
+        if (!messageInput || !messageForm) {
+            console.error('No se pueden enviar mensajes: faltan elementos del formulario');
+            return false;
+        }
+        
+        const content = messageInput.value.trim();
+        if (!content) {
+            console.log('No hay contenido para enviar');
+            return false;
+        }
+        
+        // Desactivar botones durante el envío
+        const submitButton = document.getElementById('send-message-btn');
+        if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
+        }
+        
+        // Verificar si tenemos la URL y el token CSRF
+        if (!window.routeSendMessage || !window.csrfToken) {
+            console.error('Error: No se encontró la URL para enviar mensajes o el token CSRF');
+            showErrorNotification('Error: Configuración incompleta para enviar mensajes');
+            
+            if (submitButton) {
+                submitButton.disabled = false;
+                submitButton.innerHTML = '<i class="fas fa-paper-plane"></i>';
+            }
+            return false;
+        }
+        
+        // Crear FormData para enviar el contenido
+        const formData = new FormData();
+        formData.append('contenido', content);
+        
+        console.log('Enviando mensaje a:', window.routeSendMessage);
+        
+        // Enviar mensaje al servidor usando fetch API
+        fetch(window.routeSendMessage, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': window.csrfToken,
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) {
+                console.error('Error en la respuesta del servidor:', response.status, response.statusText);
+                throw new Error('El servidor respondió con un error: ' + response.status);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Respuesta del servidor:', data);
+            
+            if (!data.error) {
+                // Limpiar inputs
+                if (messageInput) {
+                    messageInput.value = '';
+                    messageInput.style.height = 'auto';
+                }
+                
+                // Añadir mensaje a la vista con animación inmediatamente
+                if (chatMessages && data.mensaje) {
+                    chatMessages.insertAdjacentHTML('beforeend', createMessageHtml(data.mensaje));
+                    lastMessageId = data.mensaje.id;
+                    
+                    // Desplazamiento suave al último mensaje
+                    smoothScrollToBottom();
+                    
+                    // Mostrar pequeña animación de "enviado"
+                    showSentAnimation();
+                } else {
+                    console.error('Error: No se pudo añadir el mensaje a la vista', data);
+                }
+                
+                // Ocultar contador de caracteres
+                const lengthIndicator = document.querySelector('.message-length');
+                if (lengthIndicator) {
+                    lengthIndicator.classList.add('hidden');
+                }
+            } else {
+                // Mostrar error si hay alguno
+                console.error('Error devuelto por el servidor:', data.error);
+                showErrorNotification(data.error);
+            }
+            
+            // Reactivar botón
+            if (submitButton) {
+                submitButton.disabled = false;
+                submitButton.innerHTML = '<i class="fas fa-paper-plane"></i>';
+            }
+        })
+        .catch(error => {
+            console.error('Error al enviar mensaje:', error);
+            
+            // Mostrar error genérico
+            showErrorNotification('Error al enviar el mensaje. Inténtalo de nuevo.');
+            
+            // Reactivar botón
+            if (submitButton) {
+                submitButton.disabled = false;
+                submitButton.innerHTML = '<i class="fas fa-paper-plane"></i>';
+            }
+        });
+        
+        return true;
+    }
+    
     // Inicializar textarea autoexpandible
     function initAutoExpandTextarea() {
         // Verificación crítica: asegurarse de que messageInput existe
@@ -702,25 +824,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Solo procesar si es la tecla Enter sin Shift
                 if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
-                    
-                    // Si no existe el formulario, no hacer nada
-                    if (!messageForm) {
-                        console.warn('No se puede enviar el mensaje: formulario no encontrado');
-                        return;
-                    }
-                    
-                    // Si hay parámetros en la URL, usar evento personalizado
-                    if (window.location.search) {
-                        console.log('Usando evento personalizado para enviar mensaje (Enter)');
-                        const submitEvent = new Event('chatSubmit', {
-                            bubbles: true,
-                            cancelable: true
-                        });
-                        messageForm.dispatchEvent(submitEvent);
-                    } else {
-                        // Método estándar
-                        messageForm.dispatchEvent(new Event('submit'));
-                    }
+                    console.log('Tecla Enter detectada, enviando mensaje...');
+                    sendMessage();
                 }
             }
             
@@ -732,6 +837,15 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Inicializar el textarea autoexpandible
     initAutoExpandTextarea();
+    
+    // Conectar el botón de enviar al evento click
+    if (sendButton) {
+        sendButton.removeEventListener('click', sendMessage);
+        sendButton.addEventListener('click', sendMessage);
+        console.log('Evento click conectado al botón de enviar');
+    } else {
+        console.error('No se encontró el botón de enviar mensajes');
+    }
     
     // Observador para cuando se hace scroll
     chatMessages.addEventListener('scroll', function() {
@@ -747,122 +861,6 @@ document.addEventListener('DOMContentLoaded', function() {
             Notification.requestPermission();
             document.removeEventListener('click', requestNotificationPermission);
         }, { once: true });
-    }
-    
-    // Enviar mensaje con animaciones
-    if (messageForm) {
-        // Usar tanto el evento submit regular como el personalizado
-        messageForm.addEventListener('submit', handleFormSubmit);
-        messageForm.addEventListener('chatSubmit', handleFormSubmit);
-        
-        function handleFormSubmit(e) {
-            e.preventDefault(); // Detiene el comportamiento por defecto
-            
-            // Verificación adicional para prevenir la recarga de la página
-            if (window.event) window.event.returnValue = false;
-            
-            const content = messageInput ? messageInput.value.trim() : '';
-            
-            if (!content) return;
-            
-            // Desactivar botones durante el envío
-            const submitButton = this.querySelector('button[type="submit"]');
-            if (submitButton) {
-                submitButton.disabled = true;
-                submitButton.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
-            }
-            
-            // Verificar si tenemos la URL y el token CSRF
-            if (!window.routeSendMessage || !window.csrfToken) {
-                console.error('Error: No se encontró la URL para enviar mensajes o el token CSRF');
-                showErrorNotification('Error: Configuración incompleta para enviar mensajes');
-                
-                if (submitButton) {
-                    submitButton.disabled = false;
-                    submitButton.innerHTML = '<i class="fas fa-paper-plane"></i>';
-                }
-                return;
-            }
-            
-            // Crear FormData para enviar el contenido
-            const formData = new FormData();
-            formData.append('contenido', content);
-            
-            console.log('Enviando mensaje a:', window.routeSendMessage);
-            
-            // Enviar mensaje al servidor usando fetch API
-            fetch(window.routeSendMessage, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': window.csrfToken,
-                    'Accept': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: formData
-            })
-            .then(response => {
-                if (!response.ok) {
-                    console.error('Error en la respuesta del servidor:', response.status, response.statusText);
-                    throw new Error('El servidor respondió con un error: ' + response.status);
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log('Respuesta del servidor:', data);
-                
-                if (!data.error) {
-                    // Limpiar inputs
-                    if (messageInput) {
-                        messageInput.value = '';
-                        messageInput.style.height = 'auto';
-                    }
-                    
-                    // Añadir mensaje a la vista con animación inmediatamente
-                    if (chatMessages && data.mensaje) {
-                        chatMessages.insertAdjacentHTML('beforeend', createMessageHtml(data.mensaje));
-                        lastMessageId = data.mensaje.id;
-                        
-                        // Desplazamiento suave al último mensaje
-                        smoothScrollToBottom();
-                        
-                        // Mostrar pequeña animación de "enviado"
-                        showSentAnimation();
-                    } else {
-                        console.error('Error: No se pudo añadir el mensaje a la vista', data);
-                    }
-                    
-                    // Ocultar contador de caracteres
-                    const lengthIndicator = document.querySelector('.message-length');
-                    if (lengthIndicator) {
-                        lengthIndicator.classList.add('hidden');
-                    }
-                } else {
-                    // Mostrar error si hay alguno
-                    console.error('Error devuelto por el servidor:', data.error);
-                    showErrorNotification(data.error);
-                }
-                
-                // Reactivar botón
-                if (submitButton) {
-                    submitButton.disabled = false;
-                    submitButton.innerHTML = '<i class="fas fa-paper-plane"></i>';
-                }
-            })
-            .catch(error => {
-                console.error('Error al enviar mensaje:', error);
-                
-                // Mostrar error genérico
-                showErrorNotification('Error al enviar el mensaje. Inténtalo de nuevo.');
-                
-                // Reactivar botón
-                if (submitButton) {
-                    submitButton.disabled = false;
-                    submitButton.innerHTML = '<i class="fas fa-paper-plane"></i>';
-                }
-            });
-        }
-    } else {
-        console.error('No se encontró el formulario de mensajes');
     }
     
     // Animación de mensaje enviado

@@ -312,7 +312,8 @@ use Illuminate\Support\Facades\Auth;
                 </div>
                 
                 <button
-                    type="submit"
+                    type="button"
+                    id="send-message-btn"
                     class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-purple-500 to-indigo-600 px-4 py-3 text-white hover:from-purple-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed h-[42px]"
                 >
                     <i class="fas fa-paper-plane"></i>
