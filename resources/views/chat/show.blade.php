@@ -565,9 +565,16 @@ use Illuminate\Support\Facades\Auth;
                 }
             }
             
-            // Publicar el stream local
-            await agoraClient.publish(localStream);
+            // Crear las pistas de audio y video a partir del stream local
+            const audioTrack = AgoraRTC.createMicrophoneAudioTrack({ microphoneId: localStream.getAudioTracks()[0].id });
+            const videoTrack = AgoraRTC.createCameraVideoTrack({ cameraId: localStream.getVideoTracks()[0].id });
+            
+            // Publicar las pistas individualmente en lugar de publicar el stream completo
+            await agoraClient.publish([audioTrack, videoTrack]);
             console.log('Publicación exitosa en el canal de Agora');
+            
+            // Inicializar controles de videollamada con el stream local
+            initializeControls(localStream);
             
             return true;
         } catch (error) {
