@@ -30,10 +30,12 @@ use Illuminate\Support\Facades\Auth;
     </script>
     <!-- Pusher -->
     <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
+    <!-- Añadir SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Chat JavaScript -->
     <script src="{{ asset('js/chat.js') }}"></script>
     
-    <!-- Chat Detail JavaScript -->
+    <!-- Chat Detail JavaScript (cargado al final para garantizar que tenga acceso a todas las dependencias) -->
     <script src="{{ asset('js/chat-detail.js') }}"></script>
 @endpush
 
@@ -371,9 +373,6 @@ use Illuminate\Support\Facades\Auth;
 
 <!-- Agregar socket.io para la señalización (versión actualizada) -->
 <script src="https://cdn.socket.io/4.7.2/socket.io.min.js" integrity="sha384-mZLF4UVrpi/QTWPA7BjNPEnkIfRFn4ZEO3Qt/HFklTJBj/gBOV8G3HcKn4NfQblz" crossorigin="anonymous"></script>
-
-<!-- Añadir SweetAlert2 -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <!-- Añadir CSS personalizado -->
 <link rel="stylesheet" href="{{ asset('css/chat-detail.css') }}">

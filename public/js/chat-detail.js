@@ -97,6 +97,37 @@ let isTyping = false;
 let typingTimeout;
 let unreadIndicator;
 
+// Función para evitar la recarga de la página cuando hay parámetros en la URL
+function preventNormalFormSubmission() {
+    // Detectar si estamos en una URL con parámetros
+    if (window.location.search) {
+        console.log('URL con parámetros detectada, asegurando que no se recargue la página al enviar formularios');
+        
+        // Buscar todos los formularios en la página y prevenir su envío normal
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Si es el formulario de mensajes, disparar un evento personalizado
+                if (form.id === 'message-form' && messageForm) {
+                    console.log('Disparando evento personalizado para el formulario de mensajes');
+                    
+                    // Crear y disparar evento personalizado
+                    const submitEvent = new Event('chatSubmit', {
+                        bubbles: true,
+                        cancelable: true
+                    });
+                    
+                    messageForm.dispatchEvent(submitEvent);
+                }
+                
+                return false;
+            }, true); // Captura en fase de captura para ejecutarse primero
+        });
+    }
+}
+
 // Función para recargar completamente el contenedor de mensajes - FUERA DEL DOM CONTENT LOADED
 function updateMessages() {
     if (!window.routeGetMessages) {
@@ -443,6 +474,9 @@ function updateConnectionStatus(status) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Prevenir recarga de página inmediatamente
+    preventNormalFormSubmission();
+    
     console.log('DOM cargado, inicializando chat...');
     
     // Función para verificar si estamos en una página de chat válida
@@ -613,7 +647,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         try {
-            messageInput.addEventListener('input', function() {
+            // Asegurarse de que solo se añada un listener
+            messageInput.removeEventListener('input', handleTextareaInput);
+            messageInput.addEventListener('input', handleTextareaInput);
+            
+            function handleTextareaInput() {
                 this.style.height = 'auto';
                 this.style.height = (this.scrollHeight) + 'px';
                 
@@ -654,15 +692,37 @@ document.addEventListener('DOMContentLoaded', function() {
                 typingTimeout = setTimeout(() => {
                     isTyping = false;
                 }, 2000);
-            });
+            }
             
             // Escuchar Enter para enviar (Shift+Enter para nueva línea)
-            messageInput.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter' && !e.shiftKey && messageForm) {
+            messageInput.removeEventListener('keydown', handleKeyDown);
+            messageInput.addEventListener('keydown', handleKeyDown);
+            
+            function handleKeyDown(e) {
+                // Solo procesar si es la tecla Enter sin Shift
+                if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
-                    messageForm.dispatchEvent(new Event('submit'));
+                    
+                    // Si no existe el formulario, no hacer nada
+                    if (!messageForm) {
+                        console.warn('No se puede enviar el mensaje: formulario no encontrado');
+                        return;
+                    }
+                    
+                    // Si hay parámetros en la URL, usar evento personalizado
+                    if (window.location.search) {
+                        console.log('Usando evento personalizado para enviar mensaje (Enter)');
+                        const submitEvent = new Event('chatSubmit', {
+                            bubbles: true,
+                            cancelable: true
+                        });
+                        messageForm.dispatchEvent(submitEvent);
+                    } else {
+                        // Método estándar
+                        messageForm.dispatchEvent(new Event('submit'));
+                    }
                 }
-            });
+            }
             
             console.log('Textarea autoexpandible inicializado correctamente');
         } catch (error) {
@@ -691,7 +751,11 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Enviar mensaje con animaciones
     if (messageForm) {
-        messageForm.addEventListener('submit', function(e) {
+        // Usar tanto el evento submit regular como el personalizado
+        messageForm.addEventListener('submit', handleFormSubmit);
+        messageForm.addEventListener('chatSubmit', handleFormSubmit);
+        
+        function handleFormSubmit(e) {
             e.preventDefault(); // Detiene el comportamiento por defecto
             
             // Verificación adicional para prevenir la recarga de la página
@@ -726,11 +790,13 @@ document.addEventListener('DOMContentLoaded', function() {
             
             console.log('Enviando mensaje a:', window.routeSendMessage);
             
-            // Enviar mensaje al servidor
+            // Enviar mensaje al servidor usando fetch API
             fetch(window.routeSendMessage, {
                 method: 'POST',
                 headers: {
-                    'X-CSRF-TOKEN': window.csrfToken
+                    'X-CSRF-TOKEN': window.csrfToken,
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
                 },
                 body: formData
             })
@@ -794,7 +860,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     submitButton.innerHTML = '<i class="fas fa-paper-plane"></i>';
                 }
             });
-        });
+        }
     } else {
         console.error('No se encontró el formulario de mensajes');
     }
