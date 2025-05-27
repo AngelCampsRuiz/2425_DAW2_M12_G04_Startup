@@ -537,11 +537,11 @@ Route::get('/test/table-structure', [App\Http\Controllers\TestController::class,
     });
 
     // Rutas para la institución
-    Route::get('/convenios', [App\Http\Controllers\Institucion\ConvenioController::class, 'index'])->name('convenios.index');
-    Route::get('/convenios/{convenio}', [App\Http\Controllers\Institucion\ConvenioController::class, 'show'])->name('convenios.show');
-    Route::post('/convenios/{convenio}/firmar', [App\Http\Controllers\Institucion\ConvenioController::class, 'firmar'])->name('convenios.firmar');
-    Route::get('/convenios/{convenio}/download', [App\Http\Controllers\Institucion\ConvenioController::class, 'download'])->name('convenios.download');
-    Route::get('/convenios/firmados/lista', [App\Http\Controllers\Institucion\ConvenioController::class, 'firmados'])->name('convenios.firmados');
+    Route::get('/convenios', [App\Http\Controllers\Institucion\ConvenioController::class, 'index'])->name('institucion.convenios.index');
+    Route::get('/convenios/{convenio}', [App\Http\Controllers\Institucion\ConvenioController::class, 'show'])->name('institucion.convenios.show');
+    Route::post('/convenios/{convenio}/firmar', [App\Http\Controllers\Institucion\ConvenioController::class, 'firmar'])->name('institucion.convenios.firmar');
+    Route::get('/convenios/{convenio}/download', [App\Http\Controllers\Institucion\ConvenioController::class, 'download'])->name('institucion.convenios.download');
+    Route::get('/convenios/firmados/lista', [App\Http\Controllers\Institucion\ConvenioController::class, 'firmados'])->name('institucion.convenios.firmados');
 ;
 
 // RUTAS PARA DOCENTES
