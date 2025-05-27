@@ -114,7 +114,7 @@
             <div class="mt-4 text-sm text-teal-700">
                 <div class="flex items-center">
                     <span class="font-medium">Pendientes de firma</span>
-                    <a href="{{ route('convenios.index') }}" class="ml-auto bg-white text-teal-600 hover:text-teal-800 text-xs font-medium px-2 py-1 rounded-full shadow-sm transition-colors duration-200">
+                    <a href="{{ route('institucion.convenios.index') }}" class="ml-auto bg-white text-teal-600 hover:text-teal-800 text-xs font-medium px-2 py-1 rounded-full shadow-sm transition-colors duration-200">
                         Ver todos
                     </a>
                 </div>
@@ -197,7 +197,7 @@
             </a>
             
             <!-- Convenios Pendientes -->
-            <a href="{{ route('convenios.index') }}" class="flex items-center p-5 rounded-xl shadow-sm hover:shadow-md border border-teal-100 hover:border-teal-300 transition-all duration-300 bg-gradient-to-br from-white to-teal-50 group">
+            <a href="{{ route('institucion.convenios.index') }}" class="flex items-center p-5 rounded-xl shadow-sm hover:shadow-md border border-teal-100 hover:border-teal-300 transition-all duration-300 bg-gradient-to-br from-white to-teal-50 group">
                 <div class="bg-teal-100 group-hover:bg-teal-200 rounded-full p-3 mr-4 transition-colors duration-300">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
