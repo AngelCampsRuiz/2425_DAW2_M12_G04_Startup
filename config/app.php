@@ -162,6 +162,11 @@ return [
         Illuminate\View\ViewServiceProvider::class,
 
         /*
+         * Package Service Providers...
+         */
+        Barryvdh\DomPDF\ServiceProvider::class,
+
+        /*
          * Application Service Providers...
          */
         App\Providers\AppServiceProvider::class,
@@ -185,5 +190,6 @@ return [
     'aliases' => [
         'Auth' => Illuminate\Support\Facades\Auth::class,
         'Route' => Illuminate\Support\Facades\Route::class,
+        'PDF' => Barryvdh\DomPDF\Facade\Pdf::class,
     ],
 ];
