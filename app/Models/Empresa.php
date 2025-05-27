@@ -18,7 +18,6 @@ class Empresa extends Model
         'direccion',
         'latitud',
         'longitud',
-        'provincia',
         'show_cif',
         'activo'
     ];

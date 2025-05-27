@@ -100,7 +100,6 @@ class EmpresaController extends BaseController
             'direccion' => 'required|string|max:255',
             'latitud' => 'nullable|numeric',
             'longitud' => 'nullable|numeric',
-            'provincia' => 'required|string|max:255',
             'descripcion' => 'nullable|string|max:500',
         ]);
 
@@ -145,7 +144,6 @@ class EmpresaController extends BaseController
                 'id' => $user->id,
                 'cif' => $request->input('cif'),
                 'direccion' => $request->input('direccion'),
-                'provincia' => $request->input('provincia') ?? null,
                 'latitud' => $request->input('latitud') ?? 0,
                 'longitud' => $request->input('longitud') ?? 0,
             ]);
@@ -265,7 +263,6 @@ class EmpresaController extends BaseController
             'direccion' => 'required|string|max:255',
             'latitud' => 'nullable|numeric',
             'longitud' => 'nullable|numeric',
-            'provincia' => 'required|string|max:255',
             'descripcion' => 'nullable|string|max:500',
         ];
 
@@ -329,7 +326,6 @@ class EmpresaController extends BaseController
             $empresa->update([
                 'cif' => $request->input('cif'),
                 'direccion' => $request->input('direccion'),
-                'provincia' => $request->input('provincia'),
                 'latitud' => $request->input('latitud') ?? 0,
                 'longitud' => $request->input('longitud') ?? 0,
                 'activo' => $request->has('activo'),
