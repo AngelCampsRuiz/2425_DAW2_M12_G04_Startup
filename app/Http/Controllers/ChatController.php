@@ -20,6 +20,18 @@ use Illuminate\Support\Facades\Log;
 class ChatController extends Controller
 {
     /**
+     * Crear un nuevo chat a partir del ID de solicitud recibido desde la ruta
+     */
+    public function create($receiver_id)
+    {
+        // Obtener la solicitud a partir del ID
+        $solicitud = Solicitud::findOrFail($receiver_id);
+        
+        // Delegar al método existente
+        return $this->createChat($solicitud);
+    }
+
+    /**
      * Crear un nuevo chat entre empresa y estudiante
      */
     public function createChat(Solicitud $solicitud)
