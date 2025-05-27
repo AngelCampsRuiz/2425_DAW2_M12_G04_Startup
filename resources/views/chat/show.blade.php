@@ -16,6 +16,9 @@ use Illuminate\Support\Facades\Auth;
 @endsection
 
 @push('scripts')
+    <!-- Pusher -->
+    <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
+    
     <!-- Definimos las variables globales que utilizará chat-detail.js -->
     <script>
     window.chatId = '{{ $chat->id }}';
@@ -27,10 +30,10 @@ use Illuminate\Support\Facades\Auth;
     window.routeGetMessages = '{{ route('chat.messages', ['chat' => $chat->id]) }}';
     window.routeSendMessage = '{{ route('chat.message', ['chat' => $chat->id]) }}';
     </script>
-    <!-- Pusher -->
-    <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
+    
     <!-- Chat JavaScript -->
     <script src="{{ asset('js/chat.js') }}"></script>
+    
     <!-- Chat Detail JavaScript -->
     <script src="{{ asset('js/chat-detail.js') }}"></script>
 @endpush

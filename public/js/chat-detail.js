@@ -440,19 +440,31 @@ function updateConnectionStatus(status) {
     }
 }
 
-document.addEventListener('DOMContentLoaded', function() {
+// Verificación global para comprobar si estamos en una página de chat válida
+// Esto evitará errores en páginas donde los elementos del chat no existen
+function isValidChatPage() {
+    return (
+        document && 
+        document.getElementById('chat-messages') && 
+        document.getElementById('message-form') && 
+        document.getElementById('message-input')
+    );
+}
+
+// Crear un script de inicialización independiente que se ejecuta solo si la página es de chat
+function initializeChatDetailPage() {
+    // Solo ejecutamos la inicialización si estamos en una página de chat válida
+    if (!isValidChatPage()) {
+        console.warn('Esta no es una página de chat válida o faltan elementos esenciales');
+        return;
+    }
+    
     // Obtener elementos del DOM con verificación de existencia
     chatMessages = document.getElementById('chat-messages');
     messageForm = document.getElementById('message-form');
     messageInput = document.getElementById('message-input');
     chatId = window.chatId;
     lastMessageId = window.lastMessageId || 0;
-    
-    // Verificar que los elementos necesarios existen
-    if (!chatMessages || !messageForm || !messageInput) {
-        console.warn('Elementos esenciales del chat no encontrados');
-        return;
-    }
     
     // Crear el indicador de mensajes no leídos
     unreadIndicator = document.createElement('div');
@@ -461,9 +473,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.body.appendChild(unreadIndicator);
     
     // Hacer scroll al último mensaje con animación
-    if (chatMessages) {
-        smoothScrollToBottom();
-    }
+    smoothScrollToBottom();
     
     // ----------------------
     // FUNCIONES DE MENSAJES
@@ -473,12 +483,38 @@ document.addEventListener('DOMContentLoaded', function() {
     setInterval(updateMessages, 5000);
     
     // Configuración de Pusher
+    configurePusher();
+    
+    // Inicializar textarea autoexpandible
+    initAutoExpandTextarea();
+    
+    // Observador para cuando se hace scroll
+    chatMessages.addEventListener('scroll', function() {
+        if (isAtBottom() && unreadIndicator) {
+            unreadIndicator.classList.remove('active');
+        }
+    });
+    
+    // Enviar mensaje con animaciones
+    setupMessageForm();
+    
+    // Ejecutar updateMessages inmediatamente para cargar mensajes al iniciar
+    updateMessages();
+}
+
+// Configuración de Pusher
+function configurePusher() {
     const pusherKey = document.querySelector('meta[name="pusher-key"]')?.content;
     const pusherCluster = document.querySelector('meta[name="pusher-cluster"]')?.content;
     
-    if (pusherKey && pusherCluster && chatId) {
-        console.log('Configurando Pusher para recibir mensajes en tiempo real');
-        
+    if (!(pusherKey && pusherCluster && chatId)) {
+        console.warn('No se pudo inicializar Pusher: faltan datos de configuración');
+        return;
+    }
+    
+    console.log('Configurando Pusher para recibir mensajes en tiempo real');
+    
+    try {
         // Inicializar Pusher
         const pusher = new Pusher(pusherKey, {
             cluster: pusherCluster,
@@ -572,256 +608,238 @@ document.addEventListener('DOMContentLoaded', function() {
                 pusher.connect();
             }, 5000);
         });
-    } else {
-        console.warn('No se pudo inicializar Pusher: faltan datos de configuración');
+    } catch (error) {
+        console.error('Error al inicializar Pusher:', error);
     }
+}
+
+// Configurar el formulario de mensajes
+function setupMessageForm() {
+    if (!messageForm) return;
     
-    // ----------------------
-    // RESTO DEL CÓDIGO
-    // ----------------------
-    
-    // Inicializar textarea autoexpandible
-    function initAutoExpandTextarea() {
+    messageForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
         if (!messageInput) return;
         
-        messageInput.addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = (this.scrollHeight) + 'px';
+        const content = messageInput.value.trim();
+        
+        if (!content) return;
+        
+        // Desactivar botones durante el envío
+        const submitButton = this.querySelector('button[type="submit"]');
+        if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
+        }
+        
+        // Verificar si tenemos la URL y el token CSRF
+        if (!window.routeSendMessage || !window.csrfToken) {
+            console.error('Error: No se encontró la URL para enviar mensajes o el token CSRF');
+            showErrorNotification('Error: Configuración incompleta para enviar mensajes');
             
-            // Mostrar contador de caracteres cuando se escribe
-            const currentLength = this.value.length;
-            const maxLength = 500;
-            const lengthIndicator = document.querySelector('.message-length');
+            if (submitButton) {
+                submitButton.disabled = false;
+                submitButton.innerHTML = '<i class="fas fa-paper-plane"></i>';
+            }
+            return;
+        }
+        
+        // Crear FormData para enviar el contenido
+        const formData = new FormData();
+        formData.append('contenido', content);
+        
+        console.log('Enviando mensaje a:', window.routeSendMessage);
+        
+        // Enviar mensaje al servidor
+        fetch(window.routeSendMessage, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': window.csrfToken,
+                'Accept': 'application/json'
+            },
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) {
+                console.error('Error en la respuesta del servidor:', response.status, response.statusText);
+                throw new Error('El servidor respondió con un error: ' + response.status);
+            }
+            // Verificar que la respuesta es JSON antes de procesarla
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                throw new Error('La respuesta no es JSON válido. Es posible que la sesión haya expirado.');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Respuesta del servidor:', data);
             
-            if (lengthIndicator) {
-                if (currentLength > 0) {
-                    lengthIndicator.classList.remove('hidden');
-                    const currentLengthElement = document.getElementById('current-length');
-                    if (currentLengthElement) {
-                        currentLengthElement.textContent = currentLength;
-                    }
+            if (!data.error) {
+                // Limpiar inputs
+                if (messageInput) {
+                    messageInput.value = '';
+                    messageInput.style.height = 'auto';
+                }
+                
+                // Añadir mensaje a la vista con animación inmediatamente
+                if (chatMessages && data.mensaje) {
+                    chatMessages.insertAdjacentHTML('beforeend', createMessageHtml(data.mensaje));
+                    lastMessageId = data.mensaje.id;
                     
-                    if (currentLength > maxLength * 0.8) {
-                        lengthIndicator.classList.add('text-orange-500');
-                    } else {
-                        lengthIndicator.classList.remove('text-orange-500', 'text-red-500');
-                    }
+                    // Desplazamiento suave al último mensaje
+                    smoothScrollToBottom();
                     
-                    if (currentLength > maxLength * 0.95) {
-                        lengthIndicator.classList.add('text-red-500');
-                    }
+                    // Mostrar pequeña animación de "enviado"
+                    showSentAnimation();
                 } else {
+                    console.error('Error: No se pudo añadir el mensaje a la vista', data);
+                }
+                
+                // Ocultar contador de caracteres
+                const lengthIndicator = document.querySelector('.message-length');
+                if (lengthIndicator) {
                     lengthIndicator.classList.add('hidden');
                 }
+            } else {
+                // Mostrar error si hay alguno
+                console.error('Error devuelto por el servidor:', data.error);
+                showErrorNotification(data.error);
             }
             
-            // Emitir evento de "está escribiendo"
-            if (!isTyping) {
-                isTyping = true;
-            }
-            
-            // Reiniciar timeout de escritura
-            clearTimeout(typingTimeout);
-            typingTimeout = setTimeout(() => {
-                isTyping = false;
-            }, 2000);
-        });
-        
-        // Escuchar Enter para enviar (Shift+Enter para nueva línea)
-        messageInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey && messageForm) {
-                e.preventDefault();
-                messageForm.dispatchEvent(new Event('submit'));
-            }
-        });
-    }
-    
-    // Inicializar el textarea autoexpandible
-    initAutoExpandTextarea();
-    
-    // Observador para cuando se hace scroll
-    if (chatMessages) {
-        chatMessages.addEventListener('scroll', function() {
-            if (isAtBottom() && unreadIndicator) {
-                unreadIndicator.classList.remove('active');
-            }
-        });
-    }
-    
-    // Solicitar permiso para notificaciones
-    if ('Notification' in window && Notification.permission !== 'granted' && Notification.permission !== 'denied') {
-        // Solicitamos permiso cuando el usuario interactúa con la página
-        document.addEventListener('click', function requestNotificationPermission() {
-            Notification.requestPermission();
-            document.removeEventListener('click', requestNotificationPermission);
-        }, { once: true });
-    }
-    
-    // Enviar mensaje con animaciones
-    if (messageForm) {
-        messageForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            if (!messageInput) return;
-            
-            const content = messageInput.value.trim();
-            
-            if (!content) return;
-            
-            // Desactivar botones durante el envío
-            const submitButton = this.querySelector('button[type="submit"]');
+            // Reactivar botón
             if (submitButton) {
-                submitButton.disabled = true;
-                submitButton.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
+                submitButton.disabled = false;
+                submitButton.innerHTML = '<i class="fas fa-paper-plane"></i>';
+            }
+        })
+        .catch(error => {
+            console.error('Error al enviar mensaje:', error);
+            
+            // Si detectamos que la sesión ha expirado, mostrar mensaje y recargar
+            if (error.message && error.message.includes('sesión ha expirado')) {
+                if (window.Swal) {
+                    Swal.fire({
+                        title: 'Sesión expirada',
+                        text: 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.',
+                        icon: 'warning',
+                        confirmButtonText: 'Recargar',
+                        confirmButtonColor: '#5e0490'
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    // Alternativa sin SweetAlert
+                    if (confirm('Tu sesión ha expirado. ¿Deseas recargar la página para iniciar sesión nuevamente?')) {
+                        window.location.reload();
+                    }
+                }
+            } else {
+                // Mostrar error genérico
+                showErrorNotification('Error al enviar el mensaje. Inténtalo de nuevo.');
             }
             
-            // Verificar si tenemos la URL y el token CSRF
-            if (!window.routeSendMessage || !window.csrfToken) {
-                console.error('Error: No se encontró la URL para enviar mensajes o el token CSRF');
-                showErrorNotification('Error: Configuración incompleta para enviar mensajes');
-                
-                if (submitButton) {
-                    submitButton.disabled = false;
-                    submitButton.innerHTML = '<i class="fas fa-paper-plane"></i>';
-                }
-                return;
+            // Reactivar botón
+            if (submitButton) {
+                submitButton.disabled = false;
+                submitButton.innerHTML = '<i class="fas fa-paper-plane"></i>';
             }
-            
-            // Crear FormData para enviar el contenido
-            const formData = new FormData();
-            formData.append('contenido', content);
-            
-            console.log('Enviando mensaje a:', window.routeSendMessage);
-            
-            // Enviar mensaje al servidor
-            fetch(window.routeSendMessage, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': window.csrfToken,
-                    'Accept': 'application/json'
-                },
-                body: formData
-            })
-            .then(response => {
-                if (!response.ok) {
-                    console.error('Error en la respuesta del servidor:', response.status, response.statusText);
-                    throw new Error('El servidor respondió con un error: ' + response.status);
-                }
-                // Verificar que la respuesta es JSON antes de procesarla
-                const contentType = response.headers.get('content-type');
-                if (!contentType || !contentType.includes('application/json')) {
-                    throw new Error('La respuesta no es JSON válido. Es posible que la sesión haya expirado.');
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log('Respuesta del servidor:', data);
-                
-                if (!data.error) {
-                    // Limpiar inputs
-                    if (messageInput) {
-                        messageInput.value = '';
-                        messageInput.style.height = 'auto';
-                    }
-                    
-                    // Añadir mensaje a la vista con animación inmediatamente
-                    if (chatMessages && data.mensaje) {
-                        chatMessages.insertAdjacentHTML('beforeend', createMessageHtml(data.mensaje));
-                        lastMessageId = data.mensaje.id;
-                        
-                        // Desplazamiento suave al último mensaje
-                        smoothScrollToBottom();
-                        
-                        // Mostrar pequeña animación de "enviado"
-                        showSentAnimation();
-                    } else {
-                        console.error('Error: No se pudo añadir el mensaje a la vista', data);
-                    }
-                    
-                    // Ocultar contador de caracteres
-                    const lengthIndicator = document.querySelector('.message-length');
-                    if (lengthIndicator) {
-                        lengthIndicator.classList.add('hidden');
-                    }
-                } else {
-                    // Mostrar error si hay alguno
-                    console.error('Error devuelto por el servidor:', data.error);
-                    showErrorNotification(data.error);
-                }
-                
-                // Reactivar botón
-                if (submitButton) {
-                    submitButton.disabled = false;
-                    submitButton.innerHTML = '<i class="fas fa-paper-plane"></i>';
-                }
-            })
-            .catch(error => {
-                console.error('Error al enviar mensaje:', error);
-                
-                // Si detectamos que la sesión ha expirado, mostrar mensaje y recargar
-                if (error.message && error.message.includes('sesión ha expirado')) {
-                    if (window.Swal) {
-                        Swal.fire({
-                            title: 'Sesión expirada',
-                            text: 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.',
-                            icon: 'warning',
-                            confirmButtonText: 'Recargar',
-                            confirmButtonColor: '#5e0490'
-                        }).then(() => {
-                            window.location.reload();
-                        });
-                    } else {
-                        // Alternativa sin SweetAlert
-                        if (confirm('Tu sesión ha expirado. ¿Deseas recargar la página para iniciar sesión nuevamente?')) {
-                            window.location.reload();
-                        }
-                    }
-                } else {
-                    // Mostrar error genérico
-                    showErrorNotification('Error al enviar el mensaje. Inténtalo de nuevo.');
-                }
-                
-                // Reactivar botón
-                if (submitButton) {
-                    submitButton.disabled = false;
-                    submitButton.innerHTML = '<i class="fas fa-paper-plane"></i>';
-                }
-            });
         });
-    } else {
-        console.error('No se encontró el formulario de mensajes');
-    }
+    });
+}
+
+// Animación de mensaje enviado
+function showSentAnimation() {
+    const sentIndicator = document.createElement('div');
+    sentIndicator.className = 'fixed bottom-8 right-8 bg-green-500 text-white px-4 py-2 rounded-xl shadow-lg z-50 animate-fadeIn';
+    sentIndicator.innerHTML = '<i class="fas fa-check-circle mr-2"></i> Mensaje enviado';
+    document.body.appendChild(sentIndicator);
     
-    // Animación de mensaje enviado
-    function showSentAnimation() {
-        const sentIndicator = document.createElement('div');
-        sentIndicator.className = 'fixed bottom-8 right-8 bg-green-500 text-white px-4 py-2 rounded-xl shadow-lg z-50 animate-fadeIn';
-        sentIndicator.innerHTML = '<i class="fas fa-check-circle mr-2"></i> Mensaje enviado';
-        document.body.appendChild(sentIndicator);
-        
+    setTimeout(() => {
+        sentIndicator.classList.add('animate-fadeOut');
         setTimeout(() => {
-            sentIndicator.classList.add('animate-fadeOut');
-            setTimeout(() => {
-                document.body.removeChild(sentIndicator);
-            }, 500);
+            document.body.removeChild(sentIndicator);
+        }, 500);
+    }, 2000);
+}
+
+// Mostrar notificación de error
+function showErrorNotification(message) {
+    const errorIndicator = document.createElement('div');
+    errorIndicator.className = 'fixed bottom-8 right-8 bg-red-500 text-white px-4 py-2 rounded-xl shadow-lg z-50 animate-fadeIn';
+    errorIndicator.innerHTML = `<i class="fas fa-exclamation-circle mr-2"></i> ${message}`;
+    document.body.appendChild(errorIndicator);
+    
+    setTimeout(() => {
+        errorIndicator.classList.add('animate-fadeOut');
+        setTimeout(() => {
+            document.body.removeChild(errorIndicator);
+        }, 500);
+    }, 3000);
+}
+
+// Inicializar textarea autoexpandible
+function initAutoExpandTextarea() {
+    if (!messageInput) return;
+    
+    messageInput.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+        
+        // Mostrar contador de caracteres cuando se escribe
+        const currentLength = this.value.length;
+        const maxLength = 500;
+        const lengthIndicator = document.querySelector('.message-length');
+        
+        if (lengthIndicator) {
+            if (currentLength > 0) {
+                lengthIndicator.classList.remove('hidden');
+                const currentLengthElement = document.getElementById('current-length');
+                if (currentLengthElement) {
+                    currentLengthElement.textContent = currentLength;
+                }
+                
+                if (currentLength > maxLength * 0.8) {
+                    lengthIndicator.classList.add('text-orange-500');
+                } else {
+                    lengthIndicator.classList.remove('text-orange-500', 'text-red-500');
+                }
+                
+                if (currentLength > maxLength * 0.95) {
+                    lengthIndicator.classList.add('text-red-500');
+                }
+            } else {
+                lengthIndicator.classList.add('hidden');
+            }
+        }
+        
+        // Emitir evento de "está escribiendo"
+        if (!isTyping) {
+            isTyping = true;
+        }
+        
+        // Reiniciar timeout de escritura
+        clearTimeout(typingTimeout);
+        typingTimeout = setTimeout(() => {
+            isTyping = false;
         }, 2000);
-    }
+    });
     
-    // Mostrar notificación de error
-    function showErrorNotification(message) {
-        const errorIndicator = document.createElement('div');
-        errorIndicator.className = 'fixed bottom-8 right-8 bg-red-500 text-white px-4 py-2 rounded-xl shadow-lg z-50 animate-fadeIn';
-        errorIndicator.innerHTML = `<i class="fas fa-exclamation-circle mr-2"></i> ${message}`;
-        document.body.appendChild(errorIndicator);
-        
-        setTimeout(() => {
-            errorIndicator.classList.add('animate-fadeOut');
-            setTimeout(() => {
-                document.body.removeChild(errorIndicator);
-            }, 500);
-        }, 3000);
+    // Escuchar Enter para enviar (Shift+Enter para nueva línea)
+    messageInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey && messageForm) {
+            e.preventDefault();
+            messageForm.dispatchEvent(new Event('submit'));
+        }
+    });
+}
+
+// Inicializar cuando el DOM esté cargado
+document.addEventListener('DOMContentLoaded', function() {
+    // Verificar si estamos en una página de chat antes de inicializar
+    if (isValidChatPage()) {
+        initializeChatDetailPage();
+    } else {
+        console.log('Página de chat no válida, no se inicializará el chat detallado');
     }
-    
-    // Ejecutar updateMessages inmediatamente para cargar mensajes al iniciar
-    updateMessages();
 }); 
