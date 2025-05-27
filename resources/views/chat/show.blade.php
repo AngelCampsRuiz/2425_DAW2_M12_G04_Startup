@@ -314,6 +314,7 @@ use Illuminate\Support\Facades\Auth;
                 <button
                     type="button"
                     id="send-message-btn"
+                    onclick="enviarMensaje(); return false;"
                     class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-purple-500 to-indigo-600 px-4 py-3 text-white hover:from-purple-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed h-[42px]"
                 >
                     <i class="fas fa-paper-plane"></i>
@@ -968,5 +969,121 @@ use Illuminate\Support\Facades\Auth;
 
 <!-- Añadir soporte de Pusher para el chat en tiempo real -->
 <script src="https://js.pusher.com/7.2/pusher.min.js"></script>
+
+<!-- Función directa para enviar mensajes (independiente de los scripts) -->
+<script>
+function enviarMensaje() {
+    console.log('Función enviarMensaje llamada directamente');
+    
+    // Obtener elementos del formulario
+    const messageInput = document.getElementById('message-input');
+    const sendButton = document.getElementById('send-message-btn');
+    
+    // Verificar elementos
+    if (!messageInput || !sendButton) {
+        console.error('No se encontraron los elementos necesarios del formulario');
+        alert('Error: No se pueden encontrar los elementos del formulario');
+        return false;
+    }
+    
+    // Obtener contenido
+    const content = messageInput.value.trim();
+    if (!content) {
+        console.log('No hay contenido para enviar');
+        return false;
+    }
+    
+    // Verificar que tenemos los datos necesarios
+    if (!window.csrfToken || !window.routeSendMessage) {
+        console.error('Error: No se encontró el token CSRF o la URL para enviar mensajes');
+        alert('Error: Faltan datos de configuración para enviar mensajes');
+        return false;
+    }
+    
+    // Deshabilitar botón mientras se envía
+    sendButton.disabled = true;
+    sendButton.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
+    
+    // Preparar datos
+    const formData = new FormData();
+    formData.append('contenido', content);
+    
+    // Enviar mensaje usando fetch
+    fetch(window.routeSendMessage, {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': window.csrfToken,
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: formData
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Error del servidor: ' + response.status);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Mensaje enviado correctamente:', data);
+        
+        // Limpiar el input
+        messageInput.value = '';
+        messageInput.style.height = 'auto';
+        
+        // Mostrar mensaje de éxito
+        const successMsg = document.createElement('div');
+        successMsg.className = 'fixed bottom-8 right-8 bg-green-500 text-white px-4 py-2 rounded-xl shadow-lg z-50';
+        successMsg.innerHTML = '<i class="fas fa-check-circle mr-2"></i> Mensaje enviado';
+        document.body.appendChild(successMsg);
+        
+        // Eliminar mensaje después de 2 segundos
+        setTimeout(() => {
+            document.body.removeChild(successMsg);
+        }, 2000);
+        
+        // Recargar los mensajes automáticamente
+        // Si no podemos acceder a la función updateMessages, recargamos la página
+        try {
+            if (typeof updateMessages === 'function') {
+                updateMessages();
+            }
+        } catch (e) {
+            console.log('No se pudo acceder a la función updateMessages');
+        }
+        
+        // Si podemos acceder a chatMessages, desplazamos al final
+        const chatMessages = document.getElementById('chat-messages');
+        if (chatMessages) {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+    })
+    .catch(error => {
+        console.error('Error al enviar mensaje:', error);
+        alert('Error al enviar el mensaje: ' + error.message);
+    })
+    .finally(() => {
+        // Reactivar botón
+        sendButton.disabled = false;
+        sendButton.innerHTML = '<i class="fas fa-paper-plane"></i>';
+    });
+    
+    return false;
+}
+
+// También manejar la tecla Enter en el campo de texto
+document.addEventListener('DOMContentLoaded', function() {
+    const messageInput = document.getElementById('message-input');
+    if (messageInput) {
+        messageInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                enviarMensaje();
+            }
+        });
+        console.log('Event listener para Enter configurado');
+    }
+});
+</script>
 
 @endsection
