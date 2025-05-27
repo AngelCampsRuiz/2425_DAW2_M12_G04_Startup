@@ -565,18 +565,24 @@ use Illuminate\Support\Facades\Auth;
                 }
             }
             
-            // Crear las pistas de audio y video a partir del stream local
-            const audioTrack = AgoraRTC.createMicrophoneAudioTrack({ microphoneId: localStream.getAudioTracks()[0].id });
-            const videoTrack = AgoraRTC.createCameraVideoTrack({ cameraId: localStream.getVideoTracks()[0].id });
-            
-            // Publicar las pistas individualmente en lugar de publicar el stream completo
-            await agoraClient.publish([audioTrack, videoTrack]);
-            console.log('Publicación exitosa en el canal de Agora');
-            
-            // Inicializar controles de videollamada con el stream local
-            initializeControls(localStream);
-            
-            return true;
+            // Enfoque alternativo: crear pistas de audio y video directamente
+            try {
+                // Primero crear pistas de audio y video directamente, sin usar los ID de dispositivos
+                const audioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+                const videoTrack = await AgoraRTC.createCameraVideoTrack();
+                
+                // Publicar las pistas
+                await agoraClient.publish([audioTrack, videoTrack]);
+                console.log('Publicación exitosa en el canal de Agora');
+                
+                // Configurar controles para las pistas
+                setupAudioVideoControls(audioTrack, videoTrack);
+                
+                return true;
+            } catch (mediaError) {
+                console.error('Error al crear o publicar pistas de medios:', mediaError);
+                throw mediaError;
+            }
         } catch (error) {
             console.error('Error al inicializar Agora:', error);
             
@@ -600,6 +606,87 @@ use Illuminate\Support\Facades\Auth;
             });
             
             return false;
+        }
+    }
+
+    // Función para configurar los controles de audio y video
+    function setupAudioVideoControls(audioTrack, videoTrack) {
+        // Configurar botón de micrófono
+        const toggleAudioBtn = document.getElementById('toggle-audio');
+        if (toggleAudioBtn) {
+            toggleAudioBtn.addEventListener('click', function() {
+                if (audioTrack) {
+                    audioTrack.setEnabled(!audioTrack.enabled);
+                    this.innerHTML = audioTrack.enabled ? 
+                        '<i class="fas fa-microphone"></i>' : 
+                        '<i class="fas fa-microphone-slash"></i>';
+                    
+                    // Cambiar estilo del botón
+                    if (audioTrack.enabled) {
+                        this.classList.remove('bg-red-500', 'hover:bg-red-600');
+                        this.classList.add('bg-white', 'bg-opacity-20', 'hover:bg-opacity-30');
+                    } else {
+                        this.classList.remove('bg-white', 'bg-opacity-20', 'hover:bg-opacity-30');
+                        this.classList.add('bg-red-500', 'hover:bg-red-600');
+                    }
+                }
+            });
+        }
+        
+        // Configurar botón de video
+        const toggleVideoBtn = document.getElementById('toggle-video');
+        if (toggleVideoBtn) {
+            toggleVideoBtn.addEventListener('click', function() {
+                if (videoTrack) {
+                    videoTrack.setEnabled(!videoTrack.enabled);
+                    this.innerHTML = videoTrack.enabled ? 
+                        '<i class="fas fa-video"></i>' : 
+                        '<i class="fas fa-video-slash"></i>';
+                    
+                    // Cambiar estilo del botón
+                    if (videoTrack.enabled) {
+                        this.classList.remove('bg-red-500', 'hover:bg-red-600');
+                        this.classList.add('bg-white', 'bg-opacity-20', 'hover:bg-opacity-30');
+                    } else {
+                        this.classList.remove('bg-white', 'bg-opacity-20', 'hover:bg-opacity-30');
+                        this.classList.add('bg-red-500', 'hover:bg-red-600');
+                    }
+                    
+                    // Actualizar estado local
+                    const localVideoStatus = document.getElementById('local-video-status');
+                    if (localVideoStatus) {
+                        localVideoStatus.className = videoTrack.enabled ?
+                            'bg-green-500 text-white text-xs px-2 py-1 rounded-full flex items-center' :
+                            'bg-red-500 text-white text-xs px-2 py-1 rounded-full flex items-center';
+                        localVideoStatus.innerHTML = videoTrack.enabled ?
+                            '<i class="fas fa-circle text-[5px] mr-1"></i> Activo' :
+                            '<i class="fas fa-circle text-[5px] mr-1"></i> Inactivo';
+                    }
+                }
+            });
+        }
+        
+        // Configurar botón de compartir pantalla
+        const shareScreenBtn = document.getElementById('share-screen');
+        if (shareScreenBtn) {
+            shareScreenBtn.addEventListener('click', toggleScreenSharing);
+        }
+        
+        // Configurar botón de finalizar llamada
+        const endCallBtn = document.getElementById('end-call');
+        if (endCallBtn) {
+            endCallBtn.addEventListener('click', endCall);
+        }
+        
+        // Configurar botón de cerrar/minimizar video
+        const closeVideoBtn = document.getElementById('close-video-container');
+        if (closeVideoBtn) {
+            closeVideoBtn.addEventListener('click', function() {
+                const videoContainer = document.getElementById('video-container');
+                if (videoContainer) {
+                    videoContainer.style.display = 'none';
+                }
+            });
         }
     }
 
@@ -796,150 +883,6 @@ use Illuminate\Support\Facades\Auth;
                 confirmButtonColor: '#5e0490'
             });
         }
-    }
-
-    // Inicializar controles
-    function initializeControls(stream) {
-        if (!stream) {
-            console.error('No se proporcionó un stream para inicializar los controles');
-            return;
-        }
-        
-        // Mute/unmute audio
-        const toggleAudioBtn = document.getElementById('toggle-audio');
-        if (toggleAudioBtn) {
-            toggleAudioBtn.addEventListener('click', function() {
-                const audioTracks = stream.getAudioTracks();
-                if (audioTracks.length > 0) {
-                    audioTracks[0].enabled = !audioTracks[0].enabled;
-                    this.innerHTML = audioTracks[0].enabled ?
-                        '<i class="fas fa-microphone"></i>' :
-                        '<i class="fas fa-microphone-slash"></i>';
-                    
-                    // Cambiar estilo del botón
-                    if (audioTracks[0].enabled) {
-                        this.classList.remove('bg-red-500', 'hover:bg-red-600');
-                        this.classList.add('bg-white', 'bg-opacity-20', 'hover:bg-opacity-30');
-                    } else {
-                        this.classList.remove('bg-white', 'bg-opacity-20', 'hover:bg-opacity-30');
-                        this.classList.add('bg-red-500', 'hover:bg-red-600');
-                    }
-                }
-            });
-        }
-        
-        // Toggle video
-        const toggleVideoBtn = document.getElementById('toggle-video');
-        if (toggleVideoBtn) {
-            toggleVideoBtn.addEventListener('click', function() {
-                const videoTracks = stream.getVideoTracks();
-                if (videoTracks.length > 0) {
-                    videoTracks[0].enabled = !videoTracks[0].enabled;
-                    this.innerHTML = videoTracks[0].enabled ?
-                        '<i class="fas fa-video"></i>' :
-                        '<i class="fas fa-video-slash"></i>';
-                    
-                    // Cambiar estilo del botón
-                    if (videoTracks[0].enabled) {
-                        this.classList.remove('bg-red-500', 'hover:bg-red-600');
-                        this.classList.add('bg-white', 'bg-opacity-20', 'hover:bg-opacity-30');
-                    } else {
-                        this.classList.remove('bg-white', 'bg-opacity-20', 'hover:bg-opacity-30');
-                        this.classList.add('bg-red-500', 'hover:bg-red-600');
-                    }
-                    
-                    // Actualizar estado local
-                    const localVideoStatus = document.getElementById('local-video-status');
-                    if (localVideoStatus) {
-                        localVideoStatus.className = videoTracks[0].enabled ?
-                            'bg-green-500 text-white text-xs px-2 py-1 rounded-full flex items-center' :
-                            'bg-red-500 text-white text-xs px-2 py-1 rounded-full flex items-center';
-                        localVideoStatus.innerHTML = videoTracks[0].enabled ?
-                            '<i class="fas fa-circle text-[5px] mr-1"></i> Activo' :
-                            '<i class="fas fa-circle text-[5px] mr-1"></i> Inactivo';
-                    }
-                }
-            });
-        }
-        
-        // Terminar llamada
-        const endCallBtn = document.getElementById('end-call');
-        if (endCallBtn) {
-            endCallBtn.addEventListener('click', endCall);
-        }
-        
-        // Cerrar/minimizar video
-        const closeVideoBtn = document.getElementById('close-video-container');
-        if (closeVideoBtn) {
-            closeVideoBtn.addEventListener('click', function() {
-                const videoContainer = document.getElementById('video-container');
-                if (videoContainer) {
-                    videoContainer.style.display = 'none';
-                }
-            });
-        }
-    }
-
-    // Función para enumerar dispositivos
-    async function enumerateDevices() {
-        try {
-            const devices = await navigator.mediaDevices.enumerateDevices();
-            
-            // Agrupar por tipo
-            const audioInputs = devices.filter(device => device.kind === 'audioinput');
-            const audioOutputs = devices.filter(device => device.kind === 'audiooutput');
-            const videoInputs = devices.filter(device => device.kind === 'videoinput');
-            
-            // Actualizar selectores si existen
-            updateDeviceSelectors(audioInputs, audioOutputs, videoInputs);
-            
-            return { audioInputs, audioOutputs, videoInputs };
-        } catch (error) {
-            console.error('Error al enumerar dispositivos:', error);
-            return { audioInputs: [], audioOutputs: [], videoInputs: [] };
-        }
-    }
-
-    // Actualizar selectores de dispositivos
-    function updateDeviceSelectors(audioInputs = [], audioOutputs = [], videoInputs = []) {
-        const micSelect = document.getElementById('microphone-select');
-        const speakerSelect = document.getElementById('speaker-select');
-        const cameraSelect = document.getElementById('camera-select');
-
-        // Verificar que todos los selectores existen
-        if (!micSelect || !speakerSelect || !cameraSelect) {
-            console.warn('Algunos selectores de dispositivos no se encontraron en el DOM');
-            return; // Salir si alguno no existe
-        }
-
-        // Limpiar selectores
-        micSelect.innerHTML = '';
-        speakerSelect.innerHTML = '';
-        cameraSelect.innerHTML = '';
-
-        // Rellenar micrófonos
-        audioInputs.forEach(device => {
-            const option = document.createElement('option');
-            option.value = device.deviceId;
-            option.text = device.label || `Micrófono ${micSelect.options.length + 1}`;
-            micSelect.appendChild(option);
-        });
-
-        // Rellenar altavoces
-        audioOutputs.forEach(device => {
-            const option = document.createElement('option');
-            option.value = device.deviceId;
-            option.text = device.label || `Altavoz ${speakerSelect.options.length + 1}`;
-            speakerSelect.appendChild(option);
-        });
-
-        // Rellenar cámaras
-        videoInputs.forEach(device => {
-            const option = document.createElement('option');
-            option.value = device.deviceId;
-            option.text = device.label || `Cámara ${cameraSelect.options.length + 1}`;
-            cameraSelect.appendChild(option);
-        });
     }
 
     // Finalizar llamada
