@@ -978,9 +978,10 @@ function enviarMensaje() {
     // Obtener elementos del formulario
     const messageInput = document.getElementById('message-input');
     const sendButton = document.getElementById('send-message-btn');
+    const chatMessages = document.getElementById('chat-messages');
     
     // Verificar elementos
-    if (!messageInput || !sendButton) {
+    if (!messageInput || !sendButton || !chatMessages) {
         console.error('No se encontraron los elementos necesarios del formulario');
         alert('Error: No se pueden encontrar los elementos del formulario');
         return false;
@@ -1031,6 +1032,52 @@ function enviarMensaje() {
         messageInput.value = '';
         messageInput.style.height = 'auto';
         
+        // Añadir el mensaje al chat inmediatamente si tenemos datos
+        if (data.mensaje) {
+            // Crear HTML para el nuevo mensaje
+            const isCurrentUser = data.mensaje.user_id === window.authId;
+            const messageDate = new Date(data.mensaje.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            
+            let messageHtml = `
+                <div class="flex items-start message ${isCurrentUser ? 'justify-end' : ''} mb-4" data-message-id="${data.mensaje.id}">
+                    ${!isCurrentUser ? `
+                        <div class="flex-shrink-0 mr-3">
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center overflow-hidden shadow-md">
+                                ${data.mensaje.user.imagen ? `
+                                    <img src="/profile_images/${data.mensaje.user.imagen}" alt="Foto de perfil" class="w-full h-full object-cover">
+                                ` : `
+                                    <span class="text-base font-bold text-gray-700">
+                                        ${data.mensaje.user.nombre.substring(0, 2).toUpperCase()}
+                                    </span>
+                                `}
+                            </div>
+                        </div>
+                    ` : ''}
+                    <div class="flex-1 ${isCurrentUser ? 'text-right' : ''}">
+                        <div class="${isCurrentUser 
+                            ? 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white' 
+                            : 'bg-white'} rounded-2xl p-4 shadow-md inline-block max-w-[85%] relative message-bubble">
+                            <p class="text-sm ${isCurrentUser ? 'text-white' : 'text-gray-800'} message-content">
+                                ${data.mensaje.contenido}
+                            </p>
+                            
+                            <div class="text-xs ${isCurrentUser ? 'text-white/80' : 'text-gray-500'} mt-1 flex items-center justify-between">
+                                <span>${messageDate}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            chatMessages.insertAdjacentHTML('beforeend', messageHtml);
+            
+            // Hacer scroll al final
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // Actualizar último ID de mensaje
+            window.lastMessageId = data.mensaje.id;
+        }
+        
         // Mostrar mensaje de éxito
         const successMsg = document.createElement('div');
         successMsg.className = 'fixed bottom-8 right-8 bg-green-500 text-white px-4 py-2 rounded-xl shadow-lg z-50';
@@ -1042,21 +1089,8 @@ function enviarMensaje() {
             document.body.removeChild(successMsg);
         }, 2000);
         
-        // Recargar los mensajes automáticamente
-        // Si no podemos acceder a la función updateMessages, recargamos la página
-        try {
-            if (typeof updateMessages === 'function') {
-                updateMessages();
-            }
-        } catch (e) {
-            console.log('No se pudo acceder a la función updateMessages');
-        }
-        
-        // Si podemos acceder a chatMessages, desplazamos al final
-        const chatMessages = document.getElementById('chat-messages');
-        if (chatMessages) {
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
+        // Forzar actualización de mensajes (por si hay nuevos)
+        actualizarMensajes();
     })
     .catch(error => {
         console.error('Error al enviar mensaje:', error);
@@ -1071,8 +1105,150 @@ function enviarMensaje() {
     return false;
 }
 
+// Función para actualizar mensajes independiente
+function actualizarMensajes() {
+    console.log('Actualizando mensajes manualmente...');
+    
+    // Verificar elementos necesarios
+    const chatMessages = document.getElementById('chat-messages');
+    if (!chatMessages) {
+        console.error('No se encontró el contenedor de mensajes');
+        return;
+    }
+    
+    if (!window.routeGetMessages || !window.lastMessageId) {
+        console.error('Faltan datos para actualizar mensajes');
+        return;
+    }
+    
+    // Obtener mensajes más recientes
+    fetch(`${window.routeGetMessages}?after=${window.lastMessageId}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error al obtener mensajes: ' + response.status);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (!data.messages || !data.messages.length) {
+                console.log('No hay mensajes nuevos');
+                return;
+            }
+            
+            console.log(`Recibidos ${data.messages.length} mensajes nuevos`);
+            
+            // Ordenar mensajes por fecha
+            const mensajes = data.messages.sort((a, b) => {
+                return new Date(a.created_at) - new Date(b.created_at);
+            });
+            
+            // Añadir mensajes al chat
+            mensajes.forEach(mensaje => {
+                // Verificar si el mensaje ya existe
+                if (document.querySelector(`.message[data-message-id="${mensaje.id}"]`)) {
+                    return;
+                }
+                
+                // Crear HTML para el mensaje
+                const isCurrentUser = mensaje.user_id === window.authId;
+                const messageDate = new Date(mensaje.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                
+                let messageHtml = `
+                    <div class="flex items-start message ${isCurrentUser ? 'justify-end' : ''} mb-4" data-message-id="${mensaje.id}">
+                        ${!isCurrentUser ? `
+                            <div class="flex-shrink-0 mr-3">
+                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center overflow-hidden shadow-md">
+                                    ${mensaje.user.imagen ? `
+                                        <img src="/profile_images/${mensaje.user.imagen}" alt="Foto de perfil" class="w-full h-full object-cover">
+                                    ` : `
+                                        <span class="text-base font-bold text-gray-700">
+                                            ${mensaje.user.nombre.substring(0, 2).toUpperCase()}
+                                        </span>
+                                    `}
+                                </div>
+                            </div>
+                        ` : ''}
+                        <div class="flex-1 ${isCurrentUser ? 'text-right' : ''}">
+                            <div class="${isCurrentUser 
+                                ? 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white' 
+                                : 'bg-white'} rounded-2xl p-4 shadow-md inline-block max-w-[85%] relative message-bubble">
+                                <p class="text-sm ${isCurrentUser ? 'text-white' : 'text-gray-800'} message-content">
+                                    ${mensaje.contenido}
+                                </p>
+                                
+                                <div class="text-xs ${isCurrentUser ? 'text-white/80' : 'text-gray-500'} mt-1 flex items-center justify-between">
+                                    <span>${messageDate}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                chatMessages.insertAdjacentHTML('beforeend', messageHtml);
+                
+                // Actualizar último ID de mensaje
+                if (mensaje.id > window.lastMessageId) {
+                    window.lastMessageId = mensaje.id;
+                }
+                
+                // Si no es mi mensaje, reproducir sonido
+                if (mensaje.user_id !== window.authId) {
+                    notificarNuevoMensaje(mensaje);
+                }
+            });
+            
+            // Hacer scroll al final si estamos cerca del final
+            const isNearBottom = (chatMessages.scrollHeight - chatMessages.scrollTop - chatMessages.clientHeight) < 200;
+            if (isNearBottom) {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        })
+        .catch(error => {
+            console.error('Error al actualizar mensajes:', error);
+        });
+}
+
+// Función para notificar nuevo mensaje
+function notificarNuevoMensaje(mensaje) {
+    // Intentar crear un sonido simple
+    try {
+        const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YWoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBhxQoN/nqGYeDQEHOo/Z+cuDSSsLAAwyi9f8xnZALRIMBTec1O+xBAwTHUG0zgjeVws5XanYhgHDDGL2ftlBjOGzOGiDxgrcb7cmxgMFl3a9r8RBgpF1vfTExcbLrfoxHIPDAU4u/DBTDEECzz/8rMqJRwlovnjazsGCjsOCB8GPdjq3F0oDQnR+vywIQ8LQCET/hIcUQYJ4nN3JgT7TA/E0gdhCC6eHyA4+NoVPk4cbyMl4LgzPR154ui4ZQuQcgZjUvbdHFZmAfWvEb2DDxsiFzCCE+aiHFYjafUM0stOQQzFca59CgQ5HQeAFLZRNR0scamBJR0+//tUEU2RGgYP7Yo0Nh3BOnUlVynrwej/U0SYVyIL9NF0x5oWZSzT5/7QeOUpTCFc+44So0sgvJ+dBFZh/l8DCj935abHyRWb+Wd0IrjT+d3USnThi/kUMlkePT1pgPTVaQe8XBZsP+LFEr1SkWXZ8S5W9cY3ZrBUFge8y7SOXUHr2w3CMVy045W3FR24w7d6MQrTWYVSAEw0IKWVTVELNSRuFZsjVwJXJ5bRLz05hYv9FBcYaePCTPYwVu+Wdh63zLJrH8+B1zCnfGPpxQAHvkwBXfwkNCwzPt9TopR9pn22gVKoALQviM11OE+QOFQBVYQgf45RcRp1GmjnMmA/UDUJBgnvJDrJjXIQIw3yHEzxPbLYYTBdcri7SP5XR3ASVD+c/jaob+BEs33X2MSg4Z9gh96SFE/uOYkIKrMwvW7GkE8qT9Cyr3v+ubBWvj7LpMjzVVR3awf1vHlsDy0yiWC/Q2xt/zeqQnXKQDdZ5MbnHGBYQVkmUQ9TdFBVPWWJYnvH++hkgPJK/oK9XOTBxgm7xMbfWMfTOkXIRQOL9CzBz5f+m/m3GrYXjTQ/XnvZz7rTGbRQymejzYD99JrvCybDa/n/SMDQz5kHbtMbtH5Y9NojCrUyVPULI8TdcrgKwubLwQT3wLOChP9TsN3YWR05Z0/CYi6muKm+FCf6EHSSf7zoy8W5uSvbLx5V8z81PKT8ZtzpY0OJFKxNlqLQZD56u16cB7NUl0q4HK+Z5Jmj3LjxVOkgUPbCfFMAN59dyrtPjF8NxPCgIbfZqCX5MStgjRPSAMbuKlJWPXEGF3eqyhAPci4OF6devfXfh1cifKA1gUvLDAV8GSpQmMV9MslRknN7K2WilsYeVGsqqpSqoBAXTGj0lyaZPuoXzpRRXZLG3A4eipShBteVvzJfhYGi0rTiTW1QB0xhanK8phFsB0uM0QlJiHUYRDsh5fpNvomMXjJL30ZO0JokeTBn/4LA7j3QRzqqjNkYsHcLQzt0qOlP8SB0GD49osoAAAAASUVORK5CYII=');
+        audio.play();
+    } catch (e) {
+        console.log('No se pudo reproducir sonido:', e);
+    }
+    
+    // Mostrar notificación visual
+    const notification = document.createElement('div');
+    notification.className = 'fixed bottom-24 right-8 bg-blue-500 text-white px-4 py-3 rounded-xl shadow-lg z-50 animate-fadeIn';
+    notification.innerHTML = `
+        <div class="flex items-center">
+            <div class="mr-3">
+                <i class="fas fa-envelope text-lg"></i>
+            </div>
+            <div>
+                <p class="font-medium">${mensaje.user.nombre}</p>
+                <p class="text-sm opacity-90">${mensaje.contenido.substring(0, 50)}${mensaje.contenido.length > 50 ? '...' : ''}</p>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(notification);
+    
+    // Eliminar notificación después de 4 segundos
+    setTimeout(() => {
+        notification.classList.add('opacity-0');
+        notification.style.transition = 'opacity 0.5s';
+        setTimeout(() => {
+            document.body.removeChild(notification);
+        }, 500);
+    }, 4000);
+}
+
 // También manejar la tecla Enter en el campo de texto
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM cargado, inicializando eventos de chat...');
+    
+    // Configurar el event listener para Enter
     const messageInput = document.getElementById('message-input');
     if (messageInput) {
         messageInput.addEventListener('keydown', function(e) {
@@ -1083,6 +1259,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         console.log('Event listener para Enter configurado');
     }
+    
+    // Iniciar actualización periódica de mensajes
+    setInterval(actualizarMensajes, 3000); // Actualizar cada 3 segundos
+    
+    // Primera actualización inmediata
+    setTimeout(actualizarMensajes, 1000);
 });
 </script>
 
