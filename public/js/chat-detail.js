@@ -119,12 +119,32 @@ function updateMessages() {
     
     fetch(url)
         .then(response => {
+            // Verificar si la respuesta redirige a login (sesión expirada)
+            if (response.redirected && response.url.includes('login')) {
+                console.error('Sesión expirada, redirigiendo a login');
+                window.location.href = response.url;
+                throw new Error('Sesión expirada');
+            }
+            
+            // Verificar el tipo de contenido
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                console.error('Respuesta no es JSON:', contentType);
+                throw new Error('Respuesta del servidor no es JSON');
+            }
+            
             if (!response.ok) {
                 throw new Error('Error al obtener mensajes: ' + response.status);
             }
+            
             return response.json();
         })
         .then(data => {
+            if (!data || typeof data !== 'object') {
+                console.error('Respuesta inválida:', data);
+                return;
+            }
+            
             if (!data.messages || !Array.isArray(data.messages)) {
                 console.error('Formato de respuesta incorrecto:', data);
                 return;
@@ -147,6 +167,12 @@ function updateMessages() {
             
             // Añadir cada mensaje nuevo al chat
             nuevos.forEach(mensaje => {
+                // Verificar si el mensaje tiene la estructura necesaria
+                if (!mensaje || !mensaje.id || !mensaje.user) {
+                    console.error('Mensaje con formato inválido:', mensaje);
+                    return;
+                }
+                
                 // Verificar si el mensaje ya existe
                 const existingMessage = document.querySelector(`.message[data-message-id="${mensaje.id}"]`);
                 if (existingMessage) {
@@ -160,6 +186,7 @@ function updateMessages() {
                 // Actualizamos el último ID
                 if (mensaje.id > lastMessageId) {
                     lastMessageId = mensaje.id;
+                    console.log('Último ID de mensaje actualizado a:', lastMessageId);
                 }
                 
                 // Si no es nuestro mensaje, lo marcamos como leído
@@ -185,6 +212,14 @@ function updateMessages() {
         })
         .catch(error => {
             console.error('Error al actualizar mensajes:', error);
+            
+            // Si el error es de sesión expirada, no mostramos nada adicional
+            if (error.message === 'Sesión expirada') {
+                return;
+            }
+            
+            // Consideramos relentizar las actualizaciones si hay errores consecutivos
+            console.log('Próxima actualización en 10 segundos...');
         });
 }
 
@@ -408,6 +443,30 @@ function updateConnectionStatus(status) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM cargado, inicializando chat...');
+    
+    // Función para verificar si estamos en una página de chat válida
+    function isValidChatPage() {
+        const hasChatMessages = document.getElementById('chat-messages') !== null;
+        const hasMessageForm = document.getElementById('message-form') !== null;
+        const hasMessageInput = document.getElementById('message-input') !== null;
+        
+        const isValid = hasChatMessages && hasMessageForm && hasMessageInput;
+        if (!isValid) {
+            console.warn('No estamos en una página de chat válida o faltan elementos esenciales');
+        } else {
+            console.log('Página de chat válida detectada, todos los elementos encontrados');
+        }
+        
+        return isValid;
+    }
+    
+    // Verificar si estamos en una página de chat válida antes de continuar
+    if (!isValidChatPage()) {
+        console.warn('No se inicializará el chat porque faltan elementos esenciales');
+        return;
+    }
+    
     // Obtener elementos del DOM con verificación de existencia
     chatMessages = document.getElementById('chat-messages');
     messageForm = document.getElementById('message-form');
@@ -547,56 +606,68 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Inicializar textarea autoexpandible
     function initAutoExpandTextarea() {
-        messageInput.addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = (this.scrollHeight) + 'px';
-            
-            // Mostrar contador de caracteres cuando se escribe
-            const currentLength = this.value.length;
-            const maxLength = 500;
-            const lengthIndicator = document.querySelector('.message-length');
-            
-            if (lengthIndicator) {
-                if (currentLength > 0) {
-                    lengthIndicator.classList.remove('hidden');
-                    const currentLengthElement = document.getElementById('current-length');
-                    if (currentLengthElement) {
-                        currentLengthElement.textContent = currentLength;
-                    }
-                
-                    if (currentLength > maxLength * 0.8) {
-                        lengthIndicator.classList.add('text-orange-500');
-                    } else {
-                        lengthIndicator.classList.remove('text-orange-500', 'text-red-500');
-                    }
-                
-                    if (currentLength > maxLength * 0.95) {
-                        lengthIndicator.classList.add('text-red-500');
-                    }
-                } else {
-                    lengthIndicator.classList.add('hidden');
-                }
-            }
-            
-            // Emitir evento de "está escribiendo"
-            if (!isTyping) {
-                isTyping = true;
-            }
-            
-            // Reiniciar timeout de escritura
-            clearTimeout(typingTimeout);
-            typingTimeout = setTimeout(() => {
-                isTyping = false;
-            }, 2000);
-        });
+        // Verificación crítica: asegurarse de que messageInput existe
+        if (!messageInput) {
+            console.warn('No se encontró el elemento message-input, no se puede inicializar el textarea autoexpandible');
+            return;
+        }
         
-        // Escuchar Enter para enviar (Shift+Enter para nueva línea)
-        messageInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                messageForm.dispatchEvent(new Event('submit'));
-            }
-        });
+        try {
+            messageInput.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+                
+                // Mostrar contador de caracteres cuando se escribe
+                const currentLength = this.value.length;
+                const maxLength = 500;
+                const lengthIndicator = document.querySelector('.message-length');
+                
+                if (lengthIndicator) {
+                    if (currentLength > 0) {
+                        lengthIndicator.classList.remove('hidden');
+                        const currentLengthElement = document.getElementById('current-length');
+                        if (currentLengthElement) {
+                            currentLengthElement.textContent = currentLength;
+                        }
+                    
+                        if (currentLength > maxLength * 0.8) {
+                            lengthIndicator.classList.add('text-orange-500');
+                        } else {
+                            lengthIndicator.classList.remove('text-orange-500', 'text-red-500');
+                        }
+                    
+                        if (currentLength > maxLength * 0.95) {
+                            lengthIndicator.classList.add('text-red-500');
+                        }
+                    } else {
+                        lengthIndicator.classList.add('hidden');
+                    }
+                }
+                
+                // Emitir evento de "está escribiendo"
+                if (!isTyping) {
+                    isTyping = true;
+                }
+                
+                // Reiniciar timeout de escritura
+                clearTimeout(typingTimeout);
+                typingTimeout = setTimeout(() => {
+                    isTyping = false;
+                }, 2000);
+            });
+            
+            // Escuchar Enter para enviar (Shift+Enter para nueva línea)
+            messageInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey && messageForm) {
+                    e.preventDefault();
+                    messageForm.dispatchEvent(new Event('submit'));
+                }
+            });
+            
+            console.log('Textarea autoexpandible inicializado correctamente');
+        } catch (error) {
+            console.error('Error al inicializar el textarea autoexpandible:', error);
+        }
     }
     
     // Inicializar el textarea autoexpandible
@@ -621,9 +692,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Enviar mensaje con animaciones
     if (messageForm) {
         messageForm.addEventListener('submit', function(e) {
-            e.preventDefault();
+            e.preventDefault(); // Detiene el comportamiento por defecto
             
-            const content = messageInput.value.trim();
+            // Verificación adicional para prevenir la recarga de la página
+            if (window.event) window.event.returnValue = false;
+            
+            const content = messageInput ? messageInput.value.trim() : '';
             
             if (!content) return;
             
