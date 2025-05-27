@@ -289,12 +289,12 @@
                                                 <p class="text-sm text-gray-600 mt-2">{{ $experiencia->descripcion }}</p>
                                             @endif
                                             @auth
-                                                @if(auth()->id() == $user->id)
+                                                {{-- @if(auth()->id() == $user->id)
                                                     <!-- Editar -->
                                                     <button class="text-sm text-yellow-600"><i class="fas fa-pencil-alt"></i>Editar</button>
                                                     <!-- Eliminar -->
                                                     <button class="text-sm text-red-600"><i class="fas fa-trash-alt"></i>Eliminar</button>
-                                                @endif
+                                                @endif --}}
                                             @endauth
                                         </div>
                                     @endforeach
