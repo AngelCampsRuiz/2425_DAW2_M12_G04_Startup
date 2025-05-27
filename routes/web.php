@@ -532,7 +532,7 @@ Route::get('/test/table-structure', [App\Http\Controllers\TestController::class,
     // Rutas de chat - Accesibles para todos los usuarios
     Route::middleware(['auth'])->prefix('chat')->name('chat.')->group(function () {
         Route::get('/', [App\Http\Controllers\ChatController::class, 'index'])->name('index');
-        Route::get('/create/{receiver_id}', [App\Http\Controllers\ChatController::class, 'create'])->name('create');
+        Route::post('/create/{receiver_id}', [App\Http\Controllers\ChatController::class, 'create'])->name('create');
         Route::post('/send', [App\Http\Controllers\ChatController::class, 'send'])->name('send');
     });
 
