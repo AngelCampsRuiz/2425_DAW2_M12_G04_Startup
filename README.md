@@ -1,5 +1,4 @@
 <div align="center">
-  <img src="public/assets/logo.svg" width="400" alt="NextGen Logo">
   <img src="public/readme/logonormal.png" width="400" alt="NextGen Logo">
   <h1>🌟 NextGen 🌟</h1>
   <h3>🚀 Plataforma de Conexión Educativa y Profesional 🚀</h3>
