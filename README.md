@@ -357,7 +357,6 @@ nextgen/
 ## 🔄 Flujo de Trabajo
 
 <div align="center">
-  <img src="public/readme/pert.png" width="90%" alt="Flujo de Trabajo">
   <img src="public/readme/Pert.png" width="90%" alt="Flujo de Trabajo">
 </div>
 
