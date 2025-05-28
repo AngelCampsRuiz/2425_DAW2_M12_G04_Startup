@@ -1,161 +1,562 @@
-# Servidor de Señalización para WebRTC
+<div align="center">
+  <img src="public/assets/logo.svg" width="400" alt="NextGen Logo">
+  <img src="public/readme/logonormal.png" width="400" alt="NextGen Logo">
+  <h1>🌟 NextGen 🌟</h1>
+  <h3>🚀 Plataforma de Conexión Educativa y Profesional 🚀</h3>
 
-Este servidor actúa como intermediario para establecer conexiones WebRTC entre clientes, permitiendo videollamadas peer-to-peer.
+  [![Version](https://img.shields.io/badge/version-1.0.0-blue?style=for-the-badge)](https://github.com/tu-usuario/nextgen)
+  [![License](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](LICENSE)
+  [![PHP](https://img.shields.io/badge/PHP-8.2-777BB4?style=for-the-badge&logo=php&logoColor=white)](https://php.net)
+  [![Laravel](https://img.shields.io/badge/Laravel-12-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com)
+  [![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://mysql.com)
+  [![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
 
-## Características
+  <p>
+    <b>📊 Conectando el talento académico con oportunidades profesionales 📈</b>
+  </p>
+</div>
 
-- Registro de usuarios
-- Gestión de solicitudes de llamada (iniciar, aceptar, rechazar, finalizar)
-- Control de estados de llamada
-- Notificaciones en tiempo real
+---
 
-## Requisitos
+## 📋 Tabla de Contenidos
 
-- Node.js (v14 o superior)
-- npm (v6 o superior)
+- [✨ Visión General](#-visión-general)
+- [🎯 Características Principales](#-características-principales)
+- [🛠️ Tecnologías Utilizadas](#️-tecnologías-utilizadas)
+- [📦 Requisitos del Sistema](#-requisitos-del-sistema)
+- [⚙️ Instalación y Configuración](#️-instalación-y-configuración)
+- [👥 Roles de Usuario](#-roles-de-usuario)
+- [🗂️ Estructura del Proyecto](#️-estructura-del-proyecto)
+- [📱 Capturas de Pantalla](#-capturas-de-pantalla)
+- [🔄 Flujo de Trabajo](#-flujo-de-trabajo)
+- [👨‍💻 Equipo de Desarrollo](#-equipo-de-desarrollo)
+- [🧪 Testing](#-testing)
+- [📈 Roadmap](#-roadmap)
+- [🤝 Contribución](#-contribución)
+- [📄 Licencia](#-licencia)
+- [🙏 Agradecimientos](#-agradecimientos)
 
-## Instalación
+---
 
-1. Clona este repositorio o descarga los archivos
-2. Instala las dependencias:
+## ✨ Visión General
+
+
+**NextGen** es una plataforma innovadora diseñada para transformar la forma en que estudiantes y empresas se conectan en el ámbito educativo y profesional. Nuestro proyecto nace de la necesidad de crear un puente efectivo entre el mundo académico y el mercado laboral, facilitando:
+
+- 🎓 A los **estudiantes**: Encontrar oportunidades de prácticas y empleo acordes a su formación
+- 🏢 A las **empresas**: Descubrir talento joven con las habilidades específicas que necesitan
+- 🔄 A **ambos**: Establecer relaciones profesionales con base en información transparente y comunicación directa
+
+Este ecosistema digital permite optimizar el proceso de búsqueda y selección, reduciendo tiempos y mejorando la calidad de las conexiones entre candidatos y oportunidades.
+
+---
+
+## 🎯 Características Principales
+
+### Para Estudiantes 👨‍🎓👩‍🎓
+
+- **🪪 Perfiles Educativos Detallados**: Crea un perfil completo con tus habilidades, formación y experiencia
+- **🔍 Búsqueda Avanzada**: Encuentra ofertas filtradas por categoría, ubicación y tipo
+- **📝 Solicitudes Simplificadas**: Aplica a ofertas con un solo clic y gestiona todas tus aplicaciones
+- **⭐ Sistema de Favoritos**: Guarda las ofertas que más te interesan para revisarlas después
+- **📊 Seguimiento de Progreso**: Monitoriza el estado de tus solicitudes en tiempo real
+- **💬 Chat Integrado**: Comunícate directamente con las empresas durante el proceso
+- **🏆 Historial de Experiencias**: Mantén un registro de tus prácticas y valoraciones
+
+### Para Empresas 🏢
+
+- **🏗️ Perfiles Corporativos**: Presenta tu empresa, valores y cultura organizacional
+- **📢 Publicación de Ofertas**: Crea y gestiona ofertas de prácticas y empleo
+- **👁️ Panel de Control**: Visualiza estadísticas y métricas de tus publicaciones
+- **📨 Gestión de Solicitudes**: Revisa, filtra y gestiona las aplicaciones recibidas
+- **🤝 Convenios Automatizados**: Genera convenios de prácticas con los estudiantes seleccionados
+- **📈 Análisis de Rendimiento**: Obtén insights sobre el rendimiento de tus publicaciones
+- **⭐ Sistema de Valoraciones**: Evalúa a los estudiantes que han completado programas contigo
+
+### Características Generales 🌐
+
+- **🔐 Autenticación Segura**: Sistema robusto de registro y autenticación
+- **🔄 Actualizaciones en Tiempo Real**: Notificaciones instantáneas sobre cambios relevantes
+- **📱 Diseño Responsive**: Experiencia óptima en cualquier dispositivo
+- **🌍 Multilenguaje**: Soporte para múltiples idiomas (Español, Catalán, Inglés)
+- **🎨 Interfaz Intuitiva**: UX/UI diseñada pensando en la usabilidad
+- **🔎 Búsqueda Semántica**: Algoritmo inteligente para matchmaking entre perfiles y ofertas
+
+---
+
+## 🛠️ Tecnologías Utilizadas
+
+<div align="center">
+  <table>
+    <tr>
+      <th>Categoría</th>
+      <th>Tecnologías</th>
+    </tr>
+    <tr>
+      <td>🖥️ Backend</td>
+      <td>
+        <img src="https://img.shields.io/badge/Laravel-FF2D20?logo=laravel&logoColor=white" alt="Laravel" />
+        <img src="https://img.shields.io/badge/PHP-777BB4?logo=php&logoColor=white" alt="PHP" />
+        <img src="https://img.shields.io/badge/Sanctum-FF2D20?logo=laravel&logoColor=white" alt="Sanctum" />
+      </td>
+    </tr>
+    <tr>
+      <td>🎨 Frontend</td>
+      <td>
+        <img src="https://img.shields.io/badge/Blade-FF2D20?logo=laravel&logoColor=white" alt="Blade" />
+        <img src="https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=black" alt="JavaScript" />
+        <img src="https://img.shields.io/badge/Bootstrap-7952B3?logo=bootstrap&logoColor=white" alt="Bootstrap" />
+        <img src="https://img.shields.io/badge/CSS3-1572B6?logo=css3&logoColor=white" alt="CSS3" />
+      </td>
+    </tr>
+    <tr>
+      <td>🗄️ Base de Datos</td>
+      <td>
+        <img src="https://img.shields.io/badge/MySQL-4479A1?logo=mysql&logoColor=white" alt="MySQL" />
+        <img src="https://img.shields.io/badge/Eloquent_ORM-FF2D20?logo=laravel&logoColor=white" alt="Eloquent" />
+      </td>
+    </tr>
+    <tr>
+      <td>🔌 APIs y Servicios</td>
+      <td>
+        <img src="https://img.shields.io/badge/Pusher-300D4F?logo=pusher&logoColor=white" alt="Pusher" />
+        <img src="https://img.shields.io/badge/REST_API-009688?logo=fastapi&logoColor=white" alt="REST API" />
+      </td>
+    </tr>
+    <tr>
+      <td>🧪 Testing</td>
+      <td>
+        <img src="https://img.shields.io/badge/PHPUnit-777BB4?logo=php&logoColor=white" alt="PHPUnit" />
+        <img src="https://img.shields.io/badge/Pest-18B5F0?logo=testcafe&logoColor=white" alt="Pest" />
+      </td>
+    </tr>
+    <tr>
+      <td>🚀 DevOps</td>
+      <td>
+        <img src="https://img.shields.io/badge/Git-F05032?logo=git&logoColor=white" alt="Git" />
+        <img src="https://img.shields.io/badge/Composer-885630?logo=composer&logoColor=white" alt="Composer" />
+        <img src="https://img.shields.io/badge/NPM-CB3837?logo=npm&logoColor=white" alt="NPM" />
+      </td>
+    </tr>
+  </table>
+</div>
+
+---
+
+## 📦 Requisitos del Sistema
+
+Para ejecutar NextGen en un entorno de desarrollo o producción, necesitarás:
+
+### Requisitos de Software 🖥️
+
+- **PHP** >= 8.2
+- **Composer** >= 2.0
+- **Node.js** >= 18.0
+- **NPM** >= 8.0
+- **MySQL** >= 8.0 (o MariaDB >= 10.5)
+- **Servidor web**: Apache 2.4+ o Nginx 1.18+
+
+### Requisitos de Hardware Recomendados 🔧
+
+- **Procesador**: Dual-core 2GHz o superior
+- **RAM**: Mínimo 4GB (8GB recomendado)
+- **Almacenamiento**: 20GB de espacio libre en disco
+- **Conexión a Internet**: Estable (para APIs externas y Pusher)
+
+### Requisitos Opcionales 📱
+
+- **Cuenta de Pusher** para funcionalidad de chat en tiempo real
+- **Servicio de correo SMTP** para notificaciones por email
+
+---
+
+## ⚙️ Instalación y Configuración
+
+### Paso 1: Clonar el Repositorio 📋
 
 ```bash
+git clone https://github.com/tu-usuario/nextgen.git
+cd nextgen
+```
+
+### Paso 2: Instalar Dependencias 📦
+
+```bash
+# Instalar dependencias de PHP
+composer install
+
+# Instalar dependencias de JavaScript
 npm install
 ```
 
-## Uso
-
-### Iniciar el servidor
-
-Para iniciar el servidor en modo desarrollo con reinicio automático:
+### Paso 3: Configurar el Entorno 🔧
 
 ```bash
+# Copiar archivo de entorno
+cp .env.example .env
+
+# Generar clave de aplicación
+php artisan key:generate
+```
+
+Edita el archivo `.env` con la configuración de tu base de datos:
+
+```
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=nextgen
+DB_USERNAME=tu_usuario
+DB_PASSWORD=tu_contraseña
+
+PUSHER_APP_ID=tu_app_id
+PUSHER_APP_KEY=tu_app_key
+PUSHER_APP_SECRET=tu_app_secret
+PUSHER_APP_CLUSTER=tu_app_cluster
+```
+
+### Paso 4: Preparar la Base de Datos 🗄️
+
+```bash
+# Ejecutar migraciones
+php artisan migrate
+
+# Cargar datos iniciales
+php artisan db:seed
+```
+
+### Paso 5: Compilar Assets 🎨
+
+```bash
+# Desarrollo
 npm run dev
+
+# Producción
+npm run build
 ```
 
-Para iniciar el servidor en modo producción:
+### Paso 6: Iniciar el Servidor 🚀
 
 ```bash
-npm start
+php artisan serve
 ```
 
-Por defecto, el servidor se ejecuta en el puerto 3000. Para cambiar el puerto, configura la variable de entorno `PORT`:
+Ahora puedes acceder a la aplicación en `http://localhost:8000`
+
+### Cuentas de Demostración 🔑
+
+| Tipo | Email | Contraseña |
+|------|-------|------------|
+| 👨‍🎓 Estudiante | estudiante1@educacion.es | password |
+| 🏢 Empresa | contacto@indra.es | password |
+| 👨‍💼 Admin | admin@sistema.com | password |
+
+---
+
+## 👥 Roles de Usuario
+
+NextGen opera con un sistema de roles bien definido para gestionar los permisos y el acceso a diferentes funcionalidades:
+
+### 👨‍🎓 Estudiantes
+
+- **Permisos**: 
+  - Crear y gestionar perfil personal
+  - Buscar y aplicar a ofertas
+  - Participar en chats con empresas
+  - Gestionar solicitudes enviadas
+  - Valorar empresas tras finalizar convenios
+
+### 🏢 Empresas
+
+- **Permisos**:
+  - Crear y gestionar perfil corporativo
+  - Publicar y gestionar ofertas
+  - Revisar solicitudes recibidas
+  - Comunicarse con candidatos
+  - Gestionar convenios activos
+  - Valorar estudiantes tras finalizar convenios
+
+### 👨‍💼 Administradores
+
+- **Permisos**:
+  - Acceso completo al sistema
+  - Gestión de usuarios (crear, editar, eliminar)
+  - Moderación de contenido
+  - Gestión de categorías y subcategorías
+  - Visualización de estadísticas y métricas
+  - Resolución de incidencias
+
+---
+
+## 🗂️ Estructura del Proyecto
+
+NextGen sigue una arquitectura MVC (Modelo-Vista-Controlador) basada en Laravel, con una organización clara de directorios:
+
+```
+nextgen/
+├── app/                 # Lógica principal de la aplicación
+│   ├── Models/          # Modelos de datos (User, Estudiante, Empresa, etc.)
+│   ├── Http/            # Controladores, Middleware y Requests
+│   └── Providers/       # Proveedores de servicios
+├── database/            # Migraciones y seeders
+├── resources/           # Vistas y assets
+│   ├── views/           # Plantillas Blade organizadas por módulos
+│   │   ├── admin/       # Vistas del panel de administración
+│   │   ├── student/     # Vistas específicas para estudiantes
+│   │   ├── empresa/     # Vistas específicas para empresas
+│   │   └── ...
+│   ├── js/              # Código JavaScript
+│   └── css/             # Estilos CSS
+├── routes/              # Definición de rutas
+│   ├── web.php          # Rutas web principales
+│   └── api.php          # Endpoints de API
+├── config/              # Archivos de configuración
+├── public/              # Archivos accesibles públicamente
+└── tests/               # Pruebas automatizadas
+```
+
+### Modelos Principales 📊
+
+- **User**: Base para la autenticación y gestión de usuarios
+- **Estudiante**: Perfil y datos específicos de estudiantes
+- **Empresa**: Perfil y datos específicos de empresas
+- **Publicacion**: Ofertas publicadas por empresas
+- **Solicitud**: Aplicaciones de estudiantes a ofertas
+- **Chat**: Sistema de mensajería entre usuarios
+- **Valoracion**: Evaluaciones tras finalizar convenios
+- **Categoria/Subcategoria**: Taxonomía para clasificar ofertas
+
+---
+
+## 📱 Capturas de Pantalla
+
+<div align="center">
+  <img src="public/readme/welcome.png" width="80%" alt="Dashboard">
+  <p><i>Dashboard principal de NextGen</i></p>
+
+  <br>
+
+  <div style="display: flex; justify-content: space-between;">
+    <div style="width: 48%;">
+      <img src="https://www.ejemplo.com/nextgen-screenshot2.png" width="100%" alt="Perfil de Estudiante">
+      <img src="public/readme/estudiante.png" width="100%" alt="Perfil de Estudiante">
+      <p><i>Perfil de Estudiante</i></p>
+    </div>
+    <div style="width: 48%;">
+      <img src="https://www.ejemplo.com/nextgen-screenshot3.png" width="100%" alt="Panel de Empresa">
+      <img src="public/readme/empresa.png" width="100%" alt="Panel de Empresa">
+      <p><i>Panel de Empresa</i></p>
+    </div>
+  </div>
+
+  <br>
+
+  <img src="https://www.ejemplo.com/nextgen-screenshot4.png" width="80%" alt="Sistema de Chat">
+  <img src="public/readme/chat.png" width="80%" alt="Sistema de Chat">
+  <p><i>Sistema de Chat en Tiempo Real</i></p>
+</div>
+
+---
+
+## 🔄 Flujo de Trabajo
+
+<div align="center">
+  <img src="public/readme/pert.png" width="90%" alt="Flujo de Trabajo">
+  <img src="public/readme/Pert.png" width="90%" alt="Flujo de Trabajo">
+</div>
+
+### Proceso para Estudiantes 👨‍🎓
+
+1. **Registro y Creación de Perfil**: El estudiante se registra y completa su perfil educativo
+2. **Exploración de Ofertas**: Busca y filtra las oportunidades disponibles
+3. **Aplicación**: Envía su solicitud a las ofertas que le interesan
+4. **Comunicación**: Interactúa con la empresa a través del chat si es preseleccionado
+5. **Selección**: Si es aceptado, se establece un convenio formal
+6. **Realización**: Completa el periodo de prácticas o trabajo
+7. **Valoración**: Al finalizar, valora su experiencia con la empresa
+
+### Proceso para Empresas 🏢
+
+1. **Registro y Creación de Perfil**: La empresa se registra y completa su perfil corporativo
+2. **Publicación de Ofertas**: Crea y publica oportunidades con requisitos detallados
+3. **Gestión de Solicitudes**: Revisa las aplicaciones recibidas
+4. **Preselección**: Contacta con candidatos potenciales vía chat
+5. **Formalización**: Establece un convenio con los candidatos seleccionados
+6. **Seguimiento**: Supervisa el progreso durante el periodo establecido
+7. **Valoración**: Al finalizar, valora el desempeño del estudiante
+
+---
+
+## 👨‍💻 Equipo de Desarrollo
+
+<div align="center">
+  <table>
+    <tr>
+      <td align="center">
+        <img src="https://avatars.githubusercontent.com/u/ejemplo1" width="100px" alt="Juanjo">
+        <!-- <img src="https://avatars.githubusercontent.com/u/ejemplo1" width="100px" alt="Juanjo"> -->
+        <br>
+        <b>Juanjo</b>
+        <br>
+        <i>Backend Developer</i>
+        <br>
+        <a href="https://github.com/juanjo">GitHub</a>
+        <a href="https://github.com/JuanjGomez">GitHub</a>
+      </td>
+      <td align="center">
+        <img src="https://avatars.githubusercontent.com/u/ejemplo2" width="100px" alt="Àngel">
+        <!-- <img src="https://avatars.githubusercontent.com/u/ejemplo2" width="100px" alt="Àngel"> -->
+        <br>
+        <b>Àngel</b>
+        <br>
+        <i>Frontend Developer</i>
+        <br>
+        <a href="https://github.com/angel">GitHub</a>
+        <a href="https://github.com/AngelCampsRuiz">GitHub</a>
+      </td>
+      <td align="center">
+        <img src="https://avatars.githubusercontent.com/u/ejemplo3" width="100px" alt="Deiby">
+        <!-- <img src="https://avatars.githubusercontent.com/u/ejemplo3" width="100px" alt="Deiby"> -->
+        <br>
+        <b>Deiby</b>
+        <br>
+        <i>Full Stack Developer</i>
+        <br>
+        <a href="https://github.com/deiby">GitHub</a>
+        <a href="https://github.com/deiby14">GitHub</a>
+      </td>
+    </tr>
+    <tr>
+      <td align="center">
+        <img src="https://avatars.githubusercontent.com/u/ejemplo4" width="100px" alt="Aina">
+        <!-- <img src="https://avatars.githubusercontent.com/u/ejemplo4" width="100px" alt="Aina"> -->
+        <br>
+        <b>Aina</b>
+        <br>
+        <i>UI/UX Designer</i>
+        <br>
+        <a href="https://github.com/aina">GitHub</a>
+        <a href="https://github.com/ainaorozcogonzalez">GitHub</a>
+      </td>
+      <td align="center">
+        <img src="https://avatars.githubusercontent.com/u/ejemplo5" width="100px" alt="Mario">
+        <!-- <img src="https://avatars.githubusercontent.com/u/ejemplo5" width="100px" alt="Mario"> -->
+        <br>
+        <b>Mario</b>
+        <br>
+        <i>DevOps Engineer</i>
+        <br>
+        <a href="https://github.com/mario">GitHub</a>
+        <a href="https://github.com/MarioPalamari">GitHub</a>
+      </td>
+      <td align="center">
+        <img src="https://www.ejemplo.com/nextgen-mascot.png" width="100px" alt="NextBot">
+        <!-- <img src="https://www.ejemplo.com/nextgen-mascot.png" width="100px" alt="NextBot"> -->
+        <br>
+        <b>NextBot</b>
+        <br>
+        <i>Mascota Oficial</i>
+        <br>
+        <a href="https://nextgenedu.es">Web</a>
+      </td>
+    </tr>
+  </table>
+</div>
+
+Todos somos estudiantes de DAW2 (Desarrollo de Aplicaciones Web) del grupo G04, comprometidos con crear una solución innovadora para facilitar la conexión entre estudiantes y empresas.
+
+---
+
+## 🧪 Testing
+
+NextGen se desarrolla siguiendo metodologías de pruebas para garantizar la calidad del código:
 
 ```bash
-PORT=5000 npm start
+# Ejecutar todas las pruebas
+php artisan test
+
+# Ejecutar pruebas específicas
+php artisan test --filter=UserTest
 ```
 
-## Integración con el cliente
+### Cobertura de Pruebas 📊
 
-### Eventos del cliente al servidor
+- ✅ Pruebas Unitarias: Para funciones y métodos individuales
+- ✅ Pruebas de Integración: Para interacciones entre componentes
+- ✅ Pruebas de Feature: Para funcionalidades completas
+- ✅ Pruebas de UI: Para interfaces de usuario
 
-- `register`: Registrar un usuario con un nombre
-- `call`: Iniciar una llamada a otro usuario
-- `accept_call`: Aceptar una llamada entrante
-- `reject`: Rechazar una llamada entrante
-- `end`: Finalizar una llamada activa
+---
 
-### Eventos del servidor al cliente
+## 📈 Roadmap
 
-- `register_response`: Respuesta al intento de registro
-- `user_list`: Lista actualizada de usuarios
-- `incoming_call`: Notificación de llamada entrante
-- `call_response`: Respuesta al intento de llamada
-- `call_accepted`: Notificación de llamada aceptada
-- `call_rejected`: Notificación de llamada rechazada
-- `call_ended`: Notificación de llamada finalizada
+Próximas características planificadas para NextGen:
 
-## Ejemplo de conexión desde el cliente
+### Fase 1 (Q3 2023) ✅
+- Implementación de perfiles básicos
+- Sistema de publicación de ofertas
+- Flujo de solicitudes
 
-```javascript
-// Conectar al servidor de señalización
-const socket = io('http://localhost:3000');
+### Fase 2 (Q4 2023) ✅
+- Sistema de chat en tiempo real
+- Valoraciones de experiencias
+- Panel de administración
 
-// Registrar usuario
-socket.emit('register', 'NombreUsuario');
+### Fase 3 (Q1 2024) 🔄
+- Algoritmo de matchmaking avanzado
+- Integración con plataformas educativas
+- Generación de informes y análisis
 
-// Escuchar respuesta de registro
-socket.on('register_response', (response) => {
-  if (response.success) {
-    console.log('Registro exitoso');
-  } else {
-    console.error(response.message);
-  }
-});
+### Fase 4 (Futuro) 📋
+- Aplicación móvil nativa
+- Integración con LinkedIn y otras plataformas
+- IA para recomendación de ofertas personalizadas
 
-// Obtener lista de usuarios
-socket.on('user_list', (users) => {
-  console.log('Usuarios conectados:', users);
-});
-```
+---
 
-## Licencia
+## 🤝 Contribución
 
-MIT
+¡Agradecemos tu interés en contribuir a NextGen! Para contribuir:
 
-## Configuración del servidor Socket.io para videollamadas
+1. **Fork** el repositorio
+2. **Clona** tu fork: `git clone https://github.com/tu-usuario/nextgen.git`
+3. **Crea** una rama para tu feature: `git checkout -b feature/amazing-feature`
+4. **Commite** tus cambios: `git commit -m 'Add some amazing feature'`
+5. **Push** a la rama: `git push origin feature/amazing-feature`
+6. Abre un **Pull Request**
 
-### Requisitos
-- Node.js instalado (v14 o superior)
-- NPM instalado
+Por favor, asegúrate de seguir nuestras directrices de contribución y código de conducta.
 
-### Configuración
-1. Configurar la URL del servidor Socket.io en el archivo `.env` de Laravel:
-   ```
-   SOCKET_SERVER_URL=http://localhost:3000
-   ```
+---
 
-2. Iniciar el servidor de señalización Socket.io:
-   ```
-   npm start
-   ```
-   o
-   ```
-   node server.js
-   ```
+## 📄 Licencia
 
-3. Para desarrollo con recarga automática:
-   ```
-   npm run dev
-   ```
+Este proyecto está licenciado bajo la [Licencia MIT](LICENSE) - consulta el archivo LICENSE para más detalles.
 
-4. Asegurarse de que ambos servidores estén funcionando:
-   - Servidor Laravel (PHP): Generalmente en el puerto 8000 o el que uses con Artisan
-   - Servidor Socket.io (Node.js): Puerto 3000 por defecto
+---
 
-### Configuración de entorno
+## 🙏 Agradecimientos
 
-Añade la siguiente variable a tu archivo `.env` de Laravel:
+Queremos expresar nuestro sincero agradecimiento a:
 
-```
-# Configuración de Socket.io para videollamadas
-SOCKET_SERVER_URL=http://localhost:3000
-```
+- 👨‍🏫 Nuestros profesores y mentores en DAW2 por su invaluable guía
+- 🏫 La institución educativa por proporcionar el entorno para desarrollar este proyecto
+- 🧪 Los beta testers que nos ayudaron a mejorar la plataforma
+- 📚 La comunidad de Laravel por su excelente documentación y recursos
+- 🌐 Todos los que han contribuido con feedback y sugerencias
 
-Para entornos de producción, usa la URL completa del servidor Socket.io:
+---
 
-```
-SOCKET_SERVER_URL=https://tu-dominio.com:3000
-```
+<div align="center">
+  <p>
+    <b>NextGen © 2023-2024</b>
+    <br>
+    <i>Construyendo puentes entre la educación y el mundo profesional</i>
+    <br><br>
+    <a href="https://nextgenedu.es">🌐 Website</a> •
+    <a href="https://github.com/tu-usuario/nextgen">💻 GitHub</a> •
+    <a href="mailto:info@nextgenedu.es">📧 Contact</a>
+  </p>
 
-Si estás utilizando HTTPS en producción, asegúrate de que el servidor Socket.io también esté configurado con SSL.
-
-### Solución de problemas de conexión Socket.io
-
-Si experimentas problemas de conexión con Socket.io:
-
-1. Verifica que el servidor Socket.io esté ejecutándose (`npm start`)
-2. Confirma que la URL configurada en `.env` sea accesible desde el navegador
-3. Si usas HTTPS en producción, asegúrate de configurar Socket.io con SSL también
-4. Para entornos de producción, considera usar un proxy inverso como Nginx para servir tanto Laravel como Socket.io
-
-### Acceso desde diferentes dispositivos
-
-Para pruebas en red local, usa la IP de tu máquina en lugar de localhost:
-
-1. Averigua tu dirección IP local (por ejemplo, 192.168.1.10)
-2. Configura en `.env`:
-   ```
-   SOCKET_SERVER_URL=http://192.168.1.10:3000
-   ```
-3. Asegúrate de que los puertos necesarios estén abiertos en el firewall
+  <img src="https://www.ejemplo.com/nextgen-footer.png" width="300" alt="NextGen Footer">
+</div>
