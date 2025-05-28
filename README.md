@@ -337,12 +337,10 @@ nextgen/
 
   <div style="display: flex; justify-content: space-between;">
     <div style="width: 48%;">
-      <img src="https://www.ejemplo.com/nextgen-screenshot2.png" width="100%" alt="Perfil de Estudiante">
       <img src="public/readme/estudiante.png" width="100%" alt="Perfil de Estudiante">
       <p><i>Perfil de Estudiante</i></p>
     </div>
     <div style="width: 48%;">
-      <img src="https://www.ejemplo.com/nextgen-screenshot3.png" width="100%" alt="Panel de Empresa">
       <img src="public/readme/empresa.png" width="100%" alt="Panel de Empresa">
       <p><i>Panel de Empresa</i></p>
     </div>
@@ -350,7 +348,6 @@ nextgen/
 
   <br>
 
-  <img src="https://www.ejemplo.com/nextgen-screenshot4.png" width="80%" alt="Sistema de Chat">
   <img src="public/readme/chat.png" width="80%" alt="Sistema de Chat">
   <p><i>Sistema de Chat en Tiempo Real</i></p>
 </div>
@@ -392,7 +389,6 @@ nextgen/
   <table>
     <tr>
       <td align="center">
-        <img src="https://avatars.githubusercontent.com/u/ejemplo1" width="100px" alt="Juanjo">
         <!-- <img src="https://avatars.githubusercontent.com/u/ejemplo1" width="100px" alt="Juanjo"> -->
         <br>
         <b>Juanjo</b>
@@ -403,7 +399,6 @@ nextgen/
         <a href="https://github.com/JuanjGomez">GitHub</a>
       </td>
       <td align="center">
-        <img src="https://avatars.githubusercontent.com/u/ejemplo2" width="100px" alt="Àngel">
         <!-- <img src="https://avatars.githubusercontent.com/u/ejemplo2" width="100px" alt="Àngel"> -->
         <br>
         <b>Àngel</b>
@@ -414,7 +409,6 @@ nextgen/
         <a href="https://github.com/AngelCampsRuiz">GitHub</a>
       </td>
       <td align="center">
-        <img src="https://avatars.githubusercontent.com/u/ejemplo3" width="100px" alt="Deiby">
         <!-- <img src="https://avatars.githubusercontent.com/u/ejemplo3" width="100px" alt="Deiby"> -->
         <br>
         <b>Deiby</b>
@@ -427,7 +421,6 @@ nextgen/
     </tr>
     <tr>
       <td align="center">
-        <img src="https://avatars.githubusercontent.com/u/ejemplo4" width="100px" alt="Aina">
         <!-- <img src="https://avatars.githubusercontent.com/u/ejemplo4" width="100px" alt="Aina"> -->
         <br>
         <b>Aina</b>
@@ -438,7 +431,6 @@ nextgen/
         <a href="https://github.com/ainaorozcogonzalez">GitHub</a>
       </td>
       <td align="center">
-        <img src="https://avatars.githubusercontent.com/u/ejemplo5" width="100px" alt="Mario">
         <!-- <img src="https://avatars.githubusercontent.com/u/ejemplo5" width="100px" alt="Mario"> -->
         <br>
         <b>Mario</b>
@@ -449,14 +441,13 @@ nextgen/
         <a href="https://github.com/MarioPalamari">GitHub</a>
       </td>
       <td align="center">
-        <img src="https://www.ejemplo.com/nextgen-mascot.png" width="100px" alt="NextBot">
         <!-- <img src="https://www.ejemplo.com/nextgen-mascot.png" width="100px" alt="NextBot"> -->
         <br>
         <b>NextBot</b>
         <br>
         <i>Mascota Oficial</i>
         <br>
-        <a href="https://nextgenedu.es">Web</a>
+        <a href="https://g03.daw2j23.es">Web</a>
       </td>
     </tr>
   </table>
